@@ -12,6 +12,7 @@
 		C7B5CEA92CFDC52900FD4850 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = C7B5CEA82CFDC52900FD4850 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		C7B5CEAB2CFDC52900FD4850 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7B5CEAA2CFDC52900FD4850 /* FirebaseCrashlytics */; };
 		C7B5CEAD2CFDC52900FD4850 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7B5CEAC2CFDC52900FD4850 /* FirebaseMessaging */; };
+		C7B5D0202CFF240F00FD4850 /* GraphQL in Frameworks */ = {isa = PBXBuildFile; productRef = C7B5D01F2CFF240F00FD4850 /* GraphQL */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,11 @@
 			path = hyuabot;
 			sourceTree = "<group>";
 		};
+		C7B5CFF72CFF23BD00FD4850 /* query */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = query;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7B5D0202CFF240F00FD4850 /* GraphQL in Frameworks */,
 				C7B5CEA32CFDC3D800FD4850 /* Then in Frameworks */,
 				C7B5CEAB2CFDC52900FD4850 /* FirebaseCrashlytics in Frameworks */,
 				C7B5CEAD2CFDC52900FD4850 /* FirebaseMessaging in Frameworks */,
@@ -45,6 +52,7 @@
 		C755D3982CFDAC2D0082A4EC = {
 			isa = PBXGroup;
 			children = (
+				C7B5CFF72CFF23BD00FD4850 /* query */,
 				C755D3A32CFDAC2D0082A4EC /* hyuabot */,
 				C755D3A22CFDAC2D0082A4EC /* Products */,
 			);
@@ -76,6 +84,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				C755D3A32CFDAC2D0082A4EC /* hyuabot */,
+				C7B5CFF72CFF23BD00FD4850 /* query */,
 			);
 			name = hyuabot;
 			packageProductDependencies = (
@@ -84,6 +93,7 @@
 				C7B5CEA82CFDC52900FD4850 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				C7B5CEAA2CFDC52900FD4850 /* FirebaseCrashlytics */,
 				C7B5CEAC2CFDC52900FD4850 /* FirebaseMessaging */,
+				C7B5D01F2CFF240F00FD4850 /* GraphQL */,
 			);
 			productName = hyuabot;
 			productReference = C755D3A12CFDAC2D0082A4EC /* hyuabot.app */;
@@ -117,6 +127,7 @@
 				C7B5CEA12CFDC3D800FD4850 /* XCRemoteSwiftPackageReference "Then" */,
 				C7B5CEA42CFDC42500FD4850 /* XCRemoteSwiftPackageReference "apollo-ios" */,
 				C7B5CEA72CFDC52900FD4850 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C7B5D01E2CFF240F00FD4850 /* XCLocalSwiftPackageReference "graphQL" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C755D3A22CFDAC2D0082A4EC /* Products */;
@@ -397,6 +408,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C7B5D01E2CFF240F00FD4850 /* XCLocalSwiftPackageReference "graphQL" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = graphQL;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		C7B5CEA12CFDC3D800FD4850 /* XCRemoteSwiftPackageReference "Then" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -449,6 +467,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7B5CEA72CFDC52900FD4850 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		C7B5D01F2CFF240F00FD4850 /* GraphQL */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GraphQL;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
