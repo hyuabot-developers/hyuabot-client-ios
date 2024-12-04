@@ -1,0 +1,12 @@
+name: Run SwiftLint
+
+on: [push, pull_request]
+jobs:
+  swiftlint:
+    runs-on: [self-hosted, macOS]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Run SwiftLint
+        run: swiftlint lint --quiet
