@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct hyuabotApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate: AppDelegate
+
     var body: some Scene {
         WindowGroup {
             ContentView()
