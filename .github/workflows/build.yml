@@ -1,0 +1,14 @@
+name: Run Xcode Build
+
+on: pull_request
+jobs:
+  build:
+    runs-on: [self-hosted, macOS]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GoogleService-Info.plist
+        run: echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > hyuabot/GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+      - name: Start Xcode Build
+        run: xcodebuild -project hyuabot.xcodeproj -scheme hyuabot -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' -quiet clean build
