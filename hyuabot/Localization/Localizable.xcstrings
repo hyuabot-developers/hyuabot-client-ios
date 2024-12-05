@@ -1,7 +1,112 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "Hello, world!" : {
+    "Bus Realtime Page" : {
+
+    },
+    "bus.realtime" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스"
+          }
+        }
+      }
+    },
+    "cafeteria" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학식"
+          }
+        }
+      }
+    },
+    "Cafeteria Page" : {
+
+    },
+    "calendar" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사력"
+          }
+        }
+      }
+    },
+    "Calendar Page" : {
+
+    },
+    "Contact Page" : {
+
+    },
+    "map" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도"
+          }
+        }
+      }
+    },
+    "Map Page" : {
+
+    },
+    "Reading Room Page" : {
+
+    },
+    "readingRoom" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "열람실"
+          }
+        }
+      }
+    },
+    "setting" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
+      }
+    },
+    "Setting Page" : {
+
+    },
+    "shuttle.realtime" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스"
+          }
+        }
+      }
+    },
+    "ShuttleRealtimePageView" : {
+
+    },
+    "subway.realtime" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전철"
+          }
+        }
+      }
+    },
+    "SubwayRealtimePageView" : {
 
     }
   },
