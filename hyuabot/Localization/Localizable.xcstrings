@@ -82,6 +82,28 @@
     "Setting Page" : {
 
     },
+    "shuttle.dormitory_o" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.jungang_station" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
     "shuttle.realtime" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -93,8 +115,49 @@
         }
       }
     },
-    "ShuttleRealtimePageView" : {
-
+    "shuttle.shuttlecock_i" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕 건너편"
+          }
+        }
+      }
+    },
+    "shuttle.shuttlecock_o" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕"
+          }
+        }
+      }
+    },
+    "shuttle.station" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞"
+          }
+        }
+      }
+    },
+    "shuttle.terminal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인"
+          }
+        }
+      }
     },
     "subway.realtime" : {
       "localizations" : {

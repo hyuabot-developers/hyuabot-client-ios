@@ -81,12 +81,12 @@ struct Tabs_Previews: PreviewProvider {
         Tabs(
             fixedSize: false,
             tabs: [
-                .init(title: "기숙사"),
-                .init(title: "셔틀콕"),
-                .init(title: "한대앞"),
-                .init(title: "예술인"),
-                .init(title: "중앙역"),
-                .init(title: "셔틀콕 건너편"),
+                .init(title: String(localized: "shuttle.dormitory_o")),
+                .init(title: String(localized: "shuttle.shuttlecock_o")),
+                .init(title: String(localized: "shuttle.station")),
+                .init(title: String(localized: "shuttle.terminal")),
+                .init(title: String(localized: "shuttle.jungang_station")),
+                .init(title: String(localized: "shuttle.shuttlecock_i"))
             ],
             geoWidth: 500,
             selectedTab: .constant(1)
