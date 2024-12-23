@@ -10,6 +10,7 @@ import GraphQL
 
 struct ShuttleRealtimeItemView: View {
     @Binding var showRemainingMinutes: Bool
+    @State private var showStops = false
     var arrival: ShuttleRealtimePageQuery.Data.Shuttle.Timetable
     let stopID: String.LocalizationValue
     let destination: String.LocalizationValue
@@ -31,7 +32,7 @@ struct ShuttleRealtimeItemView: View {
             .padding(.vertical, 5)
             .contentShape(Rectangle())
             .onTapGesture(perform: {
-                
+                self.showStops.toggle()
             })
             .onLongPressGesture(minimumDuration: 0.75, perform: {
                 toggleRemainingTime(false)
@@ -40,9 +41,71 @@ struct ShuttleRealtimeItemView: View {
                     toggleRemainingTime(true)
                 }
             })
+            if (showStops) {
+                ZStack {
+                    // Route
+                    Rectangle()
+                        .fill(.gray)
+                        .frame(height: 4)
+                        .padding(.horizontal, 15)
+                    // Stops
+                    HStack(spacing: 0) {
+                        ForEach(self.arrival.via.indices, id: \.self) { index in
+                            Spacer()
+                            Circle()
+                                .fill(.gray)
+                                .frame(width: 10, height: 10)
+                            Spacer()
+                        }
+                    }
+                }
+                .padding(.vertical, 10)
+                HStack (spacing: 0) {
+                    ForEach(self.arrival.via.indices, id: \.self) { index in
+                        Spacer()
+                        VStack (spacing: 0) {
+                            Text(stopToLocalizedString(arrival.via[index].stop))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                            Text(timeToShortLocalizedString(arrival.via[index].time))
+                                .font(.system(size: 10))
+                                .foregroundColor(.gray)
+                                .padding(.top, 5)
+                        }
+                        Spacer()
+                    }
+                }
+            }
             Divider()
         }
         .padding(.horizontal, 20)
+    }
+    
+    private func stopToLocalizedString(_ stop: String) -> String {
+        switch stop {
+        case "dormitory_o":
+            return String(localized: "shuttle.dormitory_o")
+        case "shuttlecock_o":
+            return String(localized: "shuttle.shuttlecock_o")
+        case "station":
+            return String(localized: "shuttle.station")
+        case "terminal":
+            return String(localized: "shuttle.terminal")
+        case "jungang_station":
+            return String(localized: "shuttle.jungang_station")
+        case "shuttlecock_i":
+            var stop = String(localized: "shuttle.shuttlecock_i")
+            stop.replace(" ", with: "\n")
+            return stop
+        default:
+            return String(localized: "shuttle.dormitory_o")
+        }
+    }
+    
+    private func timeToShortLocalizedString(_ time: String) -> String {
+        return String(time[..<time.index(time.startIndex, offsetBy: 5)])
     }
     
     private func timeToLocalizedString(_ time: String) -> String {

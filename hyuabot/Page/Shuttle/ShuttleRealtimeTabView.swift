@@ -51,7 +51,6 @@ struct ShuttleRealtimeTabView: View {
     }
     
     private func toggleShowRemainingMinutes(value: Bool) {
-        print("toggleShowRemainingMinutes: \(value) \(Date.now)")
         showRemainingMinutes = value
     }
 }
