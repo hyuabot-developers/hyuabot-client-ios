@@ -12,10 +12,10 @@ import GraphQL
 struct ShuttleRealtimeSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Binding var arrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable]
-
-
+    @Binding var showRemainingMinutes: Bool
     let stopID: String.LocalizationValue
     let destination: String.LocalizationValue
+    let toggleShowRemainingMinutes: (Bool) -> Void
 
     var body: some View {
         let arrivalList: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = if (
@@ -52,7 +52,13 @@ struct ShuttleRealtimeSectionView: View {
                 .background(Color.hanyangPrimary)
             if (arrivalList.count > 0) {
                 ForEach(arrivalList.indices, id: \.self) { index in
-                    ShuttleRealtimeItemView(arrival: arrivalList[index], stopID: stopID, destination: destination)
+                    ShuttleRealtimeItemView(
+                        showRemainingMinutes: $showRemainingMinutes,
+                        arrival: arrivalList[index],
+                        stopID: stopID,
+                        destination: destination,
+                        toggleRemainingTime: toggleShowRemainingMinutes
+                    )
                 }
             } else {
                 Text("shuttle.arrival.no.data")
@@ -72,5 +78,11 @@ struct ShuttleRealtimeSectionView: View {
 }
 
 #Preview {
-    ShuttleRealtimeSectionView(arrival: .constant([]), stopID: "dormitory_o", destination: "shuttle.destination.station")
+    ShuttleRealtimeSectionView(
+        arrival: .constant([]),
+        showRemainingMinutes: .constant(false),
+        stopID: "dormitory_o",
+        destination: "shuttle.destination.station",
+        toggleShowRemainingMinutes: { _ in }
+    )
 }

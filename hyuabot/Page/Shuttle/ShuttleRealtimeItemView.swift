@@ -9,9 +9,12 @@ import SwiftUI
 import GraphQL
 
 struct ShuttleRealtimeItemView: View {
+    @Binding var showRemainingMinutes: Bool
     var arrival: ShuttleRealtimePageQuery.Data.Shuttle.Timetable
     let stopID: String.LocalizationValue
     let destination: String.LocalizationValue
+    let toggleRemainingTime: (Bool) -> Void
+
     
     var body: some View {
         VStack {
@@ -21,10 +24,22 @@ struct ShuttleRealtimeItemView: View {
                     .frame(maxHeight: .infinity, alignment: .center)
                     .foregroundColor(tagToColor(arrival.tag, routeID: arrival.route))
                 Spacer()
-                Text(timeToLocalizedString(arrival.time))
+                Text(showRemainingMinutes ? remainingTimeToLocalizedString(arrival.time) : timeToLocalizedString(arrival.time))
                     .font(.system(size: 18))
                     .frame(maxHeight: .infinity, alignment: .center)
-            }.padding(.vertical, 5)
+            }
+            .padding(.vertical, 5)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: {
+                
+            })
+            .onLongPressGesture(minimumDuration: 0.75, perform: {
+                toggleRemainingTime(false)
+            }, onPressingChanged: { inProgress in
+                if (!inProgress && !showRemainingMinutes) {
+                    toggleRemainingTime(true)
+                }
+            })
             Divider()
         }
         .padding(.horizontal, 20)
@@ -38,6 +53,24 @@ struct ShuttleRealtimeItemView: View {
             let hour = Calendar.current.component(.hour, from: date)
             let minute = Calendar.current.component(.minute, from: date)
             return String(localized: "shuttle.arrival.time.\(hour).\(minute)")
+        }
+        return ""
+    }
+    
+    private func remainingTimeToLocalizedString(_ time: String) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss"
+        
+        let now = Date.now
+        let currentHour = Calendar.current.component(.hour, from: now)
+        let currentMinute = Calendar.current.component(.minute, from: now)
+        
+        let date = dateFormatter.date(from: time)
+        if let date = date {
+            let hour = Calendar.current.component(.hour, from: date)
+            let minute = Calendar.current.component(.minute, from: date)
+            let remaingMinute = (hour - currentHour) * 60 + (minute - currentMinute)
+            return String(localized: "shuttle.arrival.remaining.time.\(remaingMinute)")
         }
         return ""
     }

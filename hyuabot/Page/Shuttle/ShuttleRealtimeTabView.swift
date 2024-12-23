@@ -13,6 +13,7 @@ import GraphQL
 struct ShuttleRealtimeTabView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Binding var arrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable]
+    @State var showRemainingMinutes: Bool = true
 
     let stopID: String.LocalizationValue
     let desinations: [String.LocalizationValue]
@@ -23,7 +24,13 @@ struct ShuttleRealtimeTabView: View {
             ScrollView {
                 VStack {
                     ForEach(desinations.indices, id: \.self) { index in
-                        ShuttleRealtimeSectionView(arrival: $arrival, stopID: stopID, destination: desinations[index])
+                        ShuttleRealtimeSectionView(
+                            arrival: $arrival,
+                            showRemainingMinutes: $showRemainingMinutes,
+                            stopID: stopID,
+                            destination: desinations[index],
+                            toggleShowRemainingMinutes: toggleShowRemainingMinutes
+                        )
                     }
                     Button(action: {}) {
                         Text(String(localized: "shuttle.stop.info"))
@@ -41,6 +48,11 @@ struct ShuttleRealtimeTabView: View {
                 )
             }
         }
+    }
+    
+    private func toggleShowRemainingMinutes(value: Bool) {
+        print("toggleShowRemainingMinutes: \(value) \(Date.now)")
+        showRemainingMinutes = value
     }
 }
 

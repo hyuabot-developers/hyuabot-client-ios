@@ -96,6 +96,16 @@
         }
       }
     },
+    "shuttle.arrival.remaining.time.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1lld분 후 출발"
+          }
+        }
+      }
+    },
     "shuttle.arrival.time.%lld.%lld" : {
       "localizations" : {
         "ko" : {
@@ -134,7 +144,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "한대앞역 방면"
+            "value" : "한대앞 방면"
           }
         }
       }
