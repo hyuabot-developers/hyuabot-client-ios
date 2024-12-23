@@ -16,6 +16,8 @@ struct ShuttleRealtimePageView: View {
     @State private var terminalArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
     @State private var jungangStationArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
     @State private var shuttlecockInArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    @ObservedObject private var pollingManager = PollingManager<String>(interval: 30.0)
+
     
     let stops: [String.LocalizationValue] = [
         "shuttle.dormitory_o",
@@ -88,7 +90,14 @@ struct ShuttleRealtimePageView: View {
         }
         .onAppear(perform: {
             fetchShuttleRealtimeData()
+            pollingManager.start {
+                fetchShuttleRealtimeData()
+            }
         })
+        .refreshable {
+            fetchShuttleRealtimeData()
+            pollingManager.stop()
+        }
     }
     
     private func fetchShuttleRealtimeData() {
@@ -111,8 +120,8 @@ struct ShuttleRealtimePageView: View {
                     self.jungangStationArrival = arrivals.filter { $0.stop == "jungang_stn" && $0.time > timeFormatter.string(from: now) }
                     self.shuttlecockInArrival = arrivals.filter { $0.stop == "shuttlecock_i" && $0.time > timeFormatter.string(from: now) }
                 }
-                case .failure(let error):
-                    print(error)
+                case .failure(_):
+                    print("Error fetching data")
             }
         }
     }
