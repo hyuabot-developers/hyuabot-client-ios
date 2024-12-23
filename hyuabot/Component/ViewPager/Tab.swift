@@ -52,7 +52,9 @@ struct Tabs: View {
                                         Rectangle()
                                             .fill(selectedTab == index ? Color.white : Color.clear)
                                             .frame(height: 3)
-                                    }.fixedSize()
+                                    }
+                                    .fixedSize()
+                                    .background(Color(.hanyangPrimary))
                                 }
                             )
                             .accentColor(.white)
@@ -67,7 +69,7 @@ struct Tabs: View {
         }
         .frame(height: 50)
         .onAppear(perform: {
-            UIScrollView.appearance().backgroundColor = .hanyangPrimary
+            UIScrollView.appearance().backgroundColor = .systemBackground
             UIScrollView.appearance().bounces = !fixedSize
         })
         .onDisappear(perform: {

@@ -43,6 +43,9 @@
     "Contact Page" : {
 
     },
+    "dormitory_o" : {
+
+    },
     "map" : {
       "localizations" : {
         "ko" : {
@@ -82,6 +85,71 @@
     "Setting Page" : {
 
     },
+    "shuttle.arrival.no.data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 정보가 없습니다."
+          }
+        }
+      }
+    },
+    "shuttle.arrival.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$02lld시 %2$02lld분 출발"
+          }
+        }
+      }
+    },
+    "shuttle.destination.campus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사 / 셔틀콕 방면"
+          }
+        }
+      }
+    },
+    "shuttle.destination.jungang_station" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역 방면"
+          }
+        }
+      }
+    },
+    "shuttle.destination.station" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞역 방면"
+          }
+        }
+      }
+    },
+    "shuttle.destination.terminal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인 방면"
+          }
+        }
+      }
+    },
     "shuttle.dormitory_o" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -89,6 +157,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.entire.timetable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표"
           }
         }
       }
@@ -148,6 +227,16 @@
         }
       }
     },
+    "shuttle.stop.info" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정류장 정보"
+          }
+        }
+      }
+    },
     "shuttle.terminal" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -158,6 +247,82 @@
           }
         }
       }
+    },
+    "shuttle.type.circular" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "순환"
+          }
+        }
+      }
+    },
+    "shuttle.type.direct" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행"
+          }
+        }
+      }
+    },
+    "shuttle.type.dormitory" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.type.jungang" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역 (경유)"
+          }
+        }
+      }
+    },
+    "shuttle.type.shuttlecock" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕"
+          }
+        }
+      }
+    },
+    "shuttle.type.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행"
+          }
+        }
+      }
+    },
+    "shuttle.type.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행"
+          }
+        }
+      }
+    },
+    "shuttlecock_o" : {
+
+    },
+    "station" : {
+
     },
     "subway.realtime" : {
       "localizations" : {

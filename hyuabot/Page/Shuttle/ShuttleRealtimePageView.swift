@@ -6,9 +6,17 @@
 //
 
 import SwiftUI
+import GraphQL
 
 struct ShuttleRealtimePageView: View {
     @State private var selectedTab = 0
+    @State private var dormitoryOutArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    @State private var shuttlecockOutArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    @State private var stationArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    @State private var terminalArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    @State private var jungangStationArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    @State private var shuttlecockInArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    
     let stops: [String.LocalizationValue] = [
         "shuttle.dormitory_o",
         "shuttle.shuttlecock_o",
@@ -31,15 +39,80 @@ struct ShuttleRealtimePageView: View {
                     TabView(
                         selection: $selectedTab,
                         content: {
-                            ShuttleRealtimeTabView(stopID: self.stops[0]).tag(0)
-                            ShuttleRealtimeTabView(stopID: self.stops[1]).tag(1)
-                            ShuttleRealtimeTabView(stopID: self.stops[2]).tag(2)
-                            ShuttleRealtimeTabView(stopID: self.stops[3]).tag(3)
-                            ShuttleRealtimeTabView(stopID: self.stops[4]).tag(4)
-                            ShuttleRealtimeTabView(stopID: self.stops[5]).tag(5)
+                            ShuttleRealtimeTabView(
+                                arrival: $dormitoryOutArrival,
+                                stopID: self.stops[0],
+                                desinations: [
+                                    "shuttle.destination.station",
+                                    "shuttle.destination.terminal",
+                                    "shuttle.destination.jungang_station"
+                                ]
+                            ).tag(0)
+                            ShuttleRealtimeTabView(
+                                arrival: $shuttlecockOutArrival,
+                                stopID: self.stops[1],
+                                desinations: [
+                                    "shuttle.destination.station",
+                                    "shuttle.destination.terminal",
+                                    "shuttle.destination.jungang_station"
+                                ]
+                            ).tag(1)
+                            ShuttleRealtimeTabView(
+                                arrival: $stationArrival,
+                                stopID: self.stops[2],
+                                desinations: [
+                                    "shuttle.destination.campus",
+                                    "shuttle.destination.terminal",
+                                    "shuttle.destination.jungang_station"
+                                ]
+                            ).tag(2)
+                            ShuttleRealtimeTabView(
+                                arrival: $terminalArrival,
+                                stopID: self.stops[3],
+                                desinations: ["shuttle.destination.campus"]
+                            ).tag(3)
+                            ShuttleRealtimeTabView(
+                                arrival: $jungangStationArrival,
+                                stopID: self.stops[4],
+                                desinations: ["shuttle.destination.campus"]
+                            ).tag(4)
+                            ShuttleRealtimeTabView(
+                                arrival: $shuttlecockInArrival,
+                                stopID: self.stops[5],
+                                desinations: ["shuttle.destination.campus"]
+                            ).tag(5)
                         }
                     ).tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 }
+            }
+        }
+        .onAppear(perform: {
+            fetchShuttleRealtimeData()
+        })
+    }
+    
+    private func fetchShuttleRealtimeData() {
+        let now = Date.now
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let dateTimeFormatter = DateFormatter()
+        dateTimeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        Network.shared.apollo.fetch(query: ShuttleRealtimePageQuery(
+            shuttleStart: timeFormatter.string(from: now),
+            shuttleDateTime: dateTimeFormatter.string(from: now)
+        )) { result in
+            switch result {
+                case .success(let data):
+                if let arrivals = data.data?.shuttle.timetable {
+                    self.dormitoryOutArrival = arrivals.filter { $0.stop == "dormitory_o" && $0.time > timeFormatter.string(from: now) }
+                    self.shuttlecockOutArrival = arrivals.filter { $0.stop == "shuttlecock_o" && $0.time > timeFormatter.string(from: now) }
+                    self.stationArrival = arrivals.filter { $0.stop == "station" && $0.time > timeFormatter.string(from: now) }
+                    self.terminalArrival = arrivals.filter { $0.stop == "terminal" && $0.time > timeFormatter.string(from: now) }
+                    self.jungangStationArrival = arrivals.filter { $0.stop == "jungang_stn" && $0.time > timeFormatter.string(from: now) }
+                    self.shuttlecockInArrival = arrivals.filter { $0.stop == "shuttlecock_i" && $0.time > timeFormatter.string(from: now) }
+                }
+                case .failure(let error):
+                    print(error)
             }
         }
     }
