@@ -9,6 +9,7 @@ import SwiftUI
 import GraphQL
 
 struct ShuttleRealtimeItemView: View {
+    @Environment(\.colorScheme) var colorScheme
     @Binding var showRemainingMinutes: Bool
     @State private var showStops = false
     var arrival: ShuttleRealtimePageQuery.Data.Shuttle.Timetable
@@ -29,7 +30,7 @@ struct ShuttleRealtimeItemView: View {
                     .font(.system(size: 18))
                     .frame(maxHeight: .infinity, alignment: .center)
             }
-            .padding(.vertical, 5)
+            .padding(.top, 5)
             .contentShape(Rectangle())
             .onTapGesture(perform: {
                 self.showStops.toggle()
@@ -45,7 +46,7 @@ struct ShuttleRealtimeItemView: View {
                 ZStack {
                     // Route
                     Rectangle()
-                        .fill(.gray)
+                        .fill(self.colorScheme == .dark ? .gray : .black)
                         .frame(height: 4)
                         .padding(.horizontal, 15)
                     // Stops
@@ -53,13 +54,13 @@ struct ShuttleRealtimeItemView: View {
                         ForEach(self.arrival.via.indices, id: \.self) { index in
                             Spacer()
                             Circle()
-                                .fill(.gray)
+                                .fill(self.colorScheme == .dark ? .gray : .black)
                                 .frame(width: 10, height: 10)
                             Spacer()
                         }
                     }
                 }
-                .padding(.vertical, 10)
+                .padding(.top, 10)
                 HStack (spacing: 0) {
                     ForEach(self.arrival.via.indices, id: \.self) { index in
                         Spacer()
@@ -67,11 +68,11 @@ struct ShuttleRealtimeItemView: View {
                             Text(stopToLocalizedString(arrival.via[index].stop))
                                 .lineLimit(2)
                                 .multilineTextAlignment(.center)
-                                .font(.system(size: 12))
-                                .foregroundColor(.gray)
+                                .font(.system(size: 14))
+                                .foregroundColor(self.colorScheme == .dark ? .gray : .black)
                             Text(timeToShortLocalizedString(arrival.via[index].time))
-                                .font(.system(size: 10))
-                                .foregroundColor(.gray)
+                                .font(.system(size: 12))
+                                .foregroundColor(self.colorScheme == .dark ? .gray : .black)
                                 .padding(.top, 5)
                         }
                         Spacer()
