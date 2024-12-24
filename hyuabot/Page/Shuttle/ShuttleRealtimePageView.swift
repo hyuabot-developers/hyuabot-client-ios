@@ -8,16 +8,23 @@
 import SwiftUI
 import GraphQL
 
+class ShuttleRealtimeObservable: ObservableObject {
+    @Published var arrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
+    
+    func update(_ arrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable]) {
+        self.arrival = arrival
+    }
+}
+
 struct ShuttleRealtimePageView: View {
     @State private var selectedTab = 0
-    @State private var dormitoryOutArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
-    @State private var shuttlecockOutArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
-    @State private var stationArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
-    @State private var terminalArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
-    @State private var jungangStationArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
-    @State private var shuttlecockInArrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable] = []
-    @ObservedObject private var pollingManager = PollingManager<String>(interval: 30.0)
-
+    @ObservedObject private var pollingManager = PollingManager<String>(interval: 10.0)
+    @ObservedObject private var dormitoryOutArrival = ShuttleRealtimeObservable()
+    @ObservedObject private var shuttlecockOutArrival = ShuttleRealtimeObservable()
+    @ObservedObject private var stationArrival = ShuttleRealtimeObservable()
+    @ObservedObject private var terminalArrival = ShuttleRealtimeObservable()
+    @ObservedObject private var jungangStationArrival = ShuttleRealtimeObservable()
+    @ObservedObject private var shuttlecockInArrival = ShuttleRealtimeObservable()
     
     let stops: [String.LocalizationValue] = [
         "shuttle.dormitory_o",
@@ -42,7 +49,7 @@ struct ShuttleRealtimePageView: View {
                         selection: $selectedTab,
                         content: {
                             ShuttleRealtimeTabView(
-                                arrival: $dormitoryOutArrival,
+                                arrival: dormitoryOutArrival,
                                 stopID: self.stops[0],
                                 desinations: [
                                     "shuttle.destination.station",
@@ -51,7 +58,7 @@ struct ShuttleRealtimePageView: View {
                                 ]
                             ).tag(0)
                             ShuttleRealtimeTabView(
-                                arrival: $shuttlecockOutArrival,
+                                arrival: shuttlecockOutArrival,
                                 stopID: self.stops[1],
                                 desinations: [
                                     "shuttle.destination.station",
@@ -60,7 +67,7 @@ struct ShuttleRealtimePageView: View {
                                 ]
                             ).tag(1)
                             ShuttleRealtimeTabView(
-                                arrival: $stationArrival,
+                                arrival: stationArrival,
                                 stopID: self.stops[2],
                                 desinations: [
                                     "shuttle.destination.campus",
@@ -69,17 +76,17 @@ struct ShuttleRealtimePageView: View {
                                 ]
                             ).tag(2)
                             ShuttleRealtimeTabView(
-                                arrival: $terminalArrival,
+                                arrival: terminalArrival,
                                 stopID: self.stops[3],
                                 desinations: ["shuttle.destination.campus"]
                             ).tag(3)
                             ShuttleRealtimeTabView(
-                                arrival: $jungangStationArrival,
+                                arrival: jungangStationArrival,
                                 stopID: self.stops[4],
                                 desinations: ["shuttle.destination.campus"]
                             ).tag(4)
                             ShuttleRealtimeTabView(
-                                arrival: $shuttlecockInArrival,
+                                arrival: shuttlecockInArrival,
                                 stopID: self.stops[5],
                                 desinations: ["shuttle.destination.campus"]
                             ).tag(5)
@@ -101,7 +108,7 @@ struct ShuttleRealtimePageView: View {
     }
     
     private func fetchShuttleRealtimeData() {
-        let now = Date.now
+        let now = Date.now.addingTimeInterval(60)
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         let dateTimeFormatter = DateFormatter()
@@ -113,12 +120,12 @@ struct ShuttleRealtimePageView: View {
             switch result {
                 case .success(let data):
                 if let arrivals = data.data?.shuttle.timetable {
-                    self.dormitoryOutArrival = arrivals.filter { $0.stop == "dormitory_o" && $0.time > timeFormatter.string(from: now) }
-                    self.shuttlecockOutArrival = arrivals.filter { $0.stop == "shuttlecock_o" && $0.time > timeFormatter.string(from: now) }
-                    self.stationArrival = arrivals.filter { $0.stop == "station" && $0.time > timeFormatter.string(from: now) }
-                    self.terminalArrival = arrivals.filter { $0.stop == "terminal" && $0.time > timeFormatter.string(from: now) }
-                    self.jungangStationArrival = arrivals.filter { $0.stop == "jungang_stn" && $0.time > timeFormatter.string(from: now) }
-                    self.shuttlecockInArrival = arrivals.filter { $0.stop == "shuttlecock_i" && $0.time > timeFormatter.string(from: now) }
+                    self.dormitoryOutArrival.update(arrivals.filter { $0.stop == "dormitory_o" && $0.time > timeFormatter.string(from: now) })
+                    self.shuttlecockOutArrival.arrival = arrivals.filter { $0.stop == "shuttlecock_o" && $0.time > timeFormatter.string(from: now) }
+                    self.stationArrival.arrival = arrivals.filter { $0.stop == "station" && $0.time > timeFormatter.string(from: now) }
+                    self.terminalArrival.arrival = arrivals.filter { $0.stop == "terminal" && $0.time > timeFormatter.string(from: now) }
+                    self.jungangStationArrival.arrival = arrivals.filter { $0.stop == "jungang_stn" && $0.time > timeFormatter.string(from: now) }
+                    self.shuttlecockInArrival.arrival = arrivals.filter { $0.stop == "shuttlecock_i" && $0.time > timeFormatter.string(from: now) }
                 }
                 case .failure(_):
                     print("Error fetching data")

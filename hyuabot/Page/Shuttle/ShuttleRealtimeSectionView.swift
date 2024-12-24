@@ -11,8 +11,8 @@ import GraphQL
 
 struct ShuttleRealtimeSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Binding var arrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable]
     @Binding var showRemainingMinutes: Bool
+    var arrival: ShuttleRealtimeObservable
     let stopID: String.LocalizationValue
     let destination: String.LocalizationValue
     let toggleShowRemainingMinutes: (Bool) -> Void
@@ -22,26 +22,26 @@ struct ShuttleRealtimeSectionView: View {
             self.stopID == "shuttle.dormitory_o" || self.stopID == "shuttle.shuttlecock_o"
         ) {
             if (self.destination == "shuttle.destination.station") {
-                Array(self.arrival.filter { $0.tag == "DH" || $0.tag == "C" }.prefix(3))
+                Array(self.arrival.arrival.filter { $0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C" }.prefix(3))
             } else if (self.destination == "shuttle.destination.terminal") {
-                Array(self.arrival.filter { $0.tag == "DY" || $0.tag == "C" }.prefix(3))
+                Array(self.arrival.arrival.filter { $0.tag == "DY" || $0.tag == "C" }.prefix(3))
             } else if (self.destination == "shuttle.destination.jungang_station") {
-                Array(self.arrival.filter { $0.tag == "DJ"} .prefix(3))
+                Array(self.arrival.arrival.filter { $0.tag == "DJ"} .prefix(3))
             } else {
                 []
             }
         } else if (self.stopID == "shuttle.station") {
             if (self.destination == "shuttle.destination.campus") {
-                Array(self.arrival.prefix(3))
+                Array(self.arrival.arrival.prefix(3))
             } else if (self.destination == "shuttle.destination.terminal") {
-                Array(self.arrival.filter { $0.tag == "C" }.prefix(3))
+                Array(self.arrival.arrival.filter { $0.tag == "C" }.prefix(3))
             } else if (self.destination == "shuttle.destination.jungang_station") {
-                Array(self.arrival.filter { $0.tag == "DJ" }.prefix(3))
+                Array(self.arrival.arrival.filter { $0.tag == "DJ" }.prefix(3))
             } else {
                 []
             }
         } else {
-            Array(self.arrival.prefix(7))
+            Array(self.arrival.arrival.prefix(7))
         }
         VStack {
             Text(String(localized: destination))
@@ -79,8 +79,8 @@ struct ShuttleRealtimeSectionView: View {
 
 #Preview {
     ShuttleRealtimeSectionView(
-        arrival: .constant([]),
         showRemainingMinutes: .constant(false),
+        arrival: ShuttleRealtimeObservable(),
         stopID: "dormitory_o",
         destination: "shuttle.destination.station",
         toggleShowRemainingMinutes: { _ in }

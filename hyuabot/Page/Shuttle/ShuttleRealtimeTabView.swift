@@ -12,12 +12,11 @@ import GraphQL
 
 struct ShuttleRealtimeTabView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Binding var arrival: [ShuttleRealtimePageQuery.Data.Shuttle.Timetable]
     @State var showRemainingMinutes: Bool = true
+    @ObservedObject var arrival: ShuttleRealtimeObservable
 
     let stopID: String.LocalizationValue
     let desinations: [String.LocalizationValue]
-
     var body: some View {
         ZStack {
             Color(.systemBackground)
@@ -25,8 +24,8 @@ struct ShuttleRealtimeTabView: View {
                 VStack {
                     ForEach(desinations.indices, id: \.self) { index in
                         ShuttleRealtimeSectionView(
-                            arrival: $arrival,
                             showRemainingMinutes: $showRemainingMinutes,
+                            arrival: arrival,
                             stopID: stopID,
                             destination: desinations[index],
                             toggleShowRemainingMinutes: toggleShowRemainingMinutes
@@ -57,7 +56,7 @@ struct ShuttleRealtimeTabView: View {
 
 #Preview {
     ShuttleRealtimeTabView(
-        arrival: .constant([]),
+        arrival: ShuttleRealtimeObservable(),
         stopID: "shuttle.dormitory_o",
         desinations: [
             "shuttle.destination.station",

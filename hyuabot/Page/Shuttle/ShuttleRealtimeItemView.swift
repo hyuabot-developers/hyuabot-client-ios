@@ -132,7 +132,7 @@ struct ShuttleRealtimeItemView: View {
         if let date = date {
             let hour = Calendar.current.component(.hour, from: date)
             let minute = Calendar.current.component(.minute, from: date)
-            let remaingMinute = (hour - currentHour) * 60 + (minute - currentMinute)
+            let remaingMinute = (hour - currentHour) * 60 + (minute - currentMinute) - 1
             return String(localized: "shuttle.arrival.remaining.time.\(remaingMinute)")
         }
         return ""
@@ -177,7 +177,7 @@ struct ShuttleRealtimeItemView: View {
             if (tag == "DH" || tag == "DY") {
                 return .busRed
             } else if (tag == "DJ") {
-                return .busGreen
+                return .busBlue
             } else if (tag == "C") {
                 return .busBlue
             }
@@ -188,7 +188,7 @@ struct ShuttleRealtimeItemView: View {
             } else if (tag == "C") {
                 return .busBlue
             } else if (tag == "DJ") {
-                return .busGreen
+                return .busBlue
             }
             
         }
