@@ -27,7 +27,7 @@ struct ShuttleRealtimeItemView: View {
                     .foregroundColor(tagToColor(arrival.tag, routeID: arrival.route))
                 Spacer()
                 Text(showRemainingMinutes ? remainingTimeToLocalizedString(arrival.time) : timeToLocalizedString(arrival.time))
-                    .font(.system(size: 18))
+                    .font(.system(size: 18, weight: .regular))
                     .frame(maxHeight: .infinity, alignment: .center)
             }
             .padding(.top, 5)
@@ -68,10 +68,10 @@ struct ShuttleRealtimeItemView: View {
                             Text(stopToLocalizedString(arrival.via[index].stop))
                                 .lineLimit(2)
                                 .multilineTextAlignment(.center)
-                                .font(.system(size: 14))
+                                .font(.system(size: 14, weight: .regular))
                                 .foregroundColor(self.colorScheme == .dark ? .gray : .black)
                             Text(timeToShortLocalizedString(arrival.via[index].time))
-                                .font(.system(size: 12))
+                                .font(.system(size: 12, weight: .regular))
                                 .foregroundColor(self.colorScheme == .dark ? .gray : .black)
                                 .padding(.top, 5)
                         }
