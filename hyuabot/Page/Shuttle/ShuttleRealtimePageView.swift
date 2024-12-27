@@ -18,6 +18,8 @@ class ShuttleRealtimeObservable: ObservableObject {
 
 struct ShuttleRealtimePageView: View {
     @State private var selectedTab = 0
+    @State private var showHelpModal = false
+    @State private var settingHelpModalSize = PresentationDetent.height(600)
     @ObservedObject private var pollingManager = PollingManager<String>(interval: 10.0)
     @ObservedObject private var dormitoryOutArrival = ShuttleRealtimeObservable()
     @ObservedObject private var shuttlecockOutArrival = ShuttleRealtimeObservable()
@@ -45,53 +47,76 @@ struct ShuttleRealtimePageView: View {
                         geoWidth: geo.size.width,
                         selectedTab: $selectedTab
                     )
-                    TabView(
-                        selection: $selectedTab,
-                        content: {
-                            ShuttleRealtimeTabView(
-                                arrival: dormitoryOutArrival,
-                                stopID: self.stops[0],
-                                desinations: [
-                                    "shuttle.destination.station",
-                                    "shuttle.destination.terminal",
-                                    "shuttle.destination.jungang_station"
-                                ]
-                            ).tag(0)
-                            ShuttleRealtimeTabView(
-                                arrival: shuttlecockOutArrival,
-                                stopID: self.stops[1],
-                                desinations: [
-                                    "shuttle.destination.station",
-                                    "shuttle.destination.terminal",
-                                    "shuttle.destination.jungang_station"
-                                ]
-                            ).tag(1)
-                            ShuttleRealtimeTabView(
-                                arrival: stationArrival,
-                                stopID: self.stops[2],
-                                desinations: [
-                                    "shuttle.destination.campus",
-                                    "shuttle.destination.terminal",
-                                    "shuttle.destination.jungang_station"
-                                ]
-                            ).tag(2)
-                            ShuttleRealtimeTabView(
-                                arrival: terminalArrival,
-                                stopID: self.stops[3],
-                                desinations: ["shuttle.destination.campus"]
-                            ).tag(3)
-                            ShuttleRealtimeTabView(
-                                arrival: jungangStationArrival,
-                                stopID: self.stops[4],
-                                desinations: ["shuttle.destination.campus"]
-                            ).tag(4)
-                            ShuttleRealtimeTabView(
-                                arrival: shuttlecockInArrival,
-                                stopID: self.stops[5],
-                                desinations: ["shuttle.destination.campus"]
-                            ).tag(5)
+                    ZStack {
+                        TabView(
+                            selection: $selectedTab,
+                            content: {
+                                ShuttleRealtimeTabView(
+                                    arrival: dormitoryOutArrival,
+                                    stopID: self.stops[0],
+                                    desinations: [
+                                        "shuttle.destination.station",
+                                        "shuttle.destination.terminal",
+                                        "shuttle.destination.jungang_station"
+                                    ]
+                                ).tag(0)
+                                ShuttleRealtimeTabView(
+                                    arrival: shuttlecockOutArrival,
+                                    stopID: self.stops[1],
+                                    desinations: [
+                                        "shuttle.destination.station",
+                                        "shuttle.destination.terminal",
+                                        "shuttle.destination.jungang_station"
+                                    ]
+                                ).tag(1)
+                                ShuttleRealtimeTabView(
+                                    arrival: stationArrival,
+                                    stopID: self.stops[2],
+                                    desinations: [
+                                        "shuttle.destination.campus",
+                                        "shuttle.destination.terminal",
+                                        "shuttle.destination.jungang_station"
+                                    ]
+                                ).tag(2)
+                                ShuttleRealtimeTabView(
+                                    arrival: terminalArrival,
+                                    stopID: self.stops[3],
+                                    desinations: ["shuttle.destination.campus"]
+                                ).tag(3)
+                                ShuttleRealtimeTabView(
+                                    arrival: jungangStationArrival,
+                                    stopID: self.stops[4],
+                                    desinations: ["shuttle.destination.campus"]
+                                ).tag(4)
+                                ShuttleRealtimeTabView(
+                                    arrival: shuttlecockInArrival,
+                                    stopID: self.stops[5],
+                                    desinations: ["shuttle.destination.campus"]
+                                ).tag(5)
+                            }
+                        ).tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                        // Floating Action Button
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    self.showHelpModal = true
+                                }) {
+                                    Image(systemName: "questionmark.circle")
+                                        .resizable()
+                                        .foregroundColor(.white)
+                                        .padding(15)
+                                        .background(Color(.hanyangGreen))
+                                        .cornerRadius(20)
+                                        .shadow(radius: 3)
+                                }
+                                .frame(width: 60, height: 60)
+                                .padding(.trailing, 20)
+                                .padding(.bottom, 20)
+                            }
                         }
-                    ).tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                    }
                 }
             }
         }
@@ -104,6 +129,10 @@ struct ShuttleRealtimePageView: View {
         .refreshable {
             fetchShuttleRealtimeData()
             pollingManager.stop()
+        }
+        .sheet(isPresented: $showHelpModal) {
+            ShuttleRealtimeHelpModalView()
+                .presentationDetents([.height(600)], selection: $settingHelpModalSize)
         }
     }
     
