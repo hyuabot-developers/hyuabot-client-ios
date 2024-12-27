@@ -13,6 +13,7 @@ import GraphQL
 struct ShuttleRealtimeTabView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State var showRemainingMinutes: Bool = true
+    @State private var showStopModal = false
     @ObservedObject var arrival: ShuttleRealtimeObservable
 
     let stopID: String.LocalizationValue
@@ -31,7 +32,9 @@ struct ShuttleRealtimeTabView: View {
                             toggleShowRemainingMinutes: toggleShowRemainingMinutes
                         )
                     }
-                    Button(action: {}) {
+                    Button(action: {
+                        self.showStopModal = true
+                    }) {
                         Text(String(localized: "shuttle.stop.info"))
                             .font(.system(size: 18, weight: .bold, design: .default))
                             .foregroundColor(colorScheme == .dark ? .white : .hanyangPrimary)
@@ -46,6 +49,9 @@ struct ShuttleRealtimeTabView: View {
                     alignment: .topLeading
                 )
             }
+        }.sheet(isPresented: $showStopModal) {
+            ShuttleStopModalView(stopID: stopID)
+                .presentationDetents([.large])
         }
     }
     
