@@ -51,7 +51,7 @@ struct ShuttleRealtimeTabView: View {
             }
         }.sheet(isPresented: $showStopModal) {
             ShuttleStopModalView(stopID: stopID)
-                .presentationDetents([.large])
+                .presentationDetents([.height(700)])
         }
     }
     

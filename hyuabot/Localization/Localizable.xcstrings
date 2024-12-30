@@ -182,6 +182,56 @@
         }
       }
     },
+    "shuttle.first.last.time.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차/막차 정보"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekday.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (평일)"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekend.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (주말)"
+          }
+        }
+      }
+    },
+    "shuttle.first.time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차"
+          }
+        }
+      }
+    },
+    "shuttle.heading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "행선지"
+          }
+        }
+      }
+    },
     "shuttle.help.dialog.content.1" : {
       "localizations" : {
         "ko" : {
@@ -303,6 +353,16 @@
         }
       }
     },
+    "shuttle.last.time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차"
+          }
+        }
+      }
+    },
     "shuttle.realtime" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -352,7 +412,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "정류장 정보"
+            "value" : "정류장 위치/첫.막차"
           }
         }
       }
