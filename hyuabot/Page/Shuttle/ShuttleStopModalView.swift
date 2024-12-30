@@ -221,10 +221,91 @@ struct ShuttleStopModalView: View {
                     ))
                     stopLocation = CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude)
                 }
+                if (stopID == "shuttle.dormitory_o" || stopID == "shuttle.shuttlecock_o") {
+                    let departureList = data.data?.shuttle.timetable.sorted(by: { $0.time < $1.time }) ?? []
+                    let weekdaysStationDepartureList = departureList.filter{ $0.weekdays && ($0.tag == "C" || $0.tag == "DH" || $0.tag == "DJ") }
+                    let weekendsStationDepartureList = departureList.filter { !$0.weekdays && ($0.tag == "C" || $0.tag == "DH" || $0.tag == "DJ") }
+                    let weekdaysTerminalDepartureList = departureList.filter { $0.weekdays && ($0.tag == "C" || $0.tag == "DY") }
+                    let weekendsTerminalDepartureList = departureList.filter { !$0.weekdays && ($0.tag == "C" || $0.tag == "DY") }
+                    let weekdaysJungangStationDepartureList = departureList.filter { $0.weekdays && $0.tag == "DJ" }
+                    let weekendsJungangStationDepartureList = departureList.filter { !$0.weekdays && $0.tag == "DJ" }
+                    if (!weekdaysStationDepartureList.isEmpty) {
+                        stationWeekdayFirstTime = timeToShortLocalizedString(weekdaysStationDepartureList.first!.time)
+                        stationWeekdayLastTime = timeToShortLocalizedString(weekdaysStationDepartureList.last!.time)
+                    }
+                    if (!weekendsStationDepartureList.isEmpty) {
+                        stationWeekendFirstTime = timeToShortLocalizedString(weekendsStationDepartureList.first!.time)
+                        stationWeekendLastTime = timeToShortLocalizedString(weekendsStationDepartureList.last!.time)
+                    }
+                    if (!weekdaysTerminalDepartureList.isEmpty) {
+                        terminalWeekdayFirstTime = timeToShortLocalizedString(weekdaysTerminalDepartureList.first!.time)
+                        terminalWeekdayLastTime = timeToShortLocalizedString(weekdaysTerminalDepartureList.last!.time)
+                    }
+                    if (!weekendsTerminalDepartureList.isEmpty) {
+                        terminalWeekendFirstTime = timeToShortLocalizedString(weekendsTerminalDepartureList.first!.time)
+                        terminalWeekendLastTime = timeToShortLocalizedString(weekendsTerminalDepartureList.last!.time)
+                    }
+                    if (!weekdaysJungangStationDepartureList.isEmpty) {
+                        jungangStationWeekdayFirstTime = timeToShortLocalizedString(weekdaysJungangStationDepartureList.first!.time)
+                        jungangStationWeekdayLastTime = timeToShortLocalizedString(weekdaysJungangStationDepartureList.last!.time)
+                    }
+                    if (!weekendsJungangStationDepartureList.isEmpty) {
+                        jungangStationWeekendFirstTime = timeToShortLocalizedString(weekendsJungangStationDepartureList.first!.time)
+                        jungangStationWeekendLastTime = timeToShortLocalizedString(weekendsJungangStationDepartureList.last!.time)
+                    }
+                } else if (stopID == "shuttle.station") {
+                    let departureList = data.data?.shuttle.timetable.sorted(by: { $0.time < $1.time }) ?? []
+                    let weekdaysDormitoryDepartureList = departureList.filter { $0.weekdays }
+                    let weekendsDormitoryDepartureList = departureList.filter { !$0.weekdays }
+                    let weekdaysTerminalDepartureList = departureList.filter { $0.weekdays && $0.tag == "C" }
+                    let weekendsTerminalDepartureList = departureList.filter { !$0.weekdays && $0.tag == "C" }
+                    let weekdaysJungangStationDepartureList = departureList.filter { $0.weekdays && $0.tag == "DJ" }
+                    let weekendsJungangStationDepartureList = departureList.filter { !$0.weekdays && $0.tag == "DJ" }
+                    if (!weekdaysDormitoryDepartureList.isEmpty) {
+                        campusWeekdayFirstTime = timeToShortLocalizedString(weekdaysDormitoryDepartureList.first!.time)
+                        campusWeekdayLastTime = timeToShortLocalizedString(weekdaysDormitoryDepartureList.last!.time)
+                    }
+                    if (!weekendsDormitoryDepartureList.isEmpty) {
+                        campusWeekendFirstTime = timeToShortLocalizedString(weekendsDormitoryDepartureList.first!.time)
+                        campusWeekendLastTime = timeToShortLocalizedString(weekendsDormitoryDepartureList.last!.time)
+                    }
+                    if (!weekdaysTerminalDepartureList.isEmpty) {
+                        terminalWeekdayFirstTime = timeToShortLocalizedString(weekdaysTerminalDepartureList.first!.time)
+                        terminalWeekdayLastTime = timeToShortLocalizedString(weekdaysTerminalDepartureList.last!.time)
+                    }
+                    if (!weekendsTerminalDepartureList.isEmpty) {
+                        terminalWeekendFirstTime = timeToShortLocalizedString(weekendsTerminalDepartureList.first!.time)
+                        terminalWeekendLastTime = timeToShortLocalizedString(weekendsTerminalDepartureList.last!.time)
+                    }
+                    if (!weekdaysJungangStationDepartureList.isEmpty) {
+                        jungangStationWeekdayFirstTime = timeToShortLocalizedString(weekdaysJungangStationDepartureList.first!.time)
+                        jungangStationWeekdayLastTime = timeToShortLocalizedString(weekdaysJungangStationDepartureList.last!.time)
+                    }
+                    if (!weekendsJungangStationDepartureList.isEmpty) {
+                        jungangStationWeekendFirstTime = timeToShortLocalizedString(weekendsJungangStationDepartureList.first!.time)
+                        jungangStationWeekendLastTime = timeToShortLocalizedString(weekendsJungangStationDepartureList.last!.time)
+                    }
+                } else {
+                    let departureList = data.data?.shuttle.timetable.sorted(by: { $0.time < $1.time }) ?? []
+                    let weekdaysDepartureList = departureList.filter { $0.weekdays }
+                    let weekendsDepartureList = departureList.filter { !$0.weekdays }
+                    if (!weekdaysDepartureList.isEmpty) {
+                        campusWeekdayFirstTime = timeToShortLocalizedString(weekdaysDepartureList.first!.time)
+                        campusWeekdayLastTime = timeToShortLocalizedString(weekdaysDepartureList.last!.time)
+                    }
+                    if (!weekendsDepartureList.isEmpty) {
+                        campusWeekendFirstTime = timeToShortLocalizedString(weekendsDepartureList.first!.time)
+                        campusWeekendLastTime = timeToShortLocalizedString(weekendsDepartureList.last!.time)
+                    }
+                }
                 case .failure(_):
                     print("Error fetching data")
             }
         }
+    }
+    
+    private func timeToShortLocalizedString(_ time: String) -> String {
+        return String(time[..<time.index(time.startIndex, offsetBy: 5)])
     }
 }
 
