@@ -32,6 +32,7 @@ struct ShuttleRealtimeTabView: View {
                             toggleShowRemainingMinutes: toggleShowRemainingMinutes
                         )
                     }
+                    Divider()
                     Button(action: {
                         self.showStopModal = true
                     }) {
@@ -51,7 +52,7 @@ struct ShuttleRealtimeTabView: View {
             }
         }.sheet(isPresented: $showStopModal) {
             ShuttleStopModalView(stopID: stopID)
-                .presentationDetents([.height(700)])
+                .presentationDetents([.large])
         }
     }
     

@@ -62,10 +62,11 @@ struct ShuttleRealtimeSectionView: View {
                 }
             } else {
                 Text("shuttle.arrival.no.data")
-                    .font(.system(size: 18, weight: .bold, design: .default))
+                    .font(.system(size: 16, weight: .bold, design: .default))
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
             }
+            Divider()
             Button(action: {}) {
                 Text(String(localized: "shuttle.entire.timetable"))
                     .font(.system(size: 18, weight: .bold, design: .default))

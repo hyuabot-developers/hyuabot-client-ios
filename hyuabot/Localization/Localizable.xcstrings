@@ -412,7 +412,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "정류장 위치/첫.막차"
+            "value" : "정류장 위치/첫차&막차"
           }
         }
       }
