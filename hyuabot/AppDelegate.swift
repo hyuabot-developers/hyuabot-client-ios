@@ -6,7 +6,10 @@
 //
 
 import UIKit
+import UserNotifications
 import Firebase
+import FirebaseMessaging
+
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,8 +17,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Initialize Firebase SDK
         FirebaseApp.configure()
+        // Initialize Firebase Cloud Messaging
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(
+            options: authOptions,
+            completionHandler: {_, _ in })
+        application.registerForRemoteNotifications()
         return true
     }
 
@@ -32,7 +43,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
+        print("Failed to register for remote notifications with error: \(error)")
+    }
+}
 
+extension AppDelegate: MessagingDelegate {
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        print("Firebase registration token: \(fcmToken ?? "")")
+    }
+}
 
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+            
+        return [.banner, .badge, .sound]
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse) async {
+    }
 }
 

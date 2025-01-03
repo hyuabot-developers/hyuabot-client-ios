@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */,
 				C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +86,7 @@
 			name = hyuabot;
 			packageProductDependencies = (
 				C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */,
+				C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */,
 			);
 			productName = hyuabot;
 			productReference = C7C056EB2D277910007A228B /* hyuabot.app */;
@@ -152,6 +155,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = hyuabot/hyuabot.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9YYP5T2RL4;
@@ -180,6 +184,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = hyuabot/hyuabot.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9YYP5T2RL4;
@@ -361,6 +366,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
