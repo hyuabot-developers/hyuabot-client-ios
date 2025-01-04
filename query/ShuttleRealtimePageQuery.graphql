@@ -1,0 +1,10 @@
+query ShuttleRealtimePageQuery ($shuttleStart: Time!, $shuttleDateTime: DateTime!) {
+    shuttle (start: $shuttleStart, timestamp: $shuttleDateTime) {
+        timetable {
+            tag, route, time, stop, via { stop, time }
+        }
+        stop {
+            name, latitude, longitude
+        }
+    }
+}

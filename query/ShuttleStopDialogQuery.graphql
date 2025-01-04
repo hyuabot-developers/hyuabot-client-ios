@@ -1,0 +1,10 @@
+query ShuttleStopDialogQuery ($shuttleStopID: String!, $shuttleDateTime: DateTime!) {
+    shuttle (stopName: [$shuttleStopID], weekdays: [true, false], timestamp: $shuttleDateTime) {
+        stop {
+            latitude, longitude
+        }
+        timetable {
+            time, tag, weekdays
+        }
+    }
+}

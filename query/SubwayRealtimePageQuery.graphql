@@ -1,0 +1,13 @@
+query SubwayRealtimePageQuery($start: Time!) {
+    subway (id_: ["K449", "K251"], start: $start) {
+        id
+        realtime {
+            up { stop, location, time, trainNo, express, last, status, terminal { id }, updatedAt }
+            down { stop, location, time, trainNo, express, last, status, terminal {id }, updatedAt }
+        }
+        timetable {
+            up { weekdays, time, terminal { id } },
+            down { weekdays, time, terminal { id } }
+        }
+    }
+}

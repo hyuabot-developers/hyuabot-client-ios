@@ -6,6 +6,20 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C70119632D2954670077A1A5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = C70119622D2954670077A1A5 /* SnapKit */; };
+		C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C70CC9D92D2953EC00B7865C /* QueryAPI */; };
+		C715DEF12D29537100B33476 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C715DEF02D29537100B33476 /* QueryAPI */; };
+		C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */; };
+		C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */; };
+		C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB03D2D294AE400BBE940 /* Apollo */; };
+		C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0402D294CDC00BBE940 /* QueryAPI */; };
+		C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0462D294FEB00BBE940 /* RxSwift */; };
+		C7BAB04A2D2951B500BBE940 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0492D2951B500BBE940 /* Then */; };
+		C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0502D29532000BBE940 /* QueryAPI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C7C056EB2D277910007A228B /* hyuabot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hyuabot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +50,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */,
+				C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */,
+				C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */,
+				C715DEF12D29537100B33476 /* QueryAPI in Frameworks */,
+				C7BAB04A2D2951B500BBE940 /* Then in Frameworks */,
+				C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */,
+				C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */,
+				C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */,
+				C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */,
+				C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				C70119632D2954670077A1A5 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +93,7 @@
 				C7C056E72D277910007A228B /* Sources */,
 				C7C056E82D277910007A228B /* Frameworks */,
 				C7C056E92D277910007A228B /* Resources */,
+				C7BAB03B2D28098B00BBE940 /* Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -78,6 +104,17 @@
 			);
 			name = hyuabot;
 			packageProductDependencies = (
+				C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */,
+				C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */,
+				C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */,
+				C7BAB03D2D294AE400BBE940 /* Apollo */,
+				C7BAB0402D294CDC00BBE940 /* QueryAPI */,
+				C7BAB0462D294FEB00BBE940 /* RxSwift */,
+				C7BAB0492D2951B500BBE940 /* Then */,
+				C7BAB0502D29532000BBE940 /* QueryAPI */,
+				C715DEF02D29537100B33476 /* QueryAPI */,
+				C70CC9D92D2953EC00B7865C /* QueryAPI */,
+				C70119622D2954670077A1A5 /* SnapKit */,
 			);
 			productName = hyuabot;
 			productReference = C7C056EB2D277910007A228B /* hyuabot.app */;
@@ -99,14 +136,23 @@
 				};
 			};
 			buildConfigurationList = C7C056E62D277910007A228B /* Build configuration list for PBXProject "hyuabot" */;
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ko,
 			);
 			mainGroup = C7C056E22D277910007A228B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */,
+				C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */,
+				C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */,
+				C70CC9D82D2953EC00B7865C /* XCLocalSwiftPackageReference "queryAPI" */,
+				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
 			projectDirPath = "";
@@ -127,6 +173,32 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		C7BAB03B2D28098B00BBE940 /* Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			name = Crashlytics;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		C7C056E72D277910007A228B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -143,21 +215,24 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = hyuabot/hyuabot.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 9YYP5T2RL4;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = hyuabot/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 4.0.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -171,21 +246,24 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = hyuabot/hyuabot.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 9YYP5T2RL4;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = hyuabot/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 4.0.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -199,6 +277,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -229,6 +308,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -262,6 +342,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -292,6 +373,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -335,6 +417,110 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C70CC9D82D2953EC00B7865C /* XCLocalSwiftPackageReference "queryAPI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = queryAPI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.6.0;
+			};
+		};
+		C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.15.3;
+			};
+		};
+		C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.8.0;
+			};
+		};
+		C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C70119622D2954670077A1A5 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		C70CC9D92D2953EC00B7865C /* QueryAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QueryAPI;
+		};
+		C715DEF02D29537100B33476 /* QueryAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QueryAPI;
+		};
+		C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		C7BAB03D2D294AE400BBE940 /* Apollo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = Apollo;
+		};
+		C7BAB0402D294CDC00BBE940 /* QueryAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QueryAPI;
+		};
+		C7BAB0462D294FEB00BBE940 /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+		C7BAB0492D2951B500BBE940 /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
+		};
+		C7BAB0502D29532000BBE940 /* QueryAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QueryAPI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C7C056E32D277910007A228B /* Project object */;
 }
