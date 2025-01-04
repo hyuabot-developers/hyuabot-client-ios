@@ -3,11 +3,11 @@
 
 @_exported import ApolloAPI
 
-public class ShuttlePeriodQuery: GraphQLQuery {
-  public static let operationName: String = "ShuttlePeriodQuery"
+public class ShuttleTimetablePeriodQuery: GraphQLQuery {
+  public static let operationName: String = "ShuttleTimetablePeriodQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttlePeriodQuery { shuttle(periodCurrent: true) { __typename period { __typename type } } }"#
+      #"query ShuttleTimetablePeriodQuery { shuttle(periodCurrent: true) { __typename period { __typename type } } }"#
     ))
 
   public init() {}

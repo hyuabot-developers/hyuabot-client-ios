@@ -1,4 +1,4 @@
-query ShuttlePeriodQuery {
+query ShuttleTimetablePeriodQuery {
     shuttle (periodCurrent: true) {
         period {
             type
