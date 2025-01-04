@@ -1,0 +1,8 @@
+query ContactPageQuery {
+    contact {
+        version
+        data {
+            id, name, phone, campusID
+        }
+    }
+}

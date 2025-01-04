@@ -1,0 +1,9 @@
+query BusTimetablePageQuery($routeID: Int!, $stopID: Int!) {
+    bus (id_: [$stopID], routeId: $routeID, weekdays: ["weekdays", "saturday", "sunday"]) {
+        routes {
+            timetable {
+                weekdays, time
+            }
+        }
+    }
+}

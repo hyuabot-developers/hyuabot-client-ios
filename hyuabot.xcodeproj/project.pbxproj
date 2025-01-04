@@ -10,6 +10,8 @@
 		C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */; };
 		C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */; };
+		C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB03D2D294AE400BBE940 /* Apollo */; };
+		C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0402D294CDC00BBE940 /* QueryAPI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */,
+				C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */,
+				C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */,
 				C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */,
 				C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 			);
@@ -91,6 +95,8 @@
 				C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */,
 				C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */,
+				C7BAB03D2D294AE400BBE940 /* Apollo */,
+				C7BAB0402D294CDC00BBE940 /* QueryAPI */,
 			);
 			productName = hyuabot;
 			productReference = C7C056EB2D277910007A228B /* hyuabot.app */;
@@ -122,6 +128,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */,
+				C7BAB03F2D294CDC00BBE940 /* XCLocalSwiftPackageReference "queryAPI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
@@ -386,6 +394,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C7BAB03F2D294CDC00BBE940 /* XCLocalSwiftPackageReference "queryAPI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = queryAPI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -393,6 +408,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 11.6.0;
+			};
+		};
+		C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.15.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -412,6 +435,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCrashlytics;
+		};
+		C7BAB03D2D294AE400BBE940 /* Apollo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = Apollo;
+		};
+		C7BAB0402D294CDC00BBE940 /* QueryAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QueryAPI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,0 +1,16 @@
+query BusRealtimePageQuery($busStart: Time!) {
+    bus (
+        id_: [216000138, 216000759, 216000381, 216000117, 216000379, 216000383, 216000070, 216000719],
+        start: $busStart,
+    ) {
+        id,
+        name,
+        latitude,
+        longitude,
+        routes {
+            info { id, name },
+            realtime { sequence, stop, time, seat, lowFloor, updatedAt },
+            timetable { weekdays, time }
+        }
+    }
+}
