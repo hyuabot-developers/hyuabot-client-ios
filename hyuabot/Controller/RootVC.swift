@@ -16,8 +16,8 @@ class RootVC: UITabBarController {
         let contactNC = ContactNC()
         let calendarNC = CalendarNC()
         let settingNC = SettingNC()
-        let chatVC = SFSafariViewController(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
-        let donateVC = SFSafariViewController(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
+        let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
+        let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
         // TabBar
         shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus.fill"), tag: 0)
         busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker.fill"), tag: 1)
