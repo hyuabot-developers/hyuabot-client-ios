@@ -1,0 +1,116 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "tabbar.bus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버스"
+          }
+        }
+      }
+    },
+    "tabbar.cafeteria" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학식"
+          }
+        }
+      }
+    },
+    "tabbar.calendar" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사력"
+          }
+        }
+      }
+    },
+    "tabbar.chat" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "문의하기"
+          }
+        }
+      }
+    },
+    "tabbar.contact" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전화부"
+          }
+        }
+      }
+    },
+    "tabbar.donate" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기부하기"
+          }
+        }
+      }
+    },
+    "tabbar.map" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스 지도"
+          }
+        }
+      }
+    },
+    "tabbar.readingroom" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "열람실"
+          }
+        }
+      }
+    },
+    "tabbar.setting" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
+      }
+    },
+    "tabbar.shuttle" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스"
+          }
+        }
+      }
+    },
+    "tabbar.subway" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전철"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
