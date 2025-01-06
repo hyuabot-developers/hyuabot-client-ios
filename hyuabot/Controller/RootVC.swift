@@ -30,7 +30,14 @@ class RootVC: UITabBarController {
         settingNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.setting"), image: UIImage(systemName: "gear"), tag: 8)
         chatVC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.chat"), image: UIImage(systemName: "message.fill"), tag: 9)
         donateVC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.donate"), image: UIImage(systemName: "heart.fill"), tag: 10)
-        
+        // More NavigationController Appearance
+        let moreTitleAppearance = UINavigationBar.appearance(whenContainedInInstancesOf: [type(of: self.moreNavigationController)])
+        moreTitleAppearance.titleTextAttributes = [NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .bold)]
+        let moreEditButtonAppearance = UIBarButtonItem.appearance(whenContainedInInstancesOf: [type(of: self.moreNavigationController)])
+        moreEditButtonAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .regular)], for: .normal)
+        if let moreTableVC = self.moreNavigationController.topViewController?.view as? UITableView {
+            moreTableVC.visibleCells.forEach { $0.textLabel?.font = UIFont.godo(size: 14, weight: .regular) }
+        }
         self.setViewControllers([shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC], animated: true)
     }
 }
