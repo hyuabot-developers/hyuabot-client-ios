@@ -27,6 +27,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             options: authOptions,
             completionHandler: {_, _ in })
         application.registerForRemoteNotifications()
+        // Global tab bar appearance
+        let tabBarAppearance = UITabBarItem.appearance()
+        tabBarAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 10, weight: .regular)], for: .normal)
         return true
     }
 
