@@ -3,21 +3,21 @@ import SafariServices
 import Then
 
 class RootVC: UITabBarController {
+    // NavigationController for each Tab
+    let shuttleNC = ShuttleNC()
+    let busNC = BusNC()
+    let subwayNC = SubwayNC()
+    let cafeteriaNC = CafeteriaNC()
+    let mapNC = MapNC()
+    let readingRoomNC = ReadingRoomNC()
+    let contactNC = ContactNC()
+    let calendarNC = CalendarNC()
+    let settingNC = SettingNC()
+    let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
+    let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // NavigationController for each Tab
-        let shuttleNC = ShuttleNC()
-        let busNC = BusNC()
-        let subwayNC = SubwayNC()
-        let cafeteriaNC = CafeteriaNC()
-        let mapNC = MapNC()
-        let readingRoomNC = ReadingRoomNC()
-        let contactNC = ContactNC()
-        let calendarNC = CalendarNC()
-        let settingNC = SettingNC()
-        let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
-        let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
         // TabBar
         shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus.fill"), tag: 0)
         busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker.fill"), tag: 1)
@@ -35,9 +35,45 @@ class RootVC: UITabBarController {
         moreTitleAppearance.titleTextAttributes = [NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .bold)]
         let moreEditButtonAppearance = UIBarButtonItem.appearance(whenContainedInInstancesOf: [type(of: self.moreNavigationController)])
         moreEditButtonAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .regular)], for: .normal)
-        if let moreTableVC = self.moreNavigationController.topViewController?.view as? UITableView {
-            moreTableVC.visibleCells.forEach { $0.textLabel?.font = UIFont.godo(size: 14, weight: .regular) }
+        if let moreTableView = self.moreNavigationController.viewControllers.first?.view as? UITableView {
+            moreTableView.delegate = self
         }
         self.setViewControllers([shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC], animated: true)
+    }
+}
+
+extension RootVC: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.textLabel?.font = UIFont.godo(size: 16, weight: .regular)
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)
+        switch cell?.textLabel?.text {
+        case String(localized: "tabbar.shuttle"):
+            self.selectedViewController = shuttleNC
+        case String(localized: "tabbar.bus"):
+            self.selectedViewController = busNC
+        case String(localized: "tabbar.subway"):
+            self.selectedViewController = subwayNC
+        case String(localized: "tabbar.cafeteria"):
+            self.selectedViewController = cafeteriaNC
+        case String(localized: "tabbar.map"):
+            self.selectedViewController = mapNC
+        case String(localized: "tabbar.readingroom"):
+            self.selectedViewController = readingRoomNC
+        case String(localized: "tabbar.contact"):
+            self.selectedViewController = contactNC
+        case String(localized: "tabbar.calendar"):
+            self.selectedViewController = calendarNC
+        case String(localized: "tabbar.setting"):
+            self.selectedViewController = settingNC
+        case String(localized: "tabbar.chat"):
+            self.selectedViewController = chatVC
+        case String(localized: "tabbar.donate"):
+            self.selectedViewController = donateVC
+        default:
+            break
+        }
     }
 }
