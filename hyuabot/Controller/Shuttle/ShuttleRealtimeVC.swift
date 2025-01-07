@@ -4,11 +4,33 @@ import QueryAPI
 
 class ShuttleRealtimeVC: UIViewController {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
-    private let disposeBag = DisposeBag()
     private var subscription: Disposable?
+    private lazy var viewPager: ViewPager = {
+        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0))
+        // Add the content pages to the view pager
+        viewPager.contentView.pages = [
+            ShuttleRealtimeTabVC(stopID: .dormiotryOut).view,
+            ShuttleRealtimeTabVC(stopID: .shuttlecockOut).view,
+            ShuttleRealtimeTabVC(stopID: .station).view,
+            ShuttleRealtimeTabVC(stopID: .terminal).view,
+            ShuttleRealtimeTabVC(stopID: .jungangStation).view,
+            ShuttleRealtimeTabVC(stopID: .shuttlecockIn).view
+        ]
+        // Add the tab titles to the view pager
+        viewPager.tabView.tabs = [
+            TabItem(title: String(localized: "shuttle.stop.dormitory.out")),
+            TabItem(title: String(localized: "shuttle.stop.shuttlecock.out")),
+            TabItem(title: String(localized: "shuttle.stop.station")),
+            TabItem(title: String(localized: "shuttle.stop.terminal")),
+            TabItem(title: String(localized: "shuttle.stop.jungang.station")),
+            TabItem(title: String(localized: "shuttle.stop.shuttlecock.in"))
+        ]
+        return viewPager
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.setupUI()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -28,7 +50,17 @@ class ShuttleRealtimeVC: UIViewController {
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
     
-    func startPolling() {
+    private func setupUI() {
+        self.view.addSubview(viewPager)
+        self.view.backgroundColor = .hanyangBlue
+        self.viewPager.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            make.bottom.equalTo(self.view.snp.bottom)
+        }
+    }
+    
+    private func startPolling() {
         fetchShuttleRealtimeData()
         subscription = Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance)
             .subscribe(onNext: { _ in
@@ -36,11 +68,11 @@ class ShuttleRealtimeVC: UIViewController {
             })
     }
     
-    func stopPolling() {
+    private func stopPolling() {
         subscription?.dispose()
     }
     
-    func fetchShuttleRealtimeData() {
+    private func fetchShuttleRealtimeData() {
         let now = Date.now
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let dateTimeFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd HH:mm" }

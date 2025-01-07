@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "shuttle.stop.dormitory.out" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.stop.jungang.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
+    "shuttle.stop.shuttlecock.in" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕 건너편"
+          }
+        }
+      }
+    },
+    "shuttle.stop.shuttlecock.out" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕"
+          }
+        }
+      }
+    },
+    "shuttle.stop.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞"
+          }
+        }
+      }
+    },
+    "shuttle.stop.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인"
+          }
+        }
+      }
+    },
     "tabbar.bus" : {
       "localizations" : {
         "ko" : {

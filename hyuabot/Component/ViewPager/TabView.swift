@@ -24,7 +24,7 @@ class TabView: UIView {
     weak var delegate: TabViewDelegate?
     private var selectedIndex = 0
     private let sizeConfiguration: TabSizeConfiguration
-    private var tabs: [TabItemProtocol] {
+    var tabs: [TabItemProtocol] {
         didSet {
             self.collectionView.reloadData()
             self.tabs[selectedIndex].onSelected()
