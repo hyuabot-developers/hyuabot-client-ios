@@ -3,7 +3,7 @@ import UIKit
 class TabItem: UIView, TabItemProtocol {
     private let title: String
     private lazy var titleLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .medium)
+        $0.font = .godo(size: 18, weight: .medium)
         $0.text = title
         $0.textColor = .white
         $0.textAlignment = .center
@@ -34,7 +34,7 @@ class TabItem: UIView, TabItemProtocol {
     }
     
     func onDeselected() {
-        self.titleLabel.font = .godo(size: 16, weight: .medium)
+        self.titleLabel.font = .godo(size: 18, weight: .medium)
         self.layer.shadowOpacity = 0
         self.indicatorView.removeFromSuperview()
     }

@@ -6,6 +6,7 @@ class ShuttleNC: UINavigationController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        self.view.backgroundColor = .hanyangBlue
         self.setNavigationBarHidden(true, animated: false)
     }
     

@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "shuttle.desination.dormitory" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스 방면"
+          }
+        }
+      }
+    },
+    "shuttle.desination.jungang_station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역 방면"
+          }
+        }
+      }
+    },
+    "shuttle.desination.subway" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞 방면"
+          }
+        }
+      }
+    },
+    "shuttle.desination.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인 방면"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 예정인 셔틀버스가 없습니다."
+          }
+        }
+      }
+    },
+    "shuttle.show.entire.timetable" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 보기"
+          }
+        }
+      }
+    },
     "shuttle.stop.dormitory.out" : {
       "localizations" : {
         "ko" : {
@@ -57,6 +117,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "예술인"
+          }
+        }
+      }
+    },
+    "shuttle.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분 출발"
+          }
+        }
+      }
+    },
+    "shuttle.type.circular" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "순환"
+          }
+        }
+      }
+    },
+    "shuttle.type.direct" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행"
+          }
+        }
+      }
+    },
+    "shuttle.type.dormitory" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.type.jungang_station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
+    "shuttle.type.shuttlecock" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕"
           }
         }
       }
