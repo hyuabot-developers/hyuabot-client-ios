@@ -7,6 +7,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let shuttleRealtimeSection: [String.LocalizationValue]
     private let refreshMethod: () -> Void
+    private let showEntireTimetable: (ShuttleStopEnum, Int) -> Void
     private lazy var shuttleRealtimeTableView: UITableView = {
         let tableView = UITableView().then{
             $0.delegate = self
@@ -23,7 +24,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         return tableView
     }()
     
-    required init(stopID: ShuttleStopEnum, refreshMethod: @escaping () -> Void) {
+    required init(stopID: ShuttleStopEnum, refreshMethod: @escaping () -> Void, showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void) {
         self.stopID = stopID
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
             self.shuttleRealtimeSection = ["shuttle.desination.subway", "shuttle.desination.terminal", "shuttle.desination.jungang_station"]
@@ -33,6 +34,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             self.shuttleRealtimeSection = ["shuttle.desination.dormitory"]
         }
         self.refreshMethod = refreshMethod
+        self.showEntireTimetable = showEntireTimetable
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -75,7 +77,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView else { return UIView() }
-        footerView.setupUI(stopID: "", destination: "")
+        footerView.setupUI(stopID: self.stopID, section: section, showEntireTimetable: showEntireTimetable)
         return footerView
     }
     

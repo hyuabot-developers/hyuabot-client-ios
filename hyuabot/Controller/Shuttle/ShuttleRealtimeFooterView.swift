@@ -2,8 +2,9 @@ import UIKit
 
 class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "ShuttleRealtimeFooterView"
-    private var stopID: String?
-    private var destination: String?
+    private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
+    private var stopID: ShuttleStopEnum?
+    private var section: Int?
     private let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "shuttle.show.entire.timetable"))
@@ -20,12 +21,19 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupUI(stopID: String, destination: String) {
+    func setupUI(stopID: ShuttleStopEnum, section: Int, showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void) {
         self.stopID = stopID
-        self.destination = destination
+        self.section = section
+        self.showEntireTimetable = showEntireTimetable
         self.contentView.addSubview(showEntireTimeTableButton)
+        self.showEntireTimeTableButton.addTarget(self, action: #selector(showEntireTimeTable), for: .touchUpInside)
         self.showEntireTimeTableButton.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+    }
+    
+    @objc func showEntireTimeTable() {
+        guard let stopID = self.stopID, let section = self.section else { return }
+        self.showEntireTimetable?(stopID, section)
     }
 }

@@ -5,12 +5,12 @@ import QueryAPI
 class ShuttleRealtimeVC: UIViewController {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
-    private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(stopID: .dormiotryOut, refreshMethod: fetchShuttleRealtimeData)
-    private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockOut, refreshMethod: fetchShuttleRealtimeData)
-    private lazy var stationTabVC = ShuttleRealtimeTabVC(stopID: .station, refreshMethod: fetchShuttleRealtimeData)
-    private lazy var terminalTabVC = ShuttleRealtimeTabVC(stopID: .terminal, refreshMethod: fetchShuttleRealtimeData)
-    private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(stopID: .jungangStation, refreshMethod: fetchShuttleRealtimeData)
-    private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockIn, refreshMethod: fetchShuttleRealtimeData)
+    private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(stopID: .dormiotryOut, refreshMethod: fetchShuttleRealtimeData, showEntireTimetable: moveToEntireTimetable)
+    private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockOut, refreshMethod: fetchShuttleRealtimeData, showEntireTimetable: moveToEntireTimetable)
+    private lazy var stationTabVC = ShuttleRealtimeTabVC(stopID: .station, refreshMethod: fetchShuttleRealtimeData, showEntireTimetable: moveToEntireTimetable)
+    private lazy var terminalTabVC = ShuttleRealtimeTabVC(stopID: .terminal, refreshMethod: fetchShuttleRealtimeData, showEntireTimetable: moveToEntireTimetable)
+    private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(stopID: .jungangStation, refreshMethod: fetchShuttleRealtimeData, showEntireTimetable: moveToEntireTimetable)
+    private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockIn, refreshMethod: fetchShuttleRealtimeData, showEntireTimetable: moveToEntireTimetable)
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0))
@@ -114,6 +114,11 @@ class ShuttleRealtimeVC: UIViewController {
         }
     }
     
+    private func moveToEntireTimetable(_ stop: ShuttleStopEnum, _ section: Int) {
+        guard let nc = self.navigationController as? ShuttleNC else { return }
+        nc.moveToTimetableVC(stop: stop, section: section)
+    }
+
     private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Bool {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
