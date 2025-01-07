@@ -131,6 +131,16 @@
         }
       }
     },
+    "shuttle.time.remaining.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld분 후 출발"
+          }
+        }
+      }
+    },
     "shuttle.type.circular" : {
       "localizations" : {
         "ko" : {

@@ -1,18 +1,24 @@
 import UIKit
 import QueryAPI
+import RxSwift
 
 class ShuttleRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleRealtimeCellView"
+    private let disposeBag = DisposeBag()
     private let shuttleTypeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
     private let shuttleTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
+    private let shuttleRemainingTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+    }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.setupUI()
+        self.observeSubjects()
     }
     
     required init?(coder: NSCoder) {
@@ -22,12 +28,19 @@ class ShuttleRealtimeCellView: UITableViewCell {
     func setupUI() {
         self.contentView.addSubview(self.shuttleTypeLabel)
         self.contentView.addSubview(self.shuttleTimeLabel)
+        self.contentView.addSubview(self.shuttleRemainingTimeLabel)
+        self.selectionStyle = .none
+        self.contentView.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(longTouch)))
         self.shuttleTypeLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
         }
         self.shuttleTimeLabel.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.centerY.equalToSuperview()
+        }
+        self.shuttleRemainingTimeLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
@@ -90,6 +103,25 @@ class ShuttleRealtimeCellView: UITableViewCell {
         let departureTime = dateFormatter.date(from: item.time)
         let hour = calendar.component(.hour, from: departureTime!)
         let minute = calendar.component(.minute, from: departureTime!)
+        let second = calendar.component(.second, from: departureTime!)
         self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(hour).\(minute)")
+        let remainingTime = (hour * 3600 + minute * 60 + second) - (calendar.component(.hour, from: Date.now) * 3600 + calendar.component(.minute, from: Date.now) * 60 + calendar.component(.second, from: Date.now)) // in seconds
+        self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.\(remainingTime / 60)")
+    }
+    
+    @objc func longTouch(_ recognizer: UILongPressGestureRecognizer) {
+        if (recognizer.state == .began) {
+            ShuttleRealtimeData.shared.showRemainingTime.onNext(true)
+        } else if (recognizer.state == .ended) {
+            ShuttleRealtimeData.shared.showRemainingTime.onNext(false)
+        }
+    }
+        
+    
+    func observeSubjects() {
+        ShuttleRealtimeData.shared.showRemainingTime.subscribe(onNext: { [weak self] showRemainingTime in
+            self?.shuttleTimeLabel.isHidden = !showRemainingTime
+            self?.shuttleRemainingTimeLabel.isHidden = showRemainingTime
+        }).disposed(by: self.disposeBag)
     }
 }

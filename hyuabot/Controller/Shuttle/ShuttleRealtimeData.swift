@@ -18,4 +18,6 @@ class ShuttleRealtimeData {
     let shuttleTerminalToCampusData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
     let shuttleJungangStationToCampusData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
     let shuttleShuttlecockToDormitoryData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
+    // Show Remaining Time
+    let showRemainingTime = BehaviorSubject<Bool>(value: false)
 }
