@@ -5,12 +5,12 @@ import QueryAPI
 class ShuttleRealtimeVC: UIViewController {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
-    private let dormitoryOutTabVC = ShuttleRealtimeTabVC(stopID: .dormiotryOut)
-    private let shuttlecockOutTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockOut)
-    private let stationTabVC = ShuttleRealtimeTabVC(stopID: .station)
-    private let terminalTabVC = ShuttleRealtimeTabVC(stopID: .terminal)
-    private let jungangStationTabVC = ShuttleRealtimeTabVC(stopID: .jungangStation)
-    private let shuttlecockInTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockIn)
+    private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(stopID: .dormiotryOut, refreshMethod: fetchShuttleRealtimeData)
+    private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockOut, refreshMethod: fetchShuttleRealtimeData)
+    private lazy var stationTabVC = ShuttleRealtimeTabVC(stopID: .station, refreshMethod: fetchShuttleRealtimeData)
+    private lazy var terminalTabVC = ShuttleRealtimeTabVC(stopID: .terminal, refreshMethod: fetchShuttleRealtimeData)
+    private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(stopID: .jungangStation, refreshMethod: fetchShuttleRealtimeData)
+    private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(stopID: .shuttlecockIn, refreshMethod: fetchShuttleRealtimeData)
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0))
@@ -115,7 +115,6 @@ class ShuttleRealtimeVC: UIViewController {
     }
     
     private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Bool {
-        let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
         let now = Date.now

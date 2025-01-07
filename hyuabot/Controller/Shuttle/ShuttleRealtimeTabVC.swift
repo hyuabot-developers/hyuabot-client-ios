@@ -4,12 +4,16 @@ import RxSwift
 class ShuttleRealtimeTabVC: UIViewController {
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
+    private let refreshControl = UIRefreshControl()
     private let shuttleRealtimeSection: [String.LocalizationValue]
+    private let refreshMethod: () -> Void
     private lazy var shuttleRealtimeTableView: UITableView = {
         let tableView = UITableView().then{
             $0.delegate = self
             $0.dataSource = self
             $0.sectionHeaderTopPadding = 0
+            $0.refreshControl = refreshControl
+            $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
             // Register the view
             $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
             $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
@@ -19,7 +23,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         return tableView
     }()
     
-    required init(stopID: ShuttleStopEnum) {
+    required init(stopID: ShuttleStopEnum, refreshMethod: @escaping () -> Void) {
         self.stopID = stopID
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
             self.shuttleRealtimeSection = ["shuttle.desination.subway", "shuttle.desination.terminal", "shuttle.desination.jungang_station"]
@@ -28,6 +32,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         } else {
             self.shuttleRealtimeSection = ["shuttle.desination.dormitory"]
         }
+        self.refreshMethod = refreshMethod
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -49,6 +54,11 @@ class ShuttleRealtimeTabVC: UIViewController {
     
     func reload() {
         self.shuttleRealtimeTableView.reloadData()
+        self.refreshControl.endRefreshing()
+    }
+
+    @objc private func refreshTableView(_ sender: UIRefreshControl) {
+        self.refreshMethod()
     }
 }
 
