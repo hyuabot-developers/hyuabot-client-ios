@@ -47,6 +47,16 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVC: openShuttleViaVC,
         showStopVC: openShuttleStopVC
     )
+    private lazy var helpButton = UIButton().then {
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = .hanyangGreen
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "questionmark.circle")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
+        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        $0.configuration = config
+        $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
+    }
+
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0))
@@ -96,10 +106,16 @@ class ShuttleRealtimeVC: UIViewController {
     
     private func setupUI() {
         self.view.addSubview(viewPager)
+        self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        }
+        self.helpButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
+            make.width.height.equalTo(50)
         }
     }
     
@@ -179,5 +195,14 @@ class ShuttleRealtimeVC: UIViewController {
         let now = Date.now
         let nowString = dateFormatter.string(from: now)
         return nowString < item.time
+    }
+        
+    @objc private func openHelpVC() {
+        let vc = ShuttleHelpVC()
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
     }
 }

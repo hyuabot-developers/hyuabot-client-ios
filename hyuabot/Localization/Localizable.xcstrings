@@ -41,6 +41,16 @@
         }
       }
     },
+    "shuttle.help" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 도움말"
+          }
+        }
+      }
+    },
     "shuttle.realtime.empty" : {
       "localizations" : {
         "ko" : {
