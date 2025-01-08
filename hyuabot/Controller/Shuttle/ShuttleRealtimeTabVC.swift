@@ -1,5 +1,6 @@
 import UIKit
 import RxSwift
+import QueryAPI
 
 class ShuttleRealtimeTabVC: UIViewController {
     let stopID: ShuttleStopEnum
@@ -8,6 +9,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let shuttleRealtimeSection: [String.LocalizationValue]
     private let refreshMethod: () -> Void
     private let showEntireTimetable: (ShuttleStopEnum, Int) -> Void
+    private let showViaVC: (ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Void
     private lazy var shuttleRealtimeTableView: UITableView = {
         let tableView = UITableView().then{
             $0.delegate = self
@@ -24,7 +26,12 @@ class ShuttleRealtimeTabVC: UIViewController {
         return tableView
     }()
     
-    required init(stopID: ShuttleStopEnum, refreshMethod: @escaping () -> Void, showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void) {
+    required init(
+        stopID: ShuttleStopEnum,
+        refreshMethod: @escaping () -> Void,
+        showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void,
+        showViaVC: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Timetable
+    ) -> Void) {
         self.stopID = stopID
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
             self.shuttleRealtimeSection = ["shuttle.desination.subway", "shuttle.desination.terminal", "shuttle.desination.jungang_station"]
@@ -35,6 +42,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
         self.refreshMethod = refreshMethod
         self.showEntireTimetable = showEntireTimetable
+        self.showViaVC = showViaVC
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -229,5 +237,11 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 50
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView else { return }
+        guard let item = cell.item else { return }
+        self.showViaVC(item)
     }
 }

@@ -51,6 +51,16 @@
         }
       }
     },
+    "shuttle.shorten.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분"
+          }
+        }
+      }
+    },
     "shuttle.show.entire.timetable" : {
       "localizations" : {
         "ko" : {
@@ -187,6 +197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "셔틀콕"
+          }
+        }
+      }
+    },
+    "shuttle.via.stop" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 차량별 시간표"
           }
         }
       }

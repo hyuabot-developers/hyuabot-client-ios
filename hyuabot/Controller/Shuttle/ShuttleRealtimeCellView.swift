@@ -14,6 +14,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
     private let shuttleRemainingTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
+    var item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -93,6 +94,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
             }
         }
+        self.item = item
         self.setUITimeLabel(item: item)
     }
     
