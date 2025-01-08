@@ -10,6 +10,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let refreshMethod: () -> Void
     private let showEntireTimetable: (ShuttleStopEnum, Int) -> Void
     private let showViaVC: (ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Void
+    private let showStopVC: (ShuttleStopEnum) -> Void
+    private lazy var tableFooterView = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     private lazy var shuttleRealtimeTableView: UITableView = {
         let tableView = UITableView().then{
             $0.delegate = self
@@ -17,6 +19,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.sectionHeaderTopPadding = 0
             $0.refreshControl = refreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
+            $0.tableFooterView = self.tableFooterView
             // Register the view
             $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
             $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
@@ -30,8 +33,9 @@ class ShuttleRealtimeTabVC: UIViewController {
         stopID: ShuttleStopEnum,
         refreshMethod: @escaping () -> Void,
         showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void,
-        showViaVC: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Timetable
-    ) -> Void) {
+        showViaVC: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Void,
+        showStopVC: @escaping (ShuttleStopEnum) -> Void
+    ) {
         self.stopID = stopID
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
             self.shuttleRealtimeSection = ["shuttle.desination.subway", "shuttle.desination.terminal", "shuttle.desination.jungang_station"]
@@ -43,6 +47,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.refreshMethod = refreshMethod
         self.showEntireTimetable = showEntireTimetable
         self.showViaVC = showViaVC
+        self.showStopVC = showStopVC
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -65,6 +70,10 @@ class ShuttleRealtimeTabVC: UIViewController {
     func reload() {
         self.shuttleRealtimeTableView.reloadData()
         self.refreshControl.endRefreshing()
+    }
+    
+    private func showStopModal(_ stop: ShuttleStopEnum) {
+        self.showStopVC(stop)
     }
 
     @objc private func refreshTableView(_ sender: UIRefreshControl) {

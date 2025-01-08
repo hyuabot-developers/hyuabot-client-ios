@@ -71,6 +71,16 @@
         }
       }
     },
+    "shuttle.show.stop.modal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정류장 위치 & 첫차/막차"
+          }
+        }
+      }
+    },
     "shuttle.stop.dormitory.out" : {
       "localizations" : {
         "ko" : {

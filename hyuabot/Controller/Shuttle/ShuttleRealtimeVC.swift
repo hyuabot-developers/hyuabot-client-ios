@@ -9,37 +9,43 @@ class ShuttleRealtimeVC: UIViewController {
         stopID: .dormiotryOut,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC
+        showViaVC: openShuttleViaVC,
+        showStopVC: openShuttleStopVC
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC
+        showViaVC: openShuttleViaVC,
+        showStopVC: openShuttleStopVC
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC
+        showViaVC: openShuttleViaVC,
+        showStopVC: openShuttleStopVC
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC
+        showViaVC: openShuttleViaVC,
+        showStopVC: openShuttleStopVC
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC
+        showViaVC: openShuttleViaVC,
+        showStopVC: openShuttleStopVC
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC
+        showViaVC: openShuttleViaVC,
+        showStopVC: openShuttleStopVC
     )
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
@@ -153,6 +159,15 @@ class ShuttleRealtimeVC: UIViewController {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
+    
+    private func openShuttleStopVC(_ stop: ShuttleStopEnum) {
+        let vc = ShuttleStopInfoVC(stop: stop)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
