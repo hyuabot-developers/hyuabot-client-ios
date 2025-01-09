@@ -20,6 +20,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.refreshControl = refreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
             $0.tableFooterView = self.tableFooterView
+            $0.showsVerticalScrollIndicator = false
             // Register the view
             $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
             $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)

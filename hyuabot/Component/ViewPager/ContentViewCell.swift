@@ -15,7 +15,7 @@ class ContentViewCell: UICollectionViewCell {
     private func setupUI() {
         guard let content = self.content else { return }
         self.contentView.addSubview(content)
-        self.contentView.snp.makeConstraints { make in
+        content.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
