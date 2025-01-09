@@ -81,11 +81,14 @@ class ShuttleRealtimeCellView: UITableViewCell {
                     self.shuttleTypeLabel.textColor = .hanyangGreen
                 } else if item.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                    self.shuttleTypeLabel.textColor = .busBlue
                 }
             } else if indexPath.section == 1 {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                self.shuttleTypeLabel.textColor = .busBlue
             } else if indexPath.section == 2 {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
+                self.shuttleTypeLabel.textColor = .hanyangGreen
             }
         } else if (stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn) {
             if (item.route.hasSuffix("S")) {
