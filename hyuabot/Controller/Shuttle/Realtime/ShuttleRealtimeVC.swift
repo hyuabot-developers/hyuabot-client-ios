@@ -241,6 +241,10 @@ extension ShuttleRealtimeVC: CLLocationManagerDelegate {
             distances.append(currentLocation.distance(from: location))
         }
         let position = distances.firstIndex(of: distances.min()!)
+        self.showToastMessage(
+            image: UIImage(systemName: "checkmark.circle.fill"),
+            message: String(localized: "toast.success.shuttle.realtime.location.\(self.viewPager.tabView.tabs[position!].title)" )
+        )
         self.viewPager.tabView.moveToTab(index: position!)
         self.viewPager.contentView.moveToPage(index: position!)
         self.locationManager.stopUpdatingLocation()

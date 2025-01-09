@@ -450,6 +450,16 @@
           }
         }
       }
+    },
+    "toast.success.shuttle.realtime.location.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가장 가까운 정류장은 %@입니다."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

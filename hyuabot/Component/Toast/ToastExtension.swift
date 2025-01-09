@@ -6,7 +6,7 @@ extension UIViewController {
         self.view.addSubview(toastView)
         toastView.configure(image: image, message: message)
         UIView.animate(
-            withDuration: 2.5,
+            withDuration: 3.0,
             delay: 0.0,
             options: [.curveEaseIn, .beginFromCurrentState],
             animations: {

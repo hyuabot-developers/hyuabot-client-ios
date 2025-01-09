@@ -24,7 +24,7 @@ class TabView: UIView {
     weak var delegate: TabViewDelegate?
     private var selectedIndex = 0
     private let sizeConfiguration: TabSizeConfiguration
-    var tabs: [TabItemProtocol] {
+    var tabs: [TabItem] {
         didSet {
             self.collectionView.reloadData()
             self.tabs[selectedIndex].onSelected()
@@ -48,7 +48,7 @@ class TabView: UIView {
     }()
     
     // MARK: - Initializers
-    init(sizeConfiguration: TabSizeConfiguration, tabs: [TabItemProtocol] = []) {
+    init(sizeConfiguration: TabSizeConfiguration, tabs: [TabItem] = []) {
         self.sizeConfiguration = sizeConfiguration
         self.tabs = tabs
         super.init(frame: .zero)

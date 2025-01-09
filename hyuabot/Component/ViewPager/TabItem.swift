@@ -1,7 +1,7 @@
 import UIKit
 
 class TabItem: UIView, TabItemProtocol {
-    private let title: String
+    let title: String
     private lazy var titleLabel = UILabel().then {
         $0.font = .godo(size: 18, weight: .medium)
         $0.text = title
