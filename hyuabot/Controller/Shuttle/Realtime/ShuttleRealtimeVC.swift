@@ -1,10 +1,20 @@
 import UIKit
+import CoreLocation
 import RxSwift
 import QueryAPI
 
 class ShuttleRealtimeVC: UIViewController {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
+    private let locationManager = CLLocationManager()
+    private let stopLocation = [
+        CLLocation(latitude: 37.29339607529377, longitude: 126.83630604103446),
+        CLLocation(latitude:37.29875417910844, longitude: 126.83784054072336),
+        CLLocation(latitude:37.309700971618255, longitude: 126.85207173389148),
+        CLLocation(latitude:37.319338173415936, longitude: 126.8455263115596),
+        CLLocation(latitude:37.31487247528457, longitude: 126.83963540399434),
+        CLLocation(latitude:37.29869328231496, longitude: 126.8377767466817),
+    ]
     private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(
         stopID: .dormiotryOut,
         refreshMethod: fetchShuttleRealtimeData,
@@ -84,6 +94,7 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.findClosetStop()
         self.observeSubjects()
     }
     
@@ -196,6 +207,21 @@ class ShuttleRealtimeVC: UIViewController {
         let nowString = dateFormatter.string(from: now)
         return nowString < item.time
     }
+    
+    private func findClosetStop() {
+        self.locationManager.do {
+            $0.delegate = self
+            $0.desiredAccuracy = kCLLocationAccuracyBest
+            $0.requestWhenInUseAuthorization()
+        }
+        DispatchQueue.global().async {
+            if (CLLocationManager.locationServicesEnabled()) {
+                self.locationManager.startUpdatingLocation()
+            } else {
+                self.showToastMessage(image: UIImage(systemName: "exclamationmark.triangle.fill"), message: String(localized: "toast.error.shuttle.realtime.location"))
+            }
+        }
+    }
         
     @objc private func openHelpVC() {
         let vc = ShuttleHelpVC()
@@ -204,5 +230,23 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
+    }
+}
+
+extension ShuttleRealtimeVC: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let currentLocation = locations.first else { return }
+        var distances = [CLLocationDistance]()
+        for location in stopLocation {
+            distances.append(currentLocation.distance(from: location))
+        }
+        let position = distances.firstIndex(of: distances.min()!)
+        self.viewPager.tabView.moveToTab(index: position!)
+        self.viewPager.contentView.moveToPage(index: position!)
+        self.locationManager.stopUpdatingLocation()
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        self.showToastMessage(image: UIImage(systemName: "exclamationmark.triangle.fill"), message: String(localized: "toast.error.shuttle.realtime.location"))
     }
 }

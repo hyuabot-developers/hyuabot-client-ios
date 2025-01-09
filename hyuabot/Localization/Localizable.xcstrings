@@ -440,6 +440,16 @@
           }
         }
       }
+    },
+    "toast.error.shuttle.realtime.location" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치를 확인할 수 없어 가까운 정류장을 알 수 없습니다."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
