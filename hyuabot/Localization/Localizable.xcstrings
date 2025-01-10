@@ -91,12 +91,32 @@
         }
       }
     },
+    "shuttle.first.last.weekdays.format.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (평일)"
+          }
+        }
+      }
+    },
     "shuttle.first.last.weekdays.na" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "—:— (평일)"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekends.format.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (주말)"
           }
         }
       }

@@ -6,6 +6,7 @@ import QueryAPI
 class ShuttleStopInfoVC: UIViewController {
     private let stop: ShuttleStopEnum
     private let stopInfo: BehaviorSubject<ShuttleStopDialogQuery.Data.Shuttle.Stop?> = BehaviorSubject(value: nil)
+    private let timetable: BehaviorSubject<[ShuttleStopDialogQuery.Data.Shuttle.Timetable]> = BehaviorSubject(value: [])
     private let disposeBag = DisposeBag()
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
@@ -349,6 +350,7 @@ class ShuttleStopInfoVC: UIViewController {
         )) { result in
             if case .success(let response) = result {
                 self.stopInfo.onNext(response.data?.shuttle.stop.first)
+                self.timetable.onNext(response.data?.shuttle.timetable.sorted(by: { $0.time < $1.time }) ?? [])
             }
         }
     }
@@ -369,6 +371,85 @@ class ShuttleStopInfoVC: UIViewController {
                     heading: 0
                 )
             }
+        }).disposed(by: self.disposeBag)
+        self.timetable.subscribe(onNext: { timetableItems in
+            if (self.stop == .dormiotryOut || self.stop == .shuttlecockOut) {
+                let stationWeekdayItems = timetableItems.filter({ $0.weekdays && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") })
+                let stationWeekendItems = timetableItems.filter({ !$0.weekdays && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") })
+                let terminalWeekdayItems = timetableItems.filter({ $0.weekdays && ($0.tag == "DY" || $0.tag == "C") })
+                let terminalWeekendItems = timetableItems.filter({ !$0.weekdays && ($0.tag == "DY" || $0.tag == "C") })
+                let jungangStationWeekdayItems = timetableItems.filter({ $0.weekdays && $0.tag == "DJ" })
+                let jungangStationWeekendItems = timetableItems.filter({ !$0.weekdays && $0.tag == "DJ" })
+                if (!stationWeekdayItems.isEmpty) {
+                    self.stationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(stationWeekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.stationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(stationWeekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!stationWeekendItems.isEmpty) {
+                    self.stationWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(stationWeekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.stationWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(stationWeekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!terminalWeekdayItems.isEmpty) {
+                    self.terminalWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.terminalWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!terminalWeekendItems.isEmpty) {
+                    self.terminalWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.terminalWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!jungangStationWeekdayItems.isEmpty) {
+                    self.jungangStationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.jungangStationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!jungangStationWeekendItems.isEmpty) {
+                    self.jungangStationWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.jungangStationWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+            }
+            else if (self.stop == .station) {
+                let campusWeekdayItems = timetableItems.filter({ $0.weekdays })
+                let campusWeekendItems = timetableItems.filter({ !$0.weekdays })
+                let terminalWeekdayItems = timetableItems.filter({ $0.weekdays && $0.tag == "C" })
+                let terminalWeekendItems = timetableItems.filter({ !$0.weekdays && $0.tag == "C" })
+                let jungangStationWeekdayItems = timetableItems.filter({ $0.weekdays && $0.tag == "DJ" })
+                let jungangStationWeekendItems = timetableItems.filter({ !$0.weekdays && $0.tag == "DJ" })
+                if (!campusWeekdayItems.isEmpty) {
+                    self.campusWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(campusWeekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.campusWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(campusWeekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!campusWeekendItems.isEmpty) {
+                    self.campusWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(campusWeekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.campusWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(campusWeekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!terminalWeekdayItems.isEmpty) {
+                    self.terminalWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.terminalWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!terminalWeekendItems.isEmpty) {
+                    self.terminalWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.terminalWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!jungangStationWeekdayItems.isEmpty) {
+                    self.jungangStationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.jungangStationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!jungangStationWeekendItems.isEmpty) {
+                    self.jungangStationWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.jungangStationWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+            }
+            else {
+                let weekdayItems = timetableItems.filter({ $0.weekdays })
+                let weekendItems = timetableItems.filter({ !$0.weekdays })
+                if (!weekdayItems.isEmpty) {
+                    self.campusWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(weekdayItems.first!.time.substring(from: 0, to: 4))")
+                    self.campusWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(weekdayItems.last!.time.substring(from: 0, to: 4))")
+                }
+                if (!weekendItems.isEmpty) {
+                    self.campusWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(weekendItems.first!.time.substring(from: 0, to: 4))")
+                    self.campusWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(weekendItems.last!.time.substring(from: 0, to: 4))")
+                }
+            }
+                
         }).disposed(by: self.disposeBag)
     }
 }
