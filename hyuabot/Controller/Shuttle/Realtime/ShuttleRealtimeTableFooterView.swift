@@ -14,7 +14,7 @@ class ShuttleRealtimeTableFooterView: UIView {
     init(parentView: UIView, stopID: ShuttleStopEnum, showStopModal: @escaping (_ stop: ShuttleStopEnum) -> Void) {
         self.showStopModal = showStopModal
         self.stopID = stopID
-        super.init(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: 50))
+        super.init(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: 90))
         self.setupUI()
     }
     
@@ -26,7 +26,8 @@ class ShuttleRealtimeTableFooterView: UIView {
         self.addSubview(showStopModalButton)
         self.showStopModalButton.addTarget(self, action: #selector(showStopModalButtonTapped), for: .touchUpInside)
         self.showStopModalButton.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(40)
         }
     }
     

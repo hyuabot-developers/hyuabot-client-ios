@@ -13,14 +13,242 @@ class ShuttleStopInfoVC: UIViewController {
         $0.backgroundColor = .hanyangBlue
         $0.textAlignment = .center
     }
-    
     private let stopMapView = MKMapView().then {
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
-        $0.showsUserLocation = true
         $0.isPitchEnabled = false
     }
-
+    private let firstLastTitleLabel = UILabel().then {
+        $0.font = .godo(size: 18, weight: .bold)
+        $0.text = String(localized: "shuttle.stop.first.last")
+        $0.backgroundColor = .hanyangBlue
+        $0.textColor = .white
+        $0.textAlignment = .center
+    }
+    private lazy var firstLastTimeHeaderStackView: UIStackView = {
+        let destinationHeaderLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.destination")
+            $0.textAlignment = .center
+        }
+        let firstTimeHeaderLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.first.time")
+            $0.textAlignment = .center
+        }
+        let lastTimeHeaderLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.last.time")
+            $0.textAlignment = .center
+        }
+        let stackView = UIStackView(arrangedSubviews: [destinationHeaderLabel, firstTimeHeaderLabel, lastTimeHeaderLabel]).then {
+            $0.axis = .horizontal
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 0
+        }
+        return stackView
+    }()
+    private let stationWeekdaysFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let stationWeekdaysLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let stationWeekendsFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private let stationWeekendsLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private lazy var stationFirstLastTimeStackView: UIStackView = {
+        let destinationLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.destination.shorten.station")
+            $0.textAlignment = .center
+        }
+        let firstStackView = UIStackView(arrangedSubviews: [self.stationWeekdaysFirstTimeLabel, self.stationWeekendsFirstTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let lastStackView = UIStackView(arrangedSubviews: [self.stationWeekdaysLastTimeLabel, self.stationWeekendsLastTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+            $0.axis = .horizontal
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 0
+        }
+        return stackView
+    }()
+    private let campusWeekdaysFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let campusWeekdaysLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let campusWeekendsFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private let campusWeekendsLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private lazy var campusFirstLastTimeStackView: UIStackView = {
+        let destinationLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.destination.shorten.campus")
+            $0.textAlignment = .center
+        }
+        let firstStackView = UIStackView(arrangedSubviews: [self.campusWeekdaysFirstTimeLabel, self.campusWeekendsFirstTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let lastStackView = UIStackView(arrangedSubviews: [self.campusWeekdaysLastTimeLabel, self.campusWeekendsLastTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+            $0.axis = .horizontal
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 0
+        }
+        return stackView
+    }()
+    private let terminalWeekdaysFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let terminalWeekdaysLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let terminalWeekendsFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private let terminalWeekendsLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private lazy var terminalFirstLastTimeStackView: UIStackView = {
+        let destinationLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.destination.shorten.terminal")
+            $0.textAlignment = .center
+        }
+        let firstStackView = UIStackView(arrangedSubviews: [self.terminalWeekdaysFirstTimeLabel, self.terminalWeekendsFirstTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let lastStackView = UIStackView(arrangedSubviews: [self.terminalWeekdaysLastTimeLabel, self.terminalWeekendsLastTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+            $0.axis = .horizontal
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 0
+        }
+        return stackView
+    }()
+    private let jungangStationWeekdaysFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let jungangStationWeekdaysLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekdays.na")
+    }
+    private let jungangStationWeekendsFirstTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private let jungangStationWeekendsLastTimeLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textAlignment = .center
+        $0.text = String(localized: "shuttle.first.last.weekends.na")
+    }
+    private lazy var jungangStationFirstLastTimeStackView: UIStackView = {
+        let destinationLabel = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.destination.shorten.jungang_station")
+            $0.textAlignment = .center
+        }
+        let firstStackView = UIStackView(arrangedSubviews: [self.jungangStationWeekdaysFirstTimeLabel, self.jungangStationWeekendsFirstTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let lastStackView = UIStackView(arrangedSubviews: [self.jungangStationWeekdaysLastTimeLabel, self.jungangStationWeekendsLastTimeLabel]).then {
+            $0.axis = .vertical
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 15
+        }
+        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+            $0.axis = .horizontal
+            $0.distribution = .fillEqually
+            $0.alignment = .fill
+            $0.spacing = 0
+        }
+        return stackView
+    }()
+    private lazy var firstLastTimeStackView = UIStackView().then {
+        $0.addArrangedSubview(self.firstLastTimeHeaderStackView)
+        $0.addArrangedSubview(self.stationFirstLastTimeStackView)
+        $0.addArrangedSubview(self.campusFirstLastTimeStackView)
+        $0.addArrangedSubview(self.terminalFirstLastTimeStackView)
+        $0.addArrangedSubview(self.jungangStationFirstLastTimeStackView)
+        $0.axis = .vertical
+        $0.spacing = 10
+        $0.setCustomSpacing(25, after: self.stationFirstLastTimeStackView)
+        $0.setCustomSpacing(25, after: self.campusFirstLastTimeStackView)
+        $0.setCustomSpacing(25, after: self.terminalFirstLastTimeStackView)
+    }
+    private lazy var firstLastTimeView = UIView().then {
+        $0.addSubview(self.firstLastTimeStackView)
+        $0.backgroundColor = .systemBackground
+    }
     init(stop: ShuttleStopEnum) {
         self.stop = stop
         super.init(nibName: nil, bundle: nil)
@@ -41,19 +269,33 @@ class ShuttleStopInfoVC: UIViewController {
         self.view.backgroundColor = .hanyangBlue
         self.view.addSubview(self.titleLabel)
         self.view.addSubview(self.stopMapView)
+        self.view.addSubview(self.firstLastTitleLabel)
+        self.view.addSubview(self.firstLastTimeView)
         self.stopMapView.delegate = self
         if self.stop == .dormiotryOut {
             self.titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            self.campusFirstLastTimeStackView.isHidden = true
         } else if self.stop == .shuttlecockOut {
             self.titleLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+            self.campusFirstLastTimeStackView.isHidden = true
         } else if self.stop == .station {
             self.titleLabel.text = String(localized: "shuttle.stop.station")
+            self.stationFirstLastTimeStackView.isHidden = true
         } else if self.stop == .terminal {
             self.titleLabel.text = String(localized: "shuttle.stop.terminal")
+            self.stationFirstLastTimeStackView.isHidden = true
+            self.terminalFirstLastTimeStackView.isHidden = true
+            self.jungangStationFirstLastTimeStackView.isHidden = true
         } else if self.stop == .jungangStation {
             self.titleLabel.text = String(localized: "shuttle.stop.jungang.station")
+            self.stationFirstLastTimeStackView.isHidden = true
+            self.terminalFirstLastTimeStackView.isHidden = true
+            self.jungangStationFirstLastTimeStackView.isHidden = true
         } else if self.stop == .shuttlecockIn {
             self.titleLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+            self.stationFirstLastTimeStackView.isHidden = true
+            self.terminalFirstLastTimeStackView.isHidden = true
+            self.jungangStationFirstLastTimeStackView.isHidden = true
         } else {
             self.titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
@@ -66,6 +308,21 @@ class ShuttleStopInfoVC: UIViewController {
             make.height.equalTo(300)
             make.top.equalTo(self.titleLabel.snp.bottom)
             make.leading.trailing.equalToSuperview()
+        }
+        self.firstLastTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(self.stopMapView.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(50)
+        }
+        self.firstLastTimeStackView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+        }
+        self.firstLastTimeHeaderStackView.snp.makeConstraints { make in
+            make.height.equalTo(40)
+        }
+        self.firstLastTimeView.snp.makeConstraints { make in
+            make.top.equalTo(self.firstLastTitleLabel.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
         }
     }
     

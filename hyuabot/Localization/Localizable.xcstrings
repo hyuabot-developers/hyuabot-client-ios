@@ -41,6 +41,86 @@
         }
       }
     },
+    "shuttle.destination" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목적지"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.campus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.jungang_station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekdays.na" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (평일)"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekends.na" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (주말)"
+          }
+        }
+      }
+    },
+    "shuttle.first.time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차"
+          }
+        }
+      }
+    },
     "shuttle.help" : {
       "localizations" : {
         "ko" : {
@@ -151,6 +231,16 @@
         }
       }
     },
+    "shuttle.last.time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차"
+          }
+        }
+      }
+    },
     "shuttle.realtime.empty" : {
       "localizations" : {
         "ko" : {
@@ -197,6 +287,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.stop.first.last" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차 & 막차"
           }
         }
       }
