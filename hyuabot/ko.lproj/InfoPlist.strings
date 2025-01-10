@@ -1,1 +1,2 @@
 "CFBundleDisplayName" = "휴아봇";
+"NSLocationWhenInUseUsageDescription" = "주변 셔틀 정류장을 찾기 위해 위치 권한을 요청합니다.";

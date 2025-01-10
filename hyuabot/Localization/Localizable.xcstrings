@@ -1,6 +1,456 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "shuttle.desination.dormitory" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스 방면"
+          }
+        }
+      }
+    },
+    "shuttle.desination.jungang_station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역 방면"
+          }
+        }
+      }
+    },
+    "shuttle.desination.subway" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞 방면"
+          }
+        }
+      }
+    },
+    "shuttle.desination.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인 방면"
+          }
+        }
+      }
+    },
+    "shuttle.destination" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목적지"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.campus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.jungang_station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞"
+          }
+        }
+      }
+    },
+    "shuttle.destination.shorten.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekdays.format.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (평일)"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekdays.na" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (평일)"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekends.format.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (주말)"
+          }
+        }
+      }
+    },
+    "shuttle.first.last.weekends.na" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (주말)"
+          }
+        }
+      }
+    },
+    "shuttle.first.time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차"
+          }
+        }
+      }
+    },
+    "shuttle.help" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 도움말"
+          }
+        }
+      }
+    },
+    "shuttle.help.content1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 분실물을 찾으려면 셔틀버스 사무실(031–400–4412)로 전화하거나 행복관 뒤 교육동 1층에 있는 사무실에 방문해주세요."
+          }
+        }
+      }
+    },
+    "shuttle.help.content2" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 시간표 미준수로 인한 불편사항은 총무인사팀(031–400–4406)로 전화해주세요."
+          }
+        }
+      }
+    },
+    "shuttle.help.content3" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 정류장 위치 및 첫차 막차 시간은 정류장별 화면 하단의 정류장 정보 버튼을 눌러 셔틀버스 도착 정보 화면에서 확인할 수 있습니다."
+          }
+        }
+      }
+    },
+    "shuttle.help.content4" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타고자 하는 셔틀버스 정보를 클릭해보세요! 해당 버스가 어디를 경유하는지 확인할 수 있습니다."
+          }
+        }
+      }
+    },
+    "shuttle.help.content5" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타고자 하는 셔틀버스 정보를 길게 클릭해보세요! 해당 버스의 출발 시간을 확인할 수 있습니다."
+          }
+        }
+      }
+    },
+    "shuttle.help.title1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. 셔틀버스 분실물 찾기"
+          }
+        }
+      }
+    },
+    "shuttle.help.title2" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. 셔틀버스 시간표 미준수"
+          }
+        }
+      }
+    },
+    "shuttle.help.title3" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. 셔틀버스 정류장 위치 및 첫차 막차 시간"
+          }
+        }
+      }
+    },
+    "shuttle.help.title4" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. 셔틀버스 경유지 정보 확인"
+          }
+        }
+      }
+    },
+    "shuttle.help.title5" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5. 셔틀버스 출발 시간 확인"
+          }
+        }
+      }
+    },
+    "shuttle.last.time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 예정인 셔틀버스가 없습니다."
+          }
+        }
+      }
+    },
+    "shuttle.shorten.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분"
+          }
+        }
+      }
+    },
+    "shuttle.show.entire.timetable" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 보기"
+          }
+        }
+      }
+    },
+    "shuttle.show.stop.modal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정류장 위치 & 첫차/막차"
+          }
+        }
+      }
+    },
+    "shuttle.stop.dormitory.out" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.stop.first.last" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차 & 막차"
+          }
+        }
+      }
+    },
+    "shuttle.stop.jungang.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
+    "shuttle.stop.shuttlecock.in" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕 건너편"
+          }
+        }
+      }
+    },
+    "shuttle.stop.shuttlecock.out" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕"
+          }
+        }
+      }
+    },
+    "shuttle.stop.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞"
+          }
+        }
+      }
+    },
+    "shuttle.stop.terminal" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예술인"
+          }
+        }
+      }
+    },
+    "shuttle.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분 출발"
+          }
+        }
+      }
+    },
+    "shuttle.time.remaining.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld분 후 출발"
+          }
+        }
+      }
+    },
+    "shuttle.type.circular" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "순환"
+          }
+        }
+      }
+    },
+    "shuttle.type.direct" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행"
+          }
+        }
+      }
+    },
+    "shuttle.type.dormitory" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
+          }
+        }
+      }
+    },
+    "shuttle.type.jungang_station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙역"
+          }
+        }
+      }
+    },
+    "shuttle.type.shuttlecock" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕"
+          }
+        }
+      }
+    },
+    "shuttle.via.stop" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 차량별 시간표"
+          }
+        }
+      }
+    },
     "tabbar.bus" : {
       "localizations" : {
         "ko" : {
@@ -107,6 +557,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전철"
+          }
+        }
+      }
+    },
+    "toast.error.shuttle.realtime.location" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치를 확인할 수 없어 가까운 정류장을 알 수 없습니다."
+          }
+        }
+      }
+    },
+    "toast.success.shuttle.realtime.location.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가장 가까운 정류장은 %@입니다."
           }
         }
       }

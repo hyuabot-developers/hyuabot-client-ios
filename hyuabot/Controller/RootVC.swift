@@ -39,6 +39,8 @@ class RootVC: UITabBarController {
             moreTableView.delegate = self
         }
         self.setViewControllers([shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC], animated: true)
+        // Appearance
+        UITabBar.appearance().backgroundColor = .systemBackground
     }
 }
 
