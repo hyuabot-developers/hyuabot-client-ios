@@ -391,6 +391,26 @@
         }
       }
     },
+    "shuttle.timetable.filter" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀 시간표 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.route" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "경로 검색"
+          }
+        }
+      }
+    },
     "shuttle.timetable.weekdays" : {
       "localizations" : {
         "ko" : {

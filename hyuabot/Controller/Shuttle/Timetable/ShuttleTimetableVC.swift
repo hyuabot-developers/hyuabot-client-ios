@@ -5,7 +5,6 @@ class ShuttleTimetableVC: UIViewController {
     private let stopID: String.LocalizationValue
     private let destination: String.LocalizationValue
     private let disposeBag = DisposeBag()
-    private let options = BehaviorSubject<ShuttleTimetableOptions?>(value: nil)
     private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true)
     private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false)
     private lazy var viewPager: ViewPager = {
@@ -49,7 +48,7 @@ class ShuttleTimetableVC: UIViewController {
         super.viewDidLoad()
         self.setupUI()
         self.observeSubjects()
-        self.options.onNext(ShuttleTimetableOptions(
+        ShuttleTimetableData.shared.options.onNext(ShuttleTimetableOptions(
             start: self.stopID,
             end: self.destination,
             date: Date.now,
@@ -74,7 +73,7 @@ class ShuttleTimetableVC: UIViewController {
     }
     
     private func observeSubjects() {
-        self.options.subscribe(onNext: { options in
+        ShuttleTimetableData.shared.options.subscribe(onNext: { options in
             guard let options = options else { return }
             self.navigationItem.title = "\(String(localized: options.start)) → \(String(localized: options.end))"
         }).disposed(by: disposeBag)
