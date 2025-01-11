@@ -17,40 +17,76 @@ class ShuttleNC: UINavigationController {
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {
         let vc = if (stop == .dormiotryOut) {
             if (section == 0) {
-                ShuttleTimetableVC(stopID: "dormitory_o", tags: ["DH", "DJ", "C"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.dormitory.out",
+                    destination: "shuttle.destination.shorten.station"
+                )
             } else if (section == 1) {
-                ShuttleTimetableVC(stopID: "dormitory_o", tags: ["DY", "C"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.dormitory.out",
+                    destination: "shuttle.destination.shorten.terminal"
+                )
             } else if (section == 2) {
-                ShuttleTimetableVC(stopID: "dormitory_o", tags: ["DJ"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.dormitory.out",
+                    destination: "shuttle.destination.shorten.jungang_station"
+                )
             } else {
                 fatalError("Invalid section")
             }
         } else if (stop == .shuttlecockOut) {
             if (section == 0) {
-                ShuttleTimetableVC(stopID: "shuttlecock_o", tags: ["DH", "DJ", "C"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.shuttlecock.out",
+                    destination: "shuttle.destination.shorten.station"
+                )
             } else if (section == 1) {
-                ShuttleTimetableVC(stopID: "shuttlecock_o", tags: ["DY", "C"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.shuttlecock.out",
+                    destination: "shuttle.destination.shorten.terminal"
+                )
             } else if (section == 2) {
-                ShuttleTimetableVC(stopID: "shuttlecock_o", tags: ["DJ"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.shuttlecock.out",
+                    destination: "shuttle.destination.shorten.jungang_station"
+                )
             } else {
                 fatalError("Invalid section")
             }
         } else if (stop == .station) {
             if (section == 0) {
-                ShuttleTimetableVC(stopID: "station", tags: ["DH", "DJ", "C"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.station",
+                    destination: "shuttle.destination.shorten.campus"
+                )
             } else if (section == 1) {
-                ShuttleTimetableVC(stopID: "station", tags: ["C"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.station",
+                    destination: "shuttle.destination.shorten.terminal"
+                )
             } else if (section == 2) {
-                ShuttleTimetableVC(stopID: "station", tags: ["DJ"])
+                ShuttleTimetableVC(
+                    stopID: "shuttle.stop.station",
+                    destination: "shuttle.destination.shorten.jungang_station"
+                )
             } else {
                 fatalError("Invalid section")
             }
         } else if (stop == .terminal) {
-            ShuttleTimetableVC(stopID: "terminal", tags: ["DY", "C"])
+            ShuttleTimetableVC(
+                stopID: "shuttle.stop.terminal",
+                destination: "shuttle.destination.shorten.campus"
+            )
         } else if (stop == .jungangStation) {
-            ShuttleTimetableVC(stopID: "jungang_station", tags: ["DJ"])
+            ShuttleTimetableVC(
+                stopID: "shuttle.stop.jungang.station",
+                destination: "shuttle.destination.shorten.campus"
+            )
         } else if (stop == .shuttlecockIn) {
-            ShuttleTimetableVC(stopID: "shuttlecock_i", tags: ["DH", "DJ", "DY", "C"])
+            ShuttleTimetableVC(
+                stopID: "shuttle.stop.shuttlecock.in",
+                destination: "shuttle.destination.shorten.campus"
+            )
         } else {
             fatalError("Invalid stop")
         }
