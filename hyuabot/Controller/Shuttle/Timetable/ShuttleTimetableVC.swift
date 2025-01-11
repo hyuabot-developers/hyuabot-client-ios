@@ -3,6 +3,17 @@ import UIKit
 class ShuttleTimetableVC: UIViewController {
     private let stopID: String
     private let tags: [String]
+    private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true)
+    private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false)
+    private lazy var viewPager: ViewPager = {
+        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0))
+        viewPager.tabView.tabs = [
+            TabItem(title: String(localized: "shuttle.timetable.weekdays")),
+            TabItem(title: String(localized: "shuttle.timetable.weekends"))
+        ]
+        viewPager.contentView.pages = [weekdaysVC.view, weekendsVC.view]
+        return viewPager
+    }()
     
     init(stopID: String, tags: [String]) {
         self.stopID = stopID
@@ -28,6 +39,12 @@ class ShuttleTimetableVC: UIViewController {
     }
     
     private func setupUI() {
-        self.view.backgroundColor = .systemBackground
+        self.view.backgroundColor = .hanyangBlue
+        self.view.addSubview(viewPager)
+        self.viewPager.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        }
     }
 }
