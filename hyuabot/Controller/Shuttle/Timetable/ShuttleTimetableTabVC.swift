@@ -40,6 +40,29 @@ class ShuttleTimetableTabVC: UIViewController {
     
     func reload() {
         self.shuttleTimetableTableView.reloadData()
+        if (self.isWeekdays) {
+            guard let items = try? ShuttleTimetableData.shared.weekdays.value() else { return }
+            let scrollIndex = items.firstIndex { item in
+                let now = Date.now
+                let dateFormatter = DateFormatter().then {
+                    $0.dateFormat = "HH:mm:ss"
+                }
+                let nowString = dateFormatter.string(from: now)
+                return nowString < item.time
+            } ?? 0
+            self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: true)
+        } else {
+            guard let items = try? ShuttleTimetableData.shared.weekends.value() else { return }
+            let scrollIndex = items.firstIndex { item in
+                let now = Date.now
+                let dateFormatter = DateFormatter().then {
+                    $0.dateFormat = "HH:mm:ss"
+                }
+                let nowString = dateFormatter.string(from: now)
+                return nowString < item.time
+            } ?? 0
+            self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: true)
+        }
     }
 }
 

@@ -97,7 +97,11 @@ class ShuttleTimetableCellView: UITableViewCell {
         let departureTime = dateFormatter.date(from: item.time)
         let hour = calendar.component(.hour, from: departureTime!)
         let minute = calendar.component(.minute, from: departureTime!)
-        let second = calendar.component(.second, from: departureTime!)
+        if dateFormatter.string(from: Date.now) > item.time {
+            self.shuttleTimeLabel.textColor = .gray
+        } else {
+            self.shuttleTimeLabel.textColor = .label
+        }
         self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(hour).\(minute)")
     }
 }
