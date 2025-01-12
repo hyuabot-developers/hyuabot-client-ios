@@ -82,7 +82,9 @@ class ShuttleTimetableVC: UIViewController {
     @objc private func openFilterVC() {
         let vc = ShuttleTimetableFilterVC()
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.large()]
+            sheet.detents = [.custom(resolver: { _ in
+                return 800
+            })]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)

@@ -79,6 +79,28 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.menu = menu
         $0.showsMenuAsPrimaryAction = true
     }
+    private let datePicker: UIDatePicker = UIDatePicker().then {
+        $0.datePickerMode = .date
+        $0.preferredDatePickerStyle = .compact
+        $0.locale = Locale(identifier: "ko_KR")
+    }
+    private lazy var datePickerStackView: UIStackView = UIStackView().then {
+        let dateFilterTitle = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.timetable.filter.date")
+        }
+        $0.addArrangedSubview(dateFilterTitle)
+        $0.addArrangedSubview(datePicker)
+        $0.axis = .horizontal
+    }
+    private lazy var okButton: UIButton = UIButton().then {
+        var conf = UIButton.Configuration.plain()
+        var title = AttributedString.init(String(localized: "shuttle.timetable.filter.ok"))
+        title.font = .godo(size: 18, weight: .bold)
+        conf.attributedTitle = title
+        $0.configuration = conf
+        $0.addTarget(self, action: #selector(okButtonTapped), for: .touchUpInside)
+    }
     private lazy var contentView = UIStackView().then {
         let routeFilterTitle = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
@@ -99,7 +121,9 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.addArrangedSubview(routeSearchStackView)
         $0.addArrangedSubview(periodFilterTitle)
         $0.addArrangedSubview(periodButton)
+        $0.addArrangedSubview(datePickerStackView)
         $0.addArrangedSubview(UIView())
+        $0.addArrangedSubview(okButton)
     }
     private var selectedStartStop: String.LocalizationValue? = nil
     private var selectedEndStop: String.LocalizationValue? = nil
@@ -141,7 +165,9 @@ class ShuttleTimetableFilterVC: UIViewController {
             } else {
                 self.selectPeriod("shuttle.period.custom")
             }
-                
+            if options.date != nil {
+                self.datePicker.date = options.date!
+            }
         }).disposed(by: disposeBag)
     }
     
@@ -227,9 +253,14 @@ class ShuttleTimetableFilterVC: UIViewController {
         self.setPeriodTitle(period)
         self.selectedPeriod = period
         if (period == "shuttle.period.custom") {
-            
+            self.datePicker.isEnabled = true
         } else {
-            
+            self.datePicker.isEnabled = false
         }
+    }
+    
+    @objc private func okButtonTapped() {
+        print(self.selectedStartStop, self.selectedEndStop, self.selectedPeriod, self.datePicker.date)
+        self.dismiss(animated: true, completion: nil)
     }
 }

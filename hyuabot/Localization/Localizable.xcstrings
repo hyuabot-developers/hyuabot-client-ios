@@ -441,6 +441,26 @@
         }
       }
     },
+    "shuttle.timetable.filter.date" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.ok" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조건 검색"
+          }
+        }
+      }
+    },
     "shuttle.timetable.filter.period" : {
       "localizations" : {
         "ko" : {
