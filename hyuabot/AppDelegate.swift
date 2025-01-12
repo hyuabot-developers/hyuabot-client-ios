@@ -33,15 +33,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .bold),
                 NSAttributedString.Key.foregroundColor: UIColor.white
             ]
-            $0.backButtonAppearance.normal.titleTextAttributes = [
-                NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .regular),
-                NSAttributedString.Key.foregroundColor: UIColor.white
-            ]
             $0.backgroundColor = .hanyangBlue
         }
         UINavigationBar.appearance().standardAppearance = navigationBarAppearance
-        UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
-        UINavigationBar.appearance().compactAppearance = navigationBarAppearance
         UIBarButtonItem.appearance().tintColor = .white
         return true
     }

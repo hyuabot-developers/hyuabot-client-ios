@@ -7,13 +7,8 @@ class ShuttleNC: UINavigationController {
     
     override func viewWillAppear(_ animated: Bool) {
         self.view.backgroundColor = .hanyangBlue
-        self.setNavigationBarHidden(true, animated: false)
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        self.setNavigationBarHidden(false, animated: false)
-    }
-    
+
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {
         let vc = if (stop == .dormiotryOut) {
             if (section == 0) {
