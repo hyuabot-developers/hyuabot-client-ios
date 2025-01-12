@@ -261,6 +261,46 @@
         }
       }
     },
+    "shuttle.period.custom" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 검색"
+          }
+        }
+      }
+    },
+    "shuttle.period.semester" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학기 중"
+          }
+        }
+      }
+    },
+    "shuttle.period.vacation" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "방학 중"
+          }
+        }
+      }
+    },
+    "shuttle.period.vacation_session" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계절 학기"
+          }
+        }
+      }
+    },
     "shuttle.realtime.empty" : {
       "localizations" : {
         "ko" : {
@@ -387,6 +427,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld분 후 출발"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "운행 예정인 셔틀버스가 없습니다."
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀 시간표 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.date" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.ok" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조건 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.period" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기간 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.route" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "경로 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.weekdays" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평일"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.weekends" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말"
           }
         }
       }

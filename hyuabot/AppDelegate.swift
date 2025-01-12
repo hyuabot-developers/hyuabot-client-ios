@@ -27,6 +27,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Global tab bar appearance
         let tabBarAppearance = UITabBarItem.appearance()
         tabBarAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 10, weight: .regular)], for: .normal)
+        // Global navigation bar appearance
+        let navigationBarAppearance = UINavigationBarAppearance().then {
+            $0.titleTextAttributes = [
+                NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .bold),
+                NSAttributedString.Key.foregroundColor: UIColor.white
+            ]
+            $0.backgroundColor = .hanyangBlue
+        }
+        UINavigationBar.appearance().standardAppearance = navigationBarAppearance
+        UIBarButtonItem.appearance().tintColor = .white
         return true
     }
 

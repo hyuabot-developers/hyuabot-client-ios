@@ -2,7 +2,8 @@ import UIKit
 import QueryAPI
 
 class ShuttleViaVC: UIViewController {
-    private let item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable
+    private var realtimeItem: ShuttleRealtimePageQuery.Data.Shuttle.Timetable?
+    private var timetableItem: ShuttleTimetablePageQuery.Data.Shuttle.Timetable?
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
         $0.textColor = .white
@@ -24,9 +25,14 @@ class ShuttleViaVC: UIViewController {
         $0.addArrangedSubview(self.tableView)
     }
     
-    init(item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
-        self.item = item
+    init(realtimeItem: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
         super.init(nibName: nil, bundle: nil)
+        self.realtimeItem = realtimeItem
+    }
+    
+    init(timetableItem: ShuttleTimetablePageQuery.Data.Shuttle.Timetable) {
+        super.init(nibName: nil, bundle: nil)
+        self.timetableItem = timetableItem
     }
     
     required init?(coder: NSCoder) {
@@ -60,12 +66,21 @@ extension ShuttleViaVC: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.item.via.count
+        if (self.realtimeItem?.via.count ?? 0) > 0 {
+            return self.realtimeItem?.via.count ?? 0
+        } else if (self.timetableItem?.via.count ?? 0) > 0 {
+            return self.timetableItem?.via.count ?? 0
+        }
+        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleViaCellView.reuseIdentifier) as? ShuttleViaCellView ?? ShuttleViaCellView()
-        cell.setupUI(startStop: self.item, item: self.item.via[indexPath.row])
+        if self.realtimeItem != nil {
+            cell.setupUI(startStop: self.realtimeItem!, item: self.realtimeItem!.via[indexPath.row])
+        } else if self.timetableItem != nil {
+            cell.setupUI(startStop: self.timetableItem!, item: self.timetableItem!.via[indexPath.row])
+        }
         return cell
     }
 }

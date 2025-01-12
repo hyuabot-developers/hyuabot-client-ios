@@ -7,10 +7,16 @@ public class ShuttleTimetablePeriodQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTimetablePeriodQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTimetablePeriodQuery { shuttle(periodCurrent: true) { __typename period { __typename type } } }"#
+      #"query ShuttleTimetablePeriodQuery($shuttleDate: Date!) { shuttle(periodStart: $shuttleDate, periodEnd: $shuttleDate) { __typename period { __typename type } } }"#
     ))
 
-  public init() {}
+  public var shuttleDate: Date
+
+  public init(shuttleDate: Date) {
+    self.shuttleDate = shuttleDate
+  }
+
+  public var __variables: Variables? { ["shuttleDate": shuttleDate] }
 
   public struct Data: QueryAPI.SelectionSet {
     public let __data: DataDict
@@ -18,7 +24,10 @@ public class ShuttleTimetablePeriodQuery: GraphQLQuery {
 
     public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.Query }
     public static var __selections: [ApolloAPI.Selection] { [
-      .field("shuttle", Shuttle.self, arguments: ["periodCurrent": true]),
+      .field("shuttle", Shuttle.self, arguments: [
+        "periodStart": .variable("shuttleDate"),
+        "periodEnd": .variable("shuttleDate")
+      ]),
     ] }
 
     /// Shuttle query

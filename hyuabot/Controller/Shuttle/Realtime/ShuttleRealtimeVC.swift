@@ -97,10 +97,11 @@ class ShuttleRealtimeVC: UIViewController {
         self.findClosetStop()
         self.observeSubjects()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -183,7 +184,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
     
     private func openShuttleViaVC(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
-        let vc = ShuttleViaVC(item: item)
+        let vc = ShuttleViaVC(realtimeItem: item)
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
