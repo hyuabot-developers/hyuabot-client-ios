@@ -26,6 +26,31 @@ class ShuttleTimetableVC: UIViewController {
         $0.configuration = config
         $0.addTarget(self, action: #selector(openFilterVC), for: .touchUpInside)
     }
+    private let loadingSpinner = UIActivityIndicatorView().then {
+        $0.style = .large
+        $0.color = .label
+    }
+    private let loadingLabel = UILabel().then {
+        $0.text = String(localized: "shuttle.timetable.loading")
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textColor = .label
+    }
+    private lazy var loadingStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.alignment = .center
+        stackView.backgroundColor = .systemBackground
+        return stackView
+    }()
+    private lazy var loadingView = UIView().then {
+        $0.backgroundColor = .systemBackground
+        $0.addSubview(loadingStackView)
+        loadingStackView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+    }
+    
     
     init(stopID: String.LocalizationValue, destination: String.LocalizationValue) {
         self.stopID = stopID
@@ -57,6 +82,7 @@ class ShuttleTimetableVC: UIViewController {
         self.view.backgroundColor = .hanyangBlue
         self.view.addSubview(viewPager)
         self.view.addSubview(filterButton)
+        self.view.addSubview(loadingView)
         self.viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
@@ -66,6 +92,9 @@ class ShuttleTimetableVC: UIViewController {
             make.trailing.equalToSuperview().inset(20)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
+        }
+        self.loadingView.snp.makeConstraints { make in
+            make.edges.equalTo(viewPager)
         }
     }
     
@@ -118,6 +147,7 @@ class ShuttleTimetableVC: UIViewController {
                 let dateFormatter = DateFormatter().then {
                     $0.dateFormat = "yyyy-MM-dd"
                 }
+                ShuttleTimetableData.shared.isLoading.onNext(true)
                 Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(shuttleDate: dateFormatter.string(from: date))) { periodQuery in
                     if case .success(let response) = periodQuery {
                         let periods = response.data?.shuttle.period.map { $0.type } ?? []
@@ -137,6 +167,7 @@ class ShuttleTimetableVC: UIViewController {
                 } else if options.period == "shuttle.period.vacation_session" {
                     period = "vacation_session"
                 }
+                ShuttleTimetableData.shared.isLoading.onNext(true)
                 Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, tag: tags)) { timetableQuery in
                     if case .success(let response) = timetableQuery {
                         ShuttleTimetableData.shared.timetable.onNext(response.data?.shuttle.timetable ?? [])
@@ -147,12 +178,22 @@ class ShuttleTimetableVC: UIViewController {
         ShuttleTimetableData.shared.timetable.subscribe(onNext: { timetable in
             ShuttleTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekdays })
             ShuttleTimetableData.shared.weekends.onNext(timetable.filter { !$0.weekdays })
+            ShuttleTimetableData.shared.isLoading.onNext(false)
         }).disposed(by: disposeBag)
         ShuttleTimetableData.shared.weekdays.subscribe(onNext: { weekdays in
             self.weekdaysVC.reload()
         }).disposed(by: disposeBag)
         ShuttleTimetableData.shared.weekends.subscribe(onNext: { weekends in
             self.weekendsVC.reload()
+        }).disposed(by: disposeBag)
+        ShuttleTimetableData.shared.isLoading.subscribe(onNext: { isLoading in
+            if (isLoading) {
+                self.loadingView.isHidden = false
+                self.loadingSpinner.startAnimating()
+            } else {
+                self.loadingView.isHidden = true
+                self.loadingSpinner.stopAnimating()
+            }
         }).disposed(by: disposeBag)
     }
     

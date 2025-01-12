@@ -9,4 +9,5 @@ class ShuttleTimetableData {
     let weekdays = BehaviorSubject<[ShuttleTimetablePageQuery.Data.Shuttle.Timetable]>(value: [])
     let weekends = BehaviorSubject<[ShuttleTimetablePageQuery.Data.Shuttle.Timetable]>(value: [])
     let options = BehaviorSubject<ShuttleTimetableOptions?>(value: nil)
+    let isLoading = BehaviorSubject<Bool>(value: false)
 }
