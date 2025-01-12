@@ -56,10 +56,37 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.addArrangedSubview(arrowView)
         $0.addArrangedSubview(endStopButton)
     }
+    private lazy var periodButton: UIButton = UIButton().then {
+        var conf = UIButton.Configuration.bordered()
+        var title = AttributedString.init(String(localized: "shuttle.period.semester"))
+        title.font = .godo(size: 16, weight: .medium)
+        title.foregroundColor = .label
+        conf.attributedTitle = title
+        $0.configuration = conf
+        // Available start stops
+        let availablePeriods: [String.LocalizationValue] = [
+            "shuttle.period.semester",
+            "shuttle.period.vacation_session",
+            "shuttle.period.vacation",
+            "shuttle.period.custom"
+        ]
+        let items = availablePeriods.map { period in
+            UIAction(title: String(localized: period), handler: { _ in
+                self.selectPeriod(period)
+            })
+        }
+        let menu = UIMenu(title: "", children: items)
+        $0.menu = menu
+        $0.showsMenuAsPrimaryAction = true
+    }
     private lazy var contentView = UIStackView().then {
         let routeFilterTitle = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
             $0.text = String(localized: "shuttle.timetable.filter.route")
+        }
+        let periodFilterTitle = UILabel().then {
+            $0.font = .godo(size: 16, weight: .bold)
+            $0.text = String(localized: "shuttle.timetable.filter.period")
         }
         $0.backgroundColor = .systemBackground
         $0.axis = .vertical
@@ -70,10 +97,13 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         $0.addArrangedSubview(routeFilterTitle)
         $0.addArrangedSubview(routeSearchStackView)
+        $0.addArrangedSubview(periodFilterTitle)
+        $0.addArrangedSubview(periodButton)
         $0.addArrangedSubview(UIView())
     }
     private var selectedStartStop: String.LocalizationValue? = nil
     private var selectedEndStop: String.LocalizationValue? = nil
+    private var selectedPeriod: String.LocalizationValue? = nil
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -105,6 +135,13 @@ class ShuttleTimetableFilterVC: UIViewController {
             // Set the selected value
             self.selectedStartStop = options.start
             self.selectedEndStop = options.end
+            // Set the title of the period button
+            if options.period != nil {
+                self.selectPeriod(options.period!)
+            } else {
+                self.selectPeriod("shuttle.period.custom")
+            }
+                
         }).disposed(by: disposeBag)
     }
     
@@ -124,6 +161,15 @@ class ShuttleTimetableFilterVC: UIViewController {
         endStopTitle.foregroundColor = .label
         endStopConfig?.attributedTitle = endStopTitle
         self.endStopButton.configuration = endStopConfig
+    }
+    
+    private func setPeriodTitle(_ title: String.LocalizationValue) {
+        var periodConfig = self.periodButton.configuration
+        var periodTitle = AttributedString.init(String(localized: title))
+        periodTitle.font = .godo(size: 16, weight: .medium)
+        periodTitle.foregroundColor = .label
+        periodConfig?.attributedTitle = periodTitle
+        self.periodButton.configuration = periodConfig
     }
     
     private func selectStartStop(_ stop: String.LocalizationValue) {
@@ -174,6 +220,16 @@ class ShuttleTimetableFilterVC: UIViewController {
             ])
             self.endStopButton.menu = menu
             self.endStopButton.showsMenuAsPrimaryAction = true
+        }
+    }
+    
+    private func selectPeriod(_ period: String.LocalizationValue) {
+        self.setPeriodTitle(period)
+        self.selectedPeriod = period
+        if (period == "shuttle.period.custom") {
+            
+        } else {
+            
         }
     }
 }

@@ -261,6 +261,46 @@
         }
       }
     },
+    "shuttle.period.custom" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 검색"
+          }
+        }
+      }
+    },
+    "shuttle.period.semester" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학기 중"
+          }
+        }
+      }
+    },
+    "shuttle.period.vacation" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "방학 중"
+          }
+        }
+      }
+    },
+    "shuttle.period.vacation_session" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계절 학기"
+          }
+        }
+      }
+    },
     "shuttle.realtime.empty" : {
       "localizations" : {
         "ko" : {
@@ -397,6 +437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "셔틀 시간표 검색"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.filter.period" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기간 검색"
           }
         }
       }
