@@ -260,7 +260,27 @@ class ShuttleTimetableFilterVC: UIViewController {
     }
     
     @objc private func okButtonTapped() {
-        print(self.selectedStartStop, self.selectedEndStop, self.selectedPeriod, self.datePicker.date)
+        guard let selectedStartStop = self.selectedStartStop else { return }
+        guard let selectedEndStop = self.selectedEndStop else { return }
+        if (selectedPeriod == "shuttle.period.custom") {
+            ShuttleTimetableData.shared.options.onNext(
+                ShuttleTimetableOptions(
+                    start: selectedStartStop,
+                    end: selectedEndStop,
+                    date: datePicker.date,
+                    period: nil
+                )
+            )
+        } else {
+            ShuttleTimetableData.shared.options.onNext(
+                ShuttleTimetableOptions(
+                    start: selectedStartStop,
+                    end: selectedEndStop,
+                    date: nil,
+                    period: selectedPeriod
+                )
+            )
+        }
         self.dismiss(animated: true, completion: nil)
     }
 }
