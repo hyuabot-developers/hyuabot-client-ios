@@ -1,5 +1,6 @@
 import UIKit
 import RxSwift
+import QueryAPI
 
 class ShuttleTimetableVC: UIViewController {
     private let stopID: String.LocalizationValue
@@ -72,6 +73,80 @@ class ShuttleTimetableVC: UIViewController {
         ShuttleTimetableData.shared.options.subscribe(onNext: { options in
             guard let options = options else { return }
             self.navigationItem.title = "\(String(localized: options.start)) → \(String(localized: options.end))"
+            // Query the timetable data
+            var stopID: String = ""
+            var tags: [String] = []
+            if options.start == "shuttle.stop.dormitory.out" {
+                stopID = "dormitory_o"
+                if options.end == "shuttle.destination.shorten.station" {
+                    tags = ["DH", "DJ", "C"]
+                } else if options.end == "shuttle.destination.jungang.station" {
+                    tags = ["DJ"]
+                } else if options.end == "shuttle.destination.terminal" {
+                    tags = ["DY", "C"]
+                }
+            } else if options.start == "shuttle.stop.shuttlecock.out" {
+                stopID = "shuttlecock_o"
+                if options.end == "shuttle.destination.shorten.station" {
+                    tags = ["DH", "DJ", "C"]
+                } else if options.end == "shuttle.destination.jungang.station" {
+                    tags = ["DJ"]
+                } else if options.end == "shuttle.destination.terminal" {
+                    tags = ["DY", "C"]
+                }
+            } else if options.start == "shuttle.stop.station" {
+                stopID = "station"
+                if options.end == "shuttle.destination.shorten.campus" {
+                    tags = ["DH", "DJ", "C"]
+                } else if options.end == "shuttle.destination.jungang.station" {
+                    tags = ["DJ"]
+                } else if options.end == "shuttle.destination.terminal" {
+                    tags = ["C"]
+                }
+            } else if options.start == "shuttle.stop.terminal" {
+                stopID = "terminal"
+                tags = ["DY", "C"]
+            } else if options.start == "shuttle.stop.jungang.station" {
+                stopID = "jungang_station"
+                tags = ["DJ"]
+            } else if options.start == "shuttle.stop.shuttlecock.in" {
+                stopID = "shuttlecock_i"
+                tags = ["DH", "DY", "DJ", "C"]
+            }
+            if options.period == nil {
+                guard let date = options.date else { return }
+                let dateFormatter = DateFormatter().then {
+                    $0.dateFormat = "yyyy-MM-dd"
+                }
+                Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(shuttleDate: dateFormatter.string(from: date))) { periodQuery in
+                    if case .success(let response) = periodQuery {
+                        let periods = response.data?.shuttle.period.map { $0.type } ?? []
+                        Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: periods, stopID: stopID, tag: tags)) { timetableQuery in
+                            if case .success(let response) = timetableQuery {
+                                ShuttleTimetableData.shared.timetable.onNext(response.data?.shuttle.timetable ?? [])
+                            }
+                        }
+                    }
+                }
+            } else {
+                var period = ""
+                if options.period == "shuttle.period.semester" {
+                    period = "semester"
+                } else if options.period == "shuttle.period.vacation" {
+                    period = "vacation"
+                } else if options.period == "shuttle.period.vacation_session" {
+                    period = "vacation_session"
+                }
+                Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, tag: tags)) { timetableQuery in
+                    if case .success(let response) = timetableQuery {
+                        ShuttleTimetableData.shared.timetable.onNext(response.data?.shuttle.timetable ?? [])
+                    }
+                }
+            }
+        }).disposed(by: disposeBag)
+        ShuttleTimetableData.shared.timetable.subscribe(onNext: { timetable in
+            ShuttleTimetableData.shared.weekends.onNext(timetable.filter { $0.weekdays })
+            ShuttleTimetableData.shared.weekdays.onNext(timetable.filter { !$0.weekdays })
         }).disposed(by: disposeBag)
     }
     

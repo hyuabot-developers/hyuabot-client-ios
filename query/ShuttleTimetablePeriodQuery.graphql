@@ -1,5 +1,5 @@
-query ShuttleTimetablePeriodQuery {
-    shuttle (periodCurrent: true) {
+query ShuttleTimetablePeriodQuery ($shuttleDate: Date!) {
+    shuttle (periodStart: $shuttleDate, periodEnd: $shuttleDate) {
         period {
             type
         }

@@ -51,6 +51,9 @@
         }
       }
     },
+    "shuttle.destination.jungang.station" : {
+
+    },
     "shuttle.destination.shorten.campus" : {
       "localizations" : {
         "ko" : {
@@ -90,6 +93,9 @@
           }
         }
       }
+    },
+    "shuttle.destination.terminal" : {
+
     },
     "shuttle.first.last.weekdays.format.%@" : {
       "localizations" : {
