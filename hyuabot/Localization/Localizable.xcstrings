@@ -51,9 +51,6 @@
         }
       }
     },
-    "shuttle.destination.jungang.station" : {
-
-    },
     "shuttle.destination.shorten.campus" : {
       "localizations" : {
         "ko" : {
@@ -93,9 +90,6 @@
           }
         }
       }
-    },
-    "shuttle.destination.terminal" : {
-
     },
     "shuttle.first.last.weekdays.format.%@" : {
       "localizations" : {
@@ -433,6 +427,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld분 후 출발"
+          }
+        }
+      }
+    },
+    "shuttle.timetable.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "운행 예정인 셔틀버스가 없습니다."
           }
         }
       }

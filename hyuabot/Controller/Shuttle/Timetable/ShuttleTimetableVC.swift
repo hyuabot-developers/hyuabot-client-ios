@@ -145,8 +145,14 @@ class ShuttleTimetableVC: UIViewController {
             }
         }).disposed(by: disposeBag)
         ShuttleTimetableData.shared.timetable.subscribe(onNext: { timetable in
-            ShuttleTimetableData.shared.weekends.onNext(timetable.filter { $0.weekdays })
-            ShuttleTimetableData.shared.weekdays.onNext(timetable.filter { !$0.weekdays })
+            ShuttleTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekdays })
+            ShuttleTimetableData.shared.weekends.onNext(timetable.filter { !$0.weekdays })
+        }).disposed(by: disposeBag)
+        ShuttleTimetableData.shared.weekdays.subscribe(onNext: { weekdays in
+            self.weekdaysVC.reload()
+        }).disposed(by: disposeBag)
+        ShuttleTimetableData.shared.weekends.subscribe(onNext: { weekends in
+            self.weekendsVC.reload()
         }).disposed(by: disposeBag)
     }
     
