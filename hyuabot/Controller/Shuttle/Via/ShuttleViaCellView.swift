@@ -59,7 +59,40 @@ class ShuttleViaCellView: UITableViewCell {
         }
     }
     
+    func setupUI(startStop: ShuttleTimetablePageQuery.Data.Shuttle.Timetable, item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable.Vium) {
+        if item.stop == "dormitory_o" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+        } else if item.stop == "shuttlecock_o" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+        } else if item.stop == "station" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.station")
+        } else if item.stop == "terminal" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
+        } else if item.stop == "jungang_stn" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
+        } else if item.stop == "shuttlecock_i" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+        } else {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+        }
+        self.setUITimeLabel(item: item)
+        if (startStop.time > item.time) {
+            self.shuttleStopLabel.textColor = .gray
+            self.shuttleTimeLabel.textColor = .gray
+        }
+    }
+    
     func setUITimeLabel(item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable.Vium) {
+        let calendar = Calendar.current
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss"
+        let departureTime = dateFormatter.date(from: item.time)
+        let hour = calendar.component(.hour, from: departureTime!)
+        let minute = calendar.component(.minute, from: departureTime!)
+        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(hour).\(minute)")
+    }
+    
+    func setUITimeLabel(item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable.Vium) {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"

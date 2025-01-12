@@ -184,7 +184,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
     
     private func openShuttleViaVC(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
-        let vc = ShuttleViaVC(item: item)
+        let vc = ShuttleViaVC(realtimeItem: item)
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true

@@ -1,7 +1,9 @@
 import UIKit
+import QueryAPI
 
 class ShuttleTimetableTabVC: UIViewController {
     private let isWeekdays: Bool
+    private let showViaVC: (ShuttleTimetablePageQuery.Data.Shuttle.Timetable) -> ()
     private lazy var shuttleTimetableTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -14,8 +16,9 @@ class ShuttleTimetableTabVC: UIViewController {
         return tableView
     }()
     
-    init(isWeekdays: Bool) {
+    init(isWeekdays: Bool, showViaVC: @escaping (ShuttleTimetablePageQuery.Data.Shuttle.Timetable) -> ()) {
         self.isWeekdays = isWeekdays
+        self.showViaVC = showViaVC
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -71,6 +74,12 @@ extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         }
         return tableView.dequeueReusableCell(withIdentifier: ShuttleTimetableEmptyCellView.reuseIdentifier, for: indexPath) as! ShuttleTimetableEmptyCellView
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleTimetableCellView else { return }
+        guard let item = cell.item else { return }
+        self.showViaVC(item)
     }
 }
 

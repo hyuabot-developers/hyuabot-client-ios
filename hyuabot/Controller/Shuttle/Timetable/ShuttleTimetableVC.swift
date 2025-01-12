@@ -6,8 +6,8 @@ class ShuttleTimetableVC: UIViewController {
     private let stopID: String.LocalizationValue
     private let destination: String.LocalizationValue
     private let disposeBag = DisposeBag()
-    private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true)
-    private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false)
+    private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true, showViaVC: openShuttleViaVC)
+    private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false, showViaVC: openShuttleViaVC)
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0))
         viewPager.tabView.tabs = [
@@ -154,6 +154,15 @@ class ShuttleTimetableVC: UIViewController {
         ShuttleTimetableData.shared.weekends.subscribe(onNext: { weekends in
             self.weekendsVC.reload()
         }).disposed(by: disposeBag)
+    }
+    
+    private func openShuttleViaVC(_ item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable) {
+        let vc = ShuttleViaVC(timetableItem: item)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
     }
     
     @objc private func openFilterVC() {
