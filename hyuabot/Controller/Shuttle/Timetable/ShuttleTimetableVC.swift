@@ -80,27 +80,27 @@ class ShuttleTimetableVC: UIViewController {
                 stopID = "dormitory_o"
                 if options.end == "shuttle.destination.shorten.station" {
                     tags = ["DH", "DJ", "C"]
-                } else if options.end == "shuttle.destination.jungang.station" {
+                } else if options.end == "shuttle.destination.shorten.jungang_station" {
                     tags = ["DJ"]
-                } else if options.end == "shuttle.destination.terminal" {
+                } else if options.end == "shuttle.destination.shorten.terminal" {
                     tags = ["DY", "C"]
                 }
             } else if options.start == "shuttle.stop.shuttlecock.out" {
                 stopID = "shuttlecock_o"
                 if options.end == "shuttle.destination.shorten.station" {
                     tags = ["DH", "DJ", "C"]
-                } else if options.end == "shuttle.destination.jungang.station" {
+                } else if options.end == "shuttle.destination.shorten.jungang_station" {
                     tags = ["DJ"]
-                } else if options.end == "shuttle.destination.terminal" {
+                } else if options.end == "shuttle.destination.shorten.terminal" {
                     tags = ["DY", "C"]
                 }
             } else if options.start == "shuttle.stop.station" {
                 stopID = "station"
                 if options.end == "shuttle.destination.shorten.campus" {
                     tags = ["DH", "DJ", "C"]
-                } else if options.end == "shuttle.destination.jungang.station" {
+                } else if options.end == "shuttle.destination.shorten.jungang_station" {
                     tags = ["DJ"]
-                } else if options.end == "shuttle.destination.terminal" {
+                } else if options.end == "shuttle.destination.shorten.terminal" {
                     tags = ["C"]
                 }
             } else if options.start == "shuttle.stop.terminal" {
