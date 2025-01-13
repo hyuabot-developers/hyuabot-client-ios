@@ -1,6 +1,46 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "bus.tab.city" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역"
+          }
+        }
+      }
+    },
+    "bus.tab.other" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기타"
+          }
+        }
+      }
+    },
+    "bus.tab.seoul" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "강남역"
+          }
+        }
+      }
+    },
+    "bus.tab.suwon" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수원역"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {

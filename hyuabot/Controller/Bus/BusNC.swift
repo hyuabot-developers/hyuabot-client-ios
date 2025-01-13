@@ -5,7 +5,7 @@ class BusNC: UINavigationController {
         self.init(rootViewController: BusRealtimeVC())
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewWillAppear(_ animated: Bool) {
+        self.view.backgroundColor = .hanyangBlue
     }
 }
