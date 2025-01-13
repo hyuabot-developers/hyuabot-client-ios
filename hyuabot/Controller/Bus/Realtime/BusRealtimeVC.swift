@@ -1,11 +1,33 @@
 import UIKit
 import RxSwift
+import QueryAPI
 
 class BusRealtimeVC: UIViewController {
-    private let cityBusTabVC = BusRealtimeTabVC()
-    private let seoulBusTabVC = BusRealtimeTabVC()
-    private let suwonBusTabVC = BusRealtimeTabVC()
-    private let otherBusTabVC = BusRealtimeTabVC()
+    private let disposeBag = DisposeBag()
+    private lazy var cityBusTabVC = BusRealtimeTabVC(
+        tabType: .city,
+        refreshMethod: fetchBusRealtimeData,
+        showEntireTimetable: moveToEntireTimetable,
+        showStopVC: openBusStopVC
+    )
+    private lazy var seoulBusTabVC = BusRealtimeTabVC(
+        tabType: .seoul,
+        refreshMethod: fetchBusRealtimeData,
+        showEntireTimetable: moveToEntireTimetable,
+        showStopVC: openBusStopVC
+    )
+    private lazy var suwonBusTabVC = BusRealtimeTabVC(
+        tabType: .suwon,
+        refreshMethod: fetchBusRealtimeData,
+        showEntireTimetable: moveToEntireTimetable,
+        showStopVC: openBusStopVC
+    )
+    private lazy var otherBusTabVC = BusRealtimeTabVC(
+        tabType: .other,
+        refreshMethod: fetchBusRealtimeData,
+        showEntireTimetable: moveToEntireTimetable,
+        showStopVC: openBusStopVC
+    )
     private var subscription: Disposable?
     private lazy var helpButton = UIButton().then {
         var config = UIButton.Configuration.filled()
@@ -72,11 +94,21 @@ class BusRealtimeVC: UIViewController {
     }
     
     private func observeSubjects() {
-        
+        BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] busData in
+            print(busData)
+        }).disposed(by: self.disposeBag)
     }
     
     private func fetchBusRealtimeData() {
-        
+        let timeFormatter = DateFormatter().then {
+            $0.dateFormat = "HH:mm"
+        }
+        let time = timeFormatter.string(from: Date.now)
+        Network.shared.client.fetch(query: BusRealtimePageQuery(busStart: time)) { result in
+            if case .success(let data) = result {
+                BusRealtimeData.shared.busRealtimeData.onNext(data.data?.bus ?? [])
+            }
+        }
     }
     
     private func startPolling() {
@@ -90,6 +122,10 @@ class BusRealtimeVC: UIViewController {
     private func stopPolling() {
         subscription?.dispose()
     }
+    
+    private func moveToEntireTimetable(_ stopID: Int, _ routeID: Int) {}
+    
+    private func openBusStopVC(_ stopID: Int) {}
     
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }

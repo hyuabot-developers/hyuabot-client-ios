@@ -1,6 +1,96 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "bus.realtime.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 예정인 버스가 없습니다."
+          }
+        }
+      }
+    },
+    "bus.realtime.section.10-1.campus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10-1 (한양대ERICA컨벤션센터)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.10-1.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10-1 (상록수역)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.50.ansan" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50 (안산파크푸르지오)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.50.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50 (광명역)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.707-1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "707-1 (한양대정문)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.3102" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3102 (한양대ERICA컨벤션센터)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.seoul.other" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3100/3101 (한양대정문)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.suwon.other" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "110/7070/9090 (한양대입구)"
+          }
+        }
+      }
+    },
     "bus.tab.city" : {
       "localizations" : {
         "ko" : {
