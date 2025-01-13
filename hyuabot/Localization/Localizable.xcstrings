@@ -491,6 +491,16 @@
         }
       }
     },
+    "shuttle.timetable.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간표 불러오는 중…"
+          }
+        }
+      }
+    },
     "shuttle.timetable.weekdays" : {
       "localizations" : {
         "ko" : {

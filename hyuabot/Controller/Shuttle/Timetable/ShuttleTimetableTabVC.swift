@@ -50,7 +50,7 @@ class ShuttleTimetableTabVC: UIViewController {
                 let nowString = dateFormatter.string(from: now)
                 return nowString < item.time
             } ?? 0
-            self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: true)
+            self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: false)
         } else {
             guard let items = try? ShuttleTimetableData.shared.weekends.value() else { return }
             let scrollIndex = items.firstIndex { item in
@@ -61,7 +61,7 @@ class ShuttleTimetableTabVC: UIViewController {
                 let nowString = dateFormatter.string(from: now)
                 return nowString < item.time
             } ?? 0
-            self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: true)
+            self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: false)
         }
     }
 }
