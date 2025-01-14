@@ -8,24 +8,28 @@ class BusRealtimeVC: UIViewController {
         tabType: .city,
         refreshMethod: fetchBusRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
+        showDepartureLog: openDepartureLogSheet,
         showStopVC: openBusStopVC
     )
     private lazy var seoulBusTabVC = BusRealtimeTabVC(
         tabType: .seoul,
         refreshMethod: fetchBusRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
+        showDepartureLog: openDepartureLogSheet,
         showStopVC: openBusStopVC
     )
     private lazy var suwonBusTabVC = BusRealtimeTabVC(
         tabType: .suwon,
         refreshMethod: fetchBusRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
+        showDepartureLog: openDepartureLogSheet,
         showStopVC: openBusStopVC
     )
     private lazy var otherBusTabVC = BusRealtimeTabVC(
         tabType: .other,
         refreshMethod: fetchBusRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
+        showDepartureLog: openDepartureLogSheet,
         showStopVC: openBusStopVC
     )
     private var subscription: Disposable?
@@ -123,7 +127,19 @@ class BusRealtimeVC: UIViewController {
         subscription?.dispose()
     }
     
-    private func moveToEntireTimetable(_ stopID: Int, _ routeID: Int) {}
+    private func moveToEntireTimetable(_ stopID: Int, _ routes: [Int]) {
+        guard let nc = self.navigationController as? BusNC else { return }
+        nc.moveToTimetableVC(stopID: stopID, routes: routes)
+    }
+    
+    private func openDepartureLogSheet(_ stopID: Int, _ routes: [Int]) {
+        let vc = BusLogVC(stopID: stopID, routes: routes)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
     
     private func openBusStopVC(_ stopID: Int) {
         let vc = BusStopInfoVC(stopID: stopID)

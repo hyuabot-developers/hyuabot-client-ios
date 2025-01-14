@@ -8,7 +8,8 @@ class BusRealtimeTabVC: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let refreshMethod: () -> Void
     private let busRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (Int, Int) -> ()
+    private let showEntireTimetable: (Int, [Int]) -> ()
+    private let showDepartureLog: (Int, [Int]) -> ()
     private let showStopVC: (Int) -> ()
     private lazy var busRealtimeTableView: UITableView = {
         let tableView = UITableView().then {
@@ -30,12 +31,14 @@ class BusRealtimeTabVC: UIViewController {
     required init (
         tabType: BusRealtimeType,
         refreshMethod: @escaping () -> (),
-        showEntireTimetable: @escaping (Int, Int) -> (),
+        showEntireTimetable: @escaping (Int, [Int]) -> (),
+        showDepartureLog: @escaping (Int, [Int]) -> (),
         showStopVC: @escaping (Int) -> ()
     ) {
         self.tabType = tabType
         self.refreshMethod = refreshMethod
         self.showEntireTimetable = showEntireTimetable
+        self.showDepartureLog = showDepartureLog
         self.showStopVC = showStopVC
         switch tabType {
             case .city: self.busRealtimeSection = [
@@ -124,6 +127,51 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeFooterView.reuseIdentifier) as? BusRealtimeFooterView else {
             return UIView()
         }
+        var stopID = 0
+        var routes: [Int] = []
+        if self.tabType == .city {
+            if section == 0 {
+                stopID = 216000138
+                routes = [216000068]
+            }
+            else if section == 1 {
+                stopID = 216000379
+                routes = [216000068]
+            }
+        } else if self.tabType == .seoul {
+            if section == 0 {
+                stopID = 216000719
+                routes = [216000061]
+            }
+            else if section == 1 {
+                stopID = 216000719
+                routes = [216000026, 216000043, 216000096]
+            }
+        } else if self.tabType == .suwon {
+            if section == 0 {
+                stopID = 216000719
+                routes = [216000070]
+            }
+            else if section == 1 {
+                stopID = 216000070
+                routes = [217000014, 216000070, 216000104, 200000015]
+            }
+        }  else if self.tabType == .other {
+            if section == 0 {
+                stopID = 216000759
+                routes = [216000075]
+            }
+            else if section == 1 {
+                stopID = 213000487
+                routes = [216000075]
+            }
+        }
+        footerView.setupUI(
+            stopID: stopID,
+            routes: routes,
+            showEntireTimetable: self.showEntireTimetable,
+            showDepartureLog: self.showDepartureLog
+        )
         return footerView
     }
     

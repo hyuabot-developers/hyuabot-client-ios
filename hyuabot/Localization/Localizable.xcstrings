@@ -91,6 +91,26 @@
         }
       }
     },
+    "bus.show.departure.log" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 기록"
+          }
+        }
+      }
+    },
+    "bus.show.entire.timetable" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표"
+          }
+        }
+      }
+    },
     "bus.stop.first.last" : {
       "localizations" : {
         "ko" : {
