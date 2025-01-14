@@ -140,7 +140,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if self.tabType == .seoul {
             if section == 0 {
-                stopID = 216000719
+                stopID = 216000138
                 routes = [216000061]
             }
             else if section == 1 {

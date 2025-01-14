@@ -99,9 +99,57 @@ class BusRealtimeVC: UIViewController {
     
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] busData in
-            print(busData)
+            let campusData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000138 }?.routes ?? []
+            let sangnoksuData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000379 }?.routes ?? []
+            let mainGateData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000719 }?.routes ?? []
+            let junctionData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000070 }?.routes ?? []
+            let ansanData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000759 }?.routes ?? []
+            let gwangmyeongData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 213000487 }?.routes ?? []
+            // Filter the data
+            let campusToSangnoksu: [BusRealtimePageQuery.Data.Bus.Route] = campusData.filter { $0.info.id == 216000068 }
+            let sangnoksuToCampus: [BusRealtimePageQuery.Data.Bus.Route] = sangnoksuData.filter { $0.info.id == 216000068 }
+            let campusToSeoul: [BusRealtimePageQuery.Data.Bus.Route] = campusData.filter { $0.info.id == 216000061 }
+            let mainGateToSeoul: [BusRealtimePageQuery.Data.Bus.Route] = mainGateData.filter {
+                $0.info.id == 216000026 || $0.info.id == 216000043 || $0.info.id == 216000096
+            }
+            let mainGateToSuwon: [BusRealtimePageQuery.Data.Bus.Route] = mainGateData.filter {
+                $0.info.id == 216000070
+            }
+            let junctionToSuwon: [BusRealtimePageQuery.Data.Bus.Route] = junctionData.filter {
+                $0.info.id == 217000014 || $0.info.id == 216000070 || $0.info.id == 216000104 || $0.info.id == 200000015
+            }
+            let ansanToGwangmyeong: [BusRealtimePageQuery.Data.Bus.Route] = ansanData.filter { $0.info.id == 216000075 }
+            let gwangmyeongToAnsan: [BusRealtimePageQuery.Data.Bus.Route] = gwangmyeongData.filter { $0.info.id == 216000075 }
+            // Combine the data
+            BusRealtimeData.shared.cityBusCampusData.onNext(self?.combineArrivalData(campusToSangnoksu) ?? [])
+            BusRealtimeData.shared.cityBusStationData.onNext(self?.combineArrivalData(sangnoksuToCampus) ?? [])
+            BusRealtimeData.shared.seoulBusCampusData.onNext(self?.combineArrivalData(campusToSeoul) ?? [])
+            BusRealtimeData.shared.seoulBusMainGateData.onNext(self?.combineArrivalData(mainGateToSeoul) ?? [])
+            BusRealtimeData.shared.suwonBusCampusData.onNext(self?.combineArrivalData(mainGateToSuwon) ?? [])
+            BusRealtimeData.shared.suwonBusJunctionData.onNext(self?.combineArrivalData(junctionToSuwon) ?? [])
+            BusRealtimeData.shared.otherBusAnsanData.onNext(self?.combineArrivalData(ansanToGwangmyeong) ?? [])
+            BusRealtimeData.shared.otherBusGwangmyeongStationData.onNext(self?.combineArrivalData(gwangmyeongToAnsan) ?? [])
         }).disposed(by: self.disposeBag)
     }
+    
+    private func combineArrivalData(_ routes: [BusRealtimePageQuery.Data.Bus.Route]) -> [BusRealtimeItem] {
+        var realtimeData: [BusRealtimeItem] = []
+        var timetableData: [BusRealtimeItem] = []
+        routes.forEach { route in
+            route.realtime.forEach { realtimeItem in
+                realtimeData.append(BusRealtimeItem(routeName: route.info.name, realtime: realtimeItem))
+            }
+            route.timetable.forEach { timetableItem in
+                timetableData.append(BusRealtimeItem(routeName: route.info.name, timetable: timetableItem))
+            }
+        }
+        return realtimeData.sorted(
+            by: { $0.realtime?.time ?? 0 < $1.realtime?.time ?? 0 }
+        ) + timetableData.sorted(
+            by: { $0.timetable?.time ?? "00:00:00" < $1.timetable?.time ?? "00:00:00" }
+        )
+    }
+        
     
     private func fetchBusRealtimeData() {
         let timeFormatter = DateFormatter().then {
