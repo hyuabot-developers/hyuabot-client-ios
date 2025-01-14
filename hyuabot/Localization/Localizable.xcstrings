@@ -91,6 +91,26 @@
         }
       }
     },
+    "bus.stop.first.last" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선별 첫차 & 막차"
+          }
+        }
+      }
+    },
+    "bus.stop.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스 정류장 정보"
+          }
+        }
+      }
+    },
     "bus.tab.city" : {
       "localizations" : {
         "ko" : {

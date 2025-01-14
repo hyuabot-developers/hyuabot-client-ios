@@ -97,7 +97,26 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeHeaderView.reuseIdentifier) as? BusRealtimeHeaderView else {
             return UIView()
         }
-        headerView.setupUI(title: String(localized: self.busRealtimeSection[section]))
+        var stopID = 0
+        if self.tabType == .city {
+            if section == 0 { stopID = 216000138 }
+            else if section == 1 { stopID = 216000379 }
+        } else if self.tabType == .seoul {
+            if section == 0 { stopID = 216000719 }
+            else if section == 1 { stopID = 216000719 }
+        } else if self.tabType == .suwon {
+            if section == 0 { stopID = 216000719 }
+            else if section == 1 { stopID = 216000070 }
+        }  else if self.tabType == .other {
+            if section == 0 { stopID = 216000759 }
+            else if section == 1 { stopID = 213000487 }
+        }
+        headerView.setupUI(
+            title: String(localized: self.busRealtimeSection[section]),
+            showStopVC: { [weak self] in
+                self?.showStopModal(stopID)
+            }
+        )
         return headerView
     }
     

@@ -125,7 +125,14 @@ class BusRealtimeVC: UIViewController {
     
     private func moveToEntireTimetable(_ stopID: Int, _ routeID: Int) {}
     
-    private func openBusStopVC(_ stopID: Int) {}
+    private func openBusStopVC(_ stopID: Int) {
+        let vc = BusStopInfoVC(stopID: stopID)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
     
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
