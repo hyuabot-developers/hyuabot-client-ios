@@ -53,13 +53,13 @@ class BusRealtimeCellView: UITableViewCell {
         if (item.realtime != nil) {
             let realtimeItem = item.realtime!
             if (realtimeItem.seat < 0) {
-                if (realtimeItem.time < 1) {
+                if (realtimeItem.stop <= 1) {
                     self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(realtimeItem.stop)"))
                 } else {
                     self.setRealtimeAttributedText(String(localized: "bus.realtime.no.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop)"))
                 }
             } else {
-                if (realtimeItem.time < 1) {
+                if (realtimeItem.stop <= 1) {
                     self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(realtimeItem.stop).\(realtimeItem.seat)"))
                 } else {
                     self.setRealtimeAttributedText(String(localized: "bus.realtime.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop).\(realtimeItem.seat)"))
