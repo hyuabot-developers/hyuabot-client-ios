@@ -53,9 +53,17 @@ class BusRealtimeCellView: UITableViewCell {
         if (item.realtime != nil) {
             let realtimeItem = item.realtime!
             if (realtimeItem.seat < 0) {
-                self.busTimeLabel.text = String(localized: "bus.realtime.no.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop)")
+                if (realtimeItem.time < 1) {
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(realtimeItem.stop)"))
+                } else {
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.no.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop)"))
+                }
             } else {
-                self.busTimeLabel.text = String(localized: "bus.realtime.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop).\(realtimeItem.seat)")
+                if (realtimeItem.time < 1) {
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(realtimeItem.stop).\(realtimeItem.seat)"))
+                } else {
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop).\(realtimeItem.seat)"))
+                }
             }
         } else if (item.timetable != nil) {
             let timetableItem = item.timetable!
@@ -67,5 +75,17 @@ class BusRealtimeCellView: UITableViewCell {
             let minute = calendar.component(.minute, from: departureTime!)
             self.busTimeLabel.text = String(localized: "bus.realtime.time.\(hour).\(minute)")
         }
+    }
+    
+    private func setRealtimeAttributedText(_ text: String) {
+        let attributeString = NSMutableAttributedString(string: text)
+        attributeString.addAttribute(
+            .foregroundColor,
+            value: UIColor.red, range: NSRange(
+                location: 0,
+                length: text.distance(from: text.startIndex, to: text.firstIndex(of: "(")!) - 1
+            )
+        )
+        self.busTimeLabel.attributedText = attributeString
     }
 }

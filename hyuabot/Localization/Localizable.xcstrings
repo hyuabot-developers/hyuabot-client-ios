@@ -1,6 +1,26 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "bus.realtime.arriving.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠시후 도착 (%1$lld전)"
+          }
+        }
+      }
+    },
+    "bus.realtime.arriving.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠시후 도착 (%1$lld전, %2$lld석)"
+          }
+        }
+      }
+    },
     "bus.realtime.empty" : {
       "localizations" : {
         "ko" : {
@@ -16,7 +36,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld분 (%2$lld 전)"
+            "value" : "%1$lld분 (%2$lld전)"
           }
         }
       }
@@ -26,7 +46,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld분 (%2$lld 전, %3$lld석)"
+            "value" : "%1$lld분 (%2$lld전, %3$lld석)"
           }
         }
       }
