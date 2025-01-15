@@ -108,8 +108,8 @@ class BusRealtimeVC: UIViewController {
     
     private func setupUI() {
         self.view.addSubview(viewPager)
-        self.view.addSubview(helpButton)
         self.view.addSubview(loadingView)
+        self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
@@ -247,5 +247,12 @@ class BusRealtimeVC: UIViewController {
     
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
-    @objc func openHelpVC() {}
+    @objc func openHelpVC() {
+        let vc = BusHelpVC()
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
 }
