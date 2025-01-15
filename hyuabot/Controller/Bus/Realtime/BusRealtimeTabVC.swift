@@ -102,10 +102,10 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         var stopID = 0
         if self.tabType == .city {
-            if section == 0 { stopID = 216000138 }
-            else if section == 1 { stopID = 216000379 }
+            if section == 0 { stopID = 216000379 }
+            else if section == 1 { stopID = 216000138 }
         } else if self.tabType == .seoul {
-            if section == 0 { stopID = 216000719 }
+            if section == 0 { stopID = 216000379 }
             else if section == 1 { stopID = 216000719 }
         } else if self.tabType == .suwon {
             if section == 0 { stopID = 216000719 }
@@ -131,16 +131,16 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         var routes: [Int] = []
         if self.tabType == .city {
             if section == 0 {
-                stopID = 216000138
+                stopID = 216000379
                 routes = [216000068]
             }
             else if section == 1 {
-                stopID = 216000379
+                stopID = 216000138
                 routes = [216000068]
             }
         } else if self.tabType == .seoul {
             if section == 0 {
-                stopID = 216000138
+                stopID = 216000379
                 routes = [216000061]
             }
             else if section == 1 {

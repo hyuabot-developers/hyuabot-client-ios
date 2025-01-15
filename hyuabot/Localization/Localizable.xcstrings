@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "bus.first.last.%@.%@.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@ 행) %2$@ ~ %3$@"
+          }
+        }
+      }
+    },
     "bus.help" : {
       "localizations" : {
         "ko" : {
