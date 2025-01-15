@@ -17,11 +17,13 @@ class ViewPager: UIView {
     }
     
     func setupUI() {
+        let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        let topPadding = scene?.windows.first?.safeAreaInsets.top ?? .zero
         self.addSubview(self.tabView)
         self.addSubview(self.contentView)
         self.tabView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(self.sizeConfiguration.height)
+            make.height.equalTo(self.sizeConfiguration.height + topPadding)
         }
         self.contentView.snp.makeConstraints { make in
             make.top.equalTo(self.tabView.snp.bottom)

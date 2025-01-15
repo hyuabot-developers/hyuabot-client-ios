@@ -111,8 +111,7 @@ class BusRealtimeVC: UIViewController {
         self.view.addSubview(loadingView)
         self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
         self.helpButton.snp.makeConstraints { make in

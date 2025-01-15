@@ -4,10 +4,6 @@ class ShuttleNC: UINavigationController {
     convenience init() {
         self.init(rootViewController: ShuttleRealtimeVC())
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        self.view.backgroundColor = .hanyangBlue
-    }
 
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {
         let vc = if (stop == .dormiotryOut) {
