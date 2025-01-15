@@ -6,6 +6,7 @@ import QueryAPI
 class BusStopInfoVC: UIViewController {
     private let stopID: Int
     private let disposeBag = DisposeBag()
+    private let stopInfo = BehaviorSubject<BusStopDialogQuery.Data.Bus?>(value: nil)
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
         $0.textColor = .white
@@ -67,12 +68,29 @@ class BusStopInfoVC: UIViewController {
     
     private func fetchStopInfo() {
         Network.shared.client.fetch(query: BusStopDialogQuery(busStopID: self.stopID)) { result in
-            
+            if case .success(let response) = result {
+                self.stopInfo.onNext(response.data?.bus.first)
+            }
         }
     }
     
     private func observeSubjects() {
-        
+        self.stopInfo.subscribe(onNext: { [weak self] stop in
+            guard let stop = stop else { return }
+            self?.stopMapView.do {
+                $0.removeAnnotations($0.annotations)
+                $0.addAnnotation(MKPointAnnotation().with {
+                    $0.coordinate = CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude)
+                    $0.title = stop.name
+                })
+                $0.camera = MKMapCamera(
+                    lookingAtCenter: CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude),
+                    fromDistance: 750,
+                    pitch: 0,
+                    heading: 0
+                )
+            }
+        }).disposed(by: self.disposeBag)
     }
 }
 
