@@ -176,11 +176,86 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0
+        if self.tabType == .city {
+            if section == 0 {
+                guard let items = try? BusRealtimeData.shared.cityBusCampusData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            } else if section == 1 {
+                guard let items = try? BusRealtimeData.shared.cityBusStationData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            }
+        } else if self.tabType == .seoul {
+            if section == 0 {
+                guard let items = try? BusRealtimeData.shared.seoulBusCampusData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            } else if section == 1 {
+                guard let items = try? BusRealtimeData.shared.seoulBusMainGateData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            }
+        } else if self.tabType == .suwon {
+            if section == 0 {
+                guard let items = try? BusRealtimeData.shared.suwonBusCampusData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            } else if section == 1 {
+                guard let items = try? BusRealtimeData.shared.suwonBusJunctionData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            }
+        } else if self.tabType == .other {
+            if section == 0 {
+                guard let items = try? BusRealtimeData.shared.otherBusAnsanData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            } else if section == 1 {
+                guard let items = try? BusRealtimeData.shared.otherBusGwangmyeongStationData.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 3)
+            }
+        }
+        return 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return UITableViewCell()
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: BusRealtimeCellView.reuseIdentifier, for: indexPath) as? BusRealtimeCellView else { fatalError() }
+        if self.tabType == .city {
+            if indexPath.section == 0 {
+                guard let items = try? BusRealtimeData.shared.cityBusCampusData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            } else if indexPath.section == 1 {
+                guard let items = try? BusRealtimeData.shared.cityBusStationData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            }
+        } else if self.tabType == .seoul {
+            if indexPath.section == 0 {
+                guard let items = try? BusRealtimeData.shared.seoulBusCampusData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            } else if indexPath.section == 1 {
+                guard let items = try? BusRealtimeData.shared.seoulBusMainGateData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            }
+        } else if self.tabType == .suwon {
+            if indexPath.section == 0 {
+                guard let items = try? BusRealtimeData.shared.suwonBusCampusData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            } else if indexPath.section == 1 {
+                guard let items = try? BusRealtimeData.shared.suwonBusJunctionData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            }
+        } else if self.tabType == .other {
+            if indexPath.section == 0 {
+                guard let items = try? BusRealtimeData.shared.otherBusAnsanData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            } else if indexPath.section == 1 {
+                guard let items = try? BusRealtimeData.shared.otherBusGwangmyeongStationData.value() else { return BusRealtimeEmptyCellView() }
+                if items.isEmpty { return BusRealtimeEmptyCellView() }
+                cell.setupUI(item: items[indexPath.row])
+            }
+        }
+        return cell
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {

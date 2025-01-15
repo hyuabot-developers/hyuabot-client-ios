@@ -99,8 +99,8 @@ class BusRealtimeVC: UIViewController {
     
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] busData in
-            let campusData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000138 }?.routes ?? []
-            let sangnoksuData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000379 }?.routes ?? []
+            let campusData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000379 }?.routes ?? []
+            let sangnoksuData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000138 }?.routes ?? []
             let mainGateData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000719 }?.routes ?? []
             let junctionData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000070 }?.routes ?? []
             let ansanData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000759 }?.routes ?? []
@@ -129,6 +129,11 @@ class BusRealtimeVC: UIViewController {
             BusRealtimeData.shared.suwonBusJunctionData.onNext(self?.combineArrivalData(junctionToSuwon) ?? [])
             BusRealtimeData.shared.otherBusAnsanData.onNext(self?.combineArrivalData(ansanToGwangmyeong) ?? [])
             BusRealtimeData.shared.otherBusGwangmyeongStationData.onNext(self?.combineArrivalData(gwangmyeongToAnsan) ?? [])
+            // Reload the table view
+            self?.cityBusTabVC.reload()
+            self?.seoulBusTabVC.reload()
+            self?.suwonBusTabVC.reload()
+            self?.otherBusTabVC.reload()
         }).disposed(by: self.disposeBag)
     }
     

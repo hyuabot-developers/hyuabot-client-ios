@@ -30,20 +30,29 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         conf.attributedTitle = title
         $0.configuration = conf
     }
-    private lazy var buttonStackView: UIStackView = {
+    private lazy var buttonStackView: UIView = {
+        let view = UIView()
         let separator = UIView().then {
             $0.backgroundColor = .gray
         }
+        view.addSubview(showEntireTimeTableButton)
+        view.addSubview(separator)
+        view.addSubview(showDeparuteLogButton)
+        
         separator.snp.makeConstraints { make in
             make.width.equalTo(1)
             make.height.equalTo(20)
+            make.center.equalToSuperview()
         }
-        let stackView = UIStackView(arrangedSubviews: [showEntireTimeTableButton, separator, showDeparuteLogButton])
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.distribution = .fill
-        stackView.spacing = 16
-        return stackView
+        showEntireTimeTableButton.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview()
+            make.width.equalToSuperview().dividedBy(2)
+        }
+        showDeparuteLogButton.snp.makeConstraints { make in
+            make.trailing.top.bottom.equalToSuperview()
+            make.width.equalToSuperview().dividedBy(2)
+        }
+        return view
     }()
     
     override init(reuseIdentifier: String?) {
