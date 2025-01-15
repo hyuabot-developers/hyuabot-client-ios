@@ -7,7 +7,7 @@ public class BusStopDialogQuery: GraphQLQuery {
   public static let operationName: String = "BusStopDialogQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusStopDialogQuery($busStopID: Int!) { bus(id_: [$busStopID]) { __typename name latitude longitude routes { __typename info { __typename name runningTime { __typename up { __typename first last } down { __typename first last } } } } } }"#
+      #"query BusStopDialogQuery($busStopID: Int!) { bus(id_: [$busStopID]) { __typename name latitude longitude routes { __typename info { __typename name runningTime { __typename up { __typename first last } down { __typename first last } } start { __typename name } end { __typename name } } } } }"#
     ))
 
   public var busStopID: Int
@@ -83,12 +83,18 @@ public class BusStopDialogQuery: GraphQLQuery {
             .field("__typename", String.self),
             .field("name", String.self),
             .field("runningTime", RunningTime.self),
+            .field("start", Start.self),
+            .field("end", End.self),
           ] }
 
           /// Route name
           public var name: String { __data["name"] }
           /// Running time
           public var runningTime: RunningTime { __data["runningTime"] }
+          /// Start stop
+          public var start: Start { __data["start"] }
+          /// End stop
+          public var end: End { __data["end"] }
 
           /// Bus.Route.Info.RunningTime
           ///
@@ -148,6 +154,40 @@ public class BusStopDialogQuery: GraphQLQuery {
               /// Last time
               public var last: String { __data["last"] }
             }
+          }
+
+          /// Bus.Route.Info.Start
+          ///
+          /// Parent Type: `BusStopItem`
+          public struct Start: QueryAPI.SelectionSet {
+            public let __data: DataDict
+            public init(_dataDict: DataDict) { __data = _dataDict }
+
+            public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.BusStopItem }
+            public static var __selections: [ApolloAPI.Selection] { [
+              .field("__typename", String.self),
+              .field("name", String.self),
+            ] }
+
+            /// Stop name
+            public var name: String { __data["name"] }
+          }
+
+          /// Bus.Route.Info.End
+          ///
+          /// Parent Type: `BusStopItem`
+          public struct End: QueryAPI.SelectionSet {
+            public let __data: DataDict
+            public init(_dataDict: DataDict) { __data = _dataDict }
+
+            public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.BusStopItem }
+            public static var __selections: [ApolloAPI.Selection] { [
+              .field("__typename", String.self),
+              .field("name", String.self),
+            ] }
+
+            /// Stop name
+            public var name: String { __data["name"] }
           }
         }
       }

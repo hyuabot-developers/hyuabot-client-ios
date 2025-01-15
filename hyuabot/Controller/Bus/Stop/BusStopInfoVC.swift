@@ -26,6 +26,21 @@ class BusStopInfoVC: UIViewController {
         $0.textColor = .white
         $0.textAlignment = .center
     }
+    private lazy var firstLastTableView = UITableView().then {
+        $0.dataSource = self
+        $0.delegate = self
+        $0.rowHeight = 65
+        $0.register(BusFirstLastCellView.self, forCellReuseIdentifier: BusFirstLastCellView.reuseIdentifier)
+    }
+    private lazy var firstLastView: UIView = {
+        let view = UIView()
+        view.addSubview(self.firstLastTableView)
+        view.backgroundColor = .systemBackground
+        self.firstLastTableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        return view
+    }()
 
     init(stopID: Int) {
         self.stopID = stopID
@@ -48,6 +63,7 @@ class BusStopInfoVC: UIViewController {
         self.view.addSubview(self.titleLabel)
         self.view.addSubview(self.stopMapView)
         self.view.addSubview(self.firstLastTitleLabel)
+        self.view.addSubview(self.firstLastView)
         self.stopMapView.delegate = self
         self.titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
@@ -63,6 +79,10 @@ class BusStopInfoVC: UIViewController {
             make.top.equalTo(self.stopMapView.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
+        }
+        self.firstLastView.snp.makeConstraints { make in
+            make.top.equalTo(self.firstLastTitleLabel.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
         }
     }
     
@@ -90,6 +110,7 @@ class BusStopInfoVC: UIViewController {
                     heading: 0
                 )
             }
+            self?.firstLastTableView.reloadData()
         }).disposed(by: self.disposeBag)
     }
 }
@@ -100,5 +121,25 @@ extension BusStopInfoVC: MKMapViewDelegate {
         annotationView.markerTintColor = .hanyangBlue
         annotationView.glyphImage = UIImage(systemName: "bus.doubledecker.fill")
         return annotationView
+    }
+}
+
+extension BusStopInfoVC: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let stop = try? self.stopInfo.value() else { return 0 }
+        return stop.routes.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let stop = try? self.stopInfo.value() else { return UITableViewCell() }
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: BusFirstLastCellView.reuseIdentifier, for: indexPath) as? BusFirstLastCellView else {
+            return UITableViewCell()
+        }
+        cell.setupUI(item: stop.routes.sorted(by: {$0.info.name < $1.info.name})[indexPath.row])
+        return cell
     }
 }
