@@ -2,11 +2,13 @@ import UIKit
 
 class ViewPager: UIView {
     let sizeConfiguration: TabView.TabSizeConfiguration
+    let navigationBarEnabled: Bool
     let contentView: ContentView = ContentView()
     lazy var tabView: TabView = TabView(sizeConfiguration: self.sizeConfiguration)
     
-    init(sizeConfiguration: TabView.TabSizeConfiguration) {
+    init(sizeConfiguration: TabView.TabSizeConfiguration, navigationBarEnabled: Bool = false) {
         self.sizeConfiguration = sizeConfiguration
+        self.navigationBarEnabled = navigationBarEnabled
         super.init(frame: .zero)
         self.setupUI()
         self.tabView.delegate = self
@@ -23,7 +25,7 @@ class ViewPager: UIView {
         self.addSubview(self.contentView)
         self.tabView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(self.sizeConfiguration.height + topPadding)
+            make.height.equalTo(self.sizeConfiguration.height + (self.navigationBarEnabled ? .zero : topPadding))
         }
         self.contentView.snp.makeConstraints { make in
             make.top.equalTo(self.tabView.snp.bottom)
