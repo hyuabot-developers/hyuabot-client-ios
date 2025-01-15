@@ -66,7 +66,9 @@ class BusStopInfoVC: UIViewController {
     }
     
     private func fetchStopInfo() {
-
+        Network.shared.client.fetch(query: BusStopDialogQuery(busStopID: self.stopID)) { result in
+            
+        }
     }
     
     private func observeSubjects() {

@@ -24,6 +24,8 @@ public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     case "BusDepartureLogQuery": return QueryAPI.Objects.BusDepartureLogQuery
     case "BusRealtimeQuery": return QueryAPI.Objects.BusRealtimeQuery
     case "BusRouteQuery": return QueryAPI.Objects.BusRouteQuery
+    case "BusRunningListQuery": return QueryAPI.Objects.BusRunningListQuery
+    case "BusRunningTimeQuery": return QueryAPI.Objects.BusRunningTimeQuery
     case "BusStopItem": return QueryAPI.Objects.BusStopItem
     case "BusStopRouteQuery": return QueryAPI.Objects.BusStopRouteQuery
     case "BusTimetableQuery": return QueryAPI.Objects.BusTimetableQuery
