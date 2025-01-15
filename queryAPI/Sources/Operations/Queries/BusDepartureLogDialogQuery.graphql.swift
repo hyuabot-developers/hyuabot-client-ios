@@ -7,26 +7,26 @@ public class BusDepartureLogDialogQuery: GraphQLQuery {
   public static let operationName: String = "BusDepartureLogDialogQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusDepartureLogDialogQuery($stopID: Int!, $routeID: Int!, $dates: [Date!]!) { bus(id_: [$stopID], routeId: $routeID, logDate: $dates) { __typename routes { __typename log { __typename departureDate departureTime } info { __typename name } } } }"#
+      #"query BusDepartureLogDialogQuery($stopID: Int!, $routes: [Int!]!, $dates: [Date!]!) { bus(id_: [$stopID], routes: $routes, logDate: $dates) { __typename routes { __typename log { __typename departureDate departureTime } info { __typename name } } } }"#
     ))
 
   public var stopID: Int
-  public var routeID: Int
+  public var routes: [Int]
   public var dates: [Date]
 
   public init(
     stopID: Int,
-    routeID: Int,
+    routes: [Int],
     dates: [Date]
   ) {
     self.stopID = stopID
-    self.routeID = routeID
+    self.routes = routes
     self.dates = dates
   }
 
   public var __variables: Variables? { [
     "stopID": stopID,
-    "routeID": routeID,
+    "routes": routes,
     "dates": dates
   ] }
 
@@ -38,7 +38,7 @@ public class BusDepartureLogDialogQuery: GraphQLQuery {
     public static var __selections: [ApolloAPI.Selection] { [
       .field("bus", [Bus].self, arguments: [
         "id_": [.variable("stopID")],
-        "routeId": .variable("routeID"),
+        "routes": .variable("routes"),
         "logDate": .variable("dates")
       ]),
     ] }

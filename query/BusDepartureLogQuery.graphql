@@ -1,5 +1,5 @@
-query BusDepartureLogDialogQuery($stopID: Int!, $routeID: Int!, $dates: [Date!]!) {
-    bus (id_: [$stopID], routeId: $routeID, logDate: $dates) {
+query BusDepartureLogDialogQuery($stopID: Int!, $routes: [Int!]!, $dates: [Date!]!) {
+    bus (id_: [$stopID], routes: $routes, logDate: $dates) {
         routes { log { departureDate, departureTime }, info {name} }
     }
 }

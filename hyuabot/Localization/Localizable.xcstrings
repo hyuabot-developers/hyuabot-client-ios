@@ -101,6 +101,16 @@
         }
       }
     },
+    "bus.log.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스 통과 정보"
+          }
+        }
+      }
+    },
     "bus.realtime.arriving.%lld" : {
       "localizations" : {
         "ko" : {
