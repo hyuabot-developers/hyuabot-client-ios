@@ -60,6 +60,30 @@ class BusRealtimeVC: UIViewController {
         ]
         return viewPager
     }()
+    private let loadingSpinner = UIActivityIndicatorView().then {
+        $0.style = .large
+        $0.color = .label
+    }
+    private let loadingLabel = UILabel().then {
+        $0.text = String(localized: "bus.realtime.loading")
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textColor = .label
+    }
+    private lazy var loadingStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.alignment = .center
+        stackView.backgroundColor = .systemBackground
+        return stackView
+    }()
+    private lazy var loadingView = UIView().then {
+        $0.backgroundColor = .systemBackground
+        $0.addSubview(loadingStackView)
+        loadingStackView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,6 +109,7 @@ class BusRealtimeVC: UIViewController {
     private func setupUI() {
         self.view.addSubview(viewPager)
         self.view.addSubview(helpButton)
+        self.view.addSubview(loadingView)
         self.viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
@@ -95,10 +120,15 @@ class BusRealtimeVC: UIViewController {
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
         }
+        self.loadingView.snp.makeConstraints { make in
+            make.edges.equalTo(viewPager)
+        }
     }
     
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] busData in
+            guard let busData = busData else { return }
+            // Get the data for each bus
             let campusData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000379 }?.routes ?? []
             let sangnoksuData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000138 }?.routes ?? []
             let mainGateData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000719 }?.routes ?? []
@@ -134,7 +164,18 @@ class BusRealtimeVC: UIViewController {
             self?.seoulBusTabVC.reload()
             self?.suwonBusTabVC.reload()
             self?.otherBusTabVC.reload()
+            // Set the loading state to false
+            BusRealtimeData.shared.isLoading.onNext(false)
         }).disposed(by: self.disposeBag)
+        BusRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
+            if (isLoading) {
+                self.loadingView.isHidden = false
+                self.loadingSpinner.startAnimating()
+            } else {
+                self.loadingView.isHidden = true
+                self.loadingSpinner.stopAnimating()
+            }
+        }).disposed(by: disposeBag)
     }
     
     private func combineArrivalData(_ routes: [BusRealtimePageQuery.Data.Bus.Route]) -> [BusRealtimeItem] {
@@ -163,6 +204,7 @@ class BusRealtimeVC: UIViewController {
         let time = timeFormatter.string(from: Date.now)
         Network.shared.client.fetch(query: BusRealtimePageQuery(busStart: time)) { result in
             if case .success(let data) = result {
+                BusRealtimeData.shared.isLoading.onNext(false)
                 BusRealtimeData.shared.busRealtimeData.onNext(data.data?.bus ?? [])
             }
         }
