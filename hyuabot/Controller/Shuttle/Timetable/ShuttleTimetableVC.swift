@@ -9,7 +9,7 @@ class ShuttleTimetableVC: UIViewController {
     private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true, showViaVC: openShuttleViaVC)
     private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false, showViaVC: openShuttleViaVC)
     private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0))
+        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0), navigationBarEnabled: true)
         viewPager.tabView.tabs = [
             TabItem(title: String(localized: "shuttle.timetable.weekdays")),
             TabItem(title: String(localized: "shuttle.timetable.weekends"))
