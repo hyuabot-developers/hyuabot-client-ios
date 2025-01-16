@@ -32,12 +32,12 @@ type Query {
   """
   Bus stop query
   """
-  bus(id_: [Int!] = null, name: String = null, routeId: Int = null, weekdays: [String!] = null, logDate: [Date!] = null, start: Time = null, end: Time = null): [StopQuery!]!
+  bus(id_: [Int!] = null, name: String = null, routeId: Int = null, routes: [Int!] = null, weekdays: [String!] = null, logDate: [Date!] = null, start: Time = null, end: Time = null): [StopQuery!]!
 
   """
   Shuttle query
   """
-  shuttle(timestamp: DateTime = "2024-05-08T14:48:37.665123+09:00", period: [String!] = null, weekdays: [Boolean!] = null, routeName: [String!] = null, routeTag: [String!] = null, routeStart: [String!] = null, routeEnd: [String!] = null, stopName: [String!] = null, start: Time = null, end: Time = null, periodCurrent: Boolean = null, periodStart: Date = null, periodEnd: Date = null): ShuttleQuery!
+  shuttle(timestamp: DateTime = "2025-01-14T14:13:50.991975+09:00", period: [String!] = null, weekdays: [Boolean!] = null, routeName: [String!] = null, routeTag: [String!] = null, routeStart: [String!] = null, routeEnd: [String!] = null, stopName: [String!] = null, start: Time = null, end: Time = null, periodCurrent: Boolean = null, periodStart: Date = null, periodEnd: Date = null): ShuttleQuery!
 
   """
   Notice query
@@ -52,7 +52,7 @@ type Query {
   """
   Contact query
   """
-  contact(categoryId: Int = null, name: String = null): ContactQuery!
+  contact(campusId: Int = null, categoryId: Int = null, name: String = null): ContactQuery!
 }
 
 type BuildingQuery {
@@ -961,6 +961,8 @@ type __Type {
   inputFields(includeDeprecated: Boolean = false): [__InputValue!]
 
   ofType: __Type
+
+  isOneOf: Boolean
 }
 
 # See https://github.com/JetBrains/js-graphql-intellij-plugin/issues/665
@@ -1211,9 +1213,9 @@ directive @deprecated ("Explains why this element was deprecated, usually also i
 # See https://github.com/JetBrains/js-graphql-intellij-plugin/issues/665
 # noinspection GraphQLTypeRedefinition
 """
-Exposes a URL that specifies the behaviour of this scalar.
+Exposes a URL that specifies the behavior of this scalar.
 """
-directive @specifiedBy ("The URL that specifies the behaviour of this scalar." url: String!) on SCALAR
+directive @specifiedBy ("The URL that specifies the behavior of this scalar." url: String!) on SCALAR
 
 schema {
   query: Query

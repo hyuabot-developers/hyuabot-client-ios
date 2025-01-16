@@ -4,8 +4,9 @@ class BusNC: UINavigationController {
     convenience init() {
         self.init(rootViewController: BusRealtimeVC())
     }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    
+    func moveToTimetableVC(stopID: Int, routes: [Int]) {
+        let vc = BusTimetableVC(stopID: stopID, routes: routes)
+        self.pushViewController(vc, animated: false)
     }
 }

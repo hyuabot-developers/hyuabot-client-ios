@@ -1,6 +1,346 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "bus.first.last.%@.%@.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@ 행) %2$@ ~ %3$@"
+          }
+        }
+      }
+    },
+    "bus.help" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스 도움말"
+          }
+        }
+      }
+    },
+    "bus.help.content1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스 도착 정보는 실시간 도착 정보 및 운수 업체에서 제공한 회차지 출발 시간 순서로 표시합니다. 정류장 내 전광판에 도착 정보가 표시되지 않는 경우, 회차지 출발 시간 이후 실시간 도착 정보를 확인할 수 있습니다."
+          }
+        }
+      }
+    },
+    "bus.help.content2" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스 내 및 주변 정류장의 위치 및 해당 정류장의 노선별 첫차와 막차 시간을 표시합니다. 일부 노선의 경우 노선의 시간표가 존재하지 않아 첫차 및 막차 데이터가 표시되지 않을 수 있습니다."
+          }
+        }
+      }
+    },
+    "bus.help.content3" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안산시 시내버스의 경우 긴 배차 간격으로 인해 정류장 내 전광판에서 회차지 및 출발지 대기를 표출하는 경우가 많습니다. 이에 따라 운수 업체에서 제공한 종점 출발 시간을 조회할 수 있습니다."
+          }
+        }
+      }
+    },
+    "bus.help.content4" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "경기도에서 제공한 각 노선의 정류장 통과 시간을 제공합니다. 현재 실시간 도착 정보가 존재하지 않아도 이를 참고하여 버스 도착 시간을 가늠해볼 수 있습니다."
+          }
+        }
+      }
+    },
+    "bus.help.title1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. 노선버스 도착 정보 확인"
+          }
+        }
+      }
+    },
+    "bus.help.title2" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. 노선버스 정류장 정보 확인"
+          }
+        }
+      }
+    },
+    "bus.help.title3" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. 노선버스 시간표 확인"
+          }
+        }
+      }
+    },
+    "bus.help.title4" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. 노선버스 출발 시간 확인"
+          }
+        }
+      }
+    },
+    "bus.log.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스 통과 정보"
+          }
+        }
+      }
+    },
+    "bus.realtime.arriving.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠시후 도착 (%1$lld전)"
+          }
+        }
+      }
+    },
+    "bus.realtime.arriving.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠시후 도착 (%1$lld전, %2$lld석)"
+          }
+        }
+      }
+    },
+    "bus.realtime.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 예정인 버스가 없습니다."
+          }
+        }
+      }
+    },
+    "bus.realtime.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 정보 불러오는 중..."
+          }
+        }
+      }
+    },
+    "bus.realtime.no.seat.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$lld전)"
+          }
+        }
+      }
+    },
+    "bus.realtime.seat.%lld.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$lld전, %3$lld석)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.10-1.campus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10-1 (한양대ERICA컨벤션센터)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.10-1.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10-1 (상록수역3번출구건너편)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.50.ansan" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50 (안산파크푸르지오)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.50.station" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50 (KTX광명역1번출구)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.707-1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "707-1 (한양대정문)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.3102" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3102 (한양대ERICA컨벤션센터)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.seoul.other" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3100/3101 (한양대정문)"
+          }
+        }
+      }
+    },
+    "bus.realtime.section.suwon.other" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "110/7070/9090 (한양대입구)"
+          }
+        }
+      }
+    },
+    "bus.realtime.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분 종점 출발"
+          }
+        }
+      }
+    },
+    "bus.show.departure.log" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 기록"
+          }
+        }
+      }
+    },
+    "bus.show.entire.timetable" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표"
+          }
+        }
+      }
+    },
+    "bus.stop.first.last" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선별 첫차 & 막차"
+          }
+        }
+      }
+    },
+    "bus.stop.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선버스 정류장 정보"
+          }
+        }
+      }
+    },
+    "bus.tab.city" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역"
+          }
+        }
+      }
+    },
+    "bus.tab.other" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기타"
+          }
+        }
+      }
+    },
+    "bus.tab.seoul" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "강남역"
+          }
+        }
+      }
+    },
+    "bus.tab.suwon" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수원역"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {
