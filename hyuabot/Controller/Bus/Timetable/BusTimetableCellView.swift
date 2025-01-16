@@ -51,12 +51,8 @@ class BusTimetableCellView: UITableViewCell {
     
     func setUITimeLabel(item: BusTimetableItem) {
         let timetableItem = item.timetable
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: timetableItem.time)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
+        let hour = Int(timetableItem.time.substring(from: 0, to: 1))!
+        let minute = Int(timetableItem.time.substring(from: 3, to: 4))!
         self.busTimeLabel.text = String(localized: "bus.timetable.time.\(hour).\(minute)")
     }
 }

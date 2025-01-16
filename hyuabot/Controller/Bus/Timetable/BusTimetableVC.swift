@@ -1,5 +1,6 @@
 import UIKit
 import RxSwift
+import QueryAPI
 
 class BusTimetableVC: UIViewController {
     let stopID: Int
@@ -59,10 +60,26 @@ class BusTimetableVC: UIViewController {
         super.viewDidLoad()
         self.setupUI()
         self.observeSubjects()
+        self.fetchBusTimetable()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(false, animated: false)
+    }
+    
+    private func fetchBusTimetable() {
+        BusTimetableData.shared.isLoading.onNext(true)
+        Network.shared.client.fetch(query: BusTimetablePageQuery(routes: self.routes, stopID: self.stopID)) { result in
+            if case let .success(response) = result {
+                var result: [BusTimetableItem] = []
+                response.data?.bus.first?.routes.forEach { route in
+                    route.timetable.forEach { timetable in
+                        result.append(BusTimetableItem(routeName: route.info.name, timetable: timetable))
+                    }
+                }
+                BusTimetableData.shared.timetable.onNext(result.sorted(by: { $0.timetable.time < $1.timetable.time }))
+            }
+        }
     }
     
     private func setupUI() {
@@ -81,6 +98,21 @@ class BusTimetableVC: UIViewController {
     }
     
     private func observeSubjects() {
+        BusTimetableData.shared.timetable.subscribe(onNext: { timetable in
+            BusTimetableData.shared.weekdays.onNext(timetable.filter { $0.timetable.weekdays == "weekdays" })
+            BusTimetableData.shared.saturdays.onNext(timetable.filter { $0.timetable.weekdays == "saturday" })
+            BusTimetableData.shared.sundays.onNext(timetable.filter { $0.timetable.weekdays == "sunday" })
+            BusTimetableData.shared.isLoading.onNext(false)
+        }).disposed(by: disposeBag)
+        BusTimetableData.shared.weekdays.subscribe(onNext: { weekdays in
+            self.weekdaysVC.reload()
+        }).disposed(by: disposeBag)
+        BusTimetableData.shared.saturdays.subscribe(onNext: { weekends in
+            self.saturdaysVC.reload()
+        }).disposed(by: disposeBag)
+        BusTimetableData.shared.sundays.subscribe(onNext: { weekends in
+            self.sundaysVC.reload()
+        }).disposed(by: disposeBag)
         BusTimetableData.shared.isLoading.subscribe(onNext: { isLoading in
             if (isLoading) {
                 self.loadingView.isHidden = false
