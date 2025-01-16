@@ -10,25 +10,17 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "bus.show.entire.timetable"))
         title.font = .godo(size: 16, weight: .medium)
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                else { return }
-        if windowScene.traitCollection.userInterfaceStyle == .dark {
-            $0.tintColor = .white
-        }
         conf.attributedTitle = title
         $0.configuration = conf
+        $0.tintColor = .plainButtonText
     }
     private let showDeparuteLogButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "bus.show.departure.log"))
         title.font = .godo(size: 16, weight: .medium)
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                else { return }
-        if windowScene.traitCollection.userInterfaceStyle == .dark {
-            $0.tintColor = .white
-        }
         conf.attributedTitle = title
         $0.configuration = conf
+        $0.tintColor = .plainButtonText
     }
     private lazy var buttonStackView: UIView = {
         let view = UIView()
