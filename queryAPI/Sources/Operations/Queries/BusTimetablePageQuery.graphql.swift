@@ -7,22 +7,22 @@ public class BusTimetablePageQuery: GraphQLQuery {
   public static let operationName: String = "BusTimetablePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusTimetablePageQuery($routeID: Int!, $stopID: Int!) { bus( id_: [$stopID] routeId: $routeID weekdays: ["weekdays", "saturday", "sunday"] ) { __typename routes { __typename timetable { __typename weekdays time } } } }"#
+      #"query BusTimetablePageQuery($routes: [Int!]!, $stopID: Int!) { bus( id_: [$stopID] routes: $routes weekdays: ["weekdays", "saturday", "sunday"] ) { __typename routes { __typename info { __typename name } timetable { __typename weekdays time } } } }"#
     ))
 
-  public var routeID: Int
+  public var routes: [Int]
   public var stopID: Int
 
   public init(
-    routeID: Int,
+    routes: [Int],
     stopID: Int
   ) {
-    self.routeID = routeID
+    self.routes = routes
     self.stopID = stopID
   }
 
   public var __variables: Variables? { [
-    "routeID": routeID,
+    "routes": routes,
     "stopID": stopID
   ] }
 
@@ -34,7 +34,7 @@ public class BusTimetablePageQuery: GraphQLQuery {
     public static var __selections: [ApolloAPI.Selection] { [
       .field("bus", [Bus].self, arguments: [
         "id_": [.variable("stopID")],
-        "routeId": .variable("routeID"),
+        "routes": .variable("routes"),
         "weekdays": ["weekdays", "saturday", "sunday"]
       ]),
     ] }
@@ -68,11 +68,31 @@ public class BusTimetablePageQuery: GraphQLQuery {
         public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.BusStopRouteQuery }
         public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("info", Info.self),
           .field("timetable", [Timetable].self),
         ] }
 
+        /// Info
+        public var info: Info { __data["info"] }
         /// Timetable
         public var timetable: [Timetable] { __data["timetable"] }
+
+        /// Bus.Route.Info
+        ///
+        /// Parent Type: `BusRouteQuery`
+        public struct Info: QueryAPI.SelectionSet {
+          public let __data: DataDict
+          public init(_dataDict: DataDict) { __data = _dataDict }
+
+          public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.BusRouteQuery }
+          public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("name", String.self),
+          ] }
+
+          /// Route name
+          public var name: String { __data["name"] }
+        }
 
         /// Bus.Route.Timetable
         ///

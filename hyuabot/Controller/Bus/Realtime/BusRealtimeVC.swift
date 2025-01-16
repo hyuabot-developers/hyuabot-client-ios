@@ -221,9 +221,9 @@ class BusRealtimeVC: UIViewController {
         subscription?.dispose()
     }
     
-    private func moveToEntireTimetable(_ stopID: Int, _ routes: [Int]) {
+    private func moveToEntireTimetable(_ stopID: Int, _ routes: [Int], _ title: String.LocalizationValue) {
         guard let nc = self.navigationController as? BusNC else { return }
-        nc.moveToTimetableVC(stopID: stopID, routes: routes)
+        nc.moveToTimetableVC(stopID: stopID, routes: routes, title: title)
     }
     
     private func openDepartureLogSheet(_ stopID: Int, _ routes: [Int]) {

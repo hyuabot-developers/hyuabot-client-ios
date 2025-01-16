@@ -5,8 +5,8 @@ class BusNC: UINavigationController {
         self.init(rootViewController: BusRealtimeVC())
     }
     
-    func moveToTimetableVC(stopID: Int, routes: [Int]) {
-        let vc = BusTimetableVC(stopID: stopID, routes: routes)
+    func moveToTimetableVC(stopID: Int, routes: [Int], title: String.LocalizationValue) {
+        let vc = BusTimetableVC(stopID: stopID, routes: routes, title: title)
         self.pushViewController(vc, animated: false)
     }
 }
