@@ -8,7 +8,7 @@ class BusRealtimeTabVC: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let refreshMethod: () -> Void
     private let busRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (Int, [Int]) -> ()
+    private let showEntireTimetable: (Int, [Int], String.LocalizationValue) -> ()
     private let showDepartureLog: (Int, [Int]) -> ()
     private let showStopVC: (Int) -> ()
     private lazy var busRealtimeTableView: UITableView = {
@@ -31,7 +31,7 @@ class BusRealtimeTabVC: UIViewController {
     required init (
         tabType: BusRealtimeType,
         refreshMethod: @escaping () -> (),
-        showEntireTimetable: @escaping (Int, [Int]) -> (),
+        showEntireTimetable: @escaping (Int, [Int], String.LocalizationValue) -> (),
         showDepartureLog: @escaping (Int, [Int]) -> (),
         showStopVC: @escaping (Int) -> ()
     ) {
@@ -169,6 +169,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         footerView.setupUI(
             stopID: stopID,
             routes: routes,
+            title: self.busRealtimeSection[section],
             showEntireTimetable: self.showEntireTimetable,
             showDepartureLog: self.showDepartureLog
         )

@@ -341,6 +341,56 @@
         }
       }
     },
+    "bus.timetable.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간표가 제공되지 않는 노선입니다."
+          }
+        }
+      }
+    },
+    "bus.timetable.saturdays" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "토요일"
+          }
+        }
+      }
+    },
+    "bus.timetable.sundays" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일요일"
+          }
+        }
+      }
+    },
+    "bus.timetable.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분 "
+          }
+        }
+      }
+    },
+    "bus.timetable.weekdays" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평일"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {

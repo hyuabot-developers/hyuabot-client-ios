@@ -2,10 +2,11 @@ import UIKit
 
 class BusRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "BusRealtimeFooterView"
-    private var showEntireTimetable: ((_ stopID: Int, _ routes: [Int]) -> Void)?
+    private var showEntireTimetable: ((_ stopID: Int, _ routes: [Int], _ title: String.LocalizationValue) -> Void)?
     private var showDepartureLog: ((_ stopID: Int, _ routes: [Int]) -> Void)?
     private var stopID: Int?
     private var routes: [Int] = []
+    private var title: String.LocalizationValue?
     private let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "bus.show.entire.timetable"))
@@ -58,11 +59,13 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
     func setupUI(
         stopID: Int,
         routes: [Int],
-        showEntireTimetable: @escaping (_ stop: Int, _ routes: [Int]) -> Void,
+        title: String.LocalizationValue,
+        showEntireTimetable: @escaping (_ stop: Int, _ routes: [Int], _ title: String.LocalizationValue) -> Void,
         showDepartureLog: @escaping (_ stop: Int, _ routes: [Int]) -> Void
     ) {
         self.stopID = stopID
         self.routes = routes
+        self.title = title
         self.showEntireTimetable = showEntireTimetable
         self.showDepartureLog = showDepartureLog
         self.contentView.addSubview(buttonStackView)
@@ -74,8 +77,8 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
     }
     
     @objc func entireTimetableButtonTapped() {
-        guard let stopID = self.stopID else { return }
-        self.showEntireTimetable?(stopID, routes)
+        guard let stopID = self.stopID, let title = self.title else { return }
+        self.showEntireTimetable?(stopID, routes, title)
     }
     
     @objc func departureLogButtonTapped() {
