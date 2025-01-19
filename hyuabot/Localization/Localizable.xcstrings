@@ -391,6 +391,46 @@
         }
       }
     },
+    "cafeteria.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학식 메뉴 불러오는 중"
+          }
+        }
+      }
+    },
+    "cafeteria.tab.breakfast" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조식"
+          }
+        }
+      }
+    },
+    "cafeteria.tab.dinner" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "석식"
+          }
+        }
+      }
+    },
+    "cafeteria.tab.lunch" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중식"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {
