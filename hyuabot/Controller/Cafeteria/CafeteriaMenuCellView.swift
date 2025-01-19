@@ -8,6 +8,7 @@ class CafeteriaMenuCellView: UITableViewCell {
         $0.font = .godo(size: 16, weight: .regular)
         $0.numberOfLines = 0
         $0.textAlignment = .center
+        $0.lineBreakMode = .byCharWrapping
     }
     private let pricaLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
