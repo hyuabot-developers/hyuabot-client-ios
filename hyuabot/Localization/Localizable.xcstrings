@@ -401,6 +401,16 @@
         }
       }
     },
+    "cafeteria.menu.price.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 원"
+          }
+        }
+      }
+    },
     "cafeteria.tab.breakfast" : {
       "localizations" : {
         "ko" : {

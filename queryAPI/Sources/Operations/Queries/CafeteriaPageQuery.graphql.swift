@@ -7,7 +7,7 @@ public class CafeteriaPageQuery: GraphQLQuery {
   public static let operationName: String = "CafeteriaPageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query CafeteriaPageQuery($date: Date!, $campusID: Int!) { menu(date: $date, campusId: $campusID) { __typename id menu { __typename type menu price } runningTime { __typename breakfast lunch dinner } } }"#
+      #"query CafeteriaPageQuery($date: Date!, $campusID: Int!) { menu(date: $date, campusId: $campusID) { __typename id name menu { __typename type menu price } runningTime { __typename breakfast lunch dinner } } }"#
     ))
 
   public var date: Date
@@ -52,12 +52,15 @@ public class CafeteriaPageQuery: GraphQLQuery {
       public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
         .field("id", Int.self),
+        .field("name", String.self),
         .field("menu", [Menu].self),
         .field("runningTime", RunningTime.self),
       ] }
 
       /// Cafeteria ID
       public var id: Int { __data["id"] }
+      /// Cafeteria name
+      public var name: String { __data["name"] }
       /// Menu list
       public var menu: [Menu] { __data["menu"] }
       /// Cafeteria running time

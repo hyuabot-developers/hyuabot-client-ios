@@ -4,9 +4,9 @@ import QueryAPI
 
 class CafeteriaVC: UIViewController {
     private let disposeBag = DisposeBag()
-    private lazy var breakfastVC = UIViewController()
-    private lazy var lunchVC = UIViewController()
-    private lazy var dinnerVC = UIViewController()
+    private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
+    private lazy var lunchVC = CafeteriaTabVC(cafeteriaType: .lunch, showCafeteriaInfoVC: openCafeteriaInfoVC)
+    private lazy var dinnerVC = CafeteriaTabVC(cafeteriaType: .dinner, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var filterButton = UIButton().then {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = .hanyangGreen
@@ -100,11 +100,53 @@ class CafeteriaVC: UIViewController {
                 }
             }
         }).disposed(by: disposeBag)
-        CafeteriaData.shared.cafeteriaMenu.subscribe(onNext: { menu in
+        CafeteriaData.shared.cafeteriaMenu.subscribe(onNext: { cafeteriaList in
+            var breakfast = [CafeteriaItem]()
+            var lunch = [CafeteriaItem]()
+            var dinner = [CafeteriaItem]()
+            // Separate the menu into breakfast, lunch, and dinner
+            cafeteriaList.forEach { cafeteria in
+                let breakfastMenu = cafeteria.menu.filter({ $0.type.contains("조식") })
+                let lunchMenu = cafeteria.menu.filter({ $0.type.contains("중식") })
+                let dinnerMenu = cafeteria.menu.filter({ $0.type.contains("석식") })
+                if breakfastMenu.count > 0 {
+                    breakfast.append(CafeteriaItem(
+                        id: cafeteria.id,
+                        name: cafeteria.name,
+                        runningTime: cafeteria.runningTime.breakfast,
+                        menu: breakfastMenu
+                    ))
+                }
+                if lunchMenu.count > 0 {
+                    lunch.append(CafeteriaItem(
+                        id: cafeteria.id,
+                        name: cafeteria.name,
+                        runningTime: cafeteria.runningTime.lunch,
+                        menu: lunchMenu
+                    ))
+                }
+                if dinnerMenu.count > 0 {
+                    dinner.append(CafeteriaItem(
+                        id: cafeteria.id,
+                        name: cafeteria.name,
+                        runningTime: cafeteria.runningTime.dinner,
+                        menu: dinnerMenu
+                    ))
+                }
+                CafeteriaData.shared.breakfastItems.onNext(breakfast)
+                CafeteriaData.shared.lunchItems.onNext(lunch)
+                CafeteriaData.shared.dinnerItems.onNext(dinner)
+            }
+            self.breakfastVC.reload()
+            self.lunchVC.reload()
+            self.dinnerVC.reload()
             self.loadingView.isHidden = true
         }).disposed(by: disposeBag)
     }
     
     @objc private func openFilterVC() {
+    }
+    
+    @objc private func openCafeteriaInfoVC(cafeteriaID: Int) {
     }
 }
