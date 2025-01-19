@@ -5,7 +5,13 @@ import QueryAPI
 class CafeteriaTabVC: UIViewController {
     private let cafeteriaType: CafeteriaType
     private let showCafeteriaInfoVC: (Int) -> Void
-    private lazy var cafeteriaTableViwew: UITableView = {
+    private let noDataLabel = UILabel().then {
+        $0.text = String(localized: "cafeteria.no.data")
+        $0.font = .godo(size: 18, weight: .regular)
+        $0.textColor = .label
+        $0.textAlignment = .center
+    }
+    private lazy var cafeteriaTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
             $0.dataSource = self
@@ -34,9 +40,13 @@ class CafeteriaTabVC: UIViewController {
     }
     
     private func setupUI() {
-        self.view.addSubview(self.cafeteriaTableViwew)
-        self.cafeteriaTableViwew.snp.makeConstraints { make in
+        self.view.addSubview(self.cafeteriaTableView)
+        self.view.addSubview(self.noDataLabel)
+        self.cafeteriaTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
+        }
+        self.noDataLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
     }
     
@@ -44,7 +54,16 @@ class CafeteriaTabVC: UIViewController {
         self.showCafeteriaInfoVC(cafeteriaID)
     }
     
-    func reload() { self.cafeteriaTableViwew.reloadData() }
+    func reload() {
+        self.cafeteriaTableView.reloadData()
+        if (self.cafeteriaTableView.numberOfSections == 0) {
+            self.cafeteriaTableView.isHidden = true
+            self.noDataLabel.isHidden = false
+        } else {
+            self.cafeteriaTableView.isHidden = false
+            self.noDataLabel.isHidden = true
+        }
+    }
 }
 
 extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {

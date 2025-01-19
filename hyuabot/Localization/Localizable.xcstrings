@@ -411,6 +411,16 @@
         }
       }
     },
+    "cafeteria.no.data" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색된 학식 메뉴가 없습니다."
+          }
+        }
+      }
+    },
     "cafeteria.running.time.%@" : {
       "localizations" : {
         "ko" : {
