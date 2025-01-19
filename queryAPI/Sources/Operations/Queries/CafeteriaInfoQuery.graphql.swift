@@ -3,28 +3,20 @@
 
 @_exported import ApolloAPI
 
-public class CafeteriaPageQuery: GraphQLQuery {
-  public static let operationName: String = "CafeteriaPageQuery"
+public class CafeteriaInfoQuery: GraphQLQuery {
+  public static let operationName: String = "CafeteriaInfoQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query CafeteriaPageQuery($date: Date!, $campusID: Int!) { menu(date: $date, campusId: $campusID) { __typename id name menu { __typename type menu price } runningTime { __typename breakfast lunch dinner } } }"#
+      #"query CafeteriaInfoQuery($id: Int!) { menu(id_: $id) { __typename name latitude longitude runningTime { __typename breakfast lunch dinner } } }"#
     ))
 
-  public var date: Date
-  public var campusID: Int
+  public var id: Int
 
-  public init(
-    date: Date,
-    campusID: Int
-  ) {
-    self.date = date
-    self.campusID = campusID
+  public init(id: Int) {
+    self.id = id
   }
 
-  public var __variables: Variables? { [
-    "date": date,
-    "campusID": campusID
-  ] }
+  public var __variables: Variables? { ["id": id] }
 
   public struct Data: QueryAPI.SelectionSet {
     public let __data: DataDict
@@ -32,10 +24,7 @@ public class CafeteriaPageQuery: GraphQLQuery {
 
     public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.Query }
     public static var __selections: [ApolloAPI.Selection] { [
-      .field("menu", [Menu].self, arguments: [
-        "date": .variable("date"),
-        "campusId": .variable("campusID")
-      ]),
+      .field("menu", [Menu].self, arguments: ["id_": .variable("id")]),
     ] }
 
     /// Cafeteria query
@@ -51,43 +40,20 @@ public class CafeteriaPageQuery: GraphQLQuery {
       public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.CafeteriaQuery }
       public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("id", Int.self),
         .field("name", String.self),
-        .field("menu", [Menu].self),
+        .field("latitude", Double.self),
+        .field("longitude", Double.self),
         .field("runningTime", RunningTime.self),
       ] }
 
-      /// Cafeteria ID
-      public var id: Int { __data["id"] }
       /// Cafeteria name
       public var name: String { __data["name"] }
-      /// Menu list
-      public var menu: [Menu] { __data["menu"] }
+      /// Cafeteria latitude
+      public var latitude: Double { __data["latitude"] }
+      /// Cafeteria longitude
+      public var longitude: Double { __data["longitude"] }
       /// Cafeteria running time
       public var runningTime: RunningTime { __data["runningTime"] }
-
-      /// Menu.Menu
-      ///
-      /// Parent Type: `MenuQuery`
-      public struct Menu: QueryAPI.SelectionSet {
-        public let __data: DataDict
-        public init(_dataDict: DataDict) { __data = _dataDict }
-
-        public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.MenuQuery }
-        public static var __selections: [ApolloAPI.Selection] { [
-          .field("__typename", String.self),
-          .field("type", String.self),
-          .field("menu", String.self),
-          .field("price", String.self),
-        ] }
-
-        /// Time type
-        public var type: String { __data["type"] }
-        /// Menu
-        public var menu: String { __data["menu"] }
-        /// Price
-        public var price: String { __data["price"] }
-      }
 
       /// Menu.RunningTime
       ///

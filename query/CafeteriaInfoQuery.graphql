@@ -1,0 +1,7 @@
+query CafeteriaInfoQuery($id: Int!) {
+  menu(id_: $id) {
+    name, latitude, longitude, runningTime {
+      breakfast, lunch, dinner
+    }
+  }
+}
