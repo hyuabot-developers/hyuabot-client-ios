@@ -411,6 +411,16 @@
         }
       }
     },
+    "cafeteria.running.time.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "운영 시간 : %@"
+          }
+        }
+      }
+    },
     "cafeteria.tab.breakfast" : {
       "localizations" : {
         "ko" : {
