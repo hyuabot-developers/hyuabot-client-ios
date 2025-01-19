@@ -183,5 +183,11 @@ class CafeteriaVC: UIViewController {
         CafeteriaData.shared.feedDate.onNext(date!)
     }
     @objc private func openCafeteriaInfoVC(cafeteriaID: Int) {
+        let vc = CafeteriaInfoVC(cafeteriaID: cafeteriaID)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
     }
 }
