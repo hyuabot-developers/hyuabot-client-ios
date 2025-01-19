@@ -160,9 +160,9 @@ class CafeteriaVC: UIViewController {
                         menu: dinnerMenu
                     ))
                 }
-                CafeteriaData.shared.breakfastItems.onNext(breakfast)
-                CafeteriaData.shared.lunchItems.onNext(lunch)
-                CafeteriaData.shared.dinnerItems.onNext(dinner)
+                CafeteriaData.shared.breakfastItems.onNext(breakfast.sorted(by: { $0.id < $1.id }))
+                CafeteriaData.shared.lunchItems.onNext(lunch.sorted(by: { $0.id < $1.id }))
+                CafeteriaData.shared.dinnerItems.onNext(dinner.sorted(by: { $0.id < $1.id }))
             }
             self.breakfastVC.reload()
             self.lunchVC.reload()
