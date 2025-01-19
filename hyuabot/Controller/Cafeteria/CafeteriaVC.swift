@@ -7,15 +7,6 @@ class CafeteriaVC: UIViewController {
     private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var lunchVC = CafeteriaTabVC(cafeteriaType: .lunch, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var dinnerVC = CafeteriaTabVC(cafeteriaType: .dinner, showCafeteriaInfoVC: openCafeteriaInfoVC)
-    private lazy var filterButton = UIButton().then {
-        var config = UIButton.Configuration.filled()
-        config.baseBackgroundColor = .hanyangGreen
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "line.horizontal.3.decrease")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
-        $0.configuration = config
-        $0.addTarget(self, action: #selector(openFilterVC), for: .touchUpInside)
-    }
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0))
         // Add the content pages to the view pager
@@ -32,6 +23,31 @@ class CafeteriaVC: UIViewController {
         ]
         return viewPager
     }()
+    
+    private lazy var previousDateButton = UIButton().then {
+        var conf = UIButton.Configuration.plain()
+        var icon = UIImage(systemName: "chevron.left")
+        icon?.withTintColor(.plainButtonText, renderingMode: .alwaysOriginal)
+        conf.image = icon
+        $0.configuration = conf
+        $0.tintColor = .plainButtonText
+        $0.addTarget(self, action: #selector(previousDateButtonTapped), for: .touchUpInside)
+    }
+    private lazy var feedDatePicker = UIDatePicker().then {
+        $0.datePickerMode = .date
+        $0.preferredDatePickerStyle = .compact
+        $0.locale = Locale(identifier: "ko_KR")
+        $0.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
+    }
+    private lazy var nextDateButton = UIButton().then {
+        var conf = UIButton.Configuration.plain()
+        var icon = UIImage(systemName: "chevron.right")
+        icon?.withTintColor(.plainButtonText, renderingMode: .alwaysOriginal)
+        conf.image = icon
+        $0.configuration = conf
+        $0.tintColor = .plainButtonText
+        $0.addTarget(self, action: #selector(nextDateButtonTapped), for: .touchUpInside)
+    }
     private let loadingSpinner = UIActivityIndicatorView().then {
         $0.style = .large
         $0.color = .label
@@ -71,15 +87,25 @@ class CafeteriaVC: UIViewController {
     private func setupUI() {
         self.view.addSubview(viewPager)
         self.view.addSubview(loadingView)
-        self.view.addSubview(filterButton)
+        self.view.addSubview(previousDateButton)
+        self.view.addSubview(feedDatePicker)
+        self.view.addSubview(nextDateButton)
+        self.feedDatePicker.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+            make.height.equalTo(50)
+        }
+        self.previousDateButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(20)
+            make.centerY.equalTo(feedDatePicker)
+        }
+        self.nextDateButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.centerY.equalTo(feedDatePicker)
+        }
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-        }
-        self.filterButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
-            make.width.height.equalTo(50)
+            make.bottom.equalTo(feedDatePicker.snp.top)
         }
         self.loadingView.snp.makeConstraints { make in
             make.edges.equalTo(viewPager)
@@ -92,6 +118,7 @@ class CafeteriaVC: UIViewController {
                 $0.dateFormat = "yyyy-MM-dd"
             }
             let date = dateForm.string(from: feedDate)
+            self.feedDatePicker.date = feedDate
             Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: 2)) { result in
                 if case .success(let data) = result {
                     if let data = data.data {
@@ -144,9 +171,17 @@ class CafeteriaVC: UIViewController {
         }).disposed(by: disposeBag)
     }
     
-    @objc private func openFilterVC() {
+    @objc private func previousDateButtonTapped() {
+        let date = Calendar.current.date(byAdding: .day, value: -1, to: feedDatePicker.date)
+        CafeteriaData.shared.feedDate.onNext(date!)
     }
-    
+    @objc private func datePickerValueChanged() {
+        CafeteriaData.shared.feedDate.onNext(feedDatePicker.date)
+    }
+    @objc private func nextDateButtonTapped() {
+        let date = Calendar.current.date(byAdding: .day, value: 1, to: feedDatePicker.date)
+        CafeteriaData.shared.feedDate.onNext(date!)
+    }
     @objc private func openCafeteriaInfoVC(cafeteriaID: Int) {
     }
 }
