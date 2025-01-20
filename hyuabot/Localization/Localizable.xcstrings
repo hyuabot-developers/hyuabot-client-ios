@@ -1081,6 +1081,326 @@
         }
       }
     },
+    "subway.realtime.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@)"
+          }
+        }
+      }
+    },
+    "subway.realtime.almost.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (전역 출발)"
+          }
+        }
+      }
+    },
+    "subway.realtime.arrived.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@ 도착)"
+          }
+        }
+      }
+    },
+    "subway.realtime.departed.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@ 출발)"
+          }
+        }
+      }
+    },
+    "subway.realtime.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도착 예정인 전철 정보가 없습니다."
+          }
+        }
+      }
+    },
+    "subway.realtime.entering.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@ 진입)"
+          }
+        }
+      }
+    },
+    "subway.realtime.last.almost.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (전역 출발, 막차)"
+          }
+        }
+      }
+    },
+    "subway.realtime.last.arrived.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@ 도착, 막차)"
+          }
+        }
+      }
+    },
+    "subway.realtime.last.departed.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@ 출발, 막차)"
+          }
+        }
+      }
+    },
+    "subway.realtime.last.entering.%lld.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld분 (%2$@ 진입, 막차)"
+          }
+        }
+      }
+    },
+    "subway.realtime.section.4.down" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4호선 (안산.오이도)"
+          }
+        }
+      }
+    },
+    "subway.realtime.section.4.up" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4호선 (사당.당고개)"
+          }
+        }
+      }
+    },
+    "subway.realtime.section.suin.down" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수인선 (오이도.인천)"
+          }
+        }
+      }
+    },
+    "subway.realtime.section.suin.up" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수인선 (왕십리.수원)"
+          }
+        }
+      }
+    },
+    "subway.realtime.section.transfer.down" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "환승 정보 (한대앞 → 인천)"
+          }
+        }
+      }
+    },
+    "subway.realtime.section.transfer.up" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "환승 정보 (인천 → 한대앞)"
+          }
+        }
+      }
+    },
+    "subway.show.entire.timetable" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 보기"
+          }
+        }
+      }
+    },
+    "subway.station.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
+    "subway.station.k209" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "청량리"
+          }
+        }
+      }
+    },
+    "subway.station.k210" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왕십리"
+          }
+        }
+      }
+    },
+    "subway.station.k233" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "죽전"
+          }
+        }
+      }
+    },
+    "subway.station.k246" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "고색"
+          }
+        }
+      }
+    },
+    "subway.station.k258" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오이도"
+          }
+        }
+      }
+    },
+    "subway.station.k272" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인천"
+          }
+        }
+      }
+    },
+    "subway.station.k409" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "당고개"
+          }
+        }
+      }
+    },
+    "subway.station.k411" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노원"
+          }
+        }
+      }
+    },
+    "subway.station.k419" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한성대"
+          }
+        }
+      }
+    },
+    "subway.station.k433" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사당"
+          }
+        }
+      }
+    },
+    "subway.station.k443" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "금정"
+          }
+        }
+      }
+    },
+    "subway.station.k444" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "산본"
+          }
+        }
+      }
+    },
+    "subway.station.k453" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안산"
+          }
+        }
+      }
+    },
+    "subway.station.k456" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오이도"
+          }
+        }
+      }
+    },
     "subway.tab.blue" : {
       "localizations" : {
         "ko" : {
@@ -1107,6 +1427,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "수인분당선"
+          }
+        }
+      }
+    },
+    "subway.terminal.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 행"
+          }
+        }
+      }
+    },
+    "subway.time.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld시 %02lld분 출발"
           }
         }
       }
