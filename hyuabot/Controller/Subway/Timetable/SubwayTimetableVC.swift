@@ -6,8 +6,8 @@ class SubwayTimetableVC: UIViewController {
     private let timetableTitle: String.LocalizationValue
     private let heading: SubwayHeadingEnum
     private let disposeBag = DisposeBag()
-    private let weekdaysVC = UIViewController()
-    private let weekendsVC = UIViewController()
+    private lazy var weekdaysVC = SubwayTimetableTabVC(heading: self.heading, isWeekdays: true)
+    private lazy var weekendsVC = SubwayTimetableTabVC(heading: self.heading, isWeekdays: false)
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0), navigationBarEnabled: true)
         viewPager.tabView.tabs = [
@@ -115,9 +115,17 @@ class SubwayTimetableVC: UIViewController {
     private func observeSubjects() {
         SubwayTimetableData.shared.subwayTimetableUp.subscribe(onNext: { timetable in
             SubwayTimetableData.shared.isLoading.onNext(false)
+            SubwayTimetableData.shared.subwayTimetableUpWeekdays.onNext(timetable.filter { $0.weekdays == true })
+            SubwayTimetableData.shared.subwayTimetableUpWeekends.onNext(timetable.filter { $0.weekdays == false })
+            self.weekdaysVC.reload()
+            self.weekendsVC.reload()
         }).disposed(by: disposeBag)
         SubwayTimetableData.shared.subwayTimetableDown.subscribe(onNext: { timetable in
             SubwayTimetableData.shared.isLoading.onNext(false)
+            SubwayTimetableData.shared.subwayTimetableDownWeekdays.onNext(timetable.filter { $0.weekdays == true })
+            SubwayTimetableData.shared.subwayTimetableDownWeekends.onNext(timetable.filter { $0.weekdays == false })
+            self.weekdaysVC.reload()
+            self.weekendsVC.reload()
         }).disposed(by: disposeBag)
         SubwayTimetableData.shared.isLoading.subscribe(onNext: { isLoading in
             if (isLoading) {
