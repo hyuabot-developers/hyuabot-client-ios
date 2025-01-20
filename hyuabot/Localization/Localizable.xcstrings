@@ -1081,6 +1081,36 @@
         }
       }
     },
+    "subway.tab.blue" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4호선"
+          }
+        }
+      }
+    },
+    "subway.tab.transfer" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4호선 ↭ 수인선"
+          }
+        }
+      }
+    },
+    "subway.tab.yellow" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수인분당선"
+          }
+        }
+      }
+    },
     "tabbar.bus" : {
       "localizations" : {
         "ko" : {
