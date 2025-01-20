@@ -20,6 +20,7 @@ class SubwayRealtimeTabVC: UIViewController {
             $0.showsVerticalScrollIndicator = false
             // Register cell
             $0.register(SubwayRealtimeCellView.self, forCellReuseIdentifier: SubwayRealtimeCellView.reuseIdentifier)
+            $0.register(SubwayTransferCellView.self, forCellReuseIdentifier: SubwayTransferCellView.reuseIdentifier)
             $0.register(SubwayRealtimeEmptyCellView.self, forCellReuseIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier)
             $0.register(SubwayRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: SubwayRealtimeHeaderView.reuseIdentifier)
             $0.register(SubwayRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: SubwayRealtimeFooterView.reuseIdentifier)
@@ -116,6 +117,14 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
                 guard let items = try? SubwayRealtimeData.shared.lineSuinDown.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 6)
             }
+        } else if (self.tabType == .transfer) {
+            if (section == 0) {
+                guard let items = try? SubwayRealtimeData.shared.transferUp.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 60)
+            } else if (section == 1) {
+                guard let items = try? SubwayRealtimeData.shared.transferDown.value() else { return 1 }
+                return items.isEmpty ? 1 : min(items.count, 60)
+            }
         }
         return 1
     }
@@ -154,6 +163,24 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
                 }
                 cell.setupUI(tabType: self.tabType, item: items[indexPath.row])
             }
+        } else if (self.tabType == .transfer) {
+            guard let transferCell = tableView.dequeueReusableCell(withIdentifier: SubwayTransferCellView.reuseIdentifier) as? SubwayTransferCellView else { return UITableViewCell() }
+            if (indexPath.section == 0) {
+                guard let items = try? SubwayRealtimeData.shared.transferUp.value() else { return UITableViewCell() }
+                if (items.isEmpty) {
+                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
+                    return cell
+                }
+                transferCell.setupUI(item: items[indexPath.row])
+            } else if (indexPath.section == 1) {
+                guard let items = try? SubwayRealtimeData.shared.transferDown.value() else { return UITableViewCell() }
+                if (items.isEmpty) {
+                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
+                    return cell
+                }
+                transferCell.setupUI(item: items[indexPath.row])
+            }
+            return transferCell
         }
         return cell
     }

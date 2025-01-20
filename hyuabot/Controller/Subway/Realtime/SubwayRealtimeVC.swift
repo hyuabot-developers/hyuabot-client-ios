@@ -117,22 +117,22 @@ class SubwayRealtimeVC: UIViewController {
             let lineSuinUpMax = lineSuinUp.max { $0.realtimeUp?.time ?? 0 < $1.realtimeUp?.time ?? 0 }?.realtimeUp?.time ?? 0
             let lineSuinDownMax = lineSuinDown.max { $0.realtimeDown?.time ?? 0 < $1.realtimeDown?.time ?? 0 }?.realtimeDown?.time ?? 0
             line4Item?.timetable.up.filter {
-                self?.calculateRemainingTime(departureTime: $0.time, maxValue: line4UpMax) ?? false
+                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: line4UpMax) ?? false
             }.forEach {
                 line4Up.append(SubwayRealtimeItem(timetableUp: $0))
             }
             line4Item?.timetable.down.filter {
-                self?.calculateRemainingTime(departureTime: $0.time, maxValue: line4DownMax) ?? false
+                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: line4DownMax) ?? false
             }.forEach {
                 line4Down.append(SubwayRealtimeItem(timetableDown: $0))
             }
             lineSuinItem?.timetable.up.filter {
-                self?.calculateRemainingTime(departureTime: $0.time, maxValue: lineSuinUpMax) ?? false
+                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: lineSuinUpMax) ?? false
             }.forEach {
                 lineSuinUp.append(SubwayRealtimeItem(timetableUp: $0))
             }
             lineSuinItem?.timetable.down.filter {
-                self?.calculateRemainingTime(departureTime: $0.time, maxValue: lineSuinDownMax) ?? false
+                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: lineSuinDownMax) ?? false
             }.forEach {
                 lineSuinDown.append(SubwayRealtimeItem(timetableDown: $0))
             }
@@ -141,6 +141,30 @@ class SubwayRealtimeVC: UIViewController {
             SubwayRealtimeData.shared.line4Down.onNext(line4Down)
             SubwayRealtimeData.shared.lineSuinUp.onNext(lineSuinUp)
             SubwayRealtimeData.shared.lineSuinDown.onNext(lineSuinDown)
+            // Transfer Data
+            var transferUp = [SubwayTransferItem]()
+            var transferDown = [SubwayTransferItem]()
+            guard let line4Transfer = data.first(where: { $0.id == "K456" }) else { return }
+            guard let lineSuinTransfer = data.first(where: { $0.id == "K258" }) else { return }
+            lineSuinTransfer.realtime.up.filter { $0.terminal.id < "K251" }.forEach { item in
+                transferUp.append(SubwayTransferItem(upFrom: item, upTo: nil, downFrom: nil, downTo: nil))
+            }
+            lineSuinTransfer.realtime.up.filter { $0.terminal.id == "K258" }.forEach { item in
+                guard let transferItem = line4Transfer.timetable.up.first(where: {
+                    (self?.calculateRemainingTime(current: Date.now, departureTime: $0.time) ?? 999) > Int(item.time)
+                }) else { return }
+                transferUp.append(SubwayTransferItem(upFrom: item, upTo: transferItem, downFrom: nil, downTo: nil))
+            }
+            lineSuinTransfer.realtime.down.filter { $0.terminal.id == "K272" && $0.time > 20 }.forEach { item in
+                transferDown.append(SubwayTransferItem(upFrom: nil, upTo: nil, downFrom: item, downTo: nil))
+            }
+            line4Transfer.realtime.down.filter({ $0.time > 20 }).forEach{ item in
+                guard let firstItem = lineSuinTransfer.timetable.down.filter({ (self?.calculateRemainingTime(current: Date.now, departureTime: $0.time) ?? 999) > Int(item.time) }).first else { return }
+                transferDown.append(SubwayTransferItem(upFrom: nil, upTo: nil, downFrom: item, downTo: firstItem))
+            }
+            SubwayRealtimeData.shared.transferUp.onNext(transferUp.sorted { $0.upFrom?.time ?? 0 < $1.upFrom?.time ?? 0 })
+            SubwayRealtimeData.shared.transferDown.onNext(transferDown.sorted { $0.downFrom?.time ?? 0 < $1.downFrom?.time ?? 0 })
+            
         }).disposed(by: disposeBag)
         SubwayRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
             if (isLoading) {
@@ -185,7 +209,7 @@ class SubwayRealtimeVC: UIViewController {
 
     }
     
-    private func calculateRemainingTime(departureTime: String, maxValue: Double) -> Bool {
+    private func checkTimetableAfterRealtime(departureTime: String, maxValue: Double) -> Bool {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
@@ -195,6 +219,17 @@ class SubwayRealtimeVC: UIViewController {
         let second = calendar.component(.second, from: departureTime!)
         let remainingTime = (hour * 3600 + minute * 60 + second) - (calendar.component(.hour, from: Date.now) * 3600 + calendar.component(.minute, from: Date.now) * 60 + calendar.component(.second, from: Date.now)) // in seconds
         return remainingTime > Int(maxValue * 60)
+    }
+    
+    private func calculateRemainingTime(current: Foundation.Date, departureTime: String) -> Int {
+        let splitTime = departureTime.split(separator: ":")
+        var hour = Int(splitTime[0])!
+        if hour < 4 {
+            hour += 24
+        }
+        let minute = Int(splitTime[1])!
+        let timeDelta = 60 * (hour - Calendar.current.component(.hour, from: current)) + (minute - Calendar.current.component(.minute, from: current))
+        return timeDelta
     }
     
     @objc func appDidEnterBackground() { self.stopPolling() }
