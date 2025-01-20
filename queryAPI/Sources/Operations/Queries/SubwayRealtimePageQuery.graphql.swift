@@ -7,7 +7,7 @@ public class SubwayRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "SubwayRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayRealtimePageQuery($start: Time!) { subway(id_: ["K449", "K251"], start: $start) { __typename id realtime { __typename up { __typename stop location time trainNo express last status terminal { __typename id } updatedAt } down { __typename stop location time trainNo express last status terminal { __typename id } updatedAt } } timetable { __typename up { __typename weekdays time terminal { __typename id } } down { __typename weekdays time terminal { __typename id } } } } }"#
+      #"query SubwayRealtimePageQuery($start: Time!) { subway(id_: ["K449", "K251", "K456", "K258"], start: $start) { __typename id realtime { __typename up { __typename stop location time trainNo express last status terminal { __typename id } updatedAt } down { __typename stop location time trainNo express last status terminal { __typename id } updatedAt } } timetable { __typename up { __typename weekdays time terminal { __typename id } } down { __typename weekdays time terminal { __typename id } } } } }"#
     ))
 
   public var start: Time
@@ -25,7 +25,7 @@ public class SubwayRealtimePageQuery: GraphQLQuery {
     public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.Query }
     public static var __selections: [ApolloAPI.Selection] { [
       .field("subway", [Subway].self, arguments: [
-        "id_": ["K449", "K251"],
+        "id_": ["K449", "K251", "K456", "K258"],
         "start": .variable("start")
       ]),
     ] }
