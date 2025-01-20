@@ -1451,6 +1451,36 @@
         }
       }
     },
+    "subway.timetable.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전철 시간표 불러오는 중..."
+          }
+        }
+      }
+    },
+    "subway.timetable.weekdays" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평일"
+          }
+        }
+      }
+    },
+    "subway.timetable.weekends" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말"
+          }
+        }
+      }
+    },
     "subway.transfer.%@.%@" : {
       "localizations" : {
         "ko" : {

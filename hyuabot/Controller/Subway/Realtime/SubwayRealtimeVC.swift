@@ -205,9 +205,9 @@ class SubwayRealtimeVC: UIViewController {
         subscription?.dispose()
     }
     
-    private func showEntireTimetable(title: String.LocalizationValue) {
+    private func showEntireTimetable(title: String.LocalizationValue, heading: SubwayHeadingEnum) {
         guard let nc = self.navigationController as? SubwayNC else { return }
-        nc.moveToTimetableVC(timetableTitle: title)
+        nc.moveToTimetableVC(timetableTitle: title, heading: heading)
     }
     
     private func checkTimetableAfterRealtime(departureTime: String, maxValue: Double) -> Bool {

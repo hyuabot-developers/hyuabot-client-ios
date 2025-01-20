@@ -5,8 +5,8 @@ class SubwayNC: UINavigationController {
         self.init(rootViewController: SubwayRealtimeVC())
     }
     
-    func moveToTimetableVC(timetableTitle: String.LocalizationValue) {
-        let timetableVC = SubwayTimetableVC(timetableTitle: timetableTitle)
+    func moveToTimetableVC(timetableTitle: String.LocalizationValue, heading: SubwayHeadingEnum) {
+        let timetableVC = SubwayTimetableVC(timetableTitle: timetableTitle, heading: heading)
         pushViewController(timetableVC, animated: false)
     }
 }

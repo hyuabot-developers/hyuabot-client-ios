@@ -8,7 +8,7 @@ class SubwayRealtimeTabVC: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let refreshMethod: () -> ()
     private let subwayRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (String.LocalizationValue) -> ()
+    private let showEntireTimetable: (String.LocalizationValue, SubwayHeadingEnum) -> ()
     private lazy var subwayRealtimeTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -31,7 +31,7 @@ class SubwayRealtimeTabVC: UIViewController {
     required init (
         tabType: SubwayTabType,
         refreshMethod: @escaping () -> (),
-        showEntireTimetable: @escaping (String.LocalizationValue) -> ()
+        showEntireTimetable: @escaping (String.LocalizationValue, SubwayHeadingEnum) -> ()
     ) {
         self.tabType = tabType
         self.refreshMethod = refreshMethod
@@ -94,7 +94,10 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
         footerView.setupUI(
             tabType: self.tabType,
             showEntireTimetable: {
-                self.showEntireTimetable(self.subwayRealtimeSection[section])
+                self.showEntireTimetable(
+                    self.subwayRealtimeSection[section],
+                    section == 0 ? .up : .down
+                )
             }
         )
         return footerView
