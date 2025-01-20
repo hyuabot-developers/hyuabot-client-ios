@@ -206,7 +206,8 @@ class SubwayRealtimeVC: UIViewController {
     }
     
     private func showEntireTimetable(title: String.LocalizationValue) {
-
+        guard let nc = self.navigationController as? SubwayNC else { return }
+        nc.moveToTimetableVC(timetableTitle: title)
     }
     
     private func checkTimetableAfterRealtime(departureTime: String, maxValue: Double) -> Bool {
