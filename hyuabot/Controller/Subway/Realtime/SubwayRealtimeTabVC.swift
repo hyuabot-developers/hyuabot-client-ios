@@ -123,10 +123,10 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
         } else if (self.tabType == .transfer) {
             if (section == 0) {
                 guard let items = try? SubwayRealtimeData.shared.transferUp.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 60)
+                return items.isEmpty ? 1 : min(items.count, 6)
             } else if (section == 1) {
                 guard let items = try? SubwayRealtimeData.shared.transferDown.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 60)
+                return items.isEmpty ? 1 : min(items.count, 6)
             }
         }
         return 1

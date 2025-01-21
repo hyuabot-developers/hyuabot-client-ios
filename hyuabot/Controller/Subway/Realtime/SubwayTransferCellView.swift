@@ -50,32 +50,32 @@ class SubwayTransferCellView: UITableViewCell {
             if (item.upTo != nil) {
                 self.arrowLabel.isHidden = false
                 self.fromLabel.text = String(
-                    localized: "subway.transfer.\(getDestinationLabelText(item.upFrom!.terminal.id)).\(getRealtimeLabelText(item.upFrom!.time, item.upFrom!.location))"
+                    localized: "subway.transfer.up.\(getDestinationLabelText(item.upFrom!.terminal.id)).\(getRealtimeLabelTextWithoutTime(item.upFrom!.location, item.upFrom!.status))"
                 )
                 self.toLabel.text = String(
-                    localized: "subway.transfer.\(getDestinationLabelText(item.upTo!.terminal.id)).\(getTimetableLabelText(item.upTo!.time))"
+                    localized: "subway.transfer.timetable.\(getDestinationLabelText(item.upTo!.terminal.id)).\(getTimetableLabelText(item.upTo!.time))"
                 )
             } else {
                 self.arrowLabel.isHidden = true
                 self.toLabel.text = ""
                 self.fromLabel.text = String(
-                    localized: "subway.transfer.\(getDestinationLabelText(item.upFrom!.terminal.id)).\(getRealtimeLabelText(item.upFrom!.time, item.upFrom!.location))"
+                    localized: "subway.transfer.up.\(getDestinationLabelText(item.upFrom!.terminal.id)).\(getRealtimeLabelTextWithoutTime(item.upFrom!.location, item.upFrom!.status))"
                 )
             }
         } else if (item.downFrom != nil) {
             if (item.downTo != nil) {
                 self.arrowLabel.isHidden = false
                 self.fromLabel.text = String(
-                    localized: "subway.transfer.\(getDestinationLabelText(item.downFrom!.terminal.id)).\(getRealtimeLabelText(item.downFrom!.time, item.downFrom!.location))"
+                    localized: "subway.transfer.down.\(getDestinationLabelText(item.downFrom!.terminal.id)).\(getRealtimeLabelText(item.downFrom!.time - 18, item.downFrom!.location))"
                 )
                 self.toLabel.text = String(
-                    localized: "subway.transfer.\(getDestinationLabelText(item.downTo!.terminal.id)).\(getTimetableLabelText(item.downTo!.time))"
+                    localized: "subway.transfer.timetable.\(getDestinationLabelText(item.downTo!.terminal.id)).\(getTimetableLabelText(item.downTo!.time))"
                 )
             } else {
                 self.arrowLabel.isHidden = true
                 self.toLabel.text = ""
                 self.fromLabel.text = String(
-                    localized: "subway.transfer.\(getDestinationLabelText(item.downFrom!.terminal.id)).\(getRealtimeLabelText(item.downFrom!.time, item.downFrom!.location))"
+                    localized: "subway.transfer.down.\(getDestinationLabelText(item.downFrom!.terminal.id)).\(getRealtimeLabelText(item.downFrom!.time - 18, item.downFrom!.location))"
                 )
             }
         }
@@ -105,6 +105,19 @@ class SubwayTransferCellView: UITableViewCell {
     
     private func getRealtimeLabelText(_ time: Double, _ location: String) -> String {
         return String(localized: "subway.realtime.\(Int(time)).\(location)")
+    }
+    
+    private func getRealtimeLabelTextWithoutTime(_ location: String, _ status: Int? = nil) -> String {
+        if (status == 0) {
+            return String(localized: "subway.transfer.entering.\(location)")
+        } else if (status == 1) {
+            return String(localized: "subway.transfer.arrived.\(location)")
+        } else if (status == 2) {
+            return String(localized: "subway.transfer.departed.\(location)")
+        } else if (status == 3) {
+            return String(localized: "subway.transfer.almost.\(location)")
+        }
+        return ""
     }
     
     private func getTimetableLabelText(_ departureTime: String) -> String {

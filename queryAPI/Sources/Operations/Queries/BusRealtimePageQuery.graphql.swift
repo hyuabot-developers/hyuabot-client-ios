@@ -7,7 +7,7 @@ public class BusRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "BusRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusRealtimePageQuery($busStart: Time!) { bus( id_: [ 216000138 216000759 216000381 216000117 216000379 216000383 216000070 216000719 213000487 ] start: $busStart ) { __typename id name latitude longitude routes { __typename info { __typename id name } realtime { __typename sequence stop time seat lowFloor updatedAt } timetable { __typename weekdays time } } } }"#
+      #"query BusRealtimePageQuery($busStart: Time!) { bus( id_: [216000138, 216000759, 216000117, 216000379, 216000070, 216000719, 213000487] start: $busStart ) { __typename id name latitude longitude routes { __typename info { __typename id name } realtime { __typename sequence stop time seat lowFloor updatedAt } timetable { __typename weekdays time } } } }"#
     ))
 
   public var busStart: Time
@@ -25,7 +25,7 @@ public class BusRealtimePageQuery: GraphQLQuery {
     public static var __parentType: any ApolloAPI.ParentType { QueryAPI.Objects.Query }
     public static var __selections: [ApolloAPI.Selection] { [
       .field("bus", [Bus].self, arguments: [
-        "id_": [216000138, 216000759, 216000381, 216000117, 216000379, 216000383, 216000070, 216000719, 213000487],
+        "id_": [216000138, 216000759, 216000117, 216000379, 216000070, 216000719, 213000487],
         "start": .variable("busStart")
       ]),
     ] }

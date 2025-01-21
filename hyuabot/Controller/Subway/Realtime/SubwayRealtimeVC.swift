@@ -155,10 +155,10 @@ class SubwayRealtimeVC: UIViewController {
                 }) else { return }
                 transferUp.append(SubwayTransferItem(upFrom: item, upTo: transferItem, downFrom: nil, downTo: nil))
             }
-            lineSuinTransfer.realtime.down.filter { $0.terminal.id == "K272" && $0.time > 20 }.forEach { item in
+            lineSuinTransfer.realtime.down.filter { $0.terminal.id == "K272" && $0.time > 18 }.forEach { item in
                 transferDown.append(SubwayTransferItem(upFrom: nil, upTo: nil, downFrom: item, downTo: nil))
             }
-            line4Transfer.realtime.down.filter({ $0.time > 20 }).forEach{ item in
+            line4Transfer.realtime.down.filter({ $0.time > 18 }).forEach{ item in
                 guard let firstItem = lineSuinTransfer.timetable.down.filter({ (self?.calculateRemainingTime(current: Date.now, departureTime: $0.time) ?? 999) > Int(item.time) }).first else { return }
                 transferDown.append(SubwayTransferItem(upFrom: nil, upTo: nil, downFrom: item, downTo: firstItem))
             }
