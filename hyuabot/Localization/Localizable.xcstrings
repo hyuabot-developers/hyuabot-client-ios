@@ -1591,17 +1591,67 @@
         }
       }
     },
-    "subway.transfer.%@.%@" : {
+    "subway.transfer.almost.%@" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "(%1$@) %2$@"
+            "value" : "전역 출발"
+          }
+        }
+      }
+    },
+    "subway.transfer.arrived.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 도착"
+          }
+        }
+      }
+    },
+    "subway.transfer.departed.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 출발"
           }
         }
       }
     },
     "subway.transfer.down.%@.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@행) %2$@"
+          }
+        }
+      }
+    },
+    "subway.transfer.entering.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 진입"
+          }
+        }
+      }
+    },
+    "subway.transfer.timetable.%@.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@행) %2$@"
+          }
+        }
+      }
+    },
+    "subway.transfer.up.%@.%@" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
