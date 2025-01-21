@@ -34,12 +34,39 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupUI(title: String, runningTime: String?, showCafeteriaInfoVC: @escaping () -> ()) {
+    func setupUI(id: Int, runningTime: String?, showCafeteriaInfoVC: @escaping () -> ()) {
+        var title = ""
+        switch id {
+        case 1:
+            title = String(localized: "cafeteria.title.1")
+        case 2:
+            title = String(localized: "cafeteria.title.2")
+        case 4:
+            title = String(localized: "cafeteria.title.4")
+        case 6:
+            title = String(localized: "cafeteria.title.6")
+        case 7:
+            title = String(localized: "cafeteria.title.7")
+        case 8:
+            title = String(localized: "cafeteria.title.8")
+        case 11:
+            title = String(localized: "cafeteria.title.11")
+        case 12:
+            title = String(localized: "cafeteria.title.12")
+        case 13:
+            title = String(localized: "cafeteria.title.13")
+        case 14:
+            title = String(localized: "cafeteria.title.14")
+        case 15:
+            title = String(localized: "cafeteria.title.15")
+        default:
+            title = String(localized: "cafeteria.title.1")
+        }
+        self.titleLabel.text = title
         self.showCafeteriaInfoVC = showCafeteriaInfoVC
         self.contentView.addSubview(nameStackView)
         self.contentView.addSubview(infoButton)
         self.contentView.backgroundColor = .hanyangBlue
-        self.titleLabel.text = title
         self.runningTimeLabel.text = String(localized: "cafeteria.running.time.\(runningTime ?? "")")
         self.nameStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(10)

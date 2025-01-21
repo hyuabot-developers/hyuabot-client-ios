@@ -86,19 +86,19 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
-            headerView.setupUI(title: item.name, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
+            headerView.setupUI(id: item.id, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
                 self?.showCafeteriaInfoVC(cafeteriaID: item.id)
             })
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
-            headerView.setupUI(title: item.name, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
+            headerView.setupUI(id: item.id, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
                 self?.showCafeteriaInfoVC(cafeteriaID: item.id)
             })
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
-            headerView.setupUI(title: item.name, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
+            headerView.setupUI(id: item.id, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
                 self?.showCafeteriaInfoVC(cafeteriaID: item.id)
             })
         }
