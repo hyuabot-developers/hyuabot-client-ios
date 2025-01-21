@@ -1601,6 +1601,16 @@
         }
       }
     },
+    "subway.transfer.down.%@.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@행) %2$@"
+          }
+        }
+      }
+    },
     "tabbar.bus" : {
       "localizations" : {
         "ko" : {
