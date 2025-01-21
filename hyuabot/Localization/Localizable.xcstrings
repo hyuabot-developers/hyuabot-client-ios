@@ -501,6 +501,116 @@
         }
       }
     },
+    "cafeteria.title.1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학생회관"
+          }
+        }
+      }
+    },
+    "cafeteria.title.2" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "생활과학관식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.4" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "신소재공학관 식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.6" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제1생활관 식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.7" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제2생활관 식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.8" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "행원파크"
+          }
+        }
+      }
+    },
+    "cafeteria.title.11" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "교직원식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.12" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학생식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.13" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "창의인재원식당"
+          }
+        }
+      }
+    },
+    "cafeteria.title.14" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "푸드코트"
+          }
+        }
+      }
+    },
+    "cafeteria.title.15" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "창업보육센터"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {
