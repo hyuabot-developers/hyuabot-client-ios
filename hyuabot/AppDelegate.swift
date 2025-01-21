@@ -29,13 +29,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         tabBarAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 10, weight: .regular)], for: .normal)
         // Global navigation bar appearance
         let navigationBarAppearance = UINavigationBarAppearance().then {
+            $0.backgroundColor = .hanyangBlue
             $0.titleTextAttributes = [
                 NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .bold),
                 NSAttributedString.Key.foregroundColor: UIColor.white
             ]
-            $0.backgroundColor = .hanyangBlue
+            $0.buttonAppearance.normal.titleTextAttributes = [
+                NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .regular),
+                NSAttributedString.Key.foregroundColor: UIColor.white
+            ]
+            $0.backButtonAppearance.normal.titleTextAttributes = [
+                NSAttributedString.Key.font: UIFont.godo(size: 16, weight: .regular),
+                NSAttributedString.Key.foregroundColor: UIColor.white
+            ]
         }
-        UINavigationBar.appearance().standardAppearance = navigationBarAppearance
+        UINavigationBar.appearance().do {
+            $0.standardAppearance = navigationBarAppearance
+            $0.scrollEdgeAppearance = navigationBarAppearance
+            $0.compactAppearance = navigationBarAppearance
+            $0.compactScrollEdgeAppearance = navigationBarAppearance
+        }
         UIBarButtonItem.appearance().tintColor = .white
         return true
     }
