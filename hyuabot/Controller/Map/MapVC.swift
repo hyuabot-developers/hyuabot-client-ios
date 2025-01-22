@@ -186,4 +186,20 @@ extension MapVC: MKMapViewDelegate {
             }
         }
     }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard let annotation = view.annotation else { return }
+        guard let buildings = try? MapData.shared.buildingResult.value() else { return }
+        guard let building = buildings.first(where: {
+            $0.latitude == annotation.coordinate.latitude && $0.longitude == annotation.coordinate.longitude
+        }) else { return }
+        guard let urlString = building.url else { return }
+        guard let url = URL(string: urlString) else { return }
+        let vc = BuildingVC(buildingName: building.name, url: url)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
 }
