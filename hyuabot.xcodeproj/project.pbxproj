@@ -10,6 +10,8 @@
 		C70119632D2954670077A1A5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = C70119622D2954670077A1A5 /* SnapKit */; };
 		C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C70CC9D92D2953EC00B7865C /* QueryAPI */; };
 		C715DEF12D29537100B33476 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C715DEF02D29537100B33476 /* QueryAPI */; };
+		C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; };
+		C73CB6312D410341005E9731 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */; };
 		C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */; };
@@ -19,6 +21,20 @@
 		C7BAB04A2D2951B500BBE940 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0492D2951B500BBE940 /* Then */; };
 		C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0502D29532000BBE940 /* QueryAPI */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C73CB6302D4101A2005E9731 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C73CB6312D410341005E9731 /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C7C056EB2D277910007A228B /* hyuabot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hyuabot.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */,
 				C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */,
 				C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */,
 				C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */,
@@ -93,6 +110,7 @@
 				C7C056E72D277910007A228B /* Sources */,
 				C7C056E82D277910007A228B /* Frameworks */,
 				C7C056E92D277910007A228B /* Resources */,
+				C73CB6302D4101A2005E9731 /* Embed Frameworks */,
 				C7BAB03B2D28098B00BBE940 /* Crashlytics */,
 			);
 			buildRules = (
@@ -115,6 +133,7 @@
 				C715DEF02D29537100B33476 /* QueryAPI */,
 				C70CC9D92D2953EC00B7865C /* QueryAPI */,
 				C70119622D2954670077A1A5 /* SnapKit */,
+				C73CB62D2D4100F3005E9731 /* RealmSwift */,
 			);
 			productName = hyuabot;
 			productReference = C7C056EB2D277910007A228B /* hyuabot.app */;
@@ -152,6 +171,7 @@
 				C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */,
 				C70CC9D82D2953EC00B7865C /* XCLocalSwiftPackageReference "queryAPI" */,
 				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
@@ -436,6 +456,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 20.0.1;
+			};
+		};
 		C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -483,6 +511,11 @@
 		C715DEF02D29537100B33476 /* QueryAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = QueryAPI;
+		};
+		C73CB62D2D4100F3005E9731 /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
 		};
 		C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
 			isa = XCSwiftPackageProductDependency;
