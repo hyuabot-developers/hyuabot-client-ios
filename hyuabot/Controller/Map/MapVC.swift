@@ -48,11 +48,6 @@ class MapVC: UIViewController {
         self.navigationController?.setNavigationBarHidden(false, animated: false)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        self.navigationController?.navigationItem.hidesBackButton = false
-    }
-    
     private func setupUI() {
         self.view.addSubview(self.mapView)
         self.view.addSubview(self.searchResultView)
@@ -60,7 +55,6 @@ class MapVC: UIViewController {
             $0.title = String(localized: "tabbar.map")
             $0.searchController = self.searchController
             $0.hidesSearchBarWhenScrolling = false
-            $0.hidesBackButton = true
         }
         self.mapView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
