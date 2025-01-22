@@ -621,6 +621,16 @@
         }
       }
     },
+    "map.search.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색된 강의실이 없습니다."
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {

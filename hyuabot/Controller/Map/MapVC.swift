@@ -29,6 +29,10 @@ class MapVC: UIViewController {
     private lazy var searchResultView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.isHidden = true
+        $0.delegate = self
+        $0.dataSource = self
+        $0.register(SearchEmptyCellView.self, forCellReuseIdentifier: SearchEmptyCellView.reuseIdentifier)
+        $0.register(SearchResultCellView.self, forCellReuseIdentifier: SearchResultCellView.reuseIdentifier)
     }
     
     override func viewDidLoad() {
@@ -74,7 +78,7 @@ class MapVC: UIViewController {
             }
         }).disposed(by: self.disposeBag)
         MapData.shared.searchResult.subscribe(onNext: { result in
-            print(result.count)
+            self.searchResultView.reloadData()
         }).disposed(by: self.disposeBag)
     }
 }
@@ -84,5 +88,26 @@ extension MapVC: UISearchResultsUpdating {
         guard let searchKeyword = searchController.searchBar.text else { return }
         self.searchResultView.isHidden = searchKeyword.isEmpty
         MapData.shared.searchKeyword.onNext(searchKeyword.isEmpty ? nil : searchKeyword)
+    }
+}
+
+extension MapVC: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let items = try? MapData.shared.searchResult.value() else { return 0 }
+        return max(1, items.count)
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let items = try? MapData.shared.searchResult.value() else { return SearchEmptyCellView() }
+        if (items.isEmpty) {
+            return tableView.dequeueReusableCell(withIdentifier: SearchEmptyCellView.reuseIdentifier, for: indexPath)
+        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultCellView.reuseIdentifier, for: indexPath) as! SearchResultCellView
+        cell.setupUI(item: items[indexPath.row])
+        return cell
     }
 }
