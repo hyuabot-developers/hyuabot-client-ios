@@ -1,7 +1,10 @@
 import UIKit
 import MapKit
+import RxSwift
+import QueryAPI
 
 class MapVC: UIViewController {
+    private let disposeBag = DisposeBag()
     private lazy var searchController = UISearchController(searchResultsController: nil).then {
         $0.searchBar.do {
             $0.placeholder = String(localized: "map.building.search.placeholder")
@@ -23,10 +26,15 @@ class MapVC: UIViewController {
         $0.isScrollEnabled = true
         $0.isPitchEnabled = true
     }
+    private lazy var searchResultView = UITableView().then {
+        $0.showsVerticalScrollIndicator = false
+        $0.isHidden = true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.observeSubjects()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -41,6 +49,7 @@ class MapVC: UIViewController {
     
     private func setupUI() {
         self.view.addSubview(self.mapView)
+        self.view.addSubview(self.searchResultView)
         self.navigationItem.do {
             $0.title = String(localized: "tabbar.map")
             $0.searchController = self.searchController
@@ -50,12 +59,30 @@ class MapVC: UIViewController {
         self.mapView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        self.searchResultView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    private func observeSubjects() {
+        MapData.shared.searchKeyword.subscribe(onNext: { keyword in
+            guard let keyword = keyword else { return }
+            Network.shared.client.fetch(query: MapPageSearchQuery(keyword: keyword)) { result in
+                if case .success(let response) = result {
+                    MapData.shared.searchResult.onNext(response.data?.room ?? [])
+                }
+            }
+        }).disposed(by: self.disposeBag)
+        MapData.shared.searchResult.subscribe(onNext: { result in
+            print(result.count)
+        }).disposed(by: self.disposeBag)
     }
 }
 
 extension MapVC: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchKeyword = searchController.searchBar.text else { return }
+        self.searchResultView.isHidden = searchKeyword.isEmpty
         MapData.shared.searchKeyword.onNext(searchKeyword.isEmpty ? nil : searchKeyword)
     }
 }
