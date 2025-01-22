@@ -11,6 +11,7 @@ class MapVC: UIViewController {
             $0.directionalLayoutMargins = .init(top: 20, leading: 0, bottom: 0, trailing: 20)
             $0.searchTextField.do {
                 $0.backgroundColor = .systemBackground
+                $0.delegate = self
             }
         }
         $0.searchResultsUpdater = self
@@ -81,6 +82,37 @@ class MapVC: UIViewController {
         MapData.shared.searchResult.subscribe(onNext: { result in
             self.searchResultView.reloadData()
         }).disposed(by: self.disposeBag)
+        MapData.shared.searchMode.subscribe(onNext: { isSearching in
+            if (!isSearching) {
+                self.searchController.isActive = false
+                let nw = self.mapView.northWestCoordinate
+                let se = self.mapView.southEastCoordinate
+                Network.shared.client.fetch(query: MapPageQuery(
+                    north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
+                )) { result in
+                    if case .success(let response) = result {
+                        MapData.shared.buildingResult.onNext(response.data?.building ?? [])
+                    }
+                }
+            }
+        }).disposed(by: self.disposeBag)
+        MapData.shared.buildingResult.subscribe(onNext: { result in
+            self.mapView.removeAnnotations(self.mapView.annotations)
+            result.forEach { building in
+                self.mapView.addAnnotation(MKPointAnnotation().with {
+                    $0.coordinate = CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude)
+                    $0.title = building.name
+                })
+            }
+        }).disposed(by: self.disposeBag)
+    }
+}
+
+extension MapVC: UITextFieldDelegate {
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        MapData.shared.searchKeyword.onNext(nil)
+        MapData.shared.searchMode.onNext(false)
+        return true
     }
 }
 
@@ -114,6 +146,7 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = try? MapData.shared.searchResult.value()[indexPath.row] else { return }
+        MapData.shared.searchMode.onNext(true)
         self.mapView.do {
             $0.removeAnnotations($0.annotations)
             $0.addAnnotation(MKPointAnnotation().with {
@@ -138,5 +171,19 @@ extension MapVC: MKMapViewDelegate {
         annotationView.markerTintColor = .hanyangBlue
         annotationView.glyphImage = UIImage(systemName: "building")
         return annotationView
+    }
+    
+    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        guard let searchMode = try? MapData.shared.searchMode.value() else { return }
+        if (searchMode) { return }
+        let nw = mapView.northWestCoordinate
+        let se = mapView.southEastCoordinate
+        Network.shared.client.fetch(query: MapPageQuery(
+            north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
+        )) { result in
+            if case .success(let response) = result {
+                MapData.shared.buildingResult.onNext(response.data?.building ?? [])
+            }
+        }
     }
 }
