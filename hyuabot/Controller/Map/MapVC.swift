@@ -15,7 +15,7 @@ class MapVC: UIViewController {
         }
         $0.searchResultsUpdater = self
     }
-    private let mapView = MKMapView().then {
+    private lazy var mapView = MKMapView().then {
         $0.camera = MKMapCamera(
             lookingAtCenter: CLLocationCoordinate2D(latitude: 37.29650544998881, longitude: 126.83513202158153),
             fromDistance: 4000,
@@ -25,6 +25,7 @@ class MapVC: UIViewController {
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
         $0.isPitchEnabled = true
+        $0.delegate = self
     }
     private lazy var searchResultView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
@@ -109,5 +110,33 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultCellView.reuseIdentifier, for: indexPath) as! SearchResultCellView
         cell.setupUI(item: items[indexPath.row])
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let item = try? MapData.shared.searchResult.value()[indexPath.row] else { return }
+        self.mapView.do {
+            $0.removeAnnotations($0.annotations)
+            $0.addAnnotation(MKPointAnnotation().with {
+                $0.coordinate = CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude)
+                $0.title = "\(item.name) (\(item.number)호)"
+            })
+            $0.camera = MKMapCamera(
+                lookingAtCenter: CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude),
+                fromDistance: 2000,
+                pitch: 0,
+                heading: 0
+            )
+        }
+        self.searchResultView.isHidden = true
+        self.searchController.isActive = false
+    }
+}
+
+extension MapVC: MKMapViewDelegate {
+    func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
+        let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "marker")
+        annotationView.markerTintColor = .hanyangBlue
+        annotationView.glyphImage = UIImage(systemName: "building")
+        return annotationView
     }
 }

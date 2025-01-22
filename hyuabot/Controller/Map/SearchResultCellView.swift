@@ -29,7 +29,6 @@ class SearchResultCellView: UITableViewCell {
     func setupUI() {
         self.contentView.addSubview(self.roomLabel)
         self.contentView.addSubview(self.buildingLabel)
-        self.selectionStyle = .none
         self.roomLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.trailing.lessThanOrEqualTo(self.contentView.snp.centerX).offset(-10)
