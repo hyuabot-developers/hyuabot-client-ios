@@ -611,6 +611,16 @@
         }
       }
     },
+    "contact.database.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전화부 데이터베이스 업데이트 중..."
+          }
+        }
+      }
+    },
     "contact.search.empty" : {
       "localizations" : {
         "ko" : {
@@ -627,6 +637,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이름 / 전화번호 검색"
+          }
+        }
+      }
+    },
+    "contact.version.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전화부 데이터베이스 확인 중..."
           }
         }
       }

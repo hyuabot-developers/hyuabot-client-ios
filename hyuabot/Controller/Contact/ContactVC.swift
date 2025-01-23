@@ -5,6 +5,7 @@ import QueryAPI
 
 class ContactVC: UIViewController {
     private let disposeBag = DisposeBag()
+    private let isLoading = BehaviorSubject<Bool>(value: false)
     private let searchKeywordSubject = BehaviorSubject<String>(value: "")
     private let contactSubject = BehaviorSubject<[Contact]>(value: [])
     private let searchResultSubject = BehaviorSubject<[Contact]>(value: [])
@@ -25,6 +26,30 @@ class ContactVC: UIViewController {
         $0.register(ContactSearchEmptyCellView.self, forCellReuseIdentifier: ContactSearchEmptyCellView.reuseIdentifier)
         $0.register(ContactSearchResultCellView.self, forCellReuseIdentifier: ContactSearchResultCellView.reuseIdentifier)
     }
+    private let loadingSpinner = UIActivityIndicatorView().then {
+        $0.style = .large
+        $0.color = .label
+    }
+    private let loadingLabel = UILabel().then {
+        $0.text = String(localized: "contact.database.loading")
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textColor = .label
+    }
+    private lazy var loadingStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.alignment = .center
+        stackView.backgroundColor = .systemBackground
+        return stackView
+    }()
+    private lazy var loadingView = UIView().then {
+        $0.backgroundColor = .systemBackground
+        $0.addSubview(loadingStackView)
+        loadingStackView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+    }
     
     deinit {
         notificationToken?.invalidate()
@@ -33,7 +58,7 @@ class ContactVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
-        self.updateContact()
+        self.updateContactVerion()
         self.observeSubjects()
     }
     
@@ -44,6 +69,7 @@ class ContactVC: UIViewController {
     
     private func setupUI() {
         self.view.addSubview(self.searchResultView)
+        self.view.addSubview(loadingView)
         self.navigationItem.do {
             $0.title = String(localized: "tabbar.contact")
             $0.searchController = self.searchController
@@ -51,6 +77,9 @@ class ContactVC: UIViewController {
         }
         self.searchResultView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
+        }
+        self.loadingView.snp.makeConstraints { make in
+            make.edges.equalTo(searchResultView)
         }
     }
     
@@ -82,13 +111,40 @@ class ContactVC: UIViewController {
                 $0.campusID == campusID
             })
         }).disposed(by: disposeBag)
+        self.isLoading.subscribe(onNext: { isLoading in
+            if (isLoading) {
+                self.loadingView.isHidden = false
+                self.loadingSpinner.startAnimating()
+            } else {
+                self.loadingView.isHidden = true
+                self.loadingSpinner.stopAnimating()
+            }
+        }).disposed(by: disposeBag)
+    }
+    
+    private func updateContactVerion() {
+        self.loadingLabel.text = String(localized: "contact.version.loading")
+        self.isLoading.onNext(true)
+        Network.shared.client.fetch(query: ContactPageVersionQuery()) { result in
+            if case let .success(response) = result {
+                if let data = response.data {
+                    let previousVersion = UserDefaults.standard.string(forKey: "contactVersion") ?? ""
+                    if data.contact.version != previousVersion {
+                        self.updateContact()
+                    }
+                }
+            }
+        }
+        self.isLoading.onNext(false)
     }
     
     private func updateContact() {
+        self.loadingLabel.text = String(localized: "contact.database.loading")
         Network.shared.client.fetch(query: ContactPageQuery()) { result in
             if case let .success(response) = result {
                 if let data = response.data {
                     Contact.replaceAll(with: data.contact.data.map { Contact.transform(from: $0) })
+                    UserDefaults.standard.set(data.contact.version, forKey: "contactVersion")
                 }
             }
         }
