@@ -98,7 +98,7 @@ class ContactVC: UIViewController {
         }
         self.contactSubject.subscribe(onNext: { [weak self] allContacts in
             let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
-            self?.searchResultSubject.onNext(allContacts.filter { $0.campusID == campusID })
+            self?.searchResultSubject.onNext(allContacts.filter { $0.campusID == campusID }.sorted { $0.phoneNumber < $1.phoneNumber })
         }).disposed(by: disposeBag)
         self.searchResultSubject.subscribe(onNext: { [weak self] contacts in
             self?.searchResultView.reloadData()
@@ -109,7 +109,7 @@ class ContactVC: UIViewController {
             self?.searchResultSubject.onNext(allContacts.filter {
                 ($0.name.contains(searchKeyword) || $0.phoneNumber.contains(searchKeyword) || searchKeyword.isEmpty) &&
                 $0.campusID == campusID
-            })
+            }.sorted { $0.phoneNumber < $1.phoneNumber })
         }).disposed(by: disposeBag)
         self.isLoading.subscribe(onNext: { isLoading in
             if (isLoading) {
