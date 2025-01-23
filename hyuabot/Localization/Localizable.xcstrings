@@ -611,6 +611,46 @@
         }
       }
     },
+    "contact.database.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전화부 데이터베이스 업데이트 중..."
+          }
+        }
+      }
+    },
+    "contact.search.empty" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 결과가 없습니다"
+          }
+        }
+      }
+    },
+    "contact.search.placeholder" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름 / 전화번호 검색"
+          }
+        }
+      }
+    },
+    "contact.version.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전화부 데이터베이스 확인 중..."
+          }
+        }
+      }
+    },
     "map.building.search.placeholder" : {
       "localizations" : {
         "ko" : {
