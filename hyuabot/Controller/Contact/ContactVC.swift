@@ -177,4 +177,15 @@ extension ContactVC: UITableViewDelegate, UITableViewDataSource {
         cell.setupUI(item: items[indexPath.row])
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let items = try? self.searchResultSubject.value() else { return }
+        guard !items.isEmpty else { return }
+        let contact = items[indexPath.row]
+        let url = URL(string: "tel://\(contact.phoneNumber)")
+        if UIApplication.shared.canOpenURL(url!) {
+            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+        }
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
 }
