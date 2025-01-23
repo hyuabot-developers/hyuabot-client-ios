@@ -612,7 +612,24 @@
       }
     },
     "contact.search.empty" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 결과가 없습니다"
+          }
+        }
+      }
+    },
+    "contact.search.placeholder" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름 / 전화번호 검색"
+          }
+        }
+      }
     },
     "map.building.search.placeholder" : {
       "localizations" : {

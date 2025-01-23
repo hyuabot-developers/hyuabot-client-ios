@@ -42,8 +42,8 @@ class ContactSearchResultCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: ContactPageQuery.Data.Contact.Datum) {
+    func setupUI(item: Contact) {
         self.nameLabel.text = item.name
-        self.phoneLabel.text = item.phone
+        self.phoneLabel.text = item.phoneNumber
     }
 }
