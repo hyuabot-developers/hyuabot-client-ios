@@ -99,7 +99,8 @@ class CalendarVC: UIViewController {
             })
         }).disposed(by: disposeBag)
         self.currentMonthEventSubject.subscribe(onNext: { [weak self] events in
-            print(events)
+            guard let self = self else { return }
+            print(events.filter { event in event.categoryID != 1 })
         }).disposed(by: disposeBag)
         self.currentMonthSubject.subscribe(onNext: { [weak self] currentMonth in
             guard let self = self else { return }
@@ -155,5 +156,16 @@ class CalendarVC: UIViewController {
 extension CalendarVC: UICalendarViewDelegate {
     func calendarView(_ calendarView: UICalendarView, didChangeVisibleDateComponentsFrom previousDateComponents: DateComponents) {
         self.currentMonthSubject.onNext(calendarView.visibleDateComponents.date!)
+    }
+    
+    func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
+        guard let allEvents = try? self.currentMonthEventSubject.value() else { return nil }
+        let date = dateComponents.date!
+        for event in allEvents {
+            if (event.startDate <= self.dateFormatter.string(from: date) && event.endDate > self.dateFormatter.string(from: date)) {
+                return UICalendarView.Decoration.default(color: .plainButtonText, size: .medium)
+            }
+        }
+        return nil
     }
 }
