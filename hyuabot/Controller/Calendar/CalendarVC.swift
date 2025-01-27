@@ -80,6 +80,7 @@ class CalendarVC: UIViewController {
         self.view.addSubview(self.loadingView)
         self.view.addSubview(self.headerLabel)
         self.view.addSubview(self.monthEventView)
+        self.navigationItem.title = String(localized: "tabbar.calendar")
         self.calenadrView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(600)
