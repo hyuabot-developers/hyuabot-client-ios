@@ -651,6 +651,26 @@
         }
       }
     },
+    "event.database.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사력 데이터베이스 업데이트 중..."
+          }
+        }
+      }
+    },
+    "event.version.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사력 데이터베이스 확인 중..."
+          }
+        }
+      }
+    },
     "map.building.search.placeholder" : {
       "localizations" : {
         "ko" : {
