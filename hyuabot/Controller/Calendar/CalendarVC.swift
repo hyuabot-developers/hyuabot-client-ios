@@ -82,7 +82,7 @@ class CalendarVC: UIViewController {
         self.view.addSubview(self.monthEventView)
         self.calenadrView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(500)
+            make.height.equalTo(600)
         }
         self.headerLabel.snp.makeConstraints { make in
             make.top.equalTo(self.calenadrView.snp.bottom)
@@ -184,10 +184,13 @@ extension CalendarVC: UICalendarViewDelegate {
     }
     
     func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
-        guard let allEvents = try? self.currentMonthEventSubject.value() else { return nil }
+        guard let allEvents = try? self.eventSubject.value() else { return nil }
         let date = dateComponents.date!
         for event in allEvents {
-            if (event.startDate <= self.dateFormatter.string(from: date) && event.endDate > self.dateFormatter.string(from: date)) {
+            if (event.title.hasSuffix("방학") || event.title.hasSuffix("계절학기")) {
+                continue
+            }
+            if (event.startDate <= self.dateFormatter.string(from: date) && event.endDate >= self.dateFormatter.string(from: date)) {
                 return UICalendarView.Decoration.default(color: .plainButtonText, size: .medium)
             }
         }
