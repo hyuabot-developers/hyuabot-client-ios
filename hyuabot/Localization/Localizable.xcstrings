@@ -661,6 +661,16 @@
         }
       }
     },
+    "event.header.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이달의 학사일정"
+          }
+        }
+      }
+    },
     "event.version.loading" : {
       "localizations" : {
         "ko" : {

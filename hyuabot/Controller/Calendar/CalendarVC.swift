@@ -26,6 +26,19 @@ class CalendarVC: UIViewController {
         calendarView.tintColor = .plainButtonText
         return calendarView
     }()
+    private let headerLabel = UILabel().then {
+        $0.font = .godo(size: 20, weight: .bold)
+        $0.textColor = .white
+        $0.backgroundColor = .hanyangBlue
+        $0.textAlignment = .center
+        $0.text = String(localized: "event.header.title")
+    }
+    private lazy var monthEventView = UITableView().then {
+        $0.showsVerticalScrollIndicator = false
+        $0.delegate = self
+        $0.dataSource = self
+        $0.register(CalendarEventCellView.self, forCellReuseIdentifier: CalendarEventCellView.reuseIdentifier)
+    }
     private let loadingSpinner = UIActivityIndicatorView().then {
         $0.style = .large
         $0.color = .label
@@ -65,9 +78,21 @@ class CalendarVC: UIViewController {
     private func setupUI() {
         self.view.addSubview(self.calenadrView)
         self.view.addSubview(self.loadingView)
+        self.view.addSubview(self.headerLabel)
+        self.view.addSubview(self.monthEventView)
         self.calenadrView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(500)
+        }
+        self.headerLabel.snp.makeConstraints { make in
+            make.top.equalTo(self.calenadrView.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(50)
+        }
+        self.monthEventView.snp.makeConstraints { make in
+            make.top.equalTo(self.headerLabel.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
         }
         self.loadingView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -100,7 +125,7 @@ class CalendarVC: UIViewController {
         }).disposed(by: disposeBag)
         self.currentMonthEventSubject.subscribe(onNext: { [weak self] events in
             guard let self = self else { return }
-            print(events.filter { event in event.categoryID != 1 })
+            self.monthEventView.reloadData()
         }).disposed(by: disposeBag)
         self.currentMonthSubject.subscribe(onNext: { [weak self] currentMonth in
             guard let self = self else { return }
@@ -167,5 +192,23 @@ extension CalendarVC: UICalendarViewDelegate {
             }
         }
         return nil
+    }
+}
+
+extension CalendarVC: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let items = try? self.currentMonthEventSubject.value() else { return 0 }
+        return items.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let items = try? self.currentMonthEventSubject.value() else { return UITableViewCell() }
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CalendarEventCellView.reuseIdentifier) as? CalendarEventCellView else { return CalendarEventCellView() }
+        cell.setupUI(item: items[indexPath.row])
+        return cell
     }
 }
