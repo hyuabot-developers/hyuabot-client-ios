@@ -651,6 +651,36 @@
         }
       }
     },
+    "event.database.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사력 데이터베이스 업데이트 중..."
+          }
+        }
+      }
+    },
+    "event.header.title" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이달의 학사일정"
+          }
+        }
+      }
+    },
+    "event.version.loading" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사력 데이터베이스 확인 중..."
+          }
+        }
+      }
+    },
     "map.building.search.placeholder" : {
       "localizations" : {
         "ko" : {
