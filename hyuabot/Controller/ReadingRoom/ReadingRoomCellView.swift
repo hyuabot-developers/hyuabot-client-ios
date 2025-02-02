@@ -4,13 +4,15 @@ import RxSwift
 
 class ReadingRoomCellView: UITableViewCell {
     static let reuseIdentifier = "ReadingRoomCellView"
+    private var item: ReadingRoomPageQuery.Data.ReadingRoom?
     private let nameLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.numberOfLines = 1
     }
-    private let alarmButton = UIButton().then {
+    private lazy var alarmButton = UIButton().then {
         $0.setImage(UIImage(systemName: "bell"), for: .normal)
         $0.tintColor = .plainButtonText
+        $0.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)
     }
     private let seatLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
@@ -46,7 +48,30 @@ class ReadingRoomCellView: UITableViewCell {
     }
     
     func setupUI(item: ReadingRoomPageQuery.Data.ReadingRoom) {
+        self.item = item
         self.nameLabel.text = item.name
         self.seatLabel.text = "\(item.available) / \(item.active)"
+        let itemKey = "reading_room_\(item.id)"
+        let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
+        if (notifiedRooms.contains(itemKey)) {
+            self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
+        } else {
+            self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
+        }
+    }
+    
+    @objc func alarmButtonTapped() {
+        guard let item = self.item else { return }
+        let itemKey = "reading_room_\(item.id)"
+        let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
+        if (notifiedRooms.contains(itemKey)) {
+            UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
+            self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
+        } else {
+            var newNotifiedRooms = notifiedRooms
+            newNotifiedRooms.append(itemKey)
+            UserDefaults.standard.set(newNotifiedRooms, forKey: "readingRoomNotificationArray")
+            self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
+        }
     }
 }

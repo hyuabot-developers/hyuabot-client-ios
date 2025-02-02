@@ -117,6 +117,11 @@ class ReadingRoomVC: UIViewController {
         self.roomSubject.subscribe(onNext: { [weak self] items in
             self?.readingRoomView.reloadData()
         }).disposed(by: disposeBag)
+        observeUserDefaultsStringArray(forKey: "readingRoomNotificationArray")
+            .subscribe(onNext: { updatedArray in
+                self.readingRoomView.reloadData()
+            })
+            .disposed(by: disposeBag)
     }
 }
 
