@@ -114,6 +114,9 @@ class SubwayRealtimeCellView: UITableViewCell {
     }
     
     private func getRealtimeLabelText(_ time: Double, _ location: String, _ status: Int, _ last: Bool) -> String.LocalizationValue {
+        if (time < 2) {
+            return "subway.realtime.now"
+        }
         if (last) {
             if (status == 0) {
                 return "subway.realtime.last.entering.\(Int(time)).\(location)"
