@@ -49,8 +49,21 @@ class ReadingRoomCellView: UITableViewCell {
     }
     
     func setupUI(item: ReadingRoomPageQuery.Data.ReadingRoom) {
+        var readingRoomName: String.LocalizationValue
+        switch item.id {
+            case 1: readingRoomName = "reading_room_1"
+            case 53: readingRoomName = "reading_room_53"
+            case 54: readingRoomName = "reading_room_54"
+            case 55: readingRoomName = "reading_room_55"
+            case 56: readingRoomName = "reading_room_56"
+            case 61: readingRoomName = "reading_room_61"
+            case 63: readingRoomName = "reading_room_63"
+            case 131: readingRoomName = "reading_room_131"
+            case 132: readingRoomName = "reading_room_132"
+            default: readingRoomName = "Unknown"
+        }
         self.item = item
-        self.nameLabel.text = item.name
+        self.nameLabel.text = String(localized: readingRoomName)
         self.seatLabel.text = "\(item.available) / \(item.active)"
         let itemKey = "reading_room_\(item.id)"
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
