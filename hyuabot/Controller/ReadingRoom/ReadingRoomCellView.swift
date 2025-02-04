@@ -6,6 +6,8 @@ import FirebaseMessaging
 class ReadingRoomCellView: UITableViewCell {
     static let reuseIdentifier = "ReadingRoomCellView"
     private var item: ReadingRoomPageQuery.Data.ReadingRoom?
+    private var showSubscribeToastMessage: ((String) -> Void)?
+    private var showUnsubscribeToastMessage: ((String) -> Void)?
     private let nameLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.numberOfLines = 1
@@ -48,9 +50,28 @@ class ReadingRoomCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: ReadingRoomPageQuery.Data.ReadingRoom) {
+    func setupUI(
+        item: ReadingRoomPageQuery.Data.ReadingRoom,
+        showSubscribeToastMessage: @escaping (String) -> Void,
+        showUnsubscribeToastMessage: @escaping (String) -> Void
+    ) {
+        self.item = item
+        self.showSubscribeToastMessage = showSubscribeToastMessage
+        self.showUnsubscribeToastMessage = showUnsubscribeToastMessage
+        self.nameLabel.text = getLocalizedString(readingRoomID: item.id)
+        self.seatLabel.text = "\(item.available) / \(item.active)"
+        let itemKey = "reading_room_\(item.id)"
+        let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
+        if (notifiedRooms.contains(itemKey)) {
+            self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
+        } else {
+            self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
+        }
+    }
+    
+    private func getLocalizedString(readingRoomID: Int) -> String {
         var readingRoomName: String.LocalizationValue
-        switch item.id {
+        switch readingRoomID {
             case 1: readingRoomName = "reading_room_1"
             case 53: readingRoomName = "reading_room_53"
             case 54: readingRoomName = "reading_room_54"
@@ -62,26 +83,19 @@ class ReadingRoomCellView: UITableViewCell {
             case 132: readingRoomName = "reading_room_132"
             default: readingRoomName = "Unknown"
         }
-        self.item = item
-        self.nameLabel.text = String(localized: readingRoomName)
-        self.seatLabel.text = "\(item.available) / \(item.active)"
-        let itemKey = "reading_room_\(item.id)"
-        let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
-        if (notifiedRooms.contains(itemKey)) {
-            self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
-        } else {
-            self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
-        }
+        return String(localized: readingRoomName)
     }
     
     @objc func alarmButtonTapped() {
         guard let item = self.item else { return }
+        guard let showSubscribeToastMessage = self.showSubscribeToastMessage else { return }
+        guard let showUnsubscribeToastMessage = self.showUnsubscribeToastMessage else { return }
         let itemKey = "reading_room_\(item.id)"
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
         if (notifiedRooms.contains(itemKey)) {
             UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
             Messaging.messaging().unsubscribe(fromTopic: itemKey) { error in
-              print("Unsubscribed to \(itemKey) topic")
+                showUnsubscribeToastMessage(self.getLocalizedString(readingRoomID: item.id))
             }
             self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
         } else {
@@ -89,7 +103,7 @@ class ReadingRoomCellView: UITableViewCell {
             newNotifiedRooms.append(itemKey)
             UserDefaults.standard.set(newNotifiedRooms, forKey: "readingRoomNotificationArray")
             Messaging.messaging().subscribe(toTopic: itemKey) { error in
-                print("Subscribed from \(itemKey) topic")
+                showSubscribeToastMessage(self.getLocalizedString(readingRoomID: item.id))
             }
             self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
         }

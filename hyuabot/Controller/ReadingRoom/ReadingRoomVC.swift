@@ -98,8 +98,6 @@ class ReadingRoomVC: UIViewController {
             if case .success(let response) = result {
                 self.refreshControl.endRefreshing()
                 self.roomSubject.onNext(response.data?.readingRoom ?? [])
-            } else if case .failure(let error) = result {
-
             }
         }
     }
@@ -138,7 +136,19 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let items = try? self.roomSubject.value() else { return UITableViewCell() }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ReadingRoomCellView.reuseIdentifier) as? ReadingRoomCellView else { return ReadingRoomCellView() }
-        cell.setupUI(item: items[indexPath.row])
+        cell.setupUI(
+            item: items[indexPath.row],
+            showSubscribeToastMessage: {
+                message in self.showToastMessage(
+                    image: UIImage(systemName: "checkmark.circle.fill"),
+                    message: String(localized: "toast.readingroom.notification.subscribed.\(message)")
+                )},
+            showUnsubscribeToastMessage: {
+                message in self.showToastMessage(
+                    image: UIImage(systemName: "checkmark.circle.fill"),
+                    message: String(localized: "toast.readingroom.notification.unsubscribed.\(message)")
+                )}
+            )
         return cell
     }
 }

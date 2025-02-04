@@ -1981,6 +1981,26 @@
         }
       }
     },
+    "toast.readingroom.notification.subscribed.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@의 잔여 좌석 알림이 설정되었습니다."
+          }
+        }
+      }
+    },
+    "toast.readingroom.notification.unsubscribed.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@의 잔여 좌석 알림이 해제되었습니다."
+          }
+        }
+      }
+    },
     "toast.success.shuttle.realtime.location.%@" : {
       "localizations" : {
         "ko" : {
@@ -1992,7 +2012,14 @@
       }
     },
     "Unknown" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알 수 없음"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
