@@ -701,6 +701,116 @@
         }
       }
     },
+    "reading_room_1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOLMZ 열람석"
+          }
+        }
+      }
+    },
+    "reading_room_53" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제1열람실[지하1층]"
+          }
+        }
+      }
+    },
+    "reading_room_54" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제2열람실[지하1층]"
+          }
+        }
+      }
+    },
+    "reading_room_55" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제3열람실[3층]"
+          }
+        }
+      }
+    },
+    "reading_room_56" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제4열람실[3층]"
+          }
+        }
+      }
+    },
+    "reading_room_61" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제1열람실[2층]"
+          }
+        }
+      }
+    },
+    "reading_room_63" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제2열람실[4층]"
+          }
+        }
+      }
+    },
+    "reading_room_131" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "집중열람실[4층]"
+          }
+        }
+      }
+    },
+    "reading_room_132" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노상일 HOLMZ[4층]"
+          }
+        }
+      }
+    },
+    "readingroom.notification.body.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 석의 좌석이 발견되었습니다!"
+          }
+        }
+      }
+    },
+    "readingroom.notification.title.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 잔여 좌석 알림"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {
@@ -1880,6 +1990,9 @@
           }
         }
       }
+    },
+    "Unknown" : {
+
     }
   },
   "version" : "1.0"

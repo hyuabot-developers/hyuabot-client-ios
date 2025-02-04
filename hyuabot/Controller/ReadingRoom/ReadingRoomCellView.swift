@@ -1,6 +1,7 @@
 import UIKit
 import QueryAPI
 import RxSwift
+import FirebaseMessaging
 
 class ReadingRoomCellView: UITableViewCell {
     static let reuseIdentifier = "ReadingRoomCellView"
@@ -66,11 +67,17 @@ class ReadingRoomCellView: UITableViewCell {
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
         if (notifiedRooms.contains(itemKey)) {
             UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
+            Messaging.messaging().unsubscribe(fromTopic: itemKey) { error in
+              print("Unsubscribed to \(itemKey) topic")
+            }
             self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
         } else {
             var newNotifiedRooms = notifiedRooms
             newNotifiedRooms.append(itemKey)
             UserDefaults.standard.set(newNotifiedRooms, forKey: "readingRoomNotificationArray")
+            Messaging.messaging().subscribe(toTopic: itemKey) { error in
+                print("Subscribed from \(itemKey) topic")
+            }
             self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
         }
     }
