@@ -63,7 +63,6 @@ extension SubwayTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
                 return items.count
             }
         }
-        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

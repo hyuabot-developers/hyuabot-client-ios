@@ -1491,6 +1491,16 @@
         }
       }
     },
+    "subway.realtime.now" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠시 후 도착 (당역 접근)"
+          }
+        }
+      }
+    },
     "subway.realtime.section.4.down" : {
       "localizations" : {
         "ko" : {
