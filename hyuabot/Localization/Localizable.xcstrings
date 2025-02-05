@@ -811,6 +811,46 @@
         }
       }
     },
+    "setting.about" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 정보"
+          }
+        }
+      }
+    },
+    "setting.campus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스 설정"
+          }
+        }
+      }
+    },
+    "setting.darkMode" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "테마 설정"
+          }
+        }
+      }
+    },
+    "setting.language" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언어 설정"
+          }
+        }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "ko" : {
