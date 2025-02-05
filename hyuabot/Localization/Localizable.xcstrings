@@ -611,6 +611,26 @@
         }
       }
     },
+    "campus.erica" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA"
+          }
+        }
+      }
+    },
+    "campus.seoul" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서울"
+          }
+        }
+      }
+    },
     "contact.database.loading" : {
       "localizations" : {
         "ko" : {

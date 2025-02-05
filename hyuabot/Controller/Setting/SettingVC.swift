@@ -16,6 +16,11 @@ class SettingVC: UIViewController {
     }
     
     private func setupUI() {
+        // Set default Value
+        if (UserDefaults.standard.integer(forKey: "campusID") == 0) {
+            UserDefaults.standard.set(2, forKey: "campusID")
+        }
+            
         self.navigationItem.title = String(localized: "tabbar.setting")
         self.view.addSubview(self.settingView)
         self.settingView.snp.makeConstraints { make in
