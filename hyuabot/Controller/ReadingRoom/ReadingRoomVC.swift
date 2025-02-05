@@ -93,7 +93,8 @@ class ReadingRoomVC: UIViewController {
     }
     
     private func fetchReadingRoomData() {
-        Network.shared.client.fetch(query: ReadingRoomPageQuery(campus: 2)) { result in
+        let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
+        Network.shared.client.fetch(query: ReadingRoomPageQuery(campus: campusID)) { result in
             self.isLoading.onNext(false)
             if case .success(let response) = result {
                 self.refreshControl.endRefreshing()

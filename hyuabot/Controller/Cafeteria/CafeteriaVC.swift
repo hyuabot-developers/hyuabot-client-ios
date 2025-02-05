@@ -113,13 +113,14 @@ class CafeteriaVC: UIViewController {
     }
     
     private func observeSubjects() {
+        let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
         CafeteriaData.shared.feedDate.subscribe(onNext: { feedDate in
             let dateForm = DateFormatter().then {
                 $0.dateFormat = "yyyy-MM-dd"
             }
             let date = dateForm.string(from: feedDate)
             self.feedDatePicker.date = feedDate
-            Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: 2)) { result in
+            Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: campusID)) { result in
                 if case .success(let data) = result {
                     if let data = data.data {
                         CafeteriaData.shared.cafeteriaMenu.onNext(data.menu)
