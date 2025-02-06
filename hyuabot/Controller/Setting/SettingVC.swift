@@ -1,8 +1,8 @@
 import UIKit
 
 class SettingVC: UIViewController {
-    private let imageNames = ["graduationcap.fill", "globe", "moonphase.waning.crescent", "info.circle.fill"]
-    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.language", "setting.darkMode", "setting.about"]
+    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "info.circle.fill"]
+    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.about"]
     private lazy var settingView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self

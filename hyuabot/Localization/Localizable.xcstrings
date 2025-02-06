@@ -851,22 +851,22 @@
         }
       }
     },
-    "setting.darkMode" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "테마 설정"
-          }
-        }
-      }
-    },
     "setting.language" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "언어 설정"
+          }
+        }
+      }
+    },
+    "setting.theme" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "테마 설정"
           }
         }
       }
@@ -2037,6 +2037,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전철"
+          }
+        }
+      }
+    },
+    "theme.dark" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "야간"
+          }
+        }
+      }
+    },
+    "theme.light" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주간"
+          }
+        }
+      }
+    },
+    "theme.system" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동"
           }
         }
       }
