@@ -831,22 +831,32 @@
         }
       }
     },
-    "setting.about" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱 정보"
-          }
-        }
-      }
-    },
     "setting.campus" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "캠퍼스 설정"
+          }
+        }
+      }
+    },
+    "setting.developer" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개발자 정보"
+          }
+        }
+      }
+    },
+    "setting.developer.info" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이정인 (소프트웨어 17)"
           }
         }
       }
@@ -867,6 +877,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "테마 설정"
+          }
+        }
+      }
+    },
+    "setting.version" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 버전 정보"
           }
         }
       }

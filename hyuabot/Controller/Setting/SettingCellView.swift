@@ -20,6 +20,12 @@ class SettingCellView: UITableViewCell {
         $0.numberOfLines = 1
         $0.textAlignment = .left
     }
+    private let contentLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.numberOfLines = 1
+        $0.textAlignment = .right
+        $0.isHidden = true
+    }
     private lazy var campusButton: UIButton = UIButton().then {
         var conf = UIButton.Configuration.bordered()
         var title = AttributedString.init(String(localized: "setting.campus"))
@@ -79,6 +85,7 @@ class SettingCellView: UITableViewCell {
         self.contentView.addSubview(self.campusButton)
         self.contentView.addSubview(self.themeButton)
         self.contentView.addSubview(self.arrowImageView)
+        self.contentView.addSubview(self.contentLabel)
         self.iconImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
@@ -97,6 +104,10 @@ class SettingCellView: UITableViewCell {
             make.centerY.equalToSuperview()
         }
         self.arrowImageView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-20)
+            make.centerY.equalToSuperview()
+        }
+        self.contentLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
@@ -129,6 +140,12 @@ class SettingCellView: UITableViewCell {
             }
         } else if title == "setting.language" {
             self.arrowImageView.isHidden = false
+        } else if title == "setting.developer" {
+            self.contentLabel.isHidden = false
+            self.contentLabel.text = String(localized: "setting.developer.info")
+        } else if title == "setting.version" {
+            self.contentLabel.isHidden = false
+            self.contentLabel.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         }
     }
     

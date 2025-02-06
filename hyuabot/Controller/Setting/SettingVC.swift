@@ -1,8 +1,8 @@
 import UIKit
 
 class SettingVC: UIViewController {
-    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "info.circle.fill"]
-    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.about"]
+    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "person.circle", "info.circle.fill"]
+    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.developer", "setting.version"]
     private lazy var settingView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -39,7 +39,7 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        4
+        5
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
