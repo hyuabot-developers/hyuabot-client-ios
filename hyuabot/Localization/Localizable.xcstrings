@@ -611,6 +611,26 @@
         }
       }
     },
+    "campus.erica" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA"
+          }
+        }
+      }
+    },
+    "campus.seoul" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서울"
+          }
+        }
+      }
+    },
     "contact.database.loading" : {
       "localizations" : {
         "ko" : {
@@ -807,6 +827,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 잔여 좌석 알림"
+          }
+        }
+      }
+    },
+    "setting.campus" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스 설정"
+          }
+        }
+      }
+    },
+    "setting.developer" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개발자 정보"
+          }
+        }
+      }
+    },
+    "setting.developer.info" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이정인 (소프트웨어 17)"
+          }
+        }
+      }
+    },
+    "setting.language" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언어 설정"
+          }
+        }
+      }
+    },
+    "setting.theme" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "테마 설정"
+          }
+        }
+      }
+    },
+    "setting.version" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 버전 정보"
           }
         }
       }
@@ -1977,6 +2057,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전철"
+          }
+        }
+      }
+    },
+    "theme.dark" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "야간"
+          }
+        }
+      }
+    },
+    "theme.light" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주간"
+          }
+        }
+      }
+    },
+    "theme.system" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동"
           }
         }
       }
