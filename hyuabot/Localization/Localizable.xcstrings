@@ -1011,6 +1011,12 @@
     },
     "contact.database.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update contact database…"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1021,6 +1027,12 @@
     },
     "contact.search.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No item found"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1031,6 +1043,12 @@
     },
     "contact.search.placeholder" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search name / phone"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1041,6 +1059,12 @@
     },
     "contact.version.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check contact version..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
