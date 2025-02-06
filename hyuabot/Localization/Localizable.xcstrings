@@ -1075,6 +1075,12 @@
     },
     "event.database.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update calendar database..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1085,6 +1091,12 @@
     },
     "event.header.title" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event of month"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1095,6 +1107,12 @@
     },
     "event.version.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check calendar version…"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
