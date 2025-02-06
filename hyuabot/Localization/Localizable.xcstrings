@@ -1427,6 +1427,12 @@
     },
     "shuttle.desination.dormitory" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campus"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1437,6 +1443,12 @@
     },
     "shuttle.desination.jungang_station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1447,6 +1459,12 @@
     },
     "shuttle.desination.subway" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1457,6 +1475,12 @@
     },
     "shuttle.desination.terminal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1467,6 +1491,12 @@
     },
     "shuttle.destination" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1477,6 +1507,12 @@
     },
     "shuttle.destination.shorten.campus" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1487,6 +1523,12 @@
     },
     "shuttle.destination.shorten.jungang_station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1497,6 +1539,12 @@
     },
     "shuttle.destination.shorten.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1507,6 +1555,12 @@
     },
     "shuttle.destination.shorten.terminal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1517,6 +1571,12 @@
     },
     "shuttle.first.last.weekdays.format.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Weekdays)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1527,6 +1587,12 @@
     },
     "shuttle.first.last.weekdays.na" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (Weekdays)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1537,6 +1603,12 @@
     },
     "shuttle.first.last.weekends.format.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Weekends)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1547,6 +1619,12 @@
     },
     "shuttle.first.last.weekends.na" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (Weekends)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1557,6 +1635,12 @@
     },
     "shuttle.first.time" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1567,6 +1651,12 @@
     },
     "shuttle.help" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttle Help"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1577,6 +1667,12 @@
     },
     "shuttle.help.content1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To find lost items on the shuttle bus, please call the shuttle bus office at 031-400-4412 or visit the office on the first floor of the Education Building behind the Haengbok Hall."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1587,6 +1683,12 @@
     },
     "shuttle.help.content2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you experience any inconvenience due to non-compliance with the shuttle bus schedule, please call the General Affairs and Human Resources Team (031–400–4406)."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1597,6 +1699,12 @@
     },
     "shuttle.help.content3" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can check the shuttle bus stop location and first and last bus times on the shuttle bus arrival information screen by pressing the stop information button at the bottom of each stop screen."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1607,6 +1715,12 @@
     },
     "shuttle.help.content4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click on the shuttle bus information you want to take! You can check where the bus stops."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1617,6 +1731,12 @@
     },
     "shuttle.help.content5" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-click on the shuttle bus you want to take! You can check the departure time of that bus."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1627,6 +1747,12 @@
     },
     "shuttle.help.title1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Find lost items on the shuttle bus"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1637,6 +1763,12 @@
     },
     "shuttle.help.title2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. Failure to follow the shuttle bus schedule"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1647,6 +1779,12 @@
     },
     "shuttle.help.title3" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Shuttle bus stop location and first and last bus times"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1657,6 +1795,12 @@
     },
     "shuttle.help.title4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. Check shuttle bus stop information"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1667,6 +1811,12 @@
     },
     "shuttle.help.title5" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5. Check the shuttle bus departure time"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1677,6 +1827,12 @@
     },
     "shuttle.last.time" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1687,6 +1843,12 @@
     },
     "shuttle.period.custom" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1697,6 +1859,12 @@
     },
     "shuttle.period.semester" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semester"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1707,6 +1875,12 @@
     },
     "shuttle.period.vacation" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacation"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1717,6 +1891,12 @@
     },
     "shuttle.period.vacation_session" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacation Session"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1727,6 +1907,12 @@
     },
     "shuttle.realtime.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Out out service"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1737,6 +1923,12 @@
     },
     "shuttle.shorten.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1747,6 +1939,12 @@
     },
     "shuttle.show.entire.timetable" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Entire Timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1757,6 +1955,12 @@
     },
     "shuttle.show.stop.modal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location & First/Last"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1767,6 +1971,12 @@
     },
     "shuttle.stop.dormitory.out" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1777,6 +1987,12 @@
     },
     "shuttle.stop.first.last" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First & Last"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1787,6 +2003,12 @@
     },
     "shuttle.stop.jungang.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1797,6 +2019,12 @@
     },
     "shuttle.stop.shuttlecock.in" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1807,6 +2035,12 @@
     },
     "shuttle.stop.shuttlecock.out" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1817,6 +2051,12 @@
     },
     "shuttle.stop.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1827,6 +2067,12 @@
     },
     "shuttle.stop.terminal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1837,6 +2083,12 @@
     },
     "shuttle.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depart at %02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1847,6 +2099,12 @@
     },
     "shuttle.time.remaining.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1857,6 +2115,12 @@
     },
     "shuttle.timetable.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Out of service"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1867,6 +2131,12 @@
     },
     "shuttle.timetable.filter" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1877,6 +2147,12 @@
     },
     "shuttle.timetable.filter.date" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1887,6 +2163,12 @@
     },
     "shuttle.timetable.filter.ok" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condition"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1897,6 +2179,12 @@
     },
     "shuttle.timetable.filter.period" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1907,6 +2195,12 @@
     },
     "shuttle.timetable.filter.route" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1917,6 +2211,12 @@
     },
     "shuttle.timetable.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading shuttle timetable..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1927,6 +2227,12 @@
     },
     "shuttle.timetable.weekdays" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekdays"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1937,6 +2243,12 @@
     },
     "shuttle.timetable.weekends" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekends"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1947,6 +2259,12 @@
     },
     "shuttle.type.circular" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circular"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1957,6 +2275,12 @@
     },
     "shuttle.type.direct" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1967,6 +2291,12 @@
     },
     "shuttle.type.dormitory" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1977,6 +2307,12 @@
     },
     "shuttle.type.jungang_station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1987,6 +2323,12 @@
     },
     "shuttle.type.shuttlecock" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1997,6 +2339,12 @@
     },
     "shuttle.via.stop" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via Stops"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
