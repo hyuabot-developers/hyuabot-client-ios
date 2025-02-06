@@ -158,7 +158,34 @@ class CafeteriaInfoVC: UIViewController {
     private func observeSubjects() {
         self.cafeteriaInfo.subscribe(onNext: { cafeteria in
             guard let cafeteria = cafeteria else { return }
-            self.titleLabel.text = cafeteria.name
+            var title = ""
+            switch self.cafeteriaID {
+            case 1:
+                title = String(localized: "cafeteria.title.1")
+            case 2:
+                title = String(localized: "cafeteria.title.2")
+            case 4:
+                title = String(localized: "cafeteria.title.4")
+            case 6:
+                title = String(localized: "cafeteria.title.6")
+            case 7:
+                title = String(localized: "cafeteria.title.7")
+            case 8:
+                title = String(localized: "cafeteria.title.8")
+            case 11:
+                title = String(localized: "cafeteria.title.11")
+            case 12:
+                title = String(localized: "cafeteria.title.12")
+            case 13:
+                title = String(localized: "cafeteria.title.13")
+            case 14:
+                title = String(localized: "cafeteria.title.14")
+            case 15:
+                title = String(localized: "cafeteria.title.15")
+            default:
+                title = String(localized: "cafeteria.title.1")
+            }
+            self.titleLabel.text = title
             self.breakfastTimeLabel.text = cafeteria.runningTime.breakfast ?? "-"
             self.lunchTimeLabel.text = cafeteria.runningTime.lunch ?? "-"
             self.dinnerTimeLabel.text = cafeteria.runningTime.dinner ?? "-"
