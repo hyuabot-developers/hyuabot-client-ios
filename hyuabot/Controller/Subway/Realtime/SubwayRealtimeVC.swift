@@ -39,7 +39,7 @@ class SubwayRealtimeVC: UIViewController {
         $0.color = .label
     }
     private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "bus.realtime.loading")
+        $0.text = String(localized: "subway.realtime.loading")
         $0.font = .godo(size: 16, weight: .regular)
         $0.textColor = .label
     }

@@ -153,13 +153,15 @@ class SubwayRealtimeCellView: UITableViewCell {
     
     private func setRealtimeAttributedText(_ text: String) {
         let attributeString = NSMutableAttributedString(string: text)
-        attributeString.addAttribute(
-            .foregroundColor,
-            value: UIColor.red, range: NSRange(
-                location: 0,
-                length: text.distance(from: text.startIndex, to: text.firstIndex(of: "(")!) - 1
+        if text.contains("(") && !text.contains("(s)") {
+            attributeString.addAttribute(
+                .foregroundColor,
+                value: UIColor.red, range: NSRange(
+                    location: 0,
+                    length: text.distance(from: text.startIndex, to: text.firstIndex(of: "(")!) - 1
+                )
             )
-        )
+        }
         self.subwayTimeLabel.attributedText = attributeString
     }
 }

@@ -3,6 +3,12 @@
   "strings" : {
     "bus.first.last.%@.%@.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(To %1$@) %2$@ ~ %3$@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13,6 +19,12 @@
     },
     "bus.help" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bus Page Help"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23,6 +35,12 @@
     },
     "bus.help.content1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route bus arrival information is displayed in the order of real-time arrival information and departure times from the terminal provided by the transportation company. If arrival information is not displayed on the electronic board at the stop, real-time arrival information can be checked after the terminal departure time."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33,6 +51,12 @@
     },
     "bus.help.content2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Displays the location of bus stops on and around the campus and the first and last bus times for each route. Some routes may not have a timetable, so first and last bus data may not be displayed."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43,6 +67,12 @@
     },
     "bus.help.content3" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For city buses in Ansan, due to long intervals, the electronic board at the stop may display waiting times for terminals and departure points. As a result, you can check the departure times from the terminal provided by the transportation company."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -53,6 +83,12 @@
     },
     "bus.help.content4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provides the stop passing times for each route as provided by Gyeonggi-do. Even if real-time arrival information is not available, this can be referenced to estimate the bus arrival time."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -63,6 +99,12 @@
     },
     "bus.help.title1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Checking Route Bus Arrival Information"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -73,6 +115,12 @@
     },
     "bus.help.title2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. Checking Route Bus Stop Information"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -83,6 +131,12 @@
     },
     "bus.help.title3" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Checking Route Bus Timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -93,6 +147,12 @@
     },
     "bus.help.title4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. Checking Route Bus Departure Time"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -103,6 +163,12 @@
     },
     "bus.log.title" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bus Departure Log"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -113,6 +179,12 @@
     },
     "bus.realtime.arriving.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arriving Soon (%1$lld stop)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -123,6 +195,12 @@
     },
     "bus.realtime.arriving.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arriving Soon (%1$lld stop, %2$lld seats)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133,6 +211,12 @@
     },
     "bus.realtime.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no buses scheduled to arrive."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -143,6 +227,12 @@
     },
     "bus.realtime.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading bus arrival information"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -153,6 +243,12 @@
     },
     "bus.realtime.no.seat.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld mins (%2$lld stops)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -163,6 +259,12 @@
     },
     "bus.realtime.seat.%lld.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld mins (%2$lld stops, %3$lld seats)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -173,6 +275,12 @@
     },
     "bus.realtime.section.10-1.campus" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10-1 (Convention Center)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -183,6 +291,12 @@
     },
     "bus.realtime.section.10-1.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10-1 (Sangnoksu Stn.)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -193,6 +307,12 @@
     },
     "bus.realtime.section.50.ansan" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50 (Terminal)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -203,6 +323,12 @@
     },
     "bus.realtime.section.50.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50 (Gwangmyeong Stn.)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -213,6 +339,12 @@
     },
     "bus.realtime.section.707-1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "707-1 (Main Gate)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -223,6 +355,12 @@
     },
     "bus.realtime.section.3102" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3102 (Convention Center)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -233,6 +371,12 @@
     },
     "bus.realtime.section.seoul.other" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3100/3101 (Main Gate)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -243,6 +387,12 @@
     },
     "bus.realtime.section.suwon.other" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "110/7070/9090 (Seongan High School)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -253,6 +403,12 @@
     },
     "bus.realtime.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depart at %02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -263,6 +419,12 @@
     },
     "bus.show.departure.log" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Departure Log"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -273,6 +435,12 @@
     },
     "bus.show.entire.timetable" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entire Timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -283,6 +451,12 @@
     },
     "bus.stop.first.last" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First & Last Time"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -293,6 +467,12 @@
     },
     "bus.stop.title" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop Information"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -303,6 +483,12 @@
     },
     "bus.tab.city" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangnoksu"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -313,6 +499,12 @@
     },
     "bus.tab.other" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Others"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -323,6 +515,12 @@
     },
     "bus.tab.seoul" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gangnam"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -333,6 +531,12 @@
     },
     "bus.tab.suwon" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suwon"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -343,6 +547,12 @@
     },
     "bus.timetable.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timetable not provided"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -353,6 +563,12 @@
     },
     "bus.timetable.saturdays" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saturday"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -363,6 +579,12 @@
     },
     "bus.timetable.sundays" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunday"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -373,6 +595,12 @@
     },
     "bus.timetable.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -383,6 +611,12 @@
     },
     "bus.timetable.weekdays" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekdays"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -393,6 +627,12 @@
     },
     "cafeteria.breakfast" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breakfast"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -403,6 +643,12 @@
     },
     "cafeteria.dinner" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dinner"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -413,6 +659,12 @@
     },
     "cafeteria.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading Cafeteria Menu…"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -423,6 +675,12 @@
     },
     "cafeteria.lunch" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lunch"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -433,6 +691,12 @@
     },
     "cafeteria.menu.price.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "₩ %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -443,6 +707,12 @@
     },
     "cafeteria.no.data" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any menu not found."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -453,6 +723,12 @@
     },
     "cafeteria.running.time" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running Time"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -463,6 +739,12 @@
     },
     "cafeteria.running.time.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running Time: %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -473,6 +755,12 @@
     },
     "cafeteria.tab.breakfast" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breakfast"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -483,6 +771,12 @@
     },
     "cafeteria.tab.dinner" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dinner"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -493,6 +787,12 @@
     },
     "cafeteria.tab.lunch" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lunch"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -503,6 +803,12 @@
     },
     "cafeteria.title.1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Student Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -513,6 +819,12 @@
     },
     "cafeteria.title.2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Living Science Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -523,6 +835,12 @@
     },
     "cafeteria.title.4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Materials Engineering Building Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -533,6 +851,12 @@
     },
     "cafeteria.title.6" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1st Dormitory Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -543,6 +867,12 @@
     },
     "cafeteria.title.7" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2nd Dormitory Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -553,6 +883,12 @@
     },
     "cafeteria.title.8" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haengwon Park"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -563,6 +899,12 @@
     },
     "cafeteria.title.11" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Staff Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -573,6 +915,12 @@
     },
     "cafeteria.title.12" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Student Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -583,6 +931,12 @@
     },
     "cafeteria.title.13" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -593,6 +947,12 @@
     },
     "cafeteria.title.14" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Food Court"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -603,6 +963,12 @@
     },
     "cafeteria.title.15" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Business Incubator"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -613,6 +979,12 @@
     },
     "campus.erica" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -623,6 +995,12 @@
     },
     "campus.seoul" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seoul"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -633,6 +1011,12 @@
     },
     "contact.database.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update contact database…"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -643,6 +1027,12 @@
     },
     "contact.search.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No item found"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -653,6 +1043,12 @@
     },
     "contact.search.placeholder" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search name / phone"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -663,6 +1059,12 @@
     },
     "contact.version.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check contact version..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -673,6 +1075,12 @@
     },
     "event.database.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update calendar database..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -683,6 +1091,12 @@
     },
     "event.header.title" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event of month"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -693,6 +1107,12 @@
     },
     "event.version.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check calendar version…"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -703,6 +1123,12 @@
     },
     "map.building.search.placeholder" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -713,6 +1139,12 @@
     },
     "map.search.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No item found"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -723,6 +1155,12 @@
     },
     "reading_room_1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOLMZ room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -733,6 +1171,12 @@
     },
     "reading_room_53" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1st reading room [B1]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -743,6 +1187,12 @@
     },
     "reading_room_54" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2nd reading room [B1]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -753,6 +1203,12 @@
     },
     "reading_room_55" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3rd reading room [3F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -763,6 +1219,12 @@
     },
     "reading_room_56" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4th reading room [3F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -773,6 +1235,12 @@
     },
     "reading_room_61" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1st reading room [2F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -783,6 +1251,12 @@
     },
     "reading_room_63" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2nd reading room [4F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -793,6 +1267,12 @@
     },
     "reading_room_131" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concentrate reading room [4F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -803,6 +1283,12 @@
     },
     "reading_room_132" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Roh HOLMZ [4F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -813,6 +1299,12 @@
     },
     "readingroom.notification.body.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ seats found in this room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -823,6 +1315,12 @@
     },
     "readingroom.notification.title.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty seat notification from %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -833,6 +1331,12 @@
     },
     "setting.campus" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campus"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -843,6 +1347,12 @@
     },
     "setting.developer" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -853,6 +1363,12 @@
     },
     "setting.developer.info" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeongin Lee (CSE 17)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -863,6 +1379,12 @@
     },
     "setting.language" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -873,6 +1395,12 @@
     },
     "setting.theme" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -883,6 +1411,12 @@
     },
     "setting.version" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -893,6 +1427,12 @@
     },
     "shuttle.desination.dormitory" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campus"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -903,6 +1443,12 @@
     },
     "shuttle.desination.jungang_station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -913,6 +1459,12 @@
     },
     "shuttle.desination.subway" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -923,6 +1475,12 @@
     },
     "shuttle.desination.terminal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -933,6 +1491,12 @@
     },
     "shuttle.destination" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -943,6 +1507,12 @@
     },
     "shuttle.destination.shorten.campus" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -953,6 +1523,12 @@
     },
     "shuttle.destination.shorten.jungang_station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -963,6 +1539,12 @@
     },
     "shuttle.destination.shorten.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -973,6 +1555,12 @@
     },
     "shuttle.destination.shorten.terminal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -983,6 +1571,12 @@
     },
     "shuttle.first.last.weekdays.format.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Weekdays)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -993,6 +1587,12 @@
     },
     "shuttle.first.last.weekdays.na" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (Weekdays)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1003,6 +1603,12 @@
     },
     "shuttle.first.last.weekends.format.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Weekends)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1013,6 +1619,12 @@
     },
     "shuttle.first.last.weekends.na" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—:— (Weekends)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1023,6 +1635,12 @@
     },
     "shuttle.first.time" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1033,6 +1651,12 @@
     },
     "shuttle.help" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttle Help"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1043,6 +1667,12 @@
     },
     "shuttle.help.content1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To find lost items on the shuttle bus, please call the shuttle bus office at 031-400-4412 or visit the office on the first floor of the Education Building behind the Haengbok Hall."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1053,6 +1683,12 @@
     },
     "shuttle.help.content2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you experience any inconvenience due to non-compliance with the shuttle bus schedule, please call the General Affairs and Human Resources Team (031–400–4406)."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1063,6 +1699,12 @@
     },
     "shuttle.help.content3" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can check the shuttle bus stop location and first and last bus times on the shuttle bus arrival information screen by pressing the stop information button at the bottom of each stop screen."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1073,6 +1715,12 @@
     },
     "shuttle.help.content4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click on the shuttle bus information you want to take! You can check where the bus stops."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1083,6 +1731,12 @@
     },
     "shuttle.help.content5" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-click on the shuttle bus you want to take! You can check the departure time of that bus."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1093,6 +1747,12 @@
     },
     "shuttle.help.title1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Find lost items on the shuttle bus"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1103,6 +1763,12 @@
     },
     "shuttle.help.title2" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. Failure to follow the shuttle bus schedule"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1113,6 +1779,12 @@
     },
     "shuttle.help.title3" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Shuttle bus stop location and first and last bus times"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1123,6 +1795,12 @@
     },
     "shuttle.help.title4" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. Check shuttle bus stop information"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1133,6 +1811,12 @@
     },
     "shuttle.help.title5" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5. Check the shuttle bus departure time"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1143,6 +1827,12 @@
     },
     "shuttle.last.time" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1153,6 +1843,12 @@
     },
     "shuttle.period.custom" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1163,6 +1859,12 @@
     },
     "shuttle.period.semester" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semester"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1173,6 +1875,12 @@
     },
     "shuttle.period.vacation" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacation"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1183,6 +1891,12 @@
     },
     "shuttle.period.vacation_session" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacation Session"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1193,6 +1907,12 @@
     },
     "shuttle.realtime.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Out out service"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1203,6 +1923,12 @@
     },
     "shuttle.shorten.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1213,6 +1939,12 @@
     },
     "shuttle.show.entire.timetable" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Entire Timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1223,6 +1955,12 @@
     },
     "shuttle.show.stop.modal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location & First/Last"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1233,6 +1971,12 @@
     },
     "shuttle.stop.dormitory.out" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1243,6 +1987,12 @@
     },
     "shuttle.stop.first.last" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First & Last"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1253,6 +2003,12 @@
     },
     "shuttle.stop.jungang.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1263,6 +2019,12 @@
     },
     "shuttle.stop.shuttlecock.in" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1273,6 +2035,12 @@
     },
     "shuttle.stop.shuttlecock.out" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1283,6 +2051,12 @@
     },
     "shuttle.stop.station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1293,6 +2067,12 @@
     },
     "shuttle.stop.terminal" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1303,6 +2083,12 @@
     },
     "shuttle.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depart at %02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1313,6 +2099,12 @@
     },
     "shuttle.time.remaining.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1323,6 +2115,12 @@
     },
     "shuttle.timetable.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Out of service"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1333,6 +2131,12 @@
     },
     "shuttle.timetable.filter" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1343,6 +2147,12 @@
     },
     "shuttle.timetable.filter.date" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1353,6 +2163,12 @@
     },
     "shuttle.timetable.filter.ok" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condition"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1363,6 +2179,12 @@
     },
     "shuttle.timetable.filter.period" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1373,6 +2195,12 @@
     },
     "shuttle.timetable.filter.route" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1383,6 +2211,12 @@
     },
     "shuttle.timetable.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading shuttle timetable..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1393,6 +2227,12 @@
     },
     "shuttle.timetable.weekdays" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekdays"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1403,6 +2243,12 @@
     },
     "shuttle.timetable.weekends" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekends"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1413,6 +2259,12 @@
     },
     "shuttle.type.circular" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circular"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1423,6 +2275,12 @@
     },
     "shuttle.type.direct" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1433,6 +2291,12 @@
     },
     "shuttle.type.dormitory" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1443,6 +2307,12 @@
     },
     "shuttle.type.jungang_station" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jungang Stn."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1453,6 +2323,12 @@
     },
     "shuttle.type.shuttlecock" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1463,6 +2339,12 @@
     },
     "shuttle.via.stop" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via Stops"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1473,6 +2355,12 @@
     },
     "subway.realtime.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1483,6 +2371,12 @@
     },
     "subway.realtime.almost.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1493,6 +2387,12 @@
     },
     "subway.realtime.arrived.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1503,6 +2403,12 @@
     },
     "subway.realtime.departed.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1513,6 +2419,12 @@
     },
     "subway.realtime.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Out of service"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1523,6 +2435,12 @@
     },
     "subway.realtime.entering.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1533,6 +2451,12 @@
     },
     "subway.realtime.last.almost.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1543,6 +2467,12 @@
     },
     "subway.realtime.last.arrived.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1553,6 +2483,12 @@
     },
     "subway.realtime.last.departed.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1563,6 +2499,12 @@
     },
     "subway.realtime.last.entering.%lld.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld min(s)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1571,8 +2513,30 @@
         }
       }
     },
+    "subway.realtime.loading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading subway arrival..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전철 도착 정보 불러오는 중…"
+          }
+        }
+      }
+    },
     "subway.realtime.now" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arriving Soon"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1583,6 +2547,12 @@
     },
     "subway.realtime.section.4.down" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line 4 (Oido)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1593,6 +2563,12 @@
     },
     "subway.realtime.section.4.up" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line 4 (Seoul)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1603,6 +2579,12 @@
     },
     "subway.realtime.section.suin.down" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suin Line (Incheon)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1613,6 +2595,12 @@
     },
     "subway.realtime.section.suin.up" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suin Line (Suwon)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1623,6 +2611,12 @@
     },
     "subway.realtime.section.transfer.down" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer (Campus → Incheon)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1633,6 +2627,12 @@
     },
     "subway.realtime.section.transfer.up" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer (Incheon → Campus)"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1643,6 +2643,12 @@
     },
     "subway.show.entire.timetable" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Entire Timetable"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1653,6 +2659,12 @@
     },
     "subway.station.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1663,6 +2675,12 @@
     },
     "subway.station.k209" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cheongryangri"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1673,6 +2691,12 @@
     },
     "subway.station.k210" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wangsimni"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1683,6 +2707,12 @@
     },
     "subway.station.k233" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jukjeon"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1693,6 +2723,12 @@
     },
     "subway.station.k246" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gosaek"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1703,6 +2739,12 @@
     },
     "subway.station.k258" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oido"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1713,6 +2755,12 @@
     },
     "subway.station.k272" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incheon"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1723,6 +2771,12 @@
     },
     "subway.station.k409" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danggogae"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1733,6 +2787,12 @@
     },
     "subway.station.k411" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowon"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1743,6 +2803,12 @@
     },
     "subway.station.k419" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hansung Univ."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1753,6 +2819,12 @@
     },
     "subway.station.k433" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sadang"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1763,6 +2835,12 @@
     },
     "subway.station.k443" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geumjeong"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1773,6 +2851,12 @@
     },
     "subway.station.k444" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sanbon"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1783,6 +2867,12 @@
     },
     "subway.station.k453" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansan"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1793,6 +2883,12 @@
     },
     "subway.station.k456" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oido"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1803,6 +2899,12 @@
     },
     "subway.tab.blue" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line 4"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1813,6 +2915,12 @@
     },
     "subway.tab.transfer" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line 4 ↭ Suin"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1823,6 +2931,12 @@
     },
     "subway.tab.yellow" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suin Line"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1833,6 +2947,12 @@
     },
     "subway.terminal.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1843,6 +2963,12 @@
     },
     "subway.time.%lld.%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depart at %02lld:%02lld"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1853,6 +2979,12 @@
     },
     "subway.timetable.loading" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading subway timetable..."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1863,6 +2995,12 @@
     },
     "subway.timetable.weekdays" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekdays"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1873,6 +3011,12 @@
     },
     "subway.timetable.weekends" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekends"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1883,6 +3027,12 @@
     },
     "subway.transfer.almost.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depart from previous station"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1893,6 +3043,12 @@
     },
     "subway.transfer.arrived.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrived at %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1903,6 +3059,12 @@
     },
     "subway.transfer.departed.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depart from %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1913,6 +3075,12 @@
     },
     "subway.transfer.down.%@.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@) %2$@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1923,6 +3091,12 @@
     },
     "subway.transfer.entering.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrived at %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1933,6 +3107,12 @@
     },
     "subway.transfer.timetable.%@.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@) %2$@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1943,6 +3123,12 @@
     },
     "subway.transfer.up.%@.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%1$@) %2$@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1953,6 +3139,12 @@
     },
     "tabbar.bus" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bus"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1963,6 +3155,12 @@
     },
     "tabbar.cafeteria" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cafeteria"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1973,6 +3171,12 @@
     },
     "tabbar.calendar" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1983,6 +3187,12 @@
     },
     "tabbar.chat" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1993,6 +3203,12 @@
     },
     "tabbar.contact" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phonebook"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2003,6 +3219,12 @@
     },
     "tabbar.donate" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donate"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2013,6 +3235,12 @@
     },
     "tabbar.map" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campus Map"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2023,6 +3251,12 @@
     },
     "tabbar.readingroom" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reading Room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2033,6 +3267,12 @@
     },
     "tabbar.setting" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setting"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2043,6 +3283,12 @@
     },
     "tabbar.shuttle" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttle"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2053,6 +3299,12 @@
     },
     "tabbar.subway" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subway"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2063,6 +3315,12 @@
     },
     "theme.dark" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2073,6 +3331,12 @@
     },
     "theme.light" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2083,6 +3347,12 @@
     },
     "theme.system" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2093,6 +3363,12 @@
     },
     "toast.error.shuttle.realtime.location" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can’t find closest stop due to location issue."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2103,6 +3379,12 @@
     },
     "toast.readingroom.notification.subscribed.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty seat notification for %@ turns on."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2113,6 +3395,12 @@
     },
     "toast.readingroom.notification.unsubscribed.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty seat notification for %@ turns off."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2123,6 +3411,12 @@
     },
     "toast.success.shuttle.realtime.location.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closest stop is %@."
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2133,6 +3427,12 @@
     },
     "Unknown" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
