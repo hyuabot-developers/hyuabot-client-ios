@@ -56,6 +56,12 @@ class SettingCellView: UITableViewCell {
         $0.showsMenuAsPrimaryAction = true
         $0.isHidden = true
     }
+    private let arrowImageView = UIImageView().then {
+        $0.image = UIImage(systemName: "chevron.right")
+        $0.tintColor = .plainButtonText
+        $0.contentMode = .scaleAspectFit
+        $0.isHidden = true
+    }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -72,6 +78,7 @@ class SettingCellView: UITableViewCell {
         self.contentView.addSubview(self.titleLabel)
         self.contentView.addSubview(self.campusButton)
         self.contentView.addSubview(self.themeButton)
+        self.contentView.addSubview(self.arrowImageView)
         self.iconImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
@@ -86,6 +93,10 @@ class SettingCellView: UITableViewCell {
             make.centerY.equalToSuperview()
         }
         self.themeButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-20)
+            make.centerY.equalToSuperview()
+        }
+        self.arrowImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
@@ -116,6 +127,8 @@ class SettingCellView: UITableViewCell {
                     self.setButtonTitle($0, "theme.dark")
                 }
             }
+        } else if title == "setting.language" {
+            self.arrowImageView.isHidden = false
         }
     }
     

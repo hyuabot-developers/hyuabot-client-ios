@@ -27,6 +27,10 @@ class SettingVC: UIViewController {
             make.edges.equalToSuperview()
         }
     }
+    
+    private func openAppSetting() {
+        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+    }
 }
 
 extension SettingVC: UITableViewDelegate, UITableViewDataSource {
@@ -42,5 +46,11 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SettingCellView.reuseIdentifier) as? SettingCellView else { return UITableViewCell() }
         cell.setupUI(imageName: self.imageNames[indexPath.row], title: self.titles[indexPath.row])
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if self.titles[indexPath.row] == "setting.language" {
+            self.openAppSetting()
+        }
     }
 }
