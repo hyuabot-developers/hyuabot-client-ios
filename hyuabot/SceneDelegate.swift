@@ -17,8 +17,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
         let window = UIWindow(windowScene: windowScene)
+        // Load app theme
+        let theme = UserDefaults.standard.integer(forKey: "themeID")
+        if theme == 0 {
+            window.overrideUserInterfaceStyle = .unspecified
+        } else if theme == 1 {
+            window.overrideUserInterfaceStyle = .light
+        } else {
+            window.overrideUserInterfaceStyle = .dark
+        }
         let vc = RootVC()
         window.rootViewController = vc
         window.makeKeyAndVisible()
