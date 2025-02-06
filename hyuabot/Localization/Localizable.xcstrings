@@ -1155,6 +1155,12 @@
     },
     "reading_room_1" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOLMZ room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1165,6 +1171,12 @@
     },
     "reading_room_53" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1st reading room [B1]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1175,6 +1187,12 @@
     },
     "reading_room_54" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2nd reading room [B1]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1185,6 +1203,12 @@
     },
     "reading_room_55" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3rd reading room [3F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1195,6 +1219,12 @@
     },
     "reading_room_56" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4th reading room [3F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1205,6 +1235,12 @@
     },
     "reading_room_61" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1st reading room [2F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1215,6 +1251,12 @@
     },
     "reading_room_63" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2nd reading room [4F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1225,6 +1267,12 @@
     },
     "reading_room_131" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concentrate reading room [4F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1235,6 +1283,12 @@
     },
     "reading_room_132" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Roh HOLMZ [4F]"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1245,6 +1299,12 @@
     },
     "readingroom.notification.body.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ seats found in this room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1255,6 +1315,12 @@
     },
     "readingroom.notification.title.%@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty seat notification from %@"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
