@@ -1123,6 +1123,12 @@
     },
     "map.building.search.placeholder" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search room"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1133,6 +1139,12 @@
     },
     "map.search.empty" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No item found"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
