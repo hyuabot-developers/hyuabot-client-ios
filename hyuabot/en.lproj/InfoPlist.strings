@@ -1,2 +1,2 @@
 "CFBundleDisplayName" = "HYUabot";
-"NSLocationWhenInUseUsageDescription" = "Request location permission to find nearby shuttle stop.";
+"LocalizedLocationWhenInUseUsageDescription" = "Request location permission to find nearby shuttle stop.";
