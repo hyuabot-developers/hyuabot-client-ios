@@ -87,21 +87,6 @@ class ShuttleTimetableCellView: UITableViewCell {
             }
         }
         self.item = item
-        self.setUITimeLabel(item: item)
-    }
-    
-    func setUITimeLabel(item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable) {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: item.time)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        if dateFormatter.string(from: Date.now) > item.time {
-            self.shuttleTimeLabel.textColor = .gray
-        } else {
-            self.shuttleTimeLabel.textColor = .label
-        }
-        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(hour).\(minute)")
+        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(item.hour).\(item.minute)")
     }
 }
