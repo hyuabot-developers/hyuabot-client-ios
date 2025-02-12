@@ -37,7 +37,7 @@ type Query {
   """
   Shuttle query
   """
-  shuttle(timestamp: DateTime = "2025-01-19T21:25:15.062509+09:00", period: [String!] = null, weekdays: [Boolean!] = null, routeName: [String!] = null, routeTag: [String!] = null, routeStart: [String!] = null, routeEnd: [String!] = null, stopName: [String!] = null, start: Time = null, end: Time = null, periodCurrent: Boolean = null, periodStart: Date = null, periodEnd: Date = null): ShuttleQuery!
+  shuttle(timestamp: DateTime = "2025-02-12T11:10:31.770270+09:00", period: [String!] = null, weekdays: [Boolean!] = null, routeName: [String!] = null, routeTag: [String!] = null, routeStart: [String!] = null, routeEnd: [String!] = null, stopName: [String!] = null, start: Time = null, end: Time = null, periodCurrent: Boolean = null, periodStart: Date = null, periodEnd: Date = null): ShuttleQuery!
 
   """
   Notice query
@@ -281,6 +281,16 @@ type TimetableQuery {
   Departure time
   """
   time: String!
+
+  """
+  Departure hour
+  """
+  hour: Int!
+
+  """
+  Departure minute
+  """
+  minute: Int!
 
   """
   Start station
@@ -595,6 +605,16 @@ type BusTimetableQuery {
   Departure time
   """
   time: String!
+
+  """
+  Departure hour
+  """
+  departureHour: Int!
+
+  """
+  Departure minute
+  """
+  departureMinute: Int!
 }
 
 type BusRealtimeQuery {
@@ -639,6 +659,16 @@ type BusDepartureLogQuery {
   Departure time
   """
   departureTime: Time!
+
+  """
+  Departure hour
+  """
+  departureHour: Int!
+
+  """
+  Departure minute
+  """
+  departureMinute: Int!
 
   """
   Vehicle ID
@@ -734,6 +764,10 @@ type ShuttleTimetableQuery {
   stop: String!
 
   time: String!
+
+  hour: Int!
+
+  minute: Int!
 
   via: [ShuttleViaQuery!]!
 }

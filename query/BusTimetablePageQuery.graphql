@@ -5,7 +5,7 @@ query BusTimetablePageQuery($routes: [Int!]!, $stopID: Int!) {
               name
             }
             timetable {
-                weekdays, time
+                weekdays, time, departureHour, departureMinute
             }
         }
     }
