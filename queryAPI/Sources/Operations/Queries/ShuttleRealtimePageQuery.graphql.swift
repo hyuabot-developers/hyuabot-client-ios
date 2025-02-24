@@ -7,7 +7,7 @@ public class ShuttleRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleRealtimePageQuery($shuttleStart: Time!, $shuttleDateTime: DateTime!) { shuttle(start: $shuttleStart, timestamp: $shuttleDateTime) { __typename timetable { __typename tag route time stop via { __typename stop time } } stop { __typename name latitude longitude } } }"#
+      #"query ShuttleRealtimePageQuery($shuttleStart: Time!, $shuttleDateTime: DateTime!) { shuttle(start: $shuttleStart, timestamp: $shuttleDateTime) { __typename timetable { __typename tag route time stop via { __typename stop time hour minute } } stop { __typename name latitude longitude } } }"#
     ))
 
   public var shuttleStart: Time
@@ -93,10 +93,14 @@ public class ShuttleRealtimePageQuery: GraphQLQuery {
             .field("__typename", String.self),
             .field("stop", String.self),
             .field("time", String.self),
+            .field("hour", Int.self),
+            .field("minute", Int.self),
           ] }
 
           public var stop: String { __data["stop"] }
           public var time: String { __data["time"] }
+          public var hour: Int { __data["hour"] }
+          public var minute: Int { __data["minute"] }
         }
       }
 
