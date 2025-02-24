@@ -52,7 +52,7 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.setUITimeLabel(item: item)
+        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(item.hour).\(item.minute)")
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray
@@ -75,30 +75,10 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.setUITimeLabel(item: item)
+        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(item.hour).\(item.minute)")
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray
         }
-    }
-    
-    func setUITimeLabel(item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable.Vium) {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: item.time)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(hour).\(minute)")
-    }
-    
-    func setUITimeLabel(item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable.Vium) {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: item.time)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(hour).\(minute)")
     }
 }
