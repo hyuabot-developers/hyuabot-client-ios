@@ -67,13 +67,7 @@ class BusRealtimeCellView: UITableViewCell {
             }
         } else if (item.timetable != nil) {
             let timetableItem = item.timetable!
-            let calendar = Calendar.current
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "HH:mm:ss"
-            let departureTime = dateFormatter.date(from: timetableItem.time)
-            let hour = calendar.component(.hour, from: departureTime!)
-            let minute = calendar.component(.minute, from: departureTime!)
-            self.busTimeLabel.text = String(localized: "bus.realtime.time.\(hour).\(minute)")
+            self.busTimeLabel.text = String(localized: "bus.realtime.time.\(timetableItem.departureHour).\(timetableItem.departureMinute)")
         }
     }
     

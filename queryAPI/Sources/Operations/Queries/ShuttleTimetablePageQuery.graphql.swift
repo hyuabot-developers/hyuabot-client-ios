@@ -7,7 +7,7 @@ public class ShuttleTimetablePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTimetablePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTimetablePageQuery($period: [String!]!, $stopID: String!, $tag: [String!]!) { shuttle( stopName: [$stopID] period: $period routeTag: $tag weekdays: [true, false] ) { __typename timetable { __typename tag route period weekdays time stop via { __typename stop time } } } }"#
+      #"query ShuttleTimetablePageQuery($period: [String!]!, $stopID: String!, $tag: [String!]!) { shuttle( stopName: [$stopID] period: $period routeTag: $tag weekdays: [true, false] ) { __typename timetable { __typename tag route period weekdays time hour minute stop via { __typename stop time } } } }"#
     ))
 
   public var period: [String]
@@ -77,6 +77,8 @@ public class ShuttleTimetablePageQuery: GraphQLQuery {
           .field("period", String.self),
           .field("weekdays", Bool.self),
           .field("time", String.self),
+          .field("hour", Int.self),
+          .field("minute", Int.self),
           .field("stop", String.self),
           .field("via", [Vium].self),
         ] }
@@ -86,6 +88,8 @@ public class ShuttleTimetablePageQuery: GraphQLQuery {
         public var period: String { __data["period"] }
         public var weekdays: Bool { __data["weekdays"] }
         public var time: String { __data["time"] }
+        public var hour: Int { __data["hour"] }
+        public var minute: Int { __data["minute"] }
         public var stop: String { __data["stop"] }
         public var via: [Vium] { __data["via"] }
 

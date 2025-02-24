@@ -7,7 +7,7 @@ public class BusTimetablePageQuery: GraphQLQuery {
   public static let operationName: String = "BusTimetablePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusTimetablePageQuery($routes: [Int!]!, $stopID: Int!) { bus( id_: [$stopID] routes: $routes weekdays: ["weekdays", "saturday", "sunday"] ) { __typename routes { __typename info { __typename name } timetable { __typename weekdays time } } } }"#
+      #"query BusTimetablePageQuery($routes: [Int!]!, $stopID: Int!) { bus( id_: [$stopID] routes: $routes weekdays: ["weekdays", "saturday", "sunday"] ) { __typename routes { __typename info { __typename name } timetable { __typename weekdays time departureHour departureMinute } } } }"#
     ))
 
   public var routes: [Int]
@@ -106,12 +106,18 @@ public class BusTimetablePageQuery: GraphQLQuery {
             .field("__typename", String.self),
             .field("weekdays", String.self),
             .field("time", String.self),
+            .field("departureHour", Int.self),
+            .field("departureMinute", Int.self),
           ] }
 
           /// Is weekdays
           public var weekdays: String { __data["weekdays"] }
           /// Departure time
           public var time: String { __data["time"] }
+          /// Departure hour
+          public var departureHour: Int { __data["departureHour"] }
+          /// Departure minute
+          public var departureMinute: Int { __data["departureMinute"] }
         }
       }
     }

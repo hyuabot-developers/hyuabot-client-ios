@@ -38,7 +38,7 @@ class BusTimetableCellView: UITableViewCell {
     func setupUI(item: BusTimetableItem) {
         self.busRouteLabel.text = item.routeName
         self.setRouteColor(routeName: item.routeName)
-        self.setUITimeLabel(item: item)
+        self.busTimeLabel.text = String(localized: "bus.timetable.time.\(item.timetable.departureHour).\(item.timetable.departureMinute)")
     }
     
     func setRouteColor(routeName: String) {
@@ -47,12 +47,5 @@ class BusTimetableCellView: UITableViewCell {
         } else {
             self.busRouteLabel.textColor = .busRed
         }
-    }
-    
-    func setUITimeLabel(item: BusTimetableItem) {
-        let timetableItem = item.timetable
-        let hour = Int(timetableItem.time.substring(from: 0, to: 1))!
-        let minute = Int(timetableItem.time.substring(from: 3, to: 4))!
-        self.busTimeLabel.text = String(localized: "bus.timetable.time.\(hour).\(minute)")
     }
 }

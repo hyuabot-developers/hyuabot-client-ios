@@ -10,7 +10,7 @@ query BusRealtimePageQuery($busStart: Time!) {
         routes {
             info { id, name },
             realtime { sequence, stop, time, seat, lowFloor, updatedAt },
-            timetable { weekdays, time }
+            timetable { weekdays, time, departureHour, departureMinute }
         }
     }
 }

@@ -6,7 +6,9 @@ import QueryAPI
 class ShuttleRealtimeVC: UIViewController {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
-    private let locationManager = CLLocationManager()
+    private lazy var locationManager = CLLocationManager().then {
+        $0.delegate = self
+    }
     private let stopLocation = [
         CLLocation(latitude: 37.29339607529377, longitude: 126.83630604103446),
         CLLocation(latitude:37.29875417910844, longitude: 126.83784054072336),
@@ -94,8 +96,8 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
-        self.findClosetStop()
         self.observeSubjects()
+        self.checkUserDeviceLocationServiceAuthorization()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -208,18 +210,14 @@ class ShuttleRealtimeVC: UIViewController {
         return nowString < item.time
     }
     
-    private func findClosetStop() {
-        self.locationManager.do {
-            $0.delegate = self
-            $0.desiredAccuracy = kCLLocationAccuracyBest
-            $0.requestWhenInUseAuthorization()
-        }
-        DispatchQueue.global().async {
-            if (CLLocationManager.locationServicesEnabled()) {
-                self.locationManager.startUpdatingLocation()
-            } else {
-                self.showToastMessage(image: UIImage(systemName: "exclamationmark.triangle.fill"), message: String(localized: "toast.error.shuttle.realtime.location"))
-            }
+    private func checkUserDeviceLocationServiceAuthorization() {
+        if locationManager.authorizationStatus == .authorizedWhenInUse {
+            locationManager.startUpdatingLocation()
+        } else if locationManager.authorizationStatus == .denied || locationManager.authorizationStatus == .restricted {
+            self.showToastMessage(image: UIImage(systemName: "exclamationmark.triangle.fill"), message: String(localized: "toast.error.shuttle.realtime.location"))
+        } else if locationManager.authorizationStatus == .notDetermined {
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.requestWhenInUseAuthorization()
         }
     }
         
@@ -235,7 +233,7 @@ class ShuttleRealtimeVC: UIViewController {
 
 extension ShuttleRealtimeVC: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let currentLocation = locations.first else { return }
+        guard let currentLocation = locations.last else { return }
         var distances = [CLLocationDistance]()
         for location in stopLocation {
             distances.append(currentLocation.distance(from: location))
@@ -252,5 +250,9 @@ extension ShuttleRealtimeVC: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         self.showToastMessage(image: UIImage(systemName: "exclamationmark.triangle.fill"), message: String(localized: "toast.error.shuttle.realtime.location"))
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        checkUserDeviceLocationServiceAuthorization()
     }
 }
