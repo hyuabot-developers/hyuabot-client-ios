@@ -7,7 +7,7 @@ public class SubwayTimetablePageDownQuery: GraphQLQuery {
   public static let operationName: String = "SubwayTimetablePageDownQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayTimetablePageDownQuery($station: String!) { subway(id_: [$station]) { __typename timetable { __typename down { __typename weekdays time terminal { __typename id } } } } }"#
+      #"query SubwayTimetablePageDownQuery($station: String!) { subway(id_: [$station]) { __typename timetable { __typename down { __typename weekdays time hour minute terminal { __typename id } } } } }"#
     ))
 
   public var station: String
@@ -74,6 +74,8 @@ public class SubwayTimetablePageDownQuery: GraphQLQuery {
             .field("__typename", String.self),
             .field("weekdays", Bool.self),
             .field("time", String.self),
+            .field("hour", Int.self),
+            .field("minute", Int.self),
             .field("terminal", Terminal.self),
           ] }
 
@@ -81,6 +83,10 @@ public class SubwayTimetablePageDownQuery: GraphQLQuery {
           public var weekdays: Bool { __data["weekdays"] }
           /// Departure time
           public var time: String { __data["time"] }
+          /// Departure hour
+          public var hour: Int { __data["hour"] }
+          /// Departure minute
+          public var minute: Int { __data["minute"] }
           /// Terminal station
           public var terminal: Terminal { __data["terminal"] }
 

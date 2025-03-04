@@ -38,8 +38,12 @@ class SubwayTimetableCellView: UITableViewCell {
         up: SubwayTimetablePageUpQuery.Data.Subway.Timetable.Up? = nil,
         down: SubwayTimetablePageDownQuery.Data.Subway.Timetable.Down? = nil
     ) {
+        let calendar = Calendar.current
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss"
+        
         self.destinationLabel.text = getDestinationLabelText(up?.terminal.id ?? down?.terminal.id ?? "")
-        self.setUITimeLabel(up, down)
+        self.setUITimeLabel(dateFormatter.string(from: Date.now), up, down)
     }
     
     func getDestinationLabelText(_ stationID: String) -> String {
@@ -65,38 +69,32 @@ class SubwayTimetableCellView: UITableViewCell {
     }
     
     func setUITimeLabel(
+        _ currentTime: String,
         _ up: SubwayTimetablePageUpQuery.Data.Subway.Timetable.Up? = nil,
         _ down: SubwayTimetablePageDownQuery.Data.Subway.Timetable.Down? = nil
     ) {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
         if (up != nil) {
-            let departureTime = dateFormatter.date(from: up!.time)
-            var hour = calendar.component(.hour, from: departureTime!)
-            let minute = calendar.component(.minute, from: departureTime!)
-            if dateFormatter.string(from: Date.now) > up!.time {
+            if currentTime > up!.time {
                 self.departureTimeLabel.textColor = .gray
             } else {
                 self.departureTimeLabel.textColor = .label
             }
+            var hour = up!.hour
             if hour < 4 {
                 hour += 24
             }
-            self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(minute)")
+            self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(up!.minute)")
         } else {
-            let departureTime = dateFormatter.date(from: down!.time)
-            var hour = calendar.component(.hour, from: departureTime!)
-            let minute = calendar.component(.minute, from: departureTime!)
+            var hour = down!.hour
             if hour < 4 {
                 hour += 24
             }
-            if dateFormatter.string(from: Date.now) > down!.time {
+            if currentTime > down!.time {
                 self.departureTimeLabel.textColor = .gray
             } else {
                 self.departureTimeLabel.textColor = .label
             }
-            self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(minute)")
+            self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(down!.minute)")
         }
     }
 }
