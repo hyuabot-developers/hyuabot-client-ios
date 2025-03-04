@@ -136,7 +136,7 @@ class ShuttleTimetableVC: UIViewController {
                 stopID = "terminal"
                 tags = ["DY", "C"]
             } else if options.start == "shuttle.stop.jungang.station" {
-                stopID = "jungang_station"
+                stopID = "jungang_stn"
                 tags = ["DJ"]
             } else if options.start == "shuttle.stop.shuttlecock.in" {
                 stopID = "shuttlecock_i"
