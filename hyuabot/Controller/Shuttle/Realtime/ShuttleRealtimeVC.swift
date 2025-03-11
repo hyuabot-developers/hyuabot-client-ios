@@ -17,6 +17,28 @@ class ShuttleRealtimeVC: UIViewController {
         CLLocation(latitude:37.31487247528457, longitude: 126.83963540399434),
         CLLocation(latitude:37.29869328231496, longitude: 126.8377767466817),
     ]
+    private let shuttleShowByDestinationLabel = UILabel().then {
+        $0.text = "목적지/시간 순서"
+        $0.textColor = .white
+        $0.font = .godo(size: 14, weight: .bold)
+    }
+    private let shuttleShowDepartureTimeLabel = UILabel().then {
+        $0.text = "출발 시간/남은 시간"
+        $0.textColor = .white
+        $0.font = .godo(size: 14, weight: .bold)
+    }
+    private let shuttleShowByDestination = UISwitch().then {
+        $0.subviews.first?.subviews.first?.backgroundColor = .gray
+    }
+    private let shuttleShowDepartureTime = UISwitch().then {
+        $0.subviews.first?.subviews.first?.backgroundColor = .gray
+    }
+    private lazy var shuttleOptionView = UIView().then{
+        $0.backgroundColor = .hanyangBlue
+        $0.snp.makeConstraints { make in
+            make.height.equalTo(50)
+        }
+    }
     private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(
         stopID: .dormiotryOut,
         refreshMethod: fetchShuttleRealtimeData,
@@ -71,7 +93,7 @@ class ShuttleRealtimeVC: UIViewController {
 
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0))
+        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView)
         // Add the content pages to the view pager
         viewPager.contentView.pages = [
             dormitoryOutTabVC.view,
@@ -119,6 +141,26 @@ class ShuttleRealtimeVC: UIViewController {
     @objc func appWillEnterForeground() { self.startPolling() }
     
     private func setupUI() {
+        self.shuttleOptionView.addSubview(self.shuttleShowByDestinationLabel)
+        self.shuttleOptionView.addSubview(self.shuttleShowDepartureTimeLabel)
+        self.shuttleOptionView.addSubview(self.shuttleShowByDestination)
+        self.shuttleOptionView.addSubview(self.shuttleShowDepartureTime)
+        self.shuttleShowByDestinationLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
+            make.leading.equalTo(self.shuttleOptionView.snp.leading).offset(10)
+        }
+        self.shuttleShowDepartureTimeLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
+            make.leading.equalTo(self.shuttleOptionView.snp.centerX).offset(10)
+        }
+        self.shuttleShowByDestination.snp.makeConstraints { make in
+            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
+            make.trailing.equalTo(self.shuttleOptionView.snp.centerX).offset(-10)
+        }
+        self.shuttleShowDepartureTime.snp.makeConstraints { make in
+            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
+            make.trailing.equalTo(self.shuttleOptionView.snp.trailing).offset(-10)
+        }
         self.view.addSubview(viewPager)
         self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
