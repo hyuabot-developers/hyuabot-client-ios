@@ -12,7 +12,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let showViaVC: (ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Void
     private let showStopVC: (ShuttleStopEnum) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
-    private lazy var tableFooterView = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
+    private lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
+    private lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
         let tableView = UITableView().then{
             $0.delegate = self
@@ -20,7 +21,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.sectionHeaderTopPadding = 0
             $0.refreshControl = refreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
-            $0.tableFooterView = self.tableFooterView
+            $0.tableFooterView = self.tableFooterView1
             $0.showsVerticalScrollIndicator = false
             // Register the view
             $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
@@ -35,6 +36,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.delegate = self.timetableDelegate
             $0.dataSource = self.timetableDelegate
             $0.sectionHeaderTopPadding = 0
+            $0.tableFooterView = self.tableFooterView2
             $0.refreshControl = refreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
             $0.showsVerticalScrollIndicator = false

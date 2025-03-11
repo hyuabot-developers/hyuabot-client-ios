@@ -27,7 +27,7 @@ class ShuttleRealtimeVC: UIViewController {
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
     }
-    private let shuttleShowByDestination = UISwitch().then {
+    private lazy var shuttleShowByDestination = UISwitch().then {
         $0.subviews.first?.subviews.first?.backgroundColor = .gray
         $0.addTarget(self, action: #selector(onClickShowArrivalByTimeSwitch(sender:)), for: .valueChanged)
     }

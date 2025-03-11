@@ -1953,6 +1953,70 @@
         }
       }
     },
+    "shuttle.show.entire.timetable.campus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entire Timetable (Dormitory)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 (기숙사)"
+          }
+        }
+      }
+    },
+    "shuttle.show.entire.timetable.jungang_stn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entire Timetable (Jungang Stn.)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 (중앙역)"
+          }
+        }
+      }
+    },
+    "shuttle.show.entire.timetable.station" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entire Timetable (Station)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 (한대앞)"
+          }
+        }
+      }
+    },
+    "shuttle.show.entire.timetable.terminal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entire Timetable (Terminal)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 시간표 (예술인)"
+          }
+        }
+      }
+    },
     "shuttle.show.stop.modal" : {
       "localizations" : {
         "en" : {
