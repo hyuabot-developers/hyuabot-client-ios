@@ -1921,6 +1921,38 @@
         }
       }
     },
+    "shuttle.realtime.showByDestination" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By Destination / Time"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목적지/시간 순서"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.showDepartureTime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remaining / Departure Time"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "남은 시간/출발 시간"
+          }
+        }
+      }
+    },
     "shuttle.shorten.time.%lld.%lld" : {
       "localizations" : {
         "en" : {

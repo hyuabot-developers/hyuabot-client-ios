@@ -18,12 +18,12 @@ class ShuttleRealtimeVC: UIViewController {
         CLLocation(latitude:37.29869328231496, longitude: 126.8377767466817),
     ]
     private let shuttleShowByDestinationLabel = UILabel().then {
-        $0.text = "목적지/시간 순서"
+        $0.text = String(localized: "shuttle.realtime.showByDestination")
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
     }
     private let shuttleShowDepartureTimeLabel = UILabel().then {
-        $0.text = "출발 시간/남은 시간"
+        $0.text = String(localized: "shuttle.realtime.showDepartureTime")
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
     }
