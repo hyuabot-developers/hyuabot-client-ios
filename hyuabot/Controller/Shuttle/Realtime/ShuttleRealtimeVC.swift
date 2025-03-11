@@ -29,8 +29,9 @@ class ShuttleRealtimeVC: UIViewController {
     }
     private let shuttleShowByDestination = UISwitch().then {
         $0.subviews.first?.subviews.first?.backgroundColor = .gray
+        $0.addTarget(self, action: #selector(onClickShowArrivalByTimeSwitch(sender:)), for: .valueChanged)
     }
-    private let shuttleShowDepartureTime = UISwitch().then {
+    private lazy var shuttleShowDepartureTime = UISwitch().then {
         $0.subviews.first?.subviews.first?.backgroundColor = .gray
         $0.addTarget(self, action: #selector(onClickDepartureSwitch(sender:)), for: .valueChanged)
     }
@@ -177,16 +178,22 @@ class ShuttleRealtimeVC: UIViewController {
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
         self.shuttleShowDepartureTime.isOn = !showRemainingTime
         ShuttleRealtimeData.shared.showRemainingTime.onNext(showRemainingTime)
+        let showArrivalByTime = UserDefaults.standard.bool(forKey: "showArrivalByTime")
+        self.shuttleShowByDestination.isOn = showArrivalByTime
+        ShuttleRealtimeData.shared.showArrivalByTime.onNext(showArrivalByTime)
     }
     
     private func observeSubjects() {
         ShuttleRealtimeData.shared.shuttleRealtimeData.subscribe(onNext: { data in
+            ShuttleRealtimeData.shared.shuttleDormitoryData.onNext(data?.filter({ $0.stop == "dormitory_o" }))
             ShuttleRealtimeData.shared.shuttleDormitoryToStationData.onNext(data?.filter({ $0.stop == "dormitory_o" && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") }))
             ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.onNext(data?.filter({ $0.stop == "dormitory_o" && ($0.tag == "DY" || $0.tag == "C") }))
             ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.onNext(data?.filter({ $0.stop == "dormitory_o" && $0.tag == "DJ" }))
+            ShuttleRealtimeData.shared.shuttleShuttlecockData.onNext(data?.filter({ $0.stop == "shuttlecock_o" }))
             ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.onNext(data?.filter({ $0.stop == "shuttlecock_o" && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") }))
             ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.onNext(data?.filter({ $0.stop == "shuttlecock_o" && ($0.tag == "DY" || $0.tag == "C") }))
             ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.onNext(data?.filter({ $0.stop == "shuttlecock_o" && $0.tag == "DJ" }))
+            ShuttleRealtimeData.shared.shuttleStationData.onNext(data?.filter({ $0.stop == "station" }))
             ShuttleRealtimeData.shared.shuttleStationToCampusData.onNext(data?.filter({ $0.stop == "station" }))
             ShuttleRealtimeData.shared.shuttleStationToTerminalData.onNext(data?.filter({ $0.stop == "station" && $0.tag == "C" }))
             ShuttleRealtimeData.shared.shuttleStationToJungangStationData.onNext(data?.filter({ $0.stop == "station" && $0.tag == "DJ" }))
@@ -280,6 +287,11 @@ class ShuttleRealtimeVC: UIViewController {
     @objc private func onClickDepartureSwitch(sender: UISwitch) {
         ShuttleRealtimeData.shared.showRemainingTime.onNext(!sender.isOn)
         UserDefaults.standard.set(!sender.isOn, forKey: "showRemainingTime")
+    }
+    
+    @objc private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
+        ShuttleRealtimeData.shared.showArrivalByTime.onNext(sender.isOn)
+        UserDefaults.standard.set(sender.isOn, forKey: "showArrivalByTime")
     }
 }
 
