@@ -32,6 +32,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
     private let shuttleShowDepartureTime = UISwitch().then {
         $0.subviews.first?.subviews.first?.backgroundColor = .gray
+        $0.addTarget(self, action: #selector(onClickDepartureSwitch(sender:)), for: .valueChanged)
     }
     private lazy var shuttleOptionView = UIView().then{
         $0.backgroundColor = .hanyangBlue
@@ -172,6 +173,10 @@ class ShuttleRealtimeVC: UIViewController {
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
         }
+        // Option Switch
+        let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
+        self.shuttleShowDepartureTime.isOn = !showRemainingTime
+        ShuttleRealtimeData.shared.showRemainingTime.onNext(showRemainingTime)
     }
     
     private func observeSubjects() {
@@ -270,6 +275,11 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
+    }
+    
+    @objc private func onClickDepartureSwitch(sender: UISwitch) {
+        ShuttleRealtimeData.shared.showRemainingTime.onNext(!sender.isOn)
+        UserDefaults.standard.set(!sender.isOn, forKey: "showRemainingTime")
     }
 }
 

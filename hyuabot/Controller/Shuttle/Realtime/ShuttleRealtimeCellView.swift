@@ -31,7 +31,6 @@ class ShuttleRealtimeCellView: UITableViewCell {
         self.contentView.addSubview(self.shuttleTimeLabel)
         self.contentView.addSubview(self.shuttleRemainingTimeLabel)
         self.selectionStyle = .none
-        self.contentView.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(longTouch)))
         self.shuttleTypeLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
@@ -112,14 +111,6 @@ class ShuttleRealtimeCellView: UITableViewCell {
         self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(hour).\(minute)")
         let remainingTime = (hour * 3600 + minute * 60 + second) - (calendar.component(.hour, from: Date.now) * 3600 + calendar.component(.minute, from: Date.now) * 60 + calendar.component(.second, from: Date.now)) // in seconds
         self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.\(remainingTime / 60)")
-    }
-    
-    @objc func longTouch(_ recognizer: UILongPressGestureRecognizer) {
-        if (recognizer.state == .began) {
-            ShuttleRealtimeData.shared.showRemainingTime.onNext(true)
-        } else if (recognizer.state == .ended) {
-            ShuttleRealtimeData.shared.showRemainingTime.onNext(false)
-        }
     }
         
     
