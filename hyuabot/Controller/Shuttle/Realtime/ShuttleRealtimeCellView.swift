@@ -46,54 +46,58 @@ class ShuttleRealtimeCellView: UITableViewCell {
         }
     }
     
-    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
-        if (stopID == .dormiotryOut || stopID == .shuttlecockOut) {
-            if indexPath.section == 0 {
-                if item.tag == "DH" || item.tag == "DJ" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                    self.shuttleTypeLabel.textColor = .busRed
-                }
-                else if item.tag == "C" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
-                }
-            } else if indexPath.section == 1 {
-                if item.tag == "DY" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                    self.shuttleTypeLabel.textColor = .busRed
-                }
-                else if item.tag == "C" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
-                }
-            } else if indexPath.section == 2 {
-                self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-                self.shuttleTypeLabel.textColor = .hanyangGreen
-            }
-        } else if (stopID == .station) {
-            if indexPath.section == 0 {
-                if item.tag == "DH" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                    self.shuttleTypeLabel.textColor = .busRed
-                } else if item.tag == "DJ" {
+    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable, byTime: Bool = false) {
+        if (byTime) {
+            self.setTypeText(stopID: stopID, item: item)
+        } else {
+            if (stopID == .dormiotryOut || stopID == .shuttlecockOut) {
+                if indexPath.section == 0 {
+                    if item.tag == "DH" || item.tag == "DJ" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
+                        self.shuttleTypeLabel.textColor = .busRed
+                    }
+                    else if item.tag == "C" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    }
+                } else if indexPath.section == 1 {
+                    if item.tag == "DY" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
+                        self.shuttleTypeLabel.textColor = .busRed
+                    }
+                    else if item.tag == "C" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    }
+                } else if indexPath.section == 2 {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
                     self.shuttleTypeLabel.textColor = .hanyangGreen
-                } else if item.tag == "C" {
+                }
+            } else if (stopID == .station) {
+                if indexPath.section == 0 {
+                    if item.tag == "DH" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
+                        self.shuttleTypeLabel.textColor = .busRed
+                    } else if item.tag == "DJ" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
+                        self.shuttleTypeLabel.textColor = .hanyangGreen
+                    } else if item.tag == "C" {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    }
+                } else if indexPath.section == 1 {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
                     self.shuttleTypeLabel.textColor = .busBlue
+                } else if indexPath.section == 2 {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
+                    self.shuttleTypeLabel.textColor = .hanyangGreen
                 }
-            } else if indexPath.section == 1 {
-                self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                self.shuttleTypeLabel.textColor = .busBlue
-            } else if indexPath.section == 2 {
-                self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-                self.shuttleTypeLabel.textColor = .hanyangGreen
-            }
-        } else if (stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn) {
-            if (item.route.hasSuffix("S")) {
-                self.shuttleTypeLabel.text = String(localized: "shuttle.type.shuttlecock")
-            } else if (item.route.hasSuffix("D")) {
-                self.shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
+            } else if (stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn) {
+                if (item.route.hasSuffix("S")) {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.shuttlecock")
+                } else if (item.route.hasSuffix("D")) {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
+                }
             }
         }
         self.item = item
@@ -111,6 +115,60 @@ class ShuttleRealtimeCellView: UITableViewCell {
         self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(hour).\(minute)")
         let remainingTime = (hour * 3600 + minute * 60 + second) - (calendar.component(.hour, from: Date.now) * 3600 + calendar.component(.minute, from: Date.now) * 60 + calendar.component(.second, from: Date.now)) // in seconds
         self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.\(remainingTime / 60)")
+    }
+    
+    private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
+        if (stopID == .dormiotryOut || stopID == .shuttlecockOut) {
+            if (item.tag == "DH") {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_school_station")
+                self.shuttleTypeLabel.textColor = .busRed
+            } else if (item.tag == "DY") {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_school_terminal")
+                self.shuttleTypeLabel.textColor = .hanyangOrange
+            } else if (item.tag == "DJ") {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_school_jungang_station")
+                self.shuttleTypeLabel.textColor = .hanyangGreen
+            } else if (item.tag == "C") {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_school_circular")
+            }
+        }
+        else if (stopID == .station) {
+            if (item.tag == "DH") {
+                if (item.route.hasSuffix("S")) {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
+                    self.shuttleTypeLabel.textColor = .busRed
+                } else if (item.route.hasSuffix("D")) {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
+                    self.shuttleTypeLabel.textColor = .hanyangBlue
+                }
+            } else if (item.tag == "DJ") {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_jungang_station")
+                self.shuttleTypeLabel.textColor = .hanyangGreen
+            } else if (item.tag == "C") {
+                if (item.route.hasSuffix("S")) {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle_type_station_circular_shuttlecock")
+                } else if (item.route.hasSuffix("D")) {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle_type_station_circular_dormitory")
+                }
+            }
+        }
+        else if (stopID == .terminal) {
+            if (item.route.hasSuffix("S")) {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
+            } else if (item.route.hasSuffix("D")) {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
+            }
+        }
+        else if (stopID == .jungangStation) {
+            self.shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
+        }
+        else if (stopID == .shuttlecockIn) {
+            if (item.route.hasSuffix("S")) {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock_finishing")
+            } else if (item.route.hasSuffix("D")) {
+                self.shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
+            }
+        }
     }
         
     
