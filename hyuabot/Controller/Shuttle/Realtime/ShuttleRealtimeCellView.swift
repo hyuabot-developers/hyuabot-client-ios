@@ -27,6 +27,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.isHidden = true
         $0.addSubview(self.shuttleAlertLabel)
     }
+    private let infoImageView = UIImageView(image: UIImage(systemName: "info.circle"))
     var item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -44,6 +45,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         self.contentView.addSubview(self.shuttleTimeLabel)
         self.contentView.addSubview(self.shuttleAlertView)
         self.contentView.addSubview(self.shuttleRemainingTimeLabel)
+        self.contentView.addSubview(self.infoImageView)
         self.selectionStyle = .none
         self.shuttleAlertLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(4)
@@ -62,6 +64,10 @@ class ShuttleRealtimeCellView: UITableViewCell {
             make.centerY.equalToSuperview()
         }
         self.shuttleRemainingTimeLabel.snp.makeConstraints { make in
+            make.trailing.equalTo(self.infoImageView.snp.leading).offset(-8)
+            make.centerY.equalToSuperview()
+        }
+        self.infoImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
