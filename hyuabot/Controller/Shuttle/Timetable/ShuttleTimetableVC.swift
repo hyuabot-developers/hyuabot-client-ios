@@ -78,6 +78,13 @@ class ShuttleTimetableVC: UIViewController {
         ))
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        ShuttleTimetableData.shared.options.onNext(nil)
+        ShuttleTimetableData.shared.timetable.onNext([])
+        ShuttleTimetableData.shared.weekdays.onNext([])
+        ShuttleTimetableData.shared.weekends.onNext([])
+    }
+    
     private func setupUI() {
         self.view.backgroundColor = .hanyangBlue
         self.view.addSubview(viewPager)

@@ -4,11 +4,13 @@ class ViewPager: UIView {
     let sizeConfiguration: TabView.TabSizeConfiguration
     let navigationBarEnabled: Bool
     let contentView: ContentView = ContentView()
+    let optionView: UIView?
     lazy var tabView: TabView = TabView(sizeConfiguration: self.sizeConfiguration)
     
-    init(sizeConfiguration: TabView.TabSizeConfiguration, navigationBarEnabled: Bool = false) {
+    init(sizeConfiguration: TabView.TabSizeConfiguration, optionView: UIView? = nil, navigationBarEnabled: Bool = false) {
         self.sizeConfiguration = sizeConfiguration
         self.navigationBarEnabled = navigationBarEnabled
+        self.optionView = optionView
         super.init(frame: .zero)
         self.setupUI()
         self.tabView.delegate = self
@@ -27,9 +29,22 @@ class ViewPager: UIView {
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(self.sizeConfiguration.height + (self.navigationBarEnabled ? .zero : topPadding))
         }
-        self.contentView.snp.makeConstraints { make in
-            make.top.equalTo(self.tabView.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+        if (optionView != nil) {
+            self.addSubview(self.optionView!)
+            self.optionView!.snp.makeConstraints { make in
+                make.top.equalTo(self.tabView.snp.bottom)
+                make.leading.trailing.equalToSuperview()
+            }
+            self.contentView.snp.makeConstraints { make in
+                make.leading.trailing.bottom.equalToSuperview()
+                make.top.equalTo(self.optionView!.snp.bottom)
+            }
+        }
+        else {
+            self.contentView.snp.makeConstraints { make in
+                make.top.equalTo(self.tabView.snp.bottom)
+                make.leading.trailing.bottom.equalToSuperview()
+            }
         }
     }
 }
