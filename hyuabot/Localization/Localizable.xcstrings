@@ -2001,6 +2001,22 @@
         }
       }
     },
+    "shuttle.location.alert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Destination"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "탑승 위치 주의"
+          }
+        }
+      }
+    },
     "shuttle.period.custom" : {
       "localizations" : {
         "en" : {
