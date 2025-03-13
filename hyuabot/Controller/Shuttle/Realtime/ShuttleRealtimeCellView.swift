@@ -14,6 +14,20 @@ class ShuttleRealtimeCellView: UITableViewCell {
     private let shuttleRemainingTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
+    private let shuttleAlertLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .regular)
+        $0.textColor = .hanyangOrange
+        $0.text = String(localized: "shuttle.location.alert")
+    }
+    private lazy var shuttleAlertView = UIView().then {
+        $0.layer.cornerRadius = 4
+        $0.layer.masksToBounds = true
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = UIColor.hanyangOrange.cgColor
+        $0.isHidden = true
+        $0.addSubview(self.shuttleAlertLabel)
+    }
+    private let infoImageView = UIImageView(image: UIImage(systemName: "info.circle"))
     var item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -29,24 +43,38 @@ class ShuttleRealtimeCellView: UITableViewCell {
     func setupUI() {
         self.contentView.addSubview(self.shuttleTypeLabel)
         self.contentView.addSubview(self.shuttleTimeLabel)
+        self.contentView.addSubview(self.shuttleAlertView)
         self.contentView.addSubview(self.shuttleRemainingTimeLabel)
+        self.contentView.addSubview(self.infoImageView)
         self.selectionStyle = .none
+        self.shuttleAlertLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(4)
+        }
         self.shuttleTypeLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
+        }
+        self.shuttleAlertView.snp.makeConstraints { make in
+            make.leading.equalTo(self.shuttleTypeLabel.snp.trailing).offset(8)
+            make.centerY.equalToSuperview()
         }
         self.shuttleTimeLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
         self.shuttleRemainingTimeLabel.snp.makeConstraints { make in
+            make.trailing.equalTo(self.infoImageView.snp.leading).offset(-8)
+            make.centerY.equalToSuperview()
+        }
+        self.infoImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
     }
     
     func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable, byTime: Bool = false) {
+        self.shuttleAlertView.isHidden = true
         if (byTime) {
             self.setTypeText(stopID: stopID, item: item)
         } else {
@@ -125,6 +153,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
             } else if (item.tag == "DY") {
                 self.shuttleTypeLabel.text = String(localized: "shuttle_type_school_terminal")
                 self.shuttleTypeLabel.textColor = .hanyangOrange
+                self.shuttleAlertView.isHidden = false
             } else if (item.tag == "DJ") {
                 self.shuttleTypeLabel.text = String(localized: "shuttle_type_school_jungang_station")
                 self.shuttleTypeLabel.textColor = .hanyangGreen
