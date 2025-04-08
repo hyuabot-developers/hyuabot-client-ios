@@ -60,7 +60,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
             make.centerY.equalToSuperview()
         }
         self.shuttleTimeLabel.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
+            make.trailing.equalTo(self.infoImageView.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
         }
         self.shuttleRemainingTimeLabel.snp.makeConstraints { make in
