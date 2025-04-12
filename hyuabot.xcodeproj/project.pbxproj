@@ -10,6 +10,7 @@
 		C70119632D2954670077A1A5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = C70119622D2954670077A1A5 /* SnapKit */; };
 		C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C70CC9D92D2953EC00B7865C /* QueryAPI */; };
 		C715DEF12D29537100B33476 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C715DEF02D29537100B33476 /* QueryAPI */; };
+		C72A95EB2DAA961600979B22 /* watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C72A95E12DAA961500979B22 /* watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; };
 		C73CB6312D410341005E9731 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C7BAB0352D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0342D2802F400BBE940 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -22,7 +23,28 @@
 		C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0502D29532000BBE940 /* QueryAPI */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		C72A95E92DAA961600979B22 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C056E32D277910007A228B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C72A95E02DAA961500979B22;
+			remoteInfo = "watch Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		C72A95EC2DAA961600979B22 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				C72A95EB2DAA961600979B22 /* watch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C73CB6302D4101A2005E9731 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -37,6 +59,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C72A95E12DAA961500979B22 /* watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C056EB2D277910007A228B /* hyuabot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hyuabot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -51,6 +74,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		C72A95E22DAA961500979B22 /* watch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = watch;
+			sourceTree = "<group>";
+		};
 		C7C056ED2D277910007A228B /* hyuabot */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -62,6 +90,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		C72A95DE2DAA961500979B22 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C7C056E82D277910007A228B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -88,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				C7C056ED2D277910007A228B /* hyuabot */,
+				C72A95E22DAA961500979B22 /* watch */,
 				C7C056EC2D277910007A228B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -96,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				C7C056EB2D277910007A228B /* hyuabot.app */,
+				C72A95E12DAA961500979B22 /* watch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,6 +140,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		C72A95E02DAA961500979B22 /* watch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C72A95EF2DAA961600979B22 /* Build configuration list for PBXNativeTarget "watch" */;
+			buildPhases = (
+				C72A95DD2DAA961500979B22 /* Sources */,
+				C72A95DE2DAA961500979B22 /* Frameworks */,
+				C72A95DF2DAA961500979B22 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C72A95E22DAA961500979B22 /* watch */,
+			);
+			name = watch;
+			packageProductDependencies = (
+			);
+			productName = "watch Watch App";
+			productReference = C72A95E12DAA961500979B22 /* watch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		C7C056EA2D277910007A228B /* hyuabot */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C7C056FE2D277911007A228B /* Build configuration list for PBXNativeTarget "hyuabot" */;
@@ -111,11 +170,13 @@
 				C7C056E82D277910007A228B /* Frameworks */,
 				C7C056E92D277910007A228B /* Resources */,
 				C73CB6302D4101A2005E9731 /* Embed Frameworks */,
+				C72A95EC2DAA961600979B22 /* Embed Watch Content */,
 				C7BAB03B2D28098B00BBE940 /* Crashlytics */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C72A95EA2DAA961600979B22 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C7C056ED2D277910007A228B /* hyuabot */,
@@ -146,9 +207,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					C72A95E02DAA961500979B22 = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					C7C056EA2D277910007A228B = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -179,11 +243,19 @@
 			projectRoot = "";
 			targets = (
 				C7C056EA2D277910007A228B /* hyuabot */,
+				C72A95E02DAA961500979B22 /* watch */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		C72A95DF2DAA961500979B22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C7C056E92D277910007A228B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -221,6 +293,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C72A95DD2DAA961500979B22 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C7C056E72D277910007A228B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -230,7 +309,71 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		C72A95EA2DAA961600979B22 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C72A95E02DAA961500979B22 /* watch */;
+			targetProxy = C72A95E92DAA961600979B22 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		C72A95ED2DAA961600979B22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = watch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = net.jaram.hyuabot;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watch;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.4;
+			};
+			name = Debug;
+		};
+		C72A95EE2DAA961600979B22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = watch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = net.jaram.hyuabot;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watch;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.4;
+			};
+			name = Release;
+		};
 		C7C056FF2D277911007A228B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -240,7 +383,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 9YYP5T2RL4;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = hyuabot/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -273,7 +415,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 9YYP5T2RL4;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = hyuabot/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -333,6 +474,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9YYP5T2RL4;
 				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -400,6 +542,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9YYP5T2RL4;
 				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -427,6 +570,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C72A95EF2DAA961600979B22 /* Build configuration list for PBXNativeTarget "watch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C72A95ED2DAA961600979B22 /* Debug */,
+				C72A95EE2DAA961600979B22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C7C056E62D277910007A228B /* Build configuration list for PBXProject "hyuabot" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
