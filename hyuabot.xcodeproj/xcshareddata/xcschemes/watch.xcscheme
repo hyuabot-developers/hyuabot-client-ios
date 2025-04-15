@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C72A95E02DAA961500979B22"
+               BuildableName = "watch.app"
+               BlueprintName = "watch"
+               ReferencedContainer = "container:hyuabot.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "C7C056EA2D277910007A228B"
                BuildableName = "hyuabot.app"
                BlueprintName = "hyuabot"
@@ -44,9 +58,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C7C056EA2D277910007A228B"
-            BuildableName = "hyuabot.app"
-            BlueprintName = "hyuabot"
+            BlueprintIdentifier = "C72A95E02DAA961500979B22"
+            BuildableName = "watch.app"
+            BlueprintName = "watch"
             ReferencedContainer = "container:hyuabot.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,9 +75,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C7C056EA2D277910007A228B"
-            BuildableName = "hyuabot.app"
-            BlueprintName = "hyuabot"
+            BlueprintIdentifier = "C72A95E02DAA961500979B22"
+            BuildableName = "watch.app"
+            BlueprintName = "watch"
             ReferencedContainer = "container:hyuabot.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
