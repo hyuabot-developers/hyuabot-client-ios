@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		C70119632D2954670077A1A5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = C70119622D2954670077A1A5 /* SnapKit */; };
 		C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C70CC9D92D2953EC00B7865C /* QueryAPI */; };
-		C715DEF12D29537100B33476 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C715DEF02D29537100B33476 /* QueryAPI */; };
 		C72A95EB2DAA961600979B22 /* watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C72A95E12DAA961500979B22 /* watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; };
 		C73CB6312D410341005E9731 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -17,10 +16,13 @@
 		C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */; };
 		C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */; };
 		C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB03D2D294AE400BBE940 /* Apollo */; };
-		C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0402D294CDC00BBE940 /* QueryAPI */; };
 		C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0462D294FEB00BBE940 /* RxSwift */; };
 		C7BAB04A2D2951B500BBE940 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0492D2951B500BBE940 /* Then */; };
 		C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0502D29532000BBE940 /* QueryAPI */; };
+		C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468952DAE2DDD00E8975E /* Apollo */; };
+		C7E4689D2DAE2ED500E8975E /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7E4689C2DAE2ED500E8975E /* Then */; };
+		C7E468A12DAE2F1800E8975E /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468A02DAE2F1800E8975E /* RxSwift */; };
+		C7E645702DAE30B50023F658 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7E6456F2DAE30B50023F658 /* QueryAPI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,6 +106,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7E645702DAE30B50023F658 /* QueryAPI in Frameworks */,
+				C7E468A12DAE2F1800E8975E /* RxSwift in Frameworks */,
+				C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */,
+				C7E4689D2DAE2ED500E8975E /* Then in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,8 +120,6 @@
 				C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */,
 				C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */,
 				C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */,
-				C7BAB0412D294CDC00BBE940 /* QueryAPI in Frameworks */,
-				C715DEF12D29537100B33476 /* QueryAPI in Frameworks */,
 				C7BAB04A2D2951B500BBE940 /* Then in Frameworks */,
 				C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */,
 				C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */,
@@ -167,6 +171,10 @@
 			);
 			name = watch;
 			packageProductDependencies = (
+				C7E468952DAE2DDD00E8975E /* Apollo */,
+				C7E4689C2DAE2ED500E8975E /* Then */,
+				C7E468A02DAE2F1800E8975E /* RxSwift */,
+				C7E6456F2DAE30B50023F658 /* QueryAPI */,
 			);
 			productName = "watch Watch App";
 			productReference = C72A95E12DAA961500979B22 /* watch.app */;
@@ -197,11 +205,9 @@
 				C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */,
 				C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */,
 				C7BAB03D2D294AE400BBE940 /* Apollo */,
-				C7BAB0402D294CDC00BBE940 /* QueryAPI */,
 				C7BAB0462D294FEB00BBE940 /* RxSwift */,
 				C7BAB0492D2951B500BBE940 /* Then */,
 				C7BAB0502D29532000BBE940 /* QueryAPI */,
-				C715DEF02D29537100B33476 /* QueryAPI */,
 				C70CC9D92D2953EC00B7865C /* QueryAPI */,
 				C70119622D2954670077A1A5 /* SnapKit */,
 				C73CB62D2D4100F3005E9731 /* RealmSwift */,
@@ -243,9 +249,9 @@
 				C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */,
 				C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */,
-				C70CC9D82D2953EC00B7865C /* XCLocalSwiftPackageReference "queryAPI" */,
 				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */,
+				C7E6456E2DAE30B50023F658 /* XCLocalSwiftPackageReference "queryAPI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
@@ -612,7 +618,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		C70CC9D82D2953EC00B7865C /* XCLocalSwiftPackageReference "queryAPI" */ = {
+		C7E6456E2DAE30B50023F658 /* XCLocalSwiftPackageReference "queryAPI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = queryAPI;
 		};
@@ -679,10 +685,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = QueryAPI;
 		};
-		C715DEF02D29537100B33476 /* QueryAPI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = QueryAPI;
-		};
 		C73CB62D2D4100F3005E9731 /* RealmSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */;
@@ -708,10 +710,6 @@
 			package = C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */;
 			productName = Apollo;
 		};
-		C7BAB0402D294CDC00BBE940 /* QueryAPI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = QueryAPI;
-		};
 		C7BAB0462D294FEB00BBE940 /* RxSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
@@ -723,6 +721,25 @@
 			productName = Then;
 		};
 		C7BAB0502D29532000BBE940 /* QueryAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QueryAPI;
+		};
+		C7E468952DAE2DDD00E8975E /* Apollo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = Apollo;
+		};
+		C7E4689C2DAE2ED500E8975E /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
+		};
+		C7E468A02DAE2F1800E8975E /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+		C7E6456F2DAE30B50023F658 /* QueryAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = QueryAPI;
 		};
