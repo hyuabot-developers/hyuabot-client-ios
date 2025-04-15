@@ -8,14 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
+    let stopList = ["기숙사", "셔틀콕", "한대앞", "예술인", "중앙역", "셔틀콕 건너편"]
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            List {
+                ForEach(stopList, id: \.self) { stop in
+                    NavigationLink(destination: DepartureListView(stop: stop)) {
+                        HStack {
+                            Text(stop).font(.godo(size: 16, weight: .regular))
+                            Spacer()
+                        }
+                    }
+                }
+            }
         }
-        .padding()
     }
 }
 

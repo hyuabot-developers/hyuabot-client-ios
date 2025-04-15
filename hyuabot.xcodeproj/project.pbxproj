@@ -71,11 +71,21 @@
 			);
 			target = C7C056EA2D277910007A228B /* hyuabot */;
 		};
+		C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C72A95E02DAA961500979B22 /* watch */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C72A95E22DAA961500979B22 /* watch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */,
+			);
 			path = watch;
 			sourceTree = "<group>";
 		};
@@ -327,6 +337,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = watch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = watch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = net.jaram.hyuabot;
@@ -355,6 +366,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = watch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = watch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = net.jaram.hyuabot;
