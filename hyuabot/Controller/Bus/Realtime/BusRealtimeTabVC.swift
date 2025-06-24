@@ -50,7 +50,6 @@ class BusRealtimeTabVC: UIViewController {
                 "bus.realtime.section.seoul.other"
             ]
             case .suwon: self.busRealtimeSection = [
-                "bus.realtime.section.707-1",
                 "bus.realtime.section.suwon.other"
             ]
             case .other: self.busRealtimeSection = [
@@ -108,8 +107,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if section == 0 { stopID = 216000379 }
             else if section == 1 { stopID = 216000719 }
         } else if self.tabType == .suwon {
-            if section == 0 { stopID = 216000719 }
-            else if section == 1 { stopID = 216000070 }
+            if section == 0 { stopID = 216000070 }
         }  else if self.tabType == .other {
             if section == 0 { stopID = 216000759 }
             else if section == 1 { stopID = 213000487 }
@@ -149,12 +147,8 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if self.tabType == .suwon {
             if section == 0 {
-                stopID = 216000719
-                routes = [216000070]
-            }
-            else if section == 1 {
                 stopID = 216000070
-                routes = [217000014, 216000070, 216000104, 200000015]
+                routes = [216000104, 200000015]
             }
         }  else if self.tabType == .other {
             if section == 0 {
@@ -195,11 +189,8 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if self.tabType == .suwon {
             if section == 0 {
-                guard let items = try? BusRealtimeData.shared.suwonBusCampusData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
-            } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.suwonBusJunctionData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 6)
             }
         } else if self.tabType == .other {
             if section == 0 {
@@ -237,10 +228,6 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if self.tabType == .suwon {
             if indexPath.section == 0 {
-                guard let items = try? BusRealtimeData.shared.suwonBusCampusData.value() else { return BusRealtimeEmptyCellView() }
-                if items.isEmpty { return BusRealtimeEmptyCellView() }
-                cell.setupUI(item: items[indexPath.row])
-            } else if indexPath.section == 1 {
                 guard let items = try? BusRealtimeData.shared.suwonBusJunctionData.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
