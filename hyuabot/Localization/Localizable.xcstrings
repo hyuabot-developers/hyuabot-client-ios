@@ -337,22 +337,6 @@
         }
       }
     },
-    "bus.realtime.section.707-1" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "707-1 (Main Gate)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "707-1 (한양대정문)"
-          }
-        }
-      }
-    },
     "bus.realtime.section.3102" : {
       "localizations" : {
         "en" : {
@@ -390,13 +374,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "110/7070/9090 (Seongan High School)"
+            "value" : "7070/9090 (Seongan High School)"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "110/7070/9090 (한양대입구)"
+            "value" : "7070/9090 (한양대입구)"
           }
         }
       }

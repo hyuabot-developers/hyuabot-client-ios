@@ -141,11 +141,8 @@ class BusRealtimeVC: UIViewController {
             let mainGateToSeoul: [BusRealtimePageQuery.Data.Bus.Route] = mainGateData.filter {
                 $0.info.id == 216000026 || $0.info.id == 216000043 || $0.info.id == 216000096
             }
-            let mainGateToSuwon: [BusRealtimePageQuery.Data.Bus.Route] = mainGateData.filter {
-                $0.info.id == 216000070
-            }
             let junctionToSuwon: [BusRealtimePageQuery.Data.Bus.Route] = junctionData.filter {
-                $0.info.id == 217000014 || $0.info.id == 216000070 || $0.info.id == 216000104 || $0.info.id == 200000015
+                $0.info.id == 216000104 || $0.info.id == 200000015
             }
             let ansanToGwangmyeong: [BusRealtimePageQuery.Data.Bus.Route] = ansanData.filter { $0.info.id == 216000075 }
             let gwangmyeongToAnsan: [BusRealtimePageQuery.Data.Bus.Route] = gwangmyeongData.filter { $0.info.id == 216000075 }
@@ -154,7 +151,6 @@ class BusRealtimeVC: UIViewController {
             BusRealtimeData.shared.cityBusStationData.onNext(self?.combineArrivalData(sangnoksuToCampus) ?? [])
             BusRealtimeData.shared.seoulBusCampusData.onNext(self?.combineArrivalData(campusToSeoul) ?? [])
             BusRealtimeData.shared.seoulBusMainGateData.onNext(self?.combineArrivalData(mainGateToSeoul) ?? [])
-            BusRealtimeData.shared.suwonBusCampusData.onNext(self?.combineArrivalData(mainGateToSuwon) ?? [])
             BusRealtimeData.shared.suwonBusJunctionData.onNext(self?.combineArrivalData(junctionToSuwon) ?? [])
             BusRealtimeData.shared.otherBusAnsanData.onNext(self?.combineArrivalData(ansanToGwangmyeong) ?? [])
             BusRealtimeData.shared.otherBusGwangmyeongStationData.onNext(self?.combineArrivalData(gwangmyeongToAnsan) ?? [])

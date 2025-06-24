@@ -38,7 +38,6 @@ class SubwayTimetableCellView: UITableViewCell {
         up: SubwayTimetablePageUpQuery.Data.Subway.Timetable.Up? = nil,
         down: SubwayTimetablePageDownQuery.Data.Subway.Timetable.Down? = nil
     ) {
-        let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
         
