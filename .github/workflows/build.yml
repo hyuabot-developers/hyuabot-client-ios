@@ -11,4 +11,4 @@ jobs:
         env:
           GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
       - name: Start Xcode Build
-        run: xcodebuild -project hyuabot.xcodeproj -scheme hyuabot -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' -quiet clean build
+        run: xcodebuild -project hyuabot.xcodeproj -scheme hyuabot -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -quiet clean build
