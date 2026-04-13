@@ -121,6 +121,7 @@ class ShuttleRealtimeVC: UIViewController {
         super.viewDidLoad()
         self.setupUI()
         self.observeSubjects()
+        self.checkBirthdayDialog()
         self.checkUserDeviceLocationServiceAuthorization()
     }
 
@@ -272,6 +273,19 @@ class ShuttleRealtimeVC: UIViewController {
         } else if locationManager.authorizationStatus == .notDetermined {
             locationManager.desiredAccuracy = kCLLocationAccuracyBest
             locationManager.requestWhenInUseAuthorization()
+        }
+    }
+    
+    private func checkBirthdayDialog() {
+        // Open Birthday Dialog on Dec 12
+        let now = Date.now
+        let dateTimeFormatter = DateFormatter().then {
+            $0.timeZone = TimeZone(identifier: "Asia/Seoul")
+            $0.dateFormat = "MM/dd"
+        }
+        if dateTimeFormatter.string(from: now) == "12/12" {
+            guard let nc = self.navigationController as? ShuttleNC else { return }
+            nc.openBirthdayDialog()
         }
     }
         

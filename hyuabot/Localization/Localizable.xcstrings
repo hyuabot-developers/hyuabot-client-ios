@@ -1,6 +1,56 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "birthday.content.%lld.%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today (December 12th) is the developer's birthday.\n\nIt has already been %1$llu years since we launched HYUabot, and we will continue to strive to provide you with even better service in the future. We wish you all the best as you wrap up the rest of %2$@, and please always stay healthy.\n\nThank you."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘(12/12)은 개발자의 생일입니다.\n\n벌써 휴아봇을 운영한지 %1$llu년이 되었고 앞으로도 더 좋은 서비스를 제공할 수 있도록 노력하겠습니다. 남은 %2$@년 잘 마무리하시고 항상 건강하시길 바랍니다.\n\n감사합니다."
+          }
+        }
+      }
+    },
+    "birthday.dont.show.again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do not show this year"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "올해는 다시보지 않기"
+          }
+        }
+      }
+    },
+    "birthday.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Happy Birthday to the Developer!"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개발자 생일 공지"
+          }
+        }
+      }
+    },
     "bus.first.last.%@.%@.%@" : {
       "localizations" : {
         "en" : {
@@ -989,6 +1039,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "서울"
+          }
+        }
+      }
+    },
+    "close" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닫기"
           }
         }
       }

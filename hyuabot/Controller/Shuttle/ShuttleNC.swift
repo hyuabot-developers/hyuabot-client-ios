@@ -83,4 +83,16 @@ class ShuttleNC: UINavigationController {
         }
         self.pushViewController(vc, animated: false)
     }
+    
+    func openBirthdayDialog() {
+        // Get Current Year
+        let currentYear = Calendar.current.component(.year, from: Date())
+        if UserDefaults.standard.bool(forKey: "hideBirthdayPopup\(currentYear)") {
+            return
+        }
+        let birthdayVC = BirthdayVC()
+        birthdayVC.modalPresentationStyle = .overCurrentContext
+        birthdayVC.modalTransitionStyle = .crossDissolve
+        self.present(birthdayVC, animated: true, completion: nil)
+    }
 }
