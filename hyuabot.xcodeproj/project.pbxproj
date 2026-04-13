@@ -19,6 +19,7 @@
 		C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0462D294FEB00BBE940 /* RxSwift */; };
 		C7BAB04A2D2951B500BBE940 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0492D2951B500BBE940 /* Then */; };
 		C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0502D29532000BBE940 /* QueryAPI */; };
+		C7C51A772F8D02550002329A /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = C7C51A762F8D02550002329A /* Api */; };
 		C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468952DAE2DDD00E8975E /* Apollo */; };
 		C7E4689D2DAE2ED500E8975E /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7E4689C2DAE2ED500E8975E /* Then */; };
 		C7E468A12DAE2F1800E8975E /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468A02DAE2F1800E8975E /* RxSwift */; };
@@ -122,6 +123,7 @@
 				C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */,
 				C7BAB04A2D2951B500BBE940 /* Then in Frameworks */,
 				C7BAB0512D29532000BBE940 /* QueryAPI in Frameworks */,
+				C7C51A772F8D02550002329A /* Api in Frameworks */,
 				C70CC9DA2D2953EC00B7865C /* QueryAPI in Frameworks */,
 				C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */,
 				C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */,
@@ -211,6 +213,7 @@
 				C70CC9D92D2953EC00B7865C /* QueryAPI */,
 				C70119622D2954670077A1A5 /* SnapKit */,
 				C73CB62D2D4100F3005E9731 /* RealmSwift */,
+				C7C51A762F8D02550002329A /* Api */,
 			);
 			productName = hyuabot;
 			productReference = C7C056EB2D277910007A228B /* hyuabot.app */;
@@ -251,6 +254,7 @@
 				C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */,
 				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */,
+				C7C51A752F8D02550002329A /* XCLocalSwiftPackageReference "api" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
@@ -618,6 +622,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C7C51A752F8D02550002329A /* XCLocalSwiftPackageReference "api" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = api;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -717,6 +728,10 @@
 		C7BAB0502D29532000BBE940 /* QueryAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = QueryAPI;
+		};
+		C7C51A762F8D02550002329A /* Api */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Api;
 		};
 		C7E468952DAE2DDD00E8975E /* Apollo */ = {
 			isa = XCSwiftPackageProductDependency;
