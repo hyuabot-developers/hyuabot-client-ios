@@ -1,5 +1,19 @@
 {
-  "schemaNamespace" : "queryAPI",
+  "schemaNamespace" : "api",
+  "schemaDownload": {
+    "downloadMethod": {
+      "introspection": {
+        "endpointURL": "https://backend.hyuabot.app/graphql",
+        "httpMethod": {
+          "POST": {}
+        },
+        "includeDeprecatedInputValues": false,
+        "outputFormat": "SDL"
+      }
+    },
+    "downloadTimeout": 60,
+    "outputPath": "./query/schema.graphqls"
+  },
   "input" : {
     "operationSearchPaths" : [
       "**/*.graphql"
@@ -14,9 +28,9 @@
       }
     },
     "schemaTypes" : {
-      "path" : "./queryAPI",
+      "path" : "./api",
       "moduleType" : {
-        "swiftPackageManager" : {
+        "swiftPackage" : {
         }
       }
     },

@@ -251,7 +251,6 @@
 				C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */,
 				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */,
-				C7E6456E2DAE30B50023F658 /* XCLocalSwiftPackageReference "queryAPI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
@@ -619,13 +618,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		C7E6456E2DAE30B50023F658 /* XCLocalSwiftPackageReference "queryAPI" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = queryAPI;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -640,7 +632,7 @@
 			repositoryURL = "https://github.com/realm/realm-swift.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 20.0.1;
+				minimumVersion = 20.0.4;
 			};
 		};
 		C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
@@ -648,7 +640,7 @@
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 11.6.0;
+				minimumVersion = 12.12.0;
 			};
 		};
 		C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */ = {
@@ -656,7 +648,7 @@
 			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.15.3;
+				minimumVersion = 2.1.0;
 			};
 		};
 		C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
@@ -664,7 +656,7 @@
 			repositoryURL = "https://github.com/ReactiveX/RxSwift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 6.8.0;
+				minimumVersion = 6.10.1;
 			};
 		};
 		C7BAB0482D2951B500BBE940 /* XCRemoteSwiftPackageReference "Then" */ = {

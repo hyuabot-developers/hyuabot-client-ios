@@ -1,8 +1,15 @@
 query ContactPageQuery {
-    contact {
+    phonebook {
         version
-        data {
-            id, name, phone, campusID
+        categories {
+            seq
+            name
+            entries {
+                seq
+                name
+                phone
+                campus
+            }
         }
     }
 }

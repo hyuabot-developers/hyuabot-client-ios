@@ -1,9 +1,15 @@
 query CalendarPageQuery {
     calendar {
         version
-        data {
-            id, title, description, start, end, category {
-                id, name
+        categories {
+            seq
+            name
+            events {
+                seq
+                title
+                description
+                start
+                end
             }
         }
     }

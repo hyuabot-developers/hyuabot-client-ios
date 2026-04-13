@@ -1,16 +1,11 @@
-query BusStopDialogQuery($busStopID: Int!) {
-  bus (id_: [$busStopID]) {
-    name, latitude, longitude,
-    routes {
-      info {
-        name,
+query BusStopDialogQuery($routeStops: [BusRouteStopInput!]!) {
+  bus (input: $routeStops) {
+    route { 
+        name
         runningTime {
-          up { first, last },
-          down { first, last }
-        },
-        start { name },
-        end { name }
-      }
+            up { first, last, terminal { seq, name } }
+            down { first, last, terminal { seq, name } }
+        }
     }
   }
 }

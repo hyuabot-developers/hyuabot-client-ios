@@ -1,10 +1,13 @@
-query ReadingRoomPageQuery ($campus: Int!) {
-    readingRoom(campusId: $campus) {
-        id
+query ReadingRoomPageQuery {
+    readingRoom {
+        seq
         name
-        active
-        occupied
-        available
+        campus
+        seats {
+            available
+            active
+            occupied
+        }
         updatedAt
     }
 }
