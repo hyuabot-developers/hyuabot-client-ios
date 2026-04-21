@@ -701,6 +701,7 @@ type SubwayArrival {
   trainNumber: String
   isExpress: Boolean
   isLast: Boolean
+  status: Int
 }
 
 type SubwayArrivalGroup {

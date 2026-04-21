@@ -1,12 +1,12 @@
 import UIKit
 import MapKit
 import RxSwift
-import QueryAPI
+import Api
 
 class ShuttleStopInfoVC: UIViewController {
     private let stop: ShuttleStopEnum
     private let stopInfo: BehaviorSubject<ShuttleStopDialogQuery.Data.Shuttle.Stop?> = BehaviorSubject(value: nil)
-    private let timetable: BehaviorSubject<[ShuttleStopDialogQuery.Data.Shuttle.Timetable]> = BehaviorSubject(value: [])
+    private let timetable: BehaviorSubject<[ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]> = BehaviorSubject(value: [])
     private let disposeBag = DisposeBag()
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
@@ -329,7 +329,6 @@ class ShuttleStopInfoVC: UIViewController {
     
     private func fetchStopInfo() {
         let now = Date.now
-        let dateTimeFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd HH:mm" }
         let stopID = if self.stop == .dormiotryOut {
             "dormitory_o"
         } else if self.stop == .shuttlecockOut {
@@ -345,12 +344,19 @@ class ShuttleStopInfoVC: UIViewController {
         } else {
             "dormitory_o"
         }
-        Network.shared.client.fetch(query: ShuttleStopDialogQuery(
-            shuttleStopID: stopID, shuttleDateTime: dateTimeFormatter.string(from: now)
-        )) { result in
-            if case .success(let response) = result {
-                self.stopInfo.onNext(response.data?.shuttle.stop.first)
-                self.timetable.onNext(response.data?.shuttle.timetable.sorted(by: { $0.time < $1.time }) ?? [])
+        let dateFormatter = DateFormatter().then {
+            $0.dateFormat = "yyyy-MM-dd"
+        }
+        ShuttleTimetableData.shared.isLoading.onNext(true)
+        Task {
+            let response = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: Foundation.Date.now)))
+            if let data = response?.data {
+                let period = data.shuttle.period!.type
+                let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(stopID: stopID, period: [period]))
+                if let stopData = stopResponse?.data {
+                    self.stopInfo.onNext(stopData.shuttle.stops.first)
+                    self.timetable.onNext(stopData.shuttle.stops.first?.timetable.destination ?? [])
+                }
             }
         }
     }
@@ -374,12 +380,12 @@ class ShuttleStopInfoVC: UIViewController {
         }).disposed(by: self.disposeBag)
         self.timetable.subscribe(onNext: { timetableItems in
             if (self.stop == .dormiotryOut || self.stop == .shuttlecockOut) {
-                let stationWeekdayItems = timetableItems.filter({ $0.weekdays && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") })
-                let stationWeekendItems = timetableItems.filter({ !$0.weekdays && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") })
-                let terminalWeekdayItems = timetableItems.filter({ $0.weekdays && ($0.tag == "DY" || $0.tag == "C") })
-                let terminalWeekendItems = timetableItems.filter({ !$0.weekdays && ($0.tag == "DY" || $0.tag == "C") })
-                let jungangStationWeekdayItems = timetableItems.filter({ $0.weekdays && $0.tag == "DJ" })
-                let jungangStationWeekendItems = timetableItems.filter({ !$0.weekdays && $0.tag == "DJ" })
+                let stationWeekdayItems = timetableItems.first(where: { $0.destination == "STATION"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let stationWeekendItems = timetableItems.first(where: { $0.destination == "STATION"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let terminalWeekdayItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let terminalWeekendItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let jungangStationWeekdayItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let jungangStationWeekendItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
                 if (!stationWeekdayItems.isEmpty) {
                     self.stationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(stationWeekdayItems.first!.time.substring(from: 0, to: 4))")
                     self.stationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(stationWeekdayItems.last!.time.substring(from: 0, to: 4))")
@@ -406,12 +412,12 @@ class ShuttleStopInfoVC: UIViewController {
                 }
             }
             else if (self.stop == .station) {
-                let campusWeekdayItems = timetableItems.filter({ $0.weekdays })
-                let campusWeekendItems = timetableItems.filter({ !$0.weekdays })
-                let terminalWeekdayItems = timetableItems.filter({ $0.weekdays && $0.tag == "C" })
-                let terminalWeekendItems = timetableItems.filter({ !$0.weekdays && $0.tag == "C" })
-                let jungangStationWeekdayItems = timetableItems.filter({ $0.weekdays && $0.tag == "DJ" })
-                let jungangStationWeekendItems = timetableItems.filter({ !$0.weekdays && $0.tag == "DJ" })
+                let campusWeekdayItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let campusWeekendItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let terminalWeekdayItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let terminalWeekendItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let jungangStationWeekdayItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let jungangStationWeekendItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
                 if (!campusWeekdayItems.isEmpty) {
                     self.campusWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(campusWeekdayItems.first!.time.substring(from: 0, to: 4))")
                     self.campusWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(campusWeekdayItems.last!.time.substring(from: 0, to: 4))")
@@ -438,8 +444,8 @@ class ShuttleStopInfoVC: UIViewController {
                 }
             }
             else {
-                let weekdayItems = timetableItems.filter({ $0.weekdays })
-                let weekendItems = timetableItems.filter({ !$0.weekdays })
+                let weekdayItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
+                let weekendItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
                 if (!weekdayItems.isEmpty) {
                     self.campusWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(weekdayItems.first!.time.substring(from: 0, to: 4))")
                     self.campusWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(weekdayItems.last!.time.substring(from: 0, to: 4))")

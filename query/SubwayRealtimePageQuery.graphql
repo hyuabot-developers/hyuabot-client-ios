@@ -21,6 +21,7 @@ query SubwayRealtimePageQuery($weekday: String!) {
                 trainNumber
                 isExpress
                 isLast
+                status
             }
         }
     }

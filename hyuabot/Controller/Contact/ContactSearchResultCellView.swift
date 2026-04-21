@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class ContactSearchResultCellView: UITableViewCell {

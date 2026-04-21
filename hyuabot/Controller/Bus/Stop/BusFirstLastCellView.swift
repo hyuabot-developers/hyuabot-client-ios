@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class BusFirstLastCellView: UITableViewCell {
@@ -45,9 +45,9 @@ class BusFirstLastCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: BusStopDialogQuery.Data.Bus.Route) {
-        self.busRouteLabel.text = item.info.name
-        self.setRouteColor(routeName: item.info.name)
+    func setupUI(item: BusStopDialogQuery.Data.Bus) {
+        self.busRouteLabel.text = item.route.name
+        self.setRouteColor(routeName: item.route.name)
         self.setUITimeLabel(item: item)
     }
     
@@ -59,13 +59,13 @@ class BusFirstLastCellView: UITableViewCell {
         }
     }
     
-    func setUITimeLabel(item: BusStopDialogQuery.Data.Bus.Route) {
-        let upFirst = item.info.runningTime.up.first.substring(from: 0, to: 4)
-        let upLast = item.info.runningTime.up.last.substring(from: 0, to: 4)
-        let downFirst = item.info.runningTime.down.first.substring(from: 0, to: 4)
-        let downLast = item.info.runningTime.down.last.substring(from: 0, to: 4)
+    func setUITimeLabel(item: BusStopDialogQuery.Data.Bus) {
+        let upFirst = item.route.runningTime.up.first.substring(from: 0, to: 4)
+        let upLast = item.route.runningTime.up.last.substring(from: 0, to: 4)
+        let downFirst = item.route.runningTime.down.first.substring(from: 0, to: 4)
+        let downLast = item.route.runningTime.down.last.substring(from: 0, to: 4)
         
-        self.busUpTimeLabel.text = String(localized: "bus.first.last.\(item.info.end.name).\(upFirst).\(upLast)")
-        self.busDownTimeLabel.text = String(localized: "bus.first.last.\(item.info.start.name).\(downFirst).\(downLast)")
+        self.busUpTimeLabel.text = String(localized: "bus.first.last.\(item.route.runningTime.up.terminal.name).\(upFirst).\(upLast)")
+        self.busDownTimeLabel.text = String(localized: "bus.first.last.\(item.route.runningTime.down.terminal.name).\(downFirst).\(downLast)")
     }
 }

@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 
 class SubwayTimetableCellView: UITableViewCell {
     static let reuseIdentifier = "SubwayTimetableCellView"
@@ -34,15 +34,12 @@ class SubwayTimetableCellView: UITableViewCell {
         }
     }
     
-    func setupUI(
-        up: SubwayTimetablePageUpQuery.Data.Subway.Timetable.Up? = nil,
-        down: SubwayTimetablePageDownQuery.Data.Subway.Timetable.Down? = nil
-    ) {
+    func setupUI(item: SubwayTimetablePageQuery.Data.Subway.Timetable) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
         
-        self.destinationLabel.text = getDestinationLabelText(up?.terminal.id ?? down?.terminal.id ?? "")
-        self.setUITimeLabel(dateFormatter.string(from: Date.now), up, down)
+        self.destinationLabel.text = getDestinationLabelText(item.terminal.stationID)
+        self.setUITimeLabel(dateFormatter.string(from: Date.now), item)
     }
     
     func getDestinationLabelText(_ stationID: String) -> String {
@@ -69,31 +66,18 @@ class SubwayTimetableCellView: UITableViewCell {
     
     func setUITimeLabel(
         _ currentTime: String,
-        _ up: SubwayTimetablePageUpQuery.Data.Subway.Timetable.Up? = nil,
-        _ down: SubwayTimetablePageDownQuery.Data.Subway.Timetable.Down? = nil
+        _ item: SubwayTimetablePageQuery.Data.Subway.Timetable,
     ) {
-        if (up != nil) {
-            if currentTime > up!.time {
-                self.departureTimeLabel.textColor = .gray
-            } else {
-                self.departureTimeLabel.textColor = .label
-            }
-            var hour = up!.hour
-            if hour < 4 {
-                hour += 24
-            }
-            self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(up!.minute)")
+        let component = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
+        if currentTime > item.time {
+            self.departureTimeLabel.textColor = .gray
         } else {
-            var hour = down!.hour
-            if hour < 4 {
-                hour += 24
-            }
-            if currentTime > down!.time {
-                self.departureTimeLabel.textColor = .gray
-            } else {
-                self.departureTimeLabel.textColor = .label
-            }
-            self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(down!.minute)")
+            self.departureTimeLabel.textColor = .label
         }
+        var hour = component.hour!
+        if hour < 4 {
+            hour += 24
+        }
+        self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(component.minute!)")
     }
 }

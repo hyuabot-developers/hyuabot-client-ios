@@ -1,7 +1,7 @@
 import UIKit
 import RxSwift
 import RealmSwift
-import QueryAPI
+import Api
 
 class CalendarVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -153,13 +153,12 @@ class CalendarVC: UIViewController {
     private func updateEventVerion() {
         self.loadingLabel.text = String(localized: "event.version.loading")
         self.isLoading.onNext(true)
-        Network.shared.client.fetch(query: CalendarPageVersionQuery()) { result in
-            if case let .success(response) = result {
-                if let data = response.data {
-                    let previousVersion = UserDefaults.standard.string(forKey: "calendarVersion") ?? ""
-                    if data.calendar.version != previousVersion {
-                        self.updateEvent()
-                    }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: CalendarPageVersionQuery())
+            if let data = response?.data {
+                let previousVersion = UserDefaults.standard.string(forKey: "calendarVersion") ?? ""
+                if data.calendar.version != previousVersion {
+                    self.updateEvent()
                 }
             }
         }
@@ -168,12 +167,11 @@ class CalendarVC: UIViewController {
     
     private func updateEvent() {
         self.loadingLabel.text = String(localized: "event.database.loading")
-        Network.shared.client.fetch(query: CalendarPageQuery()) { result in
-            if case let .success(response) = result {
-                if let data = response.data {
-                    Event.replaceAll(with: data.calendar.data.map { Event.transform(from: $0) })
-                    UserDefaults.standard.set(data.calendar.version, forKey: "calendarVersion")
-                }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: CalendarPageQuery())
+            if let data = response?.data {
+                Event.replaceAll(with: data.calendar.categories.map { Event.transform(from: $0) }.flatMap { $0 })
+                UserDefaults.standard.set(data.calendar.version, forKey: "calendarVersion")
             }
         }
     }

@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class BusRealtimeTabVC: UIViewController {
     let tabType: BusRealtimeType
@@ -8,9 +8,9 @@ class BusRealtimeTabVC: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let refreshMethod: () -> Void
     private let busRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (Int, [Int], String.LocalizationValue) -> ()
-    private let showDepartureLog: (Int, [Int]) -> ()
-    private let showStopVC: (Int) -> ()
+    private let showEntireTimetable: (Int32, [Int32], String.LocalizationValue) -> ()
+    private let showDepartureLog: (Int32, [Int32]) -> ()
+    private let showStopVC: (Int32, [Int32]) -> ()
     private lazy var busRealtimeTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -31,9 +31,9 @@ class BusRealtimeTabVC: UIViewController {
     required init (
         tabType: BusRealtimeType,
         refreshMethod: @escaping () -> (),
-        showEntireTimetable: @escaping (Int, [Int], String.LocalizationValue) -> (),
-        showDepartureLog: @escaping (Int, [Int]) -> (),
-        showStopVC: @escaping (Int) -> ()
+        showEntireTimetable: @escaping (Int32, [Int32], String.LocalizationValue) -> (),
+        showDepartureLog: @escaping (Int32, [Int32]) -> (),
+        showStopVC: @escaping (Int32, [Int32]) -> ()
     ) {
         self.tabType = tabType
         self.refreshMethod = refreshMethod
@@ -76,8 +76,8 @@ class BusRealtimeTabVC: UIViewController {
         }
     }
     
-    private func showStopModal(_ stopID: Int) {
-        self.showStopVC(stopID)
+    private func showStopModal(_ stopID: Int32, routes: [Int32] = []) {
+        self.showStopVC(stopID, routes)
     }
     
     func reload() {
@@ -99,23 +99,45 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeHeaderView.reuseIdentifier) as? BusRealtimeHeaderView else {
             return UIView()
         }
-        var stopID = 0
+        var stopID: Int32 = 0
+        var routes: [Int32] = []
         if self.tabType == .city {
-            if section == 0 { stopID = 216000379 }
-            else if section == 1 { stopID = 216000138 }
+            if section == 0 {
+                stopID = 216000379
+                routes = [216000068]
+            }
+            else if section == 1 {
+                stopID = 216000138
+                routes = [216000068]
+            }
         } else if self.tabType == .seoul {
-            if section == 0 { stopID = 216000379 }
-            else if section == 1 { stopID = 216000719 }
+            if section == 0 {
+                stopID = 216000379
+                routes = [216000061]
+            }
+            else if section == 1 {
+                stopID = 216000719
+                routes = [216000026, 216000043, 216000096]
+            }
         } else if self.tabType == .suwon {
-            if section == 0 { stopID = 216000070 }
+            if section == 0 {
+                stopID = 216000070
+                routes = [216000104, 200000015]
+            }
         }  else if self.tabType == .other {
-            if section == 0 { stopID = 216000759 }
-            else if section == 1 { stopID = 213000487 }
+            if section == 0 {
+                stopID = 216000759
+                routes = [216000075]
+            }
+            else if section == 1 {
+                stopID = 213000487
+                routes = [216000075]
+            }
         }
         headerView.setupUI(
             title: String(localized: self.busRealtimeSection[section]),
             showStopVC: { [weak self] in
-                self?.showStopModal(stopID)
+                self?.showStopModal(stopID, routes: routes)
             }
         )
         return headerView
@@ -125,8 +147,8 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeFooterView.reuseIdentifier) as? BusRealtimeFooterView else {
             return UIView()
         }
-        var stopID = 0
-        var routes: [Int] = []
+        var stopID: Int32 = 0
+        var routes: [Int32] = []
         if self.tabType == .city {
             if section == 0 {
                 stopID = 216000379
@@ -173,32 +195,32 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if self.tabType == .city {
             if section == 0 {
-                guard let items = try? BusRealtimeData.shared.cityBusCampusData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                guard let items = try? BusRealtimeData.shared.busRealtimeCityFromCampus.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             } else if section == 1 {
-                guard let items = try? BusRealtimeData.shared.cityBusStationData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                guard let items = try? BusRealtimeData.shared.busRealtimeCityFromStation.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             }
         } else if self.tabType == .seoul {
             if section == 0 {
-                guard let items = try? BusRealtimeData.shared.seoulBusCampusData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                guard let items = try? BusRealtimeData.shared.busRealtimeSeoulFromCampus.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             } else if section == 1 {
-                guard let items = try? BusRealtimeData.shared.seoulBusMainGateData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                guard let items = try? BusRealtimeData.shared.busRealtimeGunpoFromCampus.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             }
         } else if self.tabType == .suwon {
             if section == 0 {
-                guard let items = try? BusRealtimeData.shared.suwonBusJunctionData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                guard let items = try? BusRealtimeData.shared.busRealtimeSuwonFromCampus.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             }
         } else if self.tabType == .other {
             if section == 0 {
-                guard let items = try? BusRealtimeData.shared.otherBusAnsanData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             } else if section == 1 {
-                guard let items = try? BusRealtimeData.shared.otherBusGwangmyeongStationData.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromStation.value() else { return 1 }
+                return items.isEmpty ? 1 : items.count
             }
         }
         return 1
@@ -208,37 +230,37 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: BusRealtimeCellView.reuseIdentifier, for: indexPath) as? BusRealtimeCellView else { fatalError() }
         if self.tabType == .city {
             if indexPath.section == 0 {
-                guard let items = try? BusRealtimeData.shared.cityBusCampusData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeCityFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             } else if indexPath.section == 1 {
-                guard let items = try? BusRealtimeData.shared.cityBusStationData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeCityFromStation.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }
         } else if self.tabType == .seoul {
             if indexPath.section == 0 {
-                guard let items = try? BusRealtimeData.shared.seoulBusCampusData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeSeoulFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             } else if indexPath.section == 1 {
-                guard let items = try? BusRealtimeData.shared.seoulBusMainGateData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeGunpoFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }
         } else if self.tabType == .suwon {
             if indexPath.section == 0 {
-                guard let items = try? BusRealtimeData.shared.suwonBusJunctionData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeSuwonFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }
         } else if self.tabType == .other {
             if indexPath.section == 0 {
-                guard let items = try? BusRealtimeData.shared.otherBusAnsanData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             } else if indexPath.section == 1 {
-                guard let items = try? BusRealtimeData.shared.otherBusGwangmyeongStationData.value() else { return BusRealtimeEmptyCellView() }
+                guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromStation.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }

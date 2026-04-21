@@ -8,7 +8,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "SubwayRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayRealtimePageQuery($weekday: String!) { subway( input: { keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 4 } { stationID: "K456" direction: ["up", "down"] weekdays: [$weekday] limit: null } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 4 } { stationID: "K258" direction: ["up", "down"] weekdays: [$weekday] limit: null } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast } } } }"#
+      #"query SubwayRealtimePageQuery($weekday: String!) { subway( input: { keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 4 } { stationID: "K456" direction: ["up", "down"] weekdays: [$weekday] limit: null } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 4 } { stationID: "K258" direction: ["up", "down"] weekdays: [$weekday] limit: null } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } } }"#
     ))
 
   public var weekday: String
@@ -112,6 +112,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
             .field("trainNumber", String?.self),
             .field("isExpress", Bool?.self),
             .field("isLast", Bool?.self),
+            .field("status", Int?.self),
           ] }
           @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
             SubwayRealtimePageQuery.Data.Subway.Arrival.Entry.self
@@ -126,6 +127,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
           public var trainNumber: String? { __data["trainNumber"] }
           public var isExpress: Bool? { __data["isExpress"] }
           public var isLast: Bool? { __data["isLast"] }
+          public var status: Int? { __data["status"] }
 
           /// Subway.Arrival.Entry.Origin
           ///

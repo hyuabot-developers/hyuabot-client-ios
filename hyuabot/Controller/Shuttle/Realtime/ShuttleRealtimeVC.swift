@@ -1,7 +1,7 @@
 import UIKit
 import CoreLocation
 import RxSwift
-import QueryAPI
+import Api
 
 class ShuttleRealtimeVC: UIViewController {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -45,42 +45,48 @@ class ShuttleRealtimeVC: UIViewController {
         stopID: .dormiotryOut,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC,
+        showViaVCByOrder: openShuttleViaVCByOrder,
+        showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC,
+        showViaVCByOrder: openShuttleViaVCByOrder,
+        showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC,
+        showViaVCByOrder: openShuttleViaVCByOrder,
+        showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC,
+        showViaVCByOrder: openShuttleViaVCByOrder,
+        showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC,
+        showViaVCByOrder: openShuttleViaVCByOrder,
+        showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
         refreshMethod: fetchShuttleRealtimeData,
         showEntireTimetable: moveToEntireTimetable,
-        showViaVC: openShuttleViaVC,
+        showViaVCByOrder: openShuttleViaVCByOrder,
+        showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC
     )
     private lazy var helpButton = UIButton().then {
@@ -185,22 +191,34 @@ class ShuttleRealtimeVC: UIViewController {
     }
     
     private func observeSubjects() {
-        ShuttleRealtimeData.shared.shuttleRealtimeData.subscribe(onNext: { data in
-            ShuttleRealtimeData.shared.shuttleDormitoryData.onNext(data?.filter({ $0.stop == "dormitory_o" }))
-            ShuttleRealtimeData.shared.shuttleDormitoryToStationData.onNext(data?.filter({ $0.stop == "dormitory_o" && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") }))
-            ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.onNext(data?.filter({ $0.stop == "dormitory_o" && ($0.tag == "DY" || $0.tag == "C") }))
-            ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.onNext(data?.filter({ $0.stop == "dormitory_o" && $0.tag == "DJ" }))
-            ShuttleRealtimeData.shared.shuttleShuttlecockData.onNext(data?.filter({ $0.stop == "shuttlecock_o" }))
-            ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.onNext(data?.filter({ $0.stop == "shuttlecock_o" && ($0.tag == "DH" || $0.tag == "DJ" || $0.tag == "C") }))
-            ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.onNext(data?.filter({ $0.stop == "shuttlecock_o" && ($0.tag == "DY" || $0.tag == "C") }))
-            ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.onNext(data?.filter({ $0.stop == "shuttlecock_o" && $0.tag == "DJ" }))
-            ShuttleRealtimeData.shared.shuttleStationData.onNext(data?.filter({ $0.stop == "station" }))
-            ShuttleRealtimeData.shared.shuttleStationToCampusData.onNext(data?.filter({ $0.stop == "station" }))
-            ShuttleRealtimeData.shared.shuttleStationToTerminalData.onNext(data?.filter({ $0.stop == "station" && $0.tag == "C" }))
-            ShuttleRealtimeData.shared.shuttleStationToJungangStationData.onNext(data?.filter({ $0.stop == "station" && $0.tag == "DJ" }))
-            ShuttleRealtimeData.shared.shuttleTerminalToCampusData.onNext(data?.filter({ $0.stop == "terminal" }))
-            ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.onNext(data?.filter({ $0.stop == "jungang_stn" }))
-            ShuttleRealtimeData.shared.shuttleShuttlecockToDormitoryData.onNext(data?.filter({ $0.stop == "shuttlecock_i" && $0.route.hasSuffix("D") }))
+        ShuttleRealtimeData.shared.arrival.subscribe(onNext: { data in
+            let dormitory = data.first(where: { $0.name == "dormitory_o" })
+            let shuttlecockOut = data.first(where: { $0.name == "shuttlecock_o" })
+            let station = data.first(where: { $0.name == "station" })
+            let terminal = data.first(where: { $0.name == "terminal" })
+            let jungangStation = data.first(where: { $0.name == "jungang_stn" })
+            let shuttlecockIn = data.first(where: { $0.name == "shuttlecock_i" })
+            guard let dormitory = dormitory, let shuttlecockOut = shuttlecockOut, let station = station, let terminal = terminal, let jungangStation = jungangStation, let shuttlecockIn = shuttlecockIn else { return }
+            let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
+            let currentTime = timeFormatter.string(from: Date.now)
+            ShuttleRealtimeData.shared.shuttleDormitoryData.onNext(dormitory.timetable.order)
+            ShuttleRealtimeData.shared.shuttleDormitoryToStationData.onNext(dormitory.timetable.destination.first(where: { $0.destination == "STATION" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.onNext(dormitory.timetable.destination.first(where: { $0.destination == "TERMINAL" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.onNext(dormitory.timetable.destination.first(where: { $0.destination == "JUNGANG" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleShuttlecockData.onNext(shuttlecockOut.timetable.order)
+            ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.onNext(shuttlecockOut.timetable.destination.first(where: { $0.destination == "STATION" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.onNext(shuttlecockOut.timetable.destination.first(where: { $0.destination == "TERMINAL" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.onNext(shuttlecockOut.timetable.destination.first(where: { $0.destination == "JUNGANG" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleStationData.onNext(station.timetable.order)
+            ShuttleRealtimeData.shared.shuttleStationToCampusData.onNext(station.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleStationToTerminalData.onNext(station.timetable.destination.first(where: { $0.destination == "TERMINAL" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleStationToJungangStationData.onNext(station.timetable.destination.first(where: { $0.destination == "JUNGANG" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleTerminalData.onNext(terminal.timetable.order)
+            ShuttleRealtimeData.shared.shuttleTerminalToCampusData.onNext(terminal.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleJungangStationData.onNext(jungangStation.timetable.order)
+            ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.onNext(jungangStation.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.filter({ $0.time > currentTime }) ?? [])
+            ShuttleRealtimeData.shared.shuttleShuttlecockInData.onNext(shuttlecockIn.timetable.order)
+            ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.onNext(shuttlecockIn.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.filter({ $0.time > currentTime }) ?? [])
             self.dormitoryOutTabVC.reload()
             self.shuttlecockOutTabVC.reload()
             self.stationTabVC.reload()
@@ -225,11 +243,24 @@ class ShuttleRealtimeVC: UIViewController {
     private func fetchShuttleRealtimeData() {
         let now = Date.now
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
-        let dateTimeFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd HH:mm" }
         let dataDelegate = ShuttleRealtimeData.shared
-        Network.shared.client.fetch(query: ShuttleRealtimePageQuery(shuttleStart: timeFormatter.string(from: now), shuttleDateTime: dateTimeFormatter.string(from: now))) { result in
-            if case .success(let response) = result {
-                dataDelegate.shuttleRealtimeData.onNext(response.data?.shuttle.timetable.filter({ self.isAfterNow(item: $0) }))
+        var currentLanguage: String {
+            Locale.current.language.languageCode?.identifier ?? "ko"
+        }
+        var noticeLanguage: String {
+            if currentLanguage.starts(with: "ko") {
+                return "KOREAN"
+            } else if currentLanguage.starts(with: "en") {
+                return "ENGLISH"
+            } else {
+                return "KOREAN"
+            }
+        }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))))
+            if let data = response?.data {
+                dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
+                dataDelegate.arrival.onNext(data.shuttle.stops)
             }
         }
     }
@@ -239,8 +270,17 @@ class ShuttleRealtimeVC: UIViewController {
         nc.moveToTimetableVC(stop: stop, section: section)
     }
     
-    private func openShuttleViaVC(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
-        let vc = ShuttleViaVC(realtimeItem: item)
+    private func openShuttleViaVCByOrder(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+        let vc = ShuttleViaVC(item: item)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
+    
+    private func openShuttleViaVCByDestination(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+        let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
@@ -257,7 +297,15 @@ class ShuttleRealtimeVC: UIViewController {
         self.present(vc, animated: true, completion: nil)
     }
 
-    private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Bool {
+    private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Bool {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss"
+        let now = Date.now
+        let nowString = dateFormatter.string(from: now)
+        return nowString < item.time
+    }
+    
+    private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
         let now = Date.now

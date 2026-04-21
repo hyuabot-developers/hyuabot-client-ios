@@ -1,12 +1,12 @@
 import UIKit
 import MapKit
 import RxSwift
-import QueryAPI
+import Api
 
 class BusStopInfoVC: UIViewController {
-    private let stopID: Int
+    private let input: [BusRouteStopInput]
     private let disposeBag = DisposeBag()
-    private let stopInfo = BehaviorSubject<BusStopDialogQuery.Data.Bus?>(value: nil)
+    private let routeStops = BehaviorSubject<[BusStopDialogQuery.Data.Bus]>(value: [])
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
         $0.textColor = .white
@@ -42,8 +42,8 @@ class BusStopInfoVC: UIViewController {
         return view
     }()
 
-    init(stopID: Int) {
-        self.stopID = stopID
+    init(input: [BusRouteStopInput]) {
+        self.input = input
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -87,24 +87,25 @@ class BusStopInfoVC: UIViewController {
     }
     
     private func fetchStopInfo() {
-        Network.shared.client.fetch(query: BusStopDialogQuery(busStopID: self.stopID)) { result in
-            if case .success(let response) = result {
-                self.stopInfo.onNext(response.data?.bus.first)
+        Task {
+            let response = try? await Network.shared.client.fetch(query: BusStopDialogQuery(routeStops: input))
+            if let data = response?.data {
+                self.routeStops.onNext(data.bus.sorted(by: {$0.route.name < $1.route.name}))
             }
         }
     }
     
     private func observeSubjects() {
-        self.stopInfo.subscribe(onNext: { [weak self] stop in
-            guard let stop = stop else { return }
+        self.routeStops.subscribe(onNext: { [weak self] routeStops in
+            guard let routeStop = routeStops.first else { return }
             self?.stopMapView.do {
                 $0.removeAnnotations($0.annotations)
                 $0.addAnnotation(MKPointAnnotation().with {
-                    $0.coordinate = CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude)
-                    $0.title = stop.name
+                    $0.coordinate = CLLocationCoordinate2D(latitude: routeStop.stop.latitude, longitude: routeStop.stop.longitude)
+                    $0.title = routeStop.stop.name
                 })
                 $0.camera = MKMapCamera(
-                    lookingAtCenter: CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude),
+                    lookingAtCenter: CLLocationCoordinate2D(latitude: routeStop.stop.latitude, longitude: routeStop.stop.longitude),
                     fromDistance: 750,
                     pitch: 0,
                     heading: 0
@@ -130,16 +131,16 @@ extension BusStopInfoVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let stop = try? self.stopInfo.value() else { return 0 }
-        return stop.routes.count
+        guard let routeStops = try? self.routeStops.value() else { return 0 }
+        return routeStops.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let stop = try? self.stopInfo.value() else { return UITableViewCell() }
+        guard let routeStops = try? self.routeStops.value() else { return UITableViewCell() }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: BusFirstLastCellView.reuseIdentifier, for: indexPath) as? BusFirstLastCellView else {
             return UITableViewCell()
         }
-        cell.setupUI(item: stop.routes.sorted(by: {$0.info.name < $1.info.name})[indexPath.row])
+        cell.setupUI(item: routeStops[indexPath.row])
         return cell
     }
 }

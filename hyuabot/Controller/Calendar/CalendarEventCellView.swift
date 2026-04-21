@@ -1,5 +1,4 @@
 import UIKit
-import QueryAPI
 import RxSwift
 
 class CalendarEventCellView: UITableViewCell {

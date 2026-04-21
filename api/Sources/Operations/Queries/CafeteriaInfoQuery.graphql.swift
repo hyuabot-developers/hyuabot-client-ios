@@ -8,7 +8,7 @@ nonisolated public struct CafeteriaInfoQuery: GraphQLQuery {
   public static let operationName: String = "CafeteriaInfoQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query CafeteriaInfoQuery($campusID: Int!, $date: Date!) { cafeteria(input: { campus: $campusID, date: $date }) { __typename name latitude longitude runningTime { __typename breakfast lunch dinner } } }"#
+      #"query CafeteriaInfoQuery($campusID: Int!, $date: Date!) { cafeteria(input: { campus: $campusID, date: $date }) { __typename seq name latitude longitude runningTime { __typename breakfast lunch dinner } } }"#
     ))
 
   public var campusID: Int32
@@ -54,6 +54,7 @@ nonisolated public struct CafeteriaInfoQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.Cafeteria }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
+        .field("seq", Int.self),
         .field("name", String.self),
         .field("latitude", Double.self),
         .field("longitude", Double.self),
@@ -63,6 +64,7 @@ nonisolated public struct CafeteriaInfoQuery: GraphQLQuery {
         CafeteriaInfoQuery.Data.Cafeterium.self
       ] }
 
+      public var seq: Int { __data["seq"] }
       public var name: String { __data["name"] }
       public var latitude: Double { __data["latitude"] }
       public var longitude: Double { __data["longitude"] }

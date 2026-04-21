@@ -1,8 +1,6 @@
-import QueryAPI
+import Api
 
 struct SubwayTransferItem {
-    let upFrom: SubwayRealtimePageQuery.Data.Subway.Realtime.Up?
-    let upTo: SubwayRealtimePageQuery.Data.Subway.Timetable.Up?
-    let downFrom: SubwayRealtimePageQuery.Data.Subway.Realtime.Down?
-    let downTo: SubwayRealtimePageQuery.Data.Subway.Timetable.Down?
+    let take: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry
+    let transfer: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry?
 }

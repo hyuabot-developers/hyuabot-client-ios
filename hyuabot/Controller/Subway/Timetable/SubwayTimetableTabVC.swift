@@ -47,42 +47,22 @@ extension SubwayTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (self.isWeekdays) {
-            if (self.heading == .up) {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableUpWeekdays.value() else { return 0 }
-                return items.count
-            } else {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableDownWeekdays.value() else { return 0 }
-                return items.count
-            }
+            guard let items = try? SubwayTimetableData.shared.timetableWeekdays.value() else { return 0 }
+            return items.count
         } else {
-            if (self.heading == .up) {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableUpWeekends.value() else { return 0 }
-                return items.count
-            } else {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableDownWeekends.value() else { return 0 }
-                return items.count
-            }
+            guard let items = try? SubwayTimetableData.shared.timetableWeekends.value() else { return 0 }
+            return items.count
         }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayTimetableCellView.reuseIdentifier) as? SubwayTimetableCellView else { return SubwayTimetableCellView() }
         if (self.isWeekdays) {
-            if (self.heading == .up) {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableUpWeekdays.value() else { return cell }
-                cell.setupUI(up: items[indexPath.row])
-            } else {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableDownWeekdays.value() else { return cell }
-                cell.setupUI(down: items[indexPath.row])
-            }
+            guard let items = try? SubwayTimetableData.shared.timetableWeekdays.value() else { return cell }
+            cell.setupUI(item: items[indexPath.row])
         } else {
-            if (self.heading == .up) {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableUpWeekends.value() else { return cell }
-                cell.setupUI(up: items[indexPath.row])
-            } else {
-                guard let items = try? SubwayTimetableData.shared.subwayTimetableDownWeekends.value() else { return cell }
-                cell.setupUI(down: items[indexPath.row])
-            }
+            guard let items = try? SubwayTimetableData.shared.timetableWeekends.value() else { return cell }
+            cell.setupUI(item: items[indexPath.row])
         }
         return cell
     }

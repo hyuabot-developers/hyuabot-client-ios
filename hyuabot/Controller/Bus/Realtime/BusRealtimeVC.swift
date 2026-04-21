@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class BusRealtimeVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -125,40 +125,28 @@ class BusRealtimeVC: UIViewController {
     }
     
     private func observeSubjects() {
-        BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] busData in
-            guard let busData = busData else { return }
-            // Get the data for each bus
-            let campusData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000379 }?.routes ?? []
-            let sangnoksuData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000138 }?.routes ?? []
-            let mainGateData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000719 }?.routes ?? []
-            let junctionData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000070 }?.routes ?? []
-            let ansanData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 216000759 }?.routes ?? []
-            let gwangmyeongData: [BusRealtimePageQuery.Data.Bus.Route] = busData.first { $0.id == 213000487 }?.routes ?? []
-            // Filter the data
-            let campusToSangnoksu: [BusRealtimePageQuery.Data.Bus.Route] = campusData.filter { $0.info.id == 216000068 }
-            let sangnoksuToCampus: [BusRealtimePageQuery.Data.Bus.Route] = sangnoksuData.filter { $0.info.id == 216000068 }
-            let campusToSeoul: [BusRealtimePageQuery.Data.Bus.Route] = campusData.filter { $0.info.id == 216000061 }
-            let mainGateToSeoul: [BusRealtimePageQuery.Data.Bus.Route] = mainGateData.filter {
-                $0.info.id == 216000026 || $0.info.id == 216000043 || $0.info.id == 216000096
-            }
-            let junctionToSuwon: [BusRealtimePageQuery.Data.Bus.Route] = junctionData.filter {
-                $0.info.id == 216000104 || $0.info.id == 200000015
-            }
-            let ansanToGwangmyeong: [BusRealtimePageQuery.Data.Bus.Route] = ansanData.filter { $0.info.id == 216000075 }
-            let gwangmyeongToAnsan: [BusRealtimePageQuery.Data.Bus.Route] = gwangmyeongData.filter { $0.info.id == 216000075 }
+        BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
+            guard let self = self else { return }
+            // Get the data for each bus stop and route}
+            guard let busRealtimeCityFromStation = result.first(where: { $0.stop.seq == 216000138 && $0.route.seq == 216000068 }) else { return }
+            guard let busRealtimeSeoulFromCampus = result.first(where: { $0.stop.seq == 216000379 && $0.route.seq == 216000061 }) else { return }
+            let busRealtimeGunpoFromCampus = result.filter { $0.stop.seq == 216000719 && ($0.route.seq == 216000096 || $0.route.seq == 216000026 || $0.route.seq == 216000043) }
+            let busRealtimeSuwonBusJunctionData = result.filter { $0.stop.seq == 216000070 && ($0.route.seq == 216000104 || $0.route.seq == 200000015) }
+            guard let busRealtimeAnsanToGwangmyeongData = result.first(where: { $0.stop.seq == 216000759 && $0.route.seq == 216000075 }) else { return }
+            guard let busRealtimeGwangmyeongToAnsanData = result.first(where: { $0.stop.seq == 213000487 && $0.route.seq == 216000075 }) else { return }
             // Combine the data
-            BusRealtimeData.shared.cityBusCampusData.onNext(self?.combineArrivalData(campusToSangnoksu) ?? [])
-            BusRealtimeData.shared.cityBusStationData.onNext(self?.combineArrivalData(sangnoksuToCampus) ?? [])
-            BusRealtimeData.shared.seoulBusCampusData.onNext(self?.combineArrivalData(campusToSeoul) ?? [])
-            BusRealtimeData.shared.seoulBusMainGateData.onNext(self?.combineArrivalData(mainGateToSeoul) ?? [])
-            BusRealtimeData.shared.suwonBusJunctionData.onNext(self?.combineArrivalData(junctionToSuwon) ?? [])
-            BusRealtimeData.shared.otherBusAnsanData.onNext(self?.combineArrivalData(ansanToGwangmyeong) ?? [])
-            BusRealtimeData.shared.otherBusGwangmyeongStationData.onNext(self?.combineArrivalData(gwangmyeongToAnsan) ?? [])
+            BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(busRealtimeCityFromStation.arrival.map { BusArrivalItem(route: busRealtimeCityFromStation.route.name, item: $0) })
+            BusRealtimeData.shared.busRealtimeCityFromStation.onNext(busRealtimeSeoulFromCampus.arrival.map { BusArrivalItem(route: busRealtimeSeoulFromCampus.route.name, item: $0) })
+            BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(busRealtimeSeoulFromCampus.arrival.map { BusArrivalItem(route: busRealtimeSeoulFromCampus.route.name, item: $0) })
+            BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(busRealtimeGunpoFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } })
+            BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(busRealtimeSuwonBusJunctionData.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } })
+            BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(busRealtimeAnsanToGwangmyeongData.arrival.map { BusArrivalItem(route: busRealtimeAnsanToGwangmyeongData.route.name, item: $0) })
+            BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(busRealtimeGwangmyeongToAnsanData.arrival.map { BusArrivalItem(route: busRealtimeGwangmyeongToAnsanData.route.name, item: $0) })
             // Reload the table view
-            self?.cityBusTabVC.reload()
-            self?.seoulBusTabVC.reload()
-            self?.suwonBusTabVC.reload()
-            self?.otherBusTabVC.reload()
+            self.cityBusTabVC.reload()
+            self.seoulBusTabVC.reload()
+            self.suwonBusTabVC.reload()
+            self.otherBusTabVC.reload()
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.onNext(false)
         }).disposed(by: self.disposeBag)
@@ -173,34 +161,25 @@ class BusRealtimeVC: UIViewController {
         }).disposed(by: disposeBag)
     }
     
-    private func combineArrivalData(_ routes: [BusRealtimePageQuery.Data.Bus.Route]) -> [BusRealtimeItem] {
-        var realtimeData: [BusRealtimeItem] = []
-        var timetableData: [BusRealtimeItem] = []
-        routes.forEach { route in
-            route.realtime.forEach { realtimeItem in
-                realtimeData.append(BusRealtimeItem(routeName: route.info.name, realtime: realtimeItem))
-            }
-            route.timetable.forEach { timetableItem in
-                timetableData.append(BusRealtimeItem(routeName: route.info.name, timetable: timetableItem))
-            }
-        }
-        return realtimeData.sorted(
-            by: { $0.realtime?.time ?? 0 < $1.realtime?.time ?? 0 }
-        ) + timetableData.sorted(
-            by: { $0.timetable?.time ?? "00:00:00" < $1.timetable?.time ?? "00:00:00" }
-        )
-    }
-        
-    
     private func fetchBusRealtimeData() {
-        let timeFormatter = DateFormatter().then {
-            $0.dateFormat = "HH:mm"
+        var currentLanguage: String {
+            Locale.current.language.languageCode?.identifier ?? "ko"
         }
-        let time = timeFormatter.string(from: Date.now)
-        Network.shared.client.fetch(query: BusRealtimePageQuery(busStart: time)) { result in
-            if case .success(let data) = result {
+        var noticeLanguage: String {
+            if currentLanguage.starts(with: "ko") {
+                return "KOREAN"
+            } else if currentLanguage.starts(with: "en") {
+                return "ENGLISH"
+            } else {
+                return "KOREAN"
+            }
+        }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: BusRealtimePageQuery(language: noticeLanguage))
+            if let data = response?.data {
                 BusRealtimeData.shared.isLoading.onNext(false)
-                BusRealtimeData.shared.busRealtimeData.onNext(data.data?.bus ?? [])
+                BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
+                BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
             }
         }
     }
@@ -217,12 +196,12 @@ class BusRealtimeVC: UIViewController {
         subscription?.dispose()
     }
     
-    private func moveToEntireTimetable(_ stopID: Int, _ routes: [Int], _ title: String.LocalizationValue) {
+    private func moveToEntireTimetable(_ stopID: Int32, _ routes: [Int32], _ title: String.LocalizationValue) {
         guard let nc = self.navigationController as? BusNC else { return }
         nc.moveToTimetableVC(stopID: stopID, routes: routes, title: title)
     }
     
-    private func openDepartureLogSheet(_ stopID: Int, _ routes: [Int]) {
+    private func openDepartureLogSheet(_ stopID: Int32, _ routes: [Int32]) {
         let vc = BusLogVC(stopID: stopID, routes: routes)
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
@@ -231,8 +210,8 @@ class BusRealtimeVC: UIViewController {
         self.present(vc, animated: true, completion: nil)
     }
     
-    private func openBusStopVC(_ stopID: Int) {
-        let vc = BusStopInfoVC(stopID: stopID)
+    private func openBusStopVC(_ stopID: Int32, _ routes: [Int32]) {
+        let vc = BusStopInfoVC(input: routes.map { BusRouteStopInput(route: $0, stop: stopID)})
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true

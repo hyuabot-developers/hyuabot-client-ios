@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class SubwayTransferCellView: UITableViewCell {
@@ -46,38 +46,20 @@ class SubwayTransferCellView: UITableViewCell {
     }
     
     func setupUI(item: SubwayTransferItem) {
-        if (item.upFrom != nil) {
-            if (item.upTo != nil) {
-                self.arrowLabel.isHidden = false
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.up.\(getDestinationLabelText(item.upFrom!.terminal.id)).\(getRealtimeLabelTextWithoutTime(item.upFrom!.location, item.upFrom!.status))"
-                )
-                self.toLabel.text = String(
-                    localized: "subway.transfer.timetable.\(getDestinationLabelText(item.upTo!.terminal.id)).\(getTimetableLabelText(item.upTo!.time))"
-                )
-            } else {
-                self.arrowLabel.isHidden = true
-                self.toLabel.text = ""
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.up.\(getDestinationLabelText(item.upFrom!.terminal.id)).\(getRealtimeLabelTextWithoutTime(item.upFrom!.location, item.upFrom!.status))"
-                )
-            }
-        } else if (item.downFrom != nil) {
-            if (item.downTo != nil) {
-                self.arrowLabel.isHidden = false
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.down.\(getDestinationLabelText(item.downFrom!.terminal.id)).\(getRealtimeLabelText(item.downFrom!.time - 18, item.downFrom!.location))"
-                )
-                self.toLabel.text = String(
-                    localized: "subway.transfer.timetable.\(getDestinationLabelText(item.downTo!.terminal.id)).\(getTimetableLabelText(item.downTo!.time))"
-                )
-            } else {
-                self.arrowLabel.isHidden = true
-                self.toLabel.text = ""
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.down.\(getDestinationLabelText(item.downFrom!.terminal.id)).\(getRealtimeLabelText(item.downFrom!.time - 18, item.downFrom!.location))"
-                )
-            }
+        if (item.transfer != nil) {
+            self.arrowLabel.isHidden = false
+            self.fromLabel.text = String(
+                localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes - 18, item.take.location!))"
+            )
+            self.toLabel.text = String(
+                localized: "subway.transfer.timetable.\(getDestinationLabelText(item.transfer!.terminal.stationID)).\(getTimetableLabelText(item.transfer!.minutes))"
+            )
+        } else {
+            self.arrowLabel.isHidden = true
+            self.toLabel.text = ""
+            self.fromLabel.text = String(
+                localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes - 18, item.take.location!))"
+            )
         }
     }
     
@@ -103,7 +85,7 @@ class SubwayTransferCellView: UITableViewCell {
         return stationName
     }
     
-    private func getRealtimeLabelText(_ time: Double, _ location: String) -> String {
+    private func getRealtimeLabelText(_ time: Int, _ location: String) -> String {
         return String(localized: "subway.realtime.\(Int(time)).\(location)")
     }
     
@@ -120,13 +102,7 @@ class SubwayTransferCellView: UITableViewCell {
         return ""
     }
     
-    private func getTimetableLabelText(_ departureTime: String) -> String {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: departureTime)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        return String(localized: "subway.time.\(hour).\(minute)")
+    private func getTimetableLabelText(_ minutes: Int) -> String {
+        return String(localized: "subway.time.\(minutes)")
     }
 }

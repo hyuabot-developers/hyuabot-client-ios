@@ -3283,6 +3283,23 @@
         }
       }
     },
+    "subway.time.%lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lldmins left"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld분 후 도착"
+          }
+        }
+      }
+    },
     "subway.time.%lld.%lld" : {
       "localizations" : {
         "en" : {
@@ -3444,6 +3461,7 @@
       }
     },
     "subway.transfer.up.%@.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

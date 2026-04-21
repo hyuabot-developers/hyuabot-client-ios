@@ -1,9 +1,11 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
+import Foundation
 
 class BusRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "BusRealtimeCellView"
+    private let calendar = Calendar.current
     private let busRouteLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
@@ -35,9 +37,9 @@ class BusRealtimeCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: BusRealtimeItem) {
-        self.busRouteLabel.text = item.routeName
-        self.setRouteColor(routeName: item.routeName)
+    func setupUI(item: BusArrivalItem) {
+        self.busRouteLabel.text = item.route
+        self.setRouteColor(routeName: item.route)
         self.setUITimeLabel(item: item)
     }
     
@@ -49,25 +51,24 @@ class BusRealtimeCellView: UITableViewCell {
         }
     }
     
-    func setUITimeLabel(item: BusRealtimeItem) {
-        if (item.realtime != nil) {
-            let realtimeItem = item.realtime!
-            if (realtimeItem.seat < 0) {
-                if (realtimeItem.stop <= 1) {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(realtimeItem.stop)"))
+    func setUITimeLabel(item: BusArrivalItem) {
+        if (item.item.isRealtime) {
+            if (item.item.seats! < 0) {
+                if (item.item.stops! <= 1) {
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(item.item.stops!)"))
                 } else {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.no.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop)"))
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.no.seat.\(Int(item.item.minutes!)).\(item.item.stops!)"))
                 }
             } else {
-                if (realtimeItem.stop <= 1) {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(realtimeItem.stop).\(realtimeItem.seat)"))
+                if (item.item.stops! <= 1) {
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(item.item.stops!).\(item.item.seats!)"))
                 } else {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.seat.\(Int(realtimeItem.time)).\(realtimeItem.stop).\(realtimeItem.seat)"))
+                    self.setRealtimeAttributedText(String(localized: "bus.realtime.seat.\(Int(item.item.minutes!)).\(item.item.stops!).\(item.item.seats!)"))
                 }
             }
-        } else if (item.timetable != nil) {
-            let timetableItem = item.timetable!
-            self.busTimeLabel.text = String(localized: "bus.realtime.time.\(timetableItem.departureHour).\(timetableItem.departureMinute)")
+        } else if (!item.item.isRealtime) {
+            let time = self.calendar.dateComponents([.hour, .minute], from: item.item.time!.toLocalTime())
+            self.busTimeLabel.text = String(localized: "bus.realtime.time.\(time.hour!).\(time.minute!)")
         }
     }
     

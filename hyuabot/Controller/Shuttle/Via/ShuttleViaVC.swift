@@ -1,9 +1,10 @@
 import UIKit
-import QueryAPI
+import Api
 
 class ShuttleViaVC: UIViewController {
-    private var realtimeItem: ShuttleRealtimePageQuery.Data.Shuttle.Timetable?
-    private var timetableItem: ShuttleTimetablePageQuery.Data.Shuttle.Timetable?
+    private var itemByOrder: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order?
+    private var itemByDestination: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
+    private var timetableItem: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order?
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
         $0.textColor = .white
@@ -25,14 +26,19 @@ class ShuttleViaVC: UIViewController {
         $0.addArrangedSubview(self.tableView)
     }
     
-    init(realtimeItem: ShuttleRealtimePageQuery.Data.Shuttle.Timetable) {
+    init(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         super.init(nibName: nil, bundle: nil)
-        self.realtimeItem = realtimeItem
+        self.itemByOrder = item
     }
     
-    init(timetableItem: ShuttleTimetablePageQuery.Data.Shuttle.Timetable) {
+    init(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
         super.init(nibName: nil, bundle: nil)
-        self.timetableItem = timetableItem
+        self.itemByDestination = item
+    }
+    
+    init(item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+        super.init(nibName: nil, bundle: nil)
+        self.timetableItem = item
     }
     
     required init?(coder: NSCoder) {
@@ -66,20 +72,24 @@ extension ShuttleViaVC: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if (self.realtimeItem?.via.count ?? 0) > 0 {
-            return self.realtimeItem?.via.count ?? 0
-        } else if (self.timetableItem?.via.count ?? 0) > 0 {
-            return self.timetableItem?.via.count ?? 0
+        if (self.itemByOrder?.stops.count ?? 0) > 0 {
+            return self.itemByOrder?.stops.count ?? 0
+        } else if (self.itemByDestination?.stops.count ?? 0) > 0 {
+            return self.itemByDestination?.stops.count ?? 0
+        } else if (self.timetableItem?.stops.count ?? 0) > 0 {
+            return self.timetableItem?.stops.count ?? 0
         }
         return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleViaCellView.reuseIdentifier) as? ShuttleViaCellView ?? ShuttleViaCellView()
-        if self.realtimeItem != nil {
-            cell.setupUI(startStop: self.realtimeItem!, item: self.realtimeItem!.via[indexPath.row])
+        if self.itemByOrder != nil {
+            cell.setupUI(startStop: self.itemByOrder!, item: self.itemByOrder!.stops[indexPath.row])
+        } else if self.itemByDestination != nil {
+            cell.setupUI(startStop: self.itemByDestination!, item: self.itemByDestination!.stops[indexPath.row])
         } else if self.timetableItem != nil {
-            cell.setupUI(startStop: self.timetableItem!, item: self.timetableItem!.via[indexPath.row])
+            cell.setupUI(startStop: self.timetableItem!, item: self.timetableItem!.stops[indexPath.row])
         }
         return cell
     }

@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class BusLogCell: UITableViewCell {
@@ -25,8 +25,8 @@ class BusLogCell: UITableViewCell {
         }
     }
     
-    func setupUI(index: Int, item: BusDepartureLogDialogQuery.Data.Bus.Route.Log) {
-        let departureTime = item.departureTime.substring(from: 0, to: 4)
+    func setupUI(index: Int, item: BusDepartureLogDialogQuery.Data.Bus.Log) {
+        let departureTime = item.time.substring(from: 0, to: 4)
         self.busTimeLabel.text = departureTime
         if index % 2 == 0 {
             self.backgroundColor = .hanyangBlue

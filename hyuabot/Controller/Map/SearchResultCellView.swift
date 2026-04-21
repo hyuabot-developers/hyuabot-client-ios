@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class SearchResultCellView: UITableViewCell {
@@ -42,8 +42,8 @@ class SearchResultCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: MapPageSearchQuery.Data.Room) {
+    func setupUI(item: RoomItem) {
         self.roomLabel.text = item.name
-        self.buildingLabel.text = "\(item.buildingName) (\(item.number)호)"
+        self.buildingLabel.text = "\(item.building) (\(item.number)호)"
     }
 }

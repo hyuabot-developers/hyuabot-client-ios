@@ -1,5 +1,8 @@
 query BusStopDialogQuery($routeStops: [BusRouteStopInput!]!) {
   bus (input: $routeStops) {
+    stop {
+      name, latitude, longitude
+    }
     route { 
         name
         runningTime {

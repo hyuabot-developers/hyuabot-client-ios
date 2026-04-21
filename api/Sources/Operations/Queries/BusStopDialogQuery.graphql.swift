@@ -8,7 +8,7 @@ nonisolated public struct BusStopDialogQuery: GraphQLQuery {
   public static let operationName: String = "BusStopDialogQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusStopDialogQuery($routeStops: [BusRouteStopInput!]!) { bus(input: $routeStops) { __typename route { __typename name runningTime { __typename up { __typename first last terminal { __typename seq name } } down { __typename first last terminal { __typename seq name } } } } } }"#
+      #"query BusStopDialogQuery($routeStops: [BusRouteStopInput!]!) { bus(input: $routeStops) { __typename stop { __typename name latitude longitude } route { __typename name runningTime { __typename up { __typename first last terminal { __typename seq name } } down { __typename first last terminal { __typename seq name } } } } } }"#
     ))
 
   public var routeStops: [BusRouteStopInput]
@@ -43,13 +43,38 @@ nonisolated public struct BusStopDialogQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusRouteStop }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
+        .field("stop", Stop.self),
         .field("route", Route.self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         BusStopDialogQuery.Data.Bus.self
       ] }
 
+      public var stop: Stop { __data["stop"] }
       public var route: Route { __data["route"] }
+
+      /// Bus.Stop
+      ///
+      /// Parent Type: `BusStop`
+      nonisolated public struct Stop: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusStop }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("name", String.self),
+          .field("latitude", Double.self),
+          .field("longitude", Double.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          BusStopDialogQuery.Data.Bus.Stop.self
+        ] }
+
+        public var name: String { __data["name"] }
+        public var latitude: Double { __data["latitude"] }
+        public var longitude: Double { __data["longitude"] }
+      }
 
       /// Bus.Route
       ///

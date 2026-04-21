@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class CafeteriaVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -120,55 +120,18 @@ class CafeteriaVC: UIViewController {
             }
             let date = dateForm.string(from: feedDate)
             self.feedDatePicker.date = feedDate
-            Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: campusID)) { result in
-                if case .success(let data) = result {
-                    if let data = data.data {
-                        CafeteriaData.shared.cafeteriaMenu.onNext(data.menu)
-                    }
+            Task {
+                let response = try? await Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: Int32(campusID)))
+                if let data = response?.data {
+                    CafeteriaData.shared.breakfastItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("조식") }) }).sorted(by: { $0.seq < $1.seq }))
+                    CafeteriaData.shared.lunchItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("중식") }) }).sorted(by: { $0.seq < $1.seq }))
+                    CafeteriaData.shared.dinnerItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("석식") }) }).sorted(by: { $0.seq < $1.seq }))
+                    self.breakfastVC.reload()
+                    self.lunchVC.reload()
+                    self.dinnerVC.reload()
+                    self.loadingView.isHidden = true
                 }
             }
-        }).disposed(by: disposeBag)
-        CafeteriaData.shared.cafeteriaMenu.subscribe(onNext: { cafeteriaList in
-            var breakfast = [CafeteriaItem]()
-            var lunch = [CafeteriaItem]()
-            var dinner = [CafeteriaItem]()
-            // Separate the menu into breakfast, lunch, and dinner
-            cafeteriaList.forEach { cafeteria in
-                let breakfastMenu = cafeteria.menu.filter({ $0.type.contains("조식") })
-                let lunchMenu = cafeteria.menu.filter({ $0.type.contains("중식") })
-                let dinnerMenu = cafeteria.menu.filter({ $0.type.contains("석식") })
-                if breakfastMenu.count > 0 {
-                    breakfast.append(CafeteriaItem(
-                        id: cafeteria.id,
-                        name: cafeteria.name,
-                        runningTime: cafeteria.runningTime.breakfast,
-                        menu: breakfastMenu
-                    ))
-                }
-                if lunchMenu.count > 0 {
-                    lunch.append(CafeteriaItem(
-                        id: cafeteria.id,
-                        name: cafeteria.name,
-                        runningTime: cafeteria.runningTime.lunch,
-                        menu: lunchMenu
-                    ))
-                }
-                if dinnerMenu.count > 0 {
-                    dinner.append(CafeteriaItem(
-                        id: cafeteria.id,
-                        name: cafeteria.name,
-                        runningTime: cafeteria.runningTime.dinner,
-                        menu: dinnerMenu
-                    ))
-                }
-                CafeteriaData.shared.breakfastItems.onNext(breakfast.sorted(by: { $0.id < $1.id }))
-                CafeteriaData.shared.lunchItems.onNext(lunch.sorted(by: { $0.id < $1.id }))
-                CafeteriaData.shared.dinnerItems.onNext(dinner.sorted(by: { $0.id < $1.id }))
-            }
-            self.breakfastVC.reload()
-            self.lunchVC.reload()
-            self.dinnerVC.reload()
-            self.loadingView.isHidden = true
         }).disposed(by: disposeBag)
     }
     

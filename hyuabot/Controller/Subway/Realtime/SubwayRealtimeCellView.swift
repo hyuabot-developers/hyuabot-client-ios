@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class SubwayRealtimeCellView: UITableViewCell {
@@ -35,59 +35,34 @@ class SubwayRealtimeCellView: UITableViewCell {
         }
     }
     
-    func setupUI(tabType: SubwayTabType, item: SubwayRealtimeItem) {
+    func setupUI(tabType: SubwayTabType, item: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) {
         // Set destination label color
         if tabType == .line4 { self.destinationLabel.textColor = .subwaySkyblue }
         else if tabType == .lineSuin { self.destinationLabel.textColor = .subwayYellow }
-        // Set text
-        if (item.realtimeUp != nil) {
-            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.realtimeUp!.terminal.id))")
-            if (item.realtimeUp!.last) {
+        if (item.isRealtime) {
+            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.terminal.stationID))")
+            if (item.isLast!) {
                 self.setRealtimeAttributedText(String(
                     localized: getRealtimeLabelText(
-                        item.realtimeUp!.time,
-                        item.realtimeUp!.location,
-                        item.realtimeUp!.status,
-                        item.realtimeUp!.last
+                        item.minutes,
+                        item.location!,
+                        item.status!,
+                        item.isLast!
                     )
                 ))
             } else {
                 self.setRealtimeAttributedText(String(
                     localized: getRealtimeLabelText(
-                        item.realtimeUp!.time,
-                        item.realtimeUp!.location,
-                        item.realtimeUp!.status,
-                        item.realtimeUp!.last
+                        item.minutes,
+                        item.location!,
+                        item.status!,
+                        item.isLast!
                     )
                 ))
             }
-        } else if (item.realtimeDown != nil) {
-            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.realtimeDown!.terminal.id))")
-            if (item.realtimeDown!.last) {
-                self.setRealtimeAttributedText(String(
-                    localized: getRealtimeLabelText(
-                        item.realtimeDown!.time,
-                        item.realtimeDown!.location,
-                        item.realtimeDown!.status,
-                        item.realtimeDown!.last
-                    )
-                ))
-            } else {
-                self.setRealtimeAttributedText(String(
-                    localized: getRealtimeLabelText(
-                        item.realtimeDown!.time,
-                        item.realtimeDown!.location,
-                        item.realtimeDown!.status,
-                        item.realtimeDown!.last
-                    )
-                ))
-            }
-        } else if (item.timetableUp != nil) {
-            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.timetableUp!.terminal.id))")
-            self.subwayTimeLabel.text = String(localized: getTimetableLabelText(item.timetableUp!.time))
-        } else if (item.timetableDown != nil) {
-            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.timetableDown!.terminal.id))")
-            self.subwayTimeLabel.text = String(localized: getTimetableLabelText(item.timetableDown!.time))
+        } else {
+            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.terminal.stationID))")
+            self.subwayTimeLabel.text = String(localized: getTimetableLabelText(item.minutes))
         }
     }
     
@@ -113,7 +88,7 @@ class SubwayRealtimeCellView: UITableViewCell {
         return stationName
     }
     
-    private func getRealtimeLabelText(_ time: Double, _ location: String, _ status: Int, _ last: Bool) -> String.LocalizationValue {
+    private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String.LocalizationValue {
         if (time < 2) {
             return "subway.realtime.now"
         }
@@ -138,17 +113,11 @@ class SubwayRealtimeCellView: UITableViewCell {
                 return "subway.realtime.almost.\(Int(time)).\(location)"
             }
         }
-        return "subway.realtime.\(Int(time)).\(location)"
+        return "subway.realtime.\(time).\(location)"
     }
     
-    private func getTimetableLabelText(_ departureTime: String) -> String.LocalizationValue {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: departureTime)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        return "subway.time.\(hour).\(minute)"
+    private func getTimetableLabelText(_ minutes: Int) -> String.LocalizationValue {
+        return "subway.time.\(minutes)"
     }
     
     private func setRealtimeAttributedText(_ text: String) {

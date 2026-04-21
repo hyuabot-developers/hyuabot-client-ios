@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class SubwayRealtimeVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -93,78 +93,24 @@ class SubwayRealtimeVC: UIViewController {
     }
     
     private func observeSubjects() {
-        SubwayRealtimeData.shared.realtimeData.subscribe(onNext: { [weak self] data in
-            var line4Up = [SubwayRealtimeItem]()
-            var line4Down = [SubwayRealtimeItem]()
-            var lineSuinUp = [SubwayRealtimeItem]()
-            var lineSuinDown = [SubwayRealtimeItem]()
-            // Station Data
-            let line4Item = data.first { $0.id == "K449" }
-            let lineSuinItem = data.first { $0.id == "K251" }
-            // Combine Up and Down
-            line4Item?.realtime.up.forEach { line4Up.append(SubwayRealtimeItem(realtimeUp: $0))}
-            line4Item?.realtime.down.forEach { line4Down.append(SubwayRealtimeItem(realtimeDown: $0))}
-            lineSuinItem?.realtime.up.forEach { lineSuinUp.append(SubwayRealtimeItem(realtimeUp: $0))}
-            lineSuinItem?.realtime.down.forEach { lineSuinDown.append(SubwayRealtimeItem(realtimeDown: $0))}
-            // Sort by time
-            line4Up.sort { $0.realtimeUp?.time ?? 0 < $1.realtimeUp?.time ?? 0 }
-            line4Down.sort { $0.realtimeDown?.time ?? 0 < $1.realtimeDown?.time ?? 0 }
-            lineSuinUp.sort { $0.realtimeUp?.time ?? 0 < $1.realtimeUp?.time ?? 0 }
-            lineSuinDown.sort { $0.realtimeDown?.time ?? 0 < $1.realtimeDown?.time ?? 0 }
-            // Get max minute from realtime data
-            let line4UpMax = line4Up.max { $0.realtimeUp?.time ?? 0 < $1.realtimeUp?.time ?? 0 }?.realtimeUp?.time ?? 0
-            let line4DownMax = line4Down.max { $0.realtimeDown?.time ?? 0 < $1.realtimeDown?.time ?? 0 }?.realtimeDown?.time ?? 0
-            let lineSuinUpMax = lineSuinUp.max { $0.realtimeUp?.time ?? 0 < $1.realtimeUp?.time ?? 0 }?.realtimeUp?.time ?? 0
-            let lineSuinDownMax = lineSuinDown.max { $0.realtimeDown?.time ?? 0 < $1.realtimeDown?.time ?? 0 }?.realtimeDown?.time ?? 0
-            line4Item?.timetable.up.filter {
-                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: line4UpMax) ?? false
-            }.forEach {
-                line4Up.append(SubwayRealtimeItem(timetableUp: $0))
-            }
-            line4Item?.timetable.down.filter {
-                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: line4DownMax) ?? false
-            }.forEach {
-                line4Down.append(SubwayRealtimeItem(timetableDown: $0))
-            }
-            lineSuinItem?.timetable.up.filter {
-                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: lineSuinUpMax) ?? false
-            }.forEach {
-                lineSuinUp.append(SubwayRealtimeItem(timetableUp: $0))
-            }
-            lineSuinItem?.timetable.down.filter {
-                self?.checkTimetableAfterRealtime(departureTime: $0.time, maxValue: lineSuinDownMax) ?? false
-            }.forEach {
-                lineSuinDown.append(SubwayRealtimeItem(timetableDown: $0))
-            }
+        SubwayRealtimeData.shared.realtimeData.subscribe(onNext: { data in
             // Update Realtime Data
-            SubwayRealtimeData.shared.line4Up.onNext(line4Up)
-            SubwayRealtimeData.shared.line4Down.onNext(line4Down)
-            SubwayRealtimeData.shared.lineSuinUp.onNext(lineSuinUp)
-            SubwayRealtimeData.shared.lineSuinDown.onNext(lineSuinDown)
-            // Transfer Data
-            var transferUp = [SubwayTransferItem]()
-            var transferDown = [SubwayTransferItem]()
-            guard let line4Transfer = data.first(where: { $0.id == "K456" }) else { return }
-            guard let lineSuinTransfer = data.first(where: { $0.id == "K258" }) else { return }
-            lineSuinTransfer.realtime.up.filter { $0.terminal.id < "K251" }.forEach { item in
-                transferUp.append(SubwayTransferItem(upFrom: item, upTo: nil, downFrom: nil, downTo: nil))
-            }
-            lineSuinTransfer.realtime.up.filter { $0.terminal.id == "K258" }.forEach { item in
-                guard let transferItem = line4Transfer.timetable.up.first(where: {
-                    (self?.calculateRemainingTime(current: Date.now, departureTime: $0.time) ?? 999) > Int(item.time)
-                }) else { return }
-                transferUp.append(SubwayTransferItem(upFrom: item, upTo: transferItem, downFrom: nil, downTo: nil))
-            }
-            lineSuinTransfer.realtime.down.filter { $0.terminal.id == "K272" && $0.time > 18 }.forEach { item in
-                transferDown.append(SubwayTransferItem(upFrom: nil, upTo: nil, downFrom: item, downTo: nil))
-            }
-            line4Transfer.realtime.down.filter({ $0.time > 18 }).forEach{ item in
-                guard let firstItem = lineSuinTransfer.timetable.down.filter({ (self?.calculateRemainingTime(current: Date.now, departureTime: $0.time) ?? 999) > Int(item.time) }).first else { return }
-                transferDown.append(SubwayTransferItem(upFrom: nil, upTo: nil, downFrom: item, downTo: firstItem))
-            }
-            SubwayRealtimeData.shared.transferUp.onNext(transferUp.sorted { $0.upFrom?.time ?? 0 < $1.upFrom?.time ?? 0 })
-            SubwayRealtimeData.shared.transferDown.onNext(transferDown.sorted { $0.downFrom?.time ?? 0 < $1.downFrom?.time ?? 0 })
-            
+            SubwayRealtimeData.shared.combinedRealtimeData.onNext(SubwayCombinedRealtimeData(
+                campusBlue: data.first(where: { $0.stationID == "K449" }),
+                campusYellow: data.first(where: { $0.stationID == "K251" }),
+                oidoBlue: data.first(where: { $0.stationID == "K456" }),
+                oidoYellow: data.first(where: { $0.stationID == "K258" }),
+            ))
+        }).disposed(by: disposeBag)
+        SubwayRealtimeData.shared.combinedRealtimeData.subscribe(onNext: {[weak self] data in
+            guard
+                data?.campusBlue != nil,
+                data?.campusYellow != nil,
+                data?.oidoBlue != nil,
+                data?.oidoYellow != nil else { return }
+            guard let self = self else { return }
+            SubwayRealtimeData.shared.transferUp.onNext(self.processUpDirection(oidoBlue: data!.oidoBlue!, oidoYellow: data!.oidoYellow!))
+            SubwayRealtimeData.shared.transferDown.onNext(self.processDownDirection(campusBlue: data!.campusBlue!, campusYellow: data!.campusYellow!, oidoYellow: data!.oidoYellow!))
         }).disposed(by: disposeBag)
         SubwayRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
             if (isLoading) {
@@ -177,14 +123,79 @@ class SubwayRealtimeVC: UIViewController {
         }).disposed(by: disposeBag)
     }
     
+    private func processUpDirection(
+        oidoBlue: SubwayRealtimePageQuery.Data.Subway,
+        oidoYellow: SubwayRealtimePageQuery.Data.Subway,
+    ) -> [SubwayTransferItem] {
+        let upRealtimeWithoutTransfer: [SubwayTransferItem] = oidoYellow.arrival.first(where: { $0.direction == "up" })?.entries.filter { entry in
+            entry.isRealtime && entry.terminal.stationID < "K251"
+        }.map{ entry in
+            SubwayTransferItem(take: entry, transfer: nil)
+        } ?? []
+        let upTimetableToTransfer: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry] = oidoBlue.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+        let upRealtimeWithTransfer: [SubwayTransferItem] = oidoYellow.arrival.first(where: { $0.direction == "up" })?.entries.filter {
+            entry in entry.terminal.stationID >= "K251" && entry.isRealtime
+        }.map {
+            entry in SubwayTransferItem(
+                take: entry,
+                transfer: upTimetableToTransfer.first { transfer in transfer.minutes > entry.minutes }
+            )
+        } ?? []
+        return (upRealtimeWithoutTransfer + upRealtimeWithTransfer).sorted { $0.take.minutes < $1.take.minutes }
+    }
+
+    private func processDownDirection(
+        campusBlue: SubwayRealtimePageQuery.Data.Subway,
+        campusYellow: SubwayRealtimePageQuery.Data.Subway,
+        oidoYellow: SubwayRealtimePageQuery.Data.Subway
+    ) -> [SubwayTransferItem] {
+        let downRealtimeWithoutTransfer: [SubwayTransferItem] = campusYellow.arrival.first(where: { $0.direction == "down" })?.entries.filter {
+            entry in entry.terminal.stationID > "K258" && entry.isRealtime && entry.terminal.stationID.hasPrefix("K2")
+        }.map {
+            entry in SubwayTransferItem(
+                take: entry,
+                transfer: nil
+            )
+        } ?? []
+        let downTimetableToTransfer: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry] = oidoYellow.arrival.first(where: { $0.direction == "down" })?.entries.filter {
+                entry in entry.origin?.stationID == "K258"
+        } ?? []
+        let downRealtimeWithTransfer: [SubwayTransferItem] = campusBlue.arrival.first(where: { $0.direction == "down" })?.entries.filter {
+            entry in entry.terminal.stationID == "K456"
+        }.map { entry in
+            let firstItemWithOutTransfer = findTakeTrain(compare: downRealtimeWithoutTransfer, target: entry)
+            return SubwayTransferItem(
+                take: entry,
+                transfer: findTransferTrain(compare: downTimetableToTransfer, entry: entry, target: firstItemWithOutTransfer)
+            )
+        }.filter {
+            entry in entry.transfer != nil
+        } ?? []
+        return (downRealtimeWithoutTransfer + downRealtimeWithTransfer).sorted { $0.take.minutes < $1.take.minutes }
+    }
+    
+    private func findTakeTrain(compare: [SubwayTransferItem], target: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) -> SubwayTransferItem? {
+        return compare.first(where: {$0.take.minutes > target.minutes})
+    }
+    
+    private func findTransferTrain(compare: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry], entry: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry, target: SubwayTransferItem?) -> SubwayRealtimePageQuery.Data.Subway.Arrival.Entry? {
+        return compare.first(where: {
+            if (target == nil) {
+                return $0.minutes > entry.minutes + 20
+            } else {
+                return $0.minutes > entry.minutes + 20 && $0.minutes < target!.take.minutes + 20
+            }
+        })
+    }
+    
     private func fetchSubwayRealtimeData() {
-        let timeFormatter = DateFormatter().then {
-            $0.dateFormat = "HH:mm"
-        }
-        let time = timeFormatter.string(from: Date.now)
-        Network.shared.client.fetch(query: SubwayRealtimePageQuery(start: time)) { result in
-            if case .success(let data) = result {
-                SubwayRealtimeData.shared.realtimeData.onNext(data.data?.subway ?? [])
+        let today = Foundation.Date.now
+        let component = Calendar.current.component(.weekday, from: today)
+        let weekday = (component == 1 || component == 7) ? "weekends" : "weekdays"
+        Task {
+            let response = try? await Network.shared.client.fetch(query: SubwayRealtimePageQuery(weekday: weekday))
+            if let data = response?.data {
+                SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
                 SubwayRealtimeData.shared.isLoading.onNext(false)
                 self.line4VC.reload()
                 self.lineSuinVC.reload()

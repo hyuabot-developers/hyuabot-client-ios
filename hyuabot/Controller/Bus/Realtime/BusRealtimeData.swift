@@ -1,18 +1,19 @@
 import RxSwift
-import QueryAPI
+import Api
 
 class BusRealtimeData {
     static let shared = BusRealtimeData()
     private init() {}
     // Realtime Query
-    let busRealtimeData = BehaviorSubject<[BusRealtimePageQuery.Data.Bus]?>(value: nil)
-    let cityBusCampusData = BehaviorSubject<[BusRealtimeItem]>(value: [])
-    let cityBusStationData = BehaviorSubject<[BusRealtimeItem]>(value: [])
-    let seoulBusCampusData = BehaviorSubject<[BusRealtimeItem]>(value: [])
-    let seoulBusMainGateData = BehaviorSubject<[BusRealtimeItem]>(value: [])
-    let suwonBusJunctionData = BehaviorSubject<[BusRealtimeItem]>(value: [])
-    let otherBusAnsanData = BehaviorSubject<[BusRealtimeItem]>(value: [])
-    let otherBusGwangmyeongStationData = BehaviorSubject<[BusRealtimeItem]>(value: [])
+    let busRealtimeData = BehaviorSubject<[BusRealtimePageQuery.Data.Bus]>(value: [])
+    let busRealtimeCityFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let busRealtimeCityFromStation = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let busRealtimeSeoulFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let busRealtimeGunpoFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let busRealtimeSuwonFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let busRealtimeKTXFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let busRealtimeKTXFromStation = BehaviorSubject<[BusArrivalItem]>(value: [])
+    let notices = BehaviorSubject<[BusRealtimePageQuery.Data.Notice.Notice]>(value: [])
     // Loading State
     let isLoading = BehaviorSubject<Bool>(value: true)
 }

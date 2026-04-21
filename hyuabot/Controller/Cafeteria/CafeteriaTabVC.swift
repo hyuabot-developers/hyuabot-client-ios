@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class CafeteriaTabVC: UIViewController {
     private let cafeteriaType: CafeteriaType
@@ -86,20 +86,20 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
-            headerView.setupUI(id: item.id, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
-                self?.showCafeteriaInfoVC(cafeteriaID: item.id)
+            headerView.setupUI(id: item.seq, runningTime: item.runningTime.breakfast, showCafeteriaInfoVC: { [weak self] in
+                self?.showCafeteriaInfoVC(cafeteriaID: item.seq)
             })
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
-            headerView.setupUI(id: item.id, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
-                self?.showCafeteriaInfoVC(cafeteriaID: item.id)
+            headerView.setupUI(id: item.seq, runningTime: item.runningTime.lunch, showCafeteriaInfoVC: { [weak self] in
+                self?.showCafeteriaInfoVC(cafeteriaID: item.seq)
             })
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
-            headerView.setupUI(id: item.id, runningTime: item.runningTime, showCafeteriaInfoVC: { [weak self] in
-                self?.showCafeteriaInfoVC(cafeteriaID: item.id)
+            headerView.setupUI(id: item.seq, runningTime: item.runningTime.dinner, showCafeteriaInfoVC: { [weak self] in
+                self?.showCafeteriaInfoVC(cafeteriaID: item.seq)
             })
         }
         return headerView
@@ -108,13 +108,13 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
-            return cafeteriaItems[section].menu.count
+            return cafeteriaItems[section].menus.count
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return 0 }
-            return cafeteriaItems[section].menu.count
+            return cafeteriaItems[section].menus.count
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return 0 }
-            return cafeteriaItems[section].menu.count
+            return cafeteriaItems[section].menus.count
         }
         return 0
     }
@@ -123,15 +123,15 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CafeteriaMenuCellView.reuseIdentifier) as? CafeteriaMenuCellView else { return UITableViewCell() }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menu[indexPath.row]
+            let item = cafeteriaItems[indexPath.section].menus[indexPath.row]
             cell.setupUI(item: item)
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menu[indexPath.row]
+            let item = cafeteriaItems[indexPath.section].menus[indexPath.row]
             cell.setupUI(item: item)
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menu[indexPath.row]
+            let item = cafeteriaItems[indexPath.section].menus[indexPath.row]
             cell.setupUI(item: item)
         }
         return cell

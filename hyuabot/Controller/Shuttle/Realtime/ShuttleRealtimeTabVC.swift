@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class ShuttleRealtimeTabVC: UIViewController {
     let stopID: ShuttleStopEnum
@@ -9,7 +9,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let shuttleRealtimeSection: [String.LocalizationValue]
     private let refreshMethod: () -> Void
     private let showEntireTimetable: (ShuttleStopEnum, Int) -> Void
-    private let showViaVC: (ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Void
+    private let showViaVCByOrder: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
+    private let showViaVCByDestination: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void
     private let showStopVC: (ShuttleStopEnum) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
@@ -53,7 +54,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         stopID: ShuttleStopEnum,
         refreshMethod: @escaping () -> Void,
         showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void,
-        showViaVC: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Timetable) -> Void,
+        showViaVCByOrder: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
+        showViaVCByDestination: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void,
         showStopVC: @escaping (ShuttleStopEnum) -> Void
     ) {
         self.stopID = stopID
@@ -66,9 +68,10 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
         self.refreshMethod = refreshMethod
         self.showEntireTimetable = showEntireTimetable
-        self.showViaVC = showViaVC
+        self.showViaVCByOrder = showViaVCByOrder
+        self.showViaVCByDestination = showViaVCByDestination
         self.showStopVC = showStopVC
-        self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(showViaVC: self.showViaVC, stopID: self.stopID)
+        self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(showViaVC: showViaVCByOrder, stopID: self.stopID)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -173,7 +176,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             guard let data = try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value() else { return 0 }
             return max(min(data.count, 7), 1)
         } else if (self.stopID == .shuttlecockIn) {
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToDormitoryData.value() else { return 0 }
+            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value() else { return 0 }
             return max(min(data.count, 7), 1)
         }
         return 0
@@ -264,7 +267,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 return cell
             }
         } else if (self.stopID == .shuttlecockIn) {
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToDormitoryData.value() else { return UITableViewCell() }
+            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value() else { return UITableViewCell() }
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: data[indexPath.row])
@@ -284,7 +287,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView else { return }
-        guard let item = cell.item else { return }
-        self.showViaVC(item)
+        guard let item = cell.itemByDestination else { return }
+        self.showViaVCByDestination(item)
     }
 }

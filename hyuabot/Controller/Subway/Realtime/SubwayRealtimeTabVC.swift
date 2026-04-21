@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class SubwayRealtimeTabVC: UIViewController {
     private let tabType: SubwayTabType
@@ -104,21 +104,22 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let data = try? SubwayRealtimeData.shared.combinedRealtimeData.value() else { return 1 }
         if (self.tabType == .line4) {
             if (section == 0) {
-                guard let items = try? SubwayRealtimeData.shared.line4Up.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                let arrivals = data.campusBlue!.arrival.filter({$0.direction == "up"})
+                return arrivals.isEmpty ? 1 : arrivals.count
             } else if (section == 1) {
-                guard let items = try? SubwayRealtimeData.shared.line4Down.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                let arrivals = data.campusBlue!.arrival.filter({$0.direction == "down"})
+                return arrivals.isEmpty ? 1 : arrivals.count
             }
         } else if (self.tabType == .lineSuin) {
             if (section == 0) {
-                guard let items = try? SubwayRealtimeData.shared.lineSuinUp.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                let arrivals = data.campusYellow!.arrival.filter({$0.direction == "up"})
+                return arrivals.isEmpty ? 1 : arrivals.count
             } else if (section == 1) {
-                guard let items = try? SubwayRealtimeData.shared.lineSuinDown.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                let arrivals = data.campusYellow!.arrival.filter({$0.direction == "down"})
+                return arrivals.isEmpty ? 1 : arrivals.count
             }
         } else if (self.tabType == .transfer) {
             if (section == 0) {
@@ -134,37 +135,38 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeCellView.reuseIdentifier) as? SubwayRealtimeCellView else { return UITableViewCell() }
+        guard let data = try? SubwayRealtimeData.shared.combinedRealtimeData.value() else { return UITableViewCell() }
         if (self.tabType == .line4) {
             if (indexPath.section == 0) {
-                guard let items = try? SubwayRealtimeData.shared.line4Up.value() else { return UITableViewCell() }
-                if (items.isEmpty) {
+                let arrivals = data.campusBlue!.arrival.first(where: {$0.direction == "up"})?.entries
+                if (arrivals == nil || arrivals!.isEmpty) {
                     guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
                     return cell
                 }
-                cell.setupUI(tabType: self.tabType, item: items[indexPath.row])
+                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
             } else if (indexPath.section == 1) {
-                guard let items = try? SubwayRealtimeData.shared.line4Down.value() else { return UITableViewCell() }
-                if (items.isEmpty) {
+                let arrivals = data.campusBlue!.arrival.first(where: {$0.direction == "down"})?.entries
+                if (arrivals == nil || arrivals!.isEmpty) {
                     guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
                     return cell
                 }
-                cell.setupUI(tabType: self.tabType, item: items[indexPath.row])
+                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
             }
         } else if (self.tabType == .lineSuin) {
             if (indexPath.section == 0) {
-                guard let items = try? SubwayRealtimeData.shared.lineSuinUp.value() else { return UITableViewCell() }
-                if (items.isEmpty) {
+                let arrivals = data.campusYellow!.arrival.first(where: {$0.direction == "up"})?.entries
+                if (arrivals == nil || arrivals!.isEmpty) {
                     guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
                     return cell
                 }
-                cell.setupUI(tabType: self.tabType, item: items[indexPath.row])
+                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
             } else if (indexPath.section == 1) {
-                guard let items = try? SubwayRealtimeData.shared.lineSuinDown.value() else { return UITableViewCell() }
-                if (items.isEmpty) {
+                let arrivals = data.campusYellow!.arrival.first(where: {$0.direction == "down"})?.entries
+                if (arrivals == nil || arrivals!.isEmpty) {
                     guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
                     return cell
                 }
-                cell.setupUI(tabType: self.tabType, item: items[indexPath.row])
+                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
             }
         } else if (self.tabType == .transfer) {
             guard let transferCell = tableView.dequeueReusableCell(withIdentifier: SubwayTransferCellView.reuseIdentifier) as? SubwayTransferCellView else { return UITableViewCell() }
