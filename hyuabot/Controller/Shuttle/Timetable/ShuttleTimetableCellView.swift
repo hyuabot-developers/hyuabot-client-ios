@@ -44,7 +44,11 @@ class ShuttleTimetableCellView: UITableViewCell {
                 }
                 else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if option.end == "shuttle.destination.shorten.terminal" {
                 if item.route.tag == "DY" {
@@ -53,7 +57,11 @@ class ShuttleTimetableCellView: UITableViewCell {
                 }
                 else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if option.end == "shuttle.destination.shorten.jungang_station" {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
@@ -69,11 +77,19 @@ class ShuttleTimetableCellView: UITableViewCell {
                     self.shuttleTypeLabel.textColor = .hanyangGreen
                 } else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if option.end == "shuttle.destination.shorten.terminal" {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                self.shuttleTypeLabel.textColor = .busBlue
+                if UITraitCollection.current.userInterfaceStyle == .light {
+                    self.shuttleTypeLabel.textColor = .busBlue
+                } else {
+                    self.shuttleTypeLabel.textColor = .white
+                }
             } else if option.end == "shuttle.destination.shorten.jungang_station" {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
                 self.shuttleTypeLabel.textColor = .hanyangGreen

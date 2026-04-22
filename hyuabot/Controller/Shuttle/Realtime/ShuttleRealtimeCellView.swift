@@ -27,7 +27,13 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.isHidden = true
         $0.addSubview(self.shuttleAlertLabel)
     }
-    private let infoImageView = UIImageView(image: UIImage(systemName: "info.circle"))
+    private let infoImageView = UIImageView(image: UIImage(systemName: "info.circle")).then {
+        if UITraitCollection.current.userInterfaceStyle == .light {
+            $0.tintColor = .hanyangBlue
+        } else {
+            $0.tintColor = .white
+        }
+    }
     var itemByOrder: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order?
     var itemByDestination: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
     
@@ -91,7 +97,12 @@ class ShuttleRealtimeCellView: UITableViewCell {
                 }
                 else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    // Check dark mode
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if indexPath.section == 1 {
                 if item.route.tag == "DY" {
@@ -100,7 +111,11 @@ class ShuttleRealtimeCellView: UITableViewCell {
                 }
                 else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if indexPath.section == 2 {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
@@ -116,11 +131,19 @@ class ShuttleRealtimeCellView: UITableViewCell {
                     self.shuttleTypeLabel.textColor = .hanyangGreen
                 } else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if indexPath.section == 1 {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                self.shuttleTypeLabel.textColor = .busBlue
+                if UITraitCollection.current.userInterfaceStyle == .light {
+                    self.shuttleTypeLabel.textColor = .busBlue
+                } else {
+                    self.shuttleTypeLabel.textColor = .white
+                }
             } else if indexPath.section == 2 {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
                 self.shuttleTypeLabel.textColor = .hanyangGreen
