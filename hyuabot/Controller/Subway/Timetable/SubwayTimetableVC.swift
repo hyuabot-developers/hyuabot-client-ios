@@ -117,10 +117,11 @@ class SubwayTimetableVC: UIViewController {
     }
     
     private func observeSubjects() {
-        SubwayTimetableData.shared.timetable.subscribe(onNext: { timetable in
+        SubwayTimetableData.shared.timetable.subscribe(onNext: { [weak self] timetable in
+            guard let self = self else { return }
             SubwayTimetableData.shared.isLoading.onNext(false)
-            SubwayTimetableData.shared.timetableWeekdays.onNext(timetable.filter { $0.weekday == "weekdays" })
-            SubwayTimetableData.shared.timetableWeekdays.onNext(timetable.filter { $0.weekday == "weekends" })
+            SubwayTimetableData.shared.timetableWeekdays.onNext(timetable.filter { $0.weekday == "weekdays" }.sorted(by: { self.convertDepartureTime($0.time) < self.convertDepartureTime($1.time) }))
+            SubwayTimetableData.shared.timetableWeekends.onNext(timetable.filter { $0.weekday == "weekends" }.sorted(by: { self.convertDepartureTime($0.time) < self.convertDepartureTime($1.time) }))
             self.weekdaysVC.reload()
             self.weekendsVC.reload()
         }).disposed(by: disposeBag)
@@ -133,5 +134,13 @@ class SubwayTimetableVC: UIViewController {
                 self.loadingSpinner.stopAnimating()
             }
         }).disposed(by: disposeBag)
+    }
+    
+    private func convertDepartureTime(_ time: LocalTime) -> String {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
+        if (components.hour! < 4) {
+            return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
+        }
+        return String(format: "%02d:%02d", components.hour!, components.minute!)
     }
 }

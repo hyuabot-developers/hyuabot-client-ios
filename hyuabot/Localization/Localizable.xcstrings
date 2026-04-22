@@ -3461,7 +3461,6 @@
       }
     },
     "subway.transfer.up.%@.%@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

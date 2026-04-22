@@ -69,7 +69,7 @@ class SubwayTimetableCellView: UITableViewCell {
         _ item: SubwayTimetablePageQuery.Data.Subway.Timetable,
     ) {
         let component = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
-        if currentTime > item.time {
+        if convertDepartureTime(currentTime) > convertDepartureTime(item.time) {
             self.departureTimeLabel.textColor = .gray
         } else {
             self.departureTimeLabel.textColor = .label
@@ -79,5 +79,13 @@ class SubwayTimetableCellView: UITableViewCell {
             hour += 24
         }
         self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(component.minute!)")
+    }
+    
+    private func convertDepartureTime(_ time: String) -> String {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
+        if (components.hour! < 4) {
+            return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
+        }
+        return String(format: "%02d:%02d", components.hour!, components.minute!)
     }
 }

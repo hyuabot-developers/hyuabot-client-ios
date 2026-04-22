@@ -45,21 +45,33 @@ class SubwayTransferCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: SubwayTransferItem) {
+    func setupUI(item: SubwayTransferItem, direction: String) {
         if (item.transfer != nil) {
             self.arrowLabel.isHidden = false
-            self.fromLabel.text = String(
-                localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes - 18, item.take.location!))"
-            )
+            if (direction == "up") {
+                self.fromLabel.text = String(
+                    localized: "subway.transfer.up.\(getDestinationLabelText(item.take.terminal.stationID)).\(item.take.location!)"
+                )
+            } else {
+                self.fromLabel.text = String(
+                    localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes, item.take.location!))"
+                )
+            }
             self.toLabel.text = String(
                 localized: "subway.transfer.timetable.\(getDestinationLabelText(item.transfer!.terminal.stationID)).\(getTimetableLabelText(item.transfer!.minutes))"
             )
         } else {
             self.arrowLabel.isHidden = true
             self.toLabel.text = ""
-            self.fromLabel.text = String(
-                localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes - 18, item.take.location!))"
-            )
+            if (direction == "up") {
+                self.fromLabel.text = String(
+                    localized: "subway.transfer.up.\(getDestinationLabelText(item.take.terminal.stationID)).\(item.take.location!)"
+                )
+            } else {
+                self.fromLabel.text = String(
+                    localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes, item.take.location!))"
+                )
+            }
         }
     }
     
