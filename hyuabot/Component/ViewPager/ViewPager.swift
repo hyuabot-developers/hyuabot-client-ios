@@ -5,12 +5,14 @@ class ViewPager: UIView {
     let navigationBarEnabled: Bool
     let contentView: ContentView = ContentView()
     let optionView: UIView?
+    let noticeView: UIView?
     lazy var tabView: TabView = TabView(sizeConfiguration: self.sizeConfiguration)
     
-    init(sizeConfiguration: TabView.TabSizeConfiguration, optionView: UIView? = nil, navigationBarEnabled: Bool = false) {
+    init(sizeConfiguration: TabView.TabSizeConfiguration, optionView: UIView? = nil, noticeView: UIView? = nil, navigationBarEnabled: Bool = false) {
         self.sizeConfiguration = sizeConfiguration
         self.navigationBarEnabled = navigationBarEnabled
         self.optionView = optionView
+        self.noticeView = noticeView
         super.init(frame: .zero)
         self.setupUI()
         self.tabView.delegate = self
@@ -29,21 +31,66 @@ class ViewPager: UIView {
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(self.sizeConfiguration.height + (self.navigationBarEnabled ? .zero : topPadding))
         }
-        if (optionView != nil) {
-            self.addSubview(self.optionView!)
-            self.optionView!.snp.makeConstraints { make in
-                make.top.equalTo(self.tabView.snp.bottom)
-                make.leading.trailing.equalToSuperview()
+        if (noticeView != nil) {
+            let noticeContainer = UIView().then {
+                $0.backgroundColor = .hanyangBlue
+                $0.addSubview(self.noticeView!)
             }
-            self.contentView.snp.makeConstraints { make in
-                make.leading.trailing.bottom.equalToSuperview()
-                make.top.equalTo(self.optionView!.snp.bottom)
+            self.addSubview(noticeContainer)
+            if (optionView != nil) {
+                self.addSubview(self.optionView!)
+                self.noticeView!.snp.makeConstraints { make in
+                    make.top.equalToSuperview()
+                    make.bottom.equalToSuperview().inset(5)
+                    make.leading.trailing.equalToSuperview().inset(10)
+                }
+                self.optionView!.snp.makeConstraints { make in
+                    make.top.equalTo(self.tabView.snp.bottom)
+                    make.leading.trailing.equalToSuperview()
+                }
+                noticeContainer.snp.makeConstraints { make in
+                    make.top.equalTo(self.optionView!.snp.bottom)
+                    make.leading.trailing.equalToSuperview()
+                    make.height.equalTo(30)
+                }
+                self.contentView.snp.makeConstraints { make in
+                    make.leading.trailing.bottom.equalToSuperview()
+                    make.top.equalTo(noticeContainer.snp.bottom)
+                }
             }
-        }
-        else {
-            self.contentView.snp.makeConstraints { make in
-                make.top.equalTo(self.tabView.snp.bottom)
-                make.leading.trailing.bottom.equalToSuperview()
+            else {
+                self.noticeView!.snp.makeConstraints { make in
+                    make.top.equalToSuperview().inset(10)
+                    make.bottom.equalToSuperview().inset(5)
+                    make.leading.trailing.equalToSuperview().inset(10)
+                }
+                noticeContainer.snp.makeConstraints { make in
+                    make.top.equalTo(self.tabView.snp.bottom)
+                    make.leading.trailing.equalToSuperview()
+                    make.height.equalTo(40)
+                }
+                self.contentView.snp.makeConstraints { make in
+                    make.top.equalTo(noticeContainer.snp.bottom)
+                    make.leading.trailing.bottom.equalToSuperview()
+                }
+            }
+        } else {
+            if (optionView != nil) {
+                self.addSubview(self.optionView!)
+                self.optionView!.snp.makeConstraints { make in
+                    make.top.equalTo(self.tabView.snp.bottom)
+                    make.leading.trailing.equalToSuperview()
+                }
+                self.contentView.snp.makeConstraints { make in
+                    make.leading.trailing.bottom.equalToSuperview()
+                    make.top.equalTo(self.optionView!.snp.bottom)
+                }
+            }
+            else {
+                self.contentView.snp.makeConstraints { make in
+                    make.top.equalTo(self.tabView.snp.bottom)
+                    make.leading.trailing.bottom.equalToSuperview()
+                }
             }
         }
     }

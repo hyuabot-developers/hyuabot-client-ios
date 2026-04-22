@@ -42,8 +42,22 @@ class BusRealtimeVC: UIViewController {
         $0.configuration = config
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
     }
+    private lazy var noticeView = NoticeCarouselView().then {
+        $0.isHidden = true
+        $0.backgroundColor = .systemBackground
+        $0.layer.cornerRadius = 10
+        $0.onNoticeTapped = { [weak self] url in
+            guard let url = URL(string: url) else { return }
+            let vc = NoticeWebVC(url: url)
+            if let sheet = vc.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+            }
+            self?.present(vc, animated: true, completion: nil)
+        }
+    }
     private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0))
+        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: nil, noticeView: self.noticeView)
         // Add the content pages to the view pager
         viewPager.contentView.pages = [
             cityBusTabVC.view,
@@ -84,7 +98,6 @@ class BusRealtimeVC: UIViewController {
             make.center.equalToSuperview()
         }
     }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -94,6 +107,7 @@ class BusRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
+        self.noticeView.startAutoScroll()
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -104,6 +118,7 @@ class BusRealtimeVC: UIViewController {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
         self.stopPolling()
+        self.noticeView.stopAutoScroll()
     }
     
     private func setupUI() {
@@ -160,6 +175,15 @@ class BusRealtimeVC: UIViewController {
                 self.loadingSpinner.stopAnimating()
             }
         }).disposed(by: disposeBag)
+        BusRealtimeData.shared.notices.subscribe(onNext: { notices in
+            if notices.isEmpty {
+                self.noticeView.isHidden = true
+                self.noticeView.stopAutoScroll()
+            } else {
+                self.noticeView.isHidden = false
+                self.noticeView.setupUI(with: notices.map { Notice(title: $0.title, url: $0.url) })
+            }
+        }).disposed(by: self.disposeBag)
     }
     
     private func fetchBusRealtimeData() {

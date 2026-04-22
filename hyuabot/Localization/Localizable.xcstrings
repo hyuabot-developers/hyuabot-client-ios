@@ -1203,6 +1203,22 @@
         }
       }
     },
+    "notice.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notice"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공지사항"
+          }
+        }
+      }
+    },
     "reading_room_1" : {
       "localizations" : {
         "en" : {

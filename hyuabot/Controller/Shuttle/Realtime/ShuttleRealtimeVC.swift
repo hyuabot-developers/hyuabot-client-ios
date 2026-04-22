@@ -41,6 +41,20 @@ class ShuttleRealtimeVC: UIViewController {
             make.height.equalTo(50)
         }
     }
+    private lazy var noticeView = NoticeCarouselView().then {
+        $0.isHidden = true
+        $0.backgroundColor = .systemBackground
+        $0.layer.cornerRadius = 10
+        $0.onNoticeTapped = { [weak self] url in
+            guard let url = URL(string: url) else { return }
+            let vc = NoticeWebVC(url: url)
+            if let sheet = vc.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+            }
+            self?.present(vc, animated: true, completion: nil)
+        }
+    }
     private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(
         stopID: .dormiotryOut,
         refreshMethod: fetchShuttleRealtimeData,
@@ -101,7 +115,7 @@ class ShuttleRealtimeVC: UIViewController {
 
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView)
+        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView, noticeView: self.noticeView)
         // Add the content pages to the view pager
         viewPager.contentView.pages = [
             dormitoryOutTabVC.view,
@@ -134,6 +148,7 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
+        self.noticeView.startAutoScroll()
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -144,6 +159,7 @@ class ShuttleRealtimeVC: UIViewController {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
         self.stopPolling()
+        self.noticeView.stopAutoScroll()
     }
     
     @objc func appDidEnterBackground() { self.stopPolling() }
@@ -225,6 +241,15 @@ class ShuttleRealtimeVC: UIViewController {
             self.terminalTabVC.reload()
             self.jungangStationTabVC.reload()
             self.shuttlecockInTabVC.reload()
+        }).disposed(by: self.disposeBag)
+        ShuttleRealtimeData.shared.notices.subscribe(onNext: { notices in
+            if notices.isEmpty {
+                self.noticeView.isHidden = true
+                self.noticeView.stopAutoScroll()
+            } else {
+                self.noticeView.isHidden = false
+                self.noticeView.setupUI(with: notices.map { Notice(title: $0.title, url: $0.url) })
+            }
         }).disposed(by: self.disposeBag)
     }
     
