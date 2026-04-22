@@ -139,7 +139,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
     func setUITimeLabel(time: LocalTime) {
         let components = Calendar.current.dateComponents([.hour, .minute, .second], from: time.toLocalTime())
         self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(components.hour!).\(components.minute!)")
-        let remainingTime = Int(time.toLocalTime().timeIntervalSince(Date()) / 1000)
+        let remainingTime = Int(time.toLocalTime().timeIntervalSince(Foundation.Date.now))
         self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.\(remainingTime / 60)")
     }
     

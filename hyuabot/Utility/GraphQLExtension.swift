@@ -24,7 +24,20 @@ extension String {
         guard let time = formatter.date(from: self) else {
             fatalError("Invalid time string: \(self)")
         }
-        return time
+        let calendar = Calendar.current
+        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
+        let todayComponents = calendar.dateComponents([.year, .month, .day], from: Date.now)
+        var merged = DateComponents()
+        merged.year = todayComponents.year
+        merged.month = todayComponents.month
+        merged.day = todayComponents.day
+        merged.hour = timeComponents.hour
+        merged.minute = timeComponents.minute
+        if let mergedDate = calendar.date(from: merged) {
+            return mergedDate
+        } else {
+            fatalError("Failed to merge date and time components")
+        }
     }
     
     func toZonedDateTime() -> Foundation.Date {
