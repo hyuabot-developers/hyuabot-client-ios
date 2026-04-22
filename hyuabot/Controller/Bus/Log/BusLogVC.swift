@@ -184,9 +184,9 @@ class BusLogVC: UIViewController {
             ))
             if let data = response?.data {
                 let logs = data.bus.flatMap { $0.log }
-                self.firstLogs.onNext(logs.filter { $0.time == queryDateFormatter.string(from: firstDate) }.sorted(by: { $0.time < $1.time }))
-                self.secondLogs.onNext(logs.filter { $0.time == queryDateFormatter.string(from: secondDate) }.sorted(by: { $0.time < $1.time }))
-                self.thirdLogs.onNext(logs.filter { $0.time == queryDateFormatter.string(from: thirdDate) }.sorted(by: { $0.time < $1.time }))
+                self.firstLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: firstDate) }.sorted(by: { $0.time < $1.time }))
+                self.secondLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: secondDate) }.sorted(by: { $0.time < $1.time }))
+                self.thirdLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: thirdDate) }.sorted(by: { $0.time < $1.time }))
             }
         }
     }

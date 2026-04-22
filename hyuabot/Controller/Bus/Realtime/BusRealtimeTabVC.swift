@@ -196,31 +196,31 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         if self.tabType == .city {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromStation.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             }
         } else if self.tabType == .seoul {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSeoulFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeGunpoFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             }
         } else if self.tabType == .suwon {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSuwonFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             }
         } else if self.tabType == .other {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromStation.value() else { return 1 }
-                return items.isEmpty ? 1 : items.count
+                return items.isEmpty ? 1 : min(items.count, 3)
             }
         }
         return 1

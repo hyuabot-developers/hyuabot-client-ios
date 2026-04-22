@@ -128,6 +128,7 @@ class BusRealtimeVC: UIViewController {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
             guard let self = self else { return }
             // Get the data for each bus stop and route}
+            guard let busRealtimeCityFromCampus = result.first(where: { $0.stop.seq == 216000379 && $0.route.seq == 216000068 }) else { return }
             guard let busRealtimeCityFromStation = result.first(where: { $0.stop.seq == 216000138 && $0.route.seq == 216000068 }) else { return }
             guard let busRealtimeSeoulFromCampus = result.first(where: { $0.stop.seq == 216000379 && $0.route.seq == 216000061 }) else { return }
             let busRealtimeGunpoFromCampus = result.filter { $0.stop.seq == 216000719 && ($0.route.seq == 216000096 || $0.route.seq == 216000026 || $0.route.seq == 216000043) }
@@ -135,13 +136,13 @@ class BusRealtimeVC: UIViewController {
             guard let busRealtimeAnsanToGwangmyeongData = result.first(where: { $0.stop.seq == 216000759 && $0.route.seq == 216000075 }) else { return }
             guard let busRealtimeGwangmyeongToAnsanData = result.first(where: { $0.stop.seq == 213000487 && $0.route.seq == 216000075 }) else { return }
             // Combine the data
-            BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(busRealtimeCityFromStation.arrival.map { BusArrivalItem(route: busRealtimeCityFromStation.route.name, item: $0) })
-            BusRealtimeData.shared.busRealtimeCityFromStation.onNext(busRealtimeSeoulFromCampus.arrival.map { BusArrivalItem(route: busRealtimeSeoulFromCampus.route.name, item: $0) })
-            BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(busRealtimeSeoulFromCampus.arrival.map { BusArrivalItem(route: busRealtimeSeoulFromCampus.route.name, item: $0) })
-            BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(busRealtimeGunpoFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } })
-            BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(busRealtimeSuwonBusJunctionData.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } })
-            BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(busRealtimeAnsanToGwangmyeongData.arrival.map { BusArrivalItem(route: busRealtimeAnsanToGwangmyeongData.route.name, item: $0) })
-            BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(busRealtimeGwangmyeongToAnsanData.arrival.map { BusArrivalItem(route: busRealtimeGwangmyeongToAnsanData.route.name, item: $0) })
+            BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(busRealtimeCityFromCampus.arrival.map { BusArrivalItem(route: busRealtimeCityFromCampus.route.name, item: $0) }.sorted())
+            BusRealtimeData.shared.busRealtimeCityFromStation.onNext(busRealtimeCityFromStation.arrival.map { BusArrivalItem(route: busRealtimeCityFromStation.route.name, item: $0) }.sorted())
+            BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(busRealtimeSeoulFromCampus.arrival.map { BusArrivalItem(route: busRealtimeSeoulFromCampus.route.name, item: $0) }.sorted())
+            BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(busRealtimeGunpoFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted())
+            BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(busRealtimeSuwonBusJunctionData.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted())
+            BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(busRealtimeAnsanToGwangmyeongData.arrival.map { BusArrivalItem(route: busRealtimeAnsanToGwangmyeongData.route.name, item: $0) }.sorted())
+            BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(busRealtimeGwangmyeongToAnsanData.arrival.map { BusArrivalItem(route: busRealtimeGwangmyeongToAnsanData.route.name, item: $0) }.sorted())
             // Reload the table view
             self.cityBusTabVC.reload()
             self.seoulBusTabVC.reload()

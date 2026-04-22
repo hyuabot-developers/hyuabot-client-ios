@@ -102,9 +102,9 @@ class BusTimetableVC: UIViewController {
     
     private func observeSubjects() {
         BusTimetableData.shared.timetable.subscribe(onNext: { timetable in
-            BusTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekdays == "weekdays" })
-            BusTimetableData.shared.saturdays.onNext(timetable.filter { $0.weekdays == "saturday" })
-            BusTimetableData.shared.sundays.onNext(timetable.filter { $0.weekdays == "sunday" })
+            BusTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekdays == "weekdays" }.sorted())
+            BusTimetableData.shared.saturdays.onNext(timetable.filter { $0.weekdays == "saturday" }.sorted())
+            BusTimetableData.shared.sundays.onNext(timetable.filter { $0.weekdays == "sunday" }.sorted())
             BusTimetableData.shared.isLoading.onNext(false)
         }).disposed(by: disposeBag)
         BusTimetableData.shared.weekdays.subscribe(onNext: { weekdays in
