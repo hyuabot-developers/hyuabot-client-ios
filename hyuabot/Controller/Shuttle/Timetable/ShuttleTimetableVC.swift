@@ -64,12 +64,6 @@ class ShuttleTimetableVC: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(false, animated: false)
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
         ShuttleTimetableData.shared.options.onNext(ShuttleTimetableOptions(
             start: self.stopID,
             end: self.destination,
@@ -77,8 +71,14 @@ class ShuttleTimetableVC: UIViewController {
             period: nil
         ))
     }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.setupUI()
+        self.observeSubjects()
+    }
     
-    override func viewWillDisappear(_ animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         ShuttleTimetableData.shared.options.onNext(nil)
         ShuttleTimetableData.shared.timetable.onNext([])
         ShuttleTimetableData.shared.weekdays.onNext([])
