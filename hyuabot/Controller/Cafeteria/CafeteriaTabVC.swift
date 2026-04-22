@@ -108,13 +108,13 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
-            return cafeteriaItems[section].menus.count
+            return cafeteriaItems[section].menus.filter({ $0.type.contains("조식") }).count
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return 0 }
-            return cafeteriaItems[section].menus.count
+            return cafeteriaItems[section].menus.filter({ $0.type.contains("중식") }).count
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return 0 }
-            return cafeteriaItems[section].menus.count
+            return cafeteriaItems[section].menus.filter({ $0.type.contains("석식") }).count
         }
         return 0
     }
@@ -123,15 +123,15 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CafeteriaMenuCellView.reuseIdentifier) as? CafeteriaMenuCellView else { return UITableViewCell() }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menus[indexPath.row]
+            let item = cafeteriaItems[indexPath.section].menus.filter({ $0.type.contains("조식") })[indexPath.row]
             cell.setupUI(item: item)
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menus[indexPath.row]
+            let item = cafeteriaItems[indexPath.section].menus.filter({ $0.type.contains("중식") })[indexPath.row]
             cell.setupUI(item: item)
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menus[indexPath.row]
+            let item = cafeteriaItems[indexPath.section].menus.filter({ $0.type.contains("석식") })[indexPath.row]
             cell.setupUI(item: item)
         }
         return cell
