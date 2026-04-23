@@ -1,5 +1,4 @@
 import UIKit
-import QueryAPI
 import RxSwift
 
 class BusTimetableCellView: UITableViewCell {
@@ -36,9 +35,10 @@ class BusTimetableCellView: UITableViewCell {
     }
     
     func setupUI(item: BusTimetableItem) {
-        self.busRouteLabel.text = item.routeName
-        self.setRouteColor(routeName: item.routeName)
-        self.busTimeLabel.text = String(localized: "bus.timetable.time.\(item.timetable.departureHour).\(item.timetable.departureMinute)")
+        self.busRouteLabel.text = item.route
+        self.setRouteColor(routeName: item.route)
+        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time)
+        self.busTimeLabel.text = String(localized: "bus.timetable.time.\(components.hour!).\(components.minute!)")
     }
     
     func setRouteColor(routeName: String) {

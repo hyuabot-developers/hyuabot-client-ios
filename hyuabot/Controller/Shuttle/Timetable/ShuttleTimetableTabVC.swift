@@ -1,9 +1,9 @@
 import UIKit
-import QueryAPI
+import Api
 
 class ShuttleTimetableTabVC: UIViewController {
     private let isWeekdays: Bool
-    private let showViaVC: (ShuttleTimetablePageQuery.Data.Shuttle.Timetable) -> ()
+    private let showViaVC: (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> ()
     private lazy var shuttleTimetableTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -16,7 +16,7 @@ class ShuttleTimetableTabVC: UIViewController {
         return tableView
     }()
     
-    init(isWeekdays: Bool, showViaVC: @escaping (ShuttleTimetablePageQuery.Data.Shuttle.Timetable) -> ()) {
+    init(isWeekdays: Bool, showViaVC: @escaping (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> ()) {
         self.isWeekdays = isWeekdays
         self.showViaVC = showViaVC
         super.init(nibName: nil, bundle: nil)

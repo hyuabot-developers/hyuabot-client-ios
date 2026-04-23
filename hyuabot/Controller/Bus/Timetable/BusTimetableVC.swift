@@ -1,10 +1,10 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class BusTimetableVC: UIViewController {
-    let stopID: Int
-    let routes: [Int]
+    let stopID: Int32
+    let routes: [Int32]
     let navigationTitle: String.LocalizationValue
     private let disposeBag = DisposeBag()
     private let weekdaysVC = BusTimetableTabVC(timetableEnum: .weekdays)
@@ -45,7 +45,7 @@ class BusTimetableVC: UIViewController {
         }
     }
 
-    required init(stopID: Int, routes: [Int], title: String.LocalizationValue) {
+    required init(stopID: Int32, routes: [Int32], title: String.LocalizationValue) {
         self.stopID = stopID
         self.routes = routes
         self.navigationTitle = title
@@ -69,15 +69,18 @@ class BusTimetableVC: UIViewController {
     
     private func fetchBusTimetable() {
         BusTimetableData.shared.isLoading.onNext(true)
-        Network.shared.client.fetch(query: BusTimetablePageQuery(routes: self.routes, stopID: self.stopID)) { result in
-            if case let .success(response) = result {
-                var result: [BusTimetableItem] = []
-                response.data?.bus.first?.routes.forEach { route in
-                    route.timetable.forEach { timetable in
-                        result.append(BusTimetableItem(routeName: route.info.name, timetable: timetable))
+        Task {
+            let response = try? await Network.shared.client.fetch(query: BusTimetablePageQuery(routeStops: self.routes.map {
+                BusRouteStopInput(route: $0, stop: self.stopID)
+            }))
+            if let data = response?.data {
+                BusTimetableData.shared.timetable.onNext(data.bus.map { bus in
+                    bus.timetable.map { timetable in
+                        BusTimetableItem(route: bus.route.name, weekdays: timetable.weekday, time: timetable.time.toLocalTime())
                     }
-                }
-                BusTimetableData.shared.timetable.onNext(result.sorted(by: { $0.timetable.time < $1.timetable.time }))
+                }.flatMap {
+                    $0
+                })
             }
         }
     }
@@ -99,9 +102,9 @@ class BusTimetableVC: UIViewController {
     
     private func observeSubjects() {
         BusTimetableData.shared.timetable.subscribe(onNext: { timetable in
-            BusTimetableData.shared.weekdays.onNext(timetable.filter { $0.timetable.weekdays == "weekdays" })
-            BusTimetableData.shared.saturdays.onNext(timetable.filter { $0.timetable.weekdays == "saturday" })
-            BusTimetableData.shared.sundays.onNext(timetable.filter { $0.timetable.weekdays == "sunday" })
+            BusTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekdays == "weekdays" }.sorted())
+            BusTimetableData.shared.saturdays.onNext(timetable.filter { $0.weekdays == "saturday" }.sorted())
+            BusTimetableData.shared.sundays.onNext(timetable.filter { $0.weekdays == "sunday" }.sorted())
             BusTimetableData.shared.isLoading.onNext(false)
         }).disposed(by: disposeBag)
         BusTimetableData.shared.weekdays.subscribe(onNext: { weekdays in

@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class CafeteriaMenuCellView: UITableViewCell {
@@ -40,8 +40,8 @@ class CafeteriaMenuCellView: UITableViewCell {
         }
     }
     
-    func setupUI(item: CafeteriaPageQuery.Data.Menu.Menu) {
-        self.menuLabel.text = item.menu
-        self.pricaLabel.text = String(localized: "cafeteria.menu.price.\(item.price)")
+    func setupUI(item: CafeteriaPageQuery.Data.Cafeterium.Menu) {
+        self.menuLabel.text = item.food
+        self.pricaLabel.text = String(localized: "cafeteria.menu.price.\(item.price.replacingOccurrences(of: "원", with: ""))")
     }
 }

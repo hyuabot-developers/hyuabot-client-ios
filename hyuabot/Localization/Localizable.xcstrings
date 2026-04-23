@@ -1203,6 +1203,38 @@
         }
       }
     },
+    "notice.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notice"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공지사항"
+          }
+        }
+      }
+    },
+    "notice.title.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[Notice] %1$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[공지] %1$@"
+          }
+        }
+      }
+    },
     "reading_room_1" : {
       "localizations" : {
         "en" : {
@@ -3279,6 +3311,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 행"
+          }
+        }
+      }
+    },
+    "subway.time.%lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lldmins left"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld분 후 도착"
           }
         }
       }

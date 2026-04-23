@@ -1,1236 +1,773 @@
-type Query {
-  """
-  Health check
-  """
-  health: Boolean!
+directive @extends on OBJECT | INTERFACE
 
-  """
-  Building query
-  """
-  building(north: Float = null, south: Float = null, east: Float = null, west: Float = null, name: String = null): [BuildingQuery!]!
+directive @external on FIELD_DEFINITION
 
-  """
-  Room query
-  """
-  room(buildingName: String = null, name: String = null, number: String = null): [RoomQuery!]!
+directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
 
-  """
-  Cafeteria query
-  """
-  menu(campusId: Int = null, id_: Int = null, name: String = null, date: Date = null, type_: [String!] = null): [CafeteriaQuery!]!
+directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-  """
-  Reading room query
-  """
-  readingRoom(campusId: Int = null, name: String = null, isActive: Boolean = null): [ReadingRoomQuery!]!
+directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
 
-  """
-  Subway query
-  """
-  subway(id_: [String!] = null, name: String = null, weekdays: Boolean = null, start: Time = null, end: Time = null): [StationQuery!]!
+"""This directive allows results to be deferred during execution"""
+directive @defer(
+  """Deferred behaviour is controlled by this argument"""
+  if: Boolean! = true
 
-  """
-  Bus stop query
-  """
-  bus(id_: [Int!] = null, name: String = null, routeId: Int = null, routes: [Int!] = null, weekdays: [String!] = null, logDate: [Date!] = null, start: Time = null, end: Time = null): [StopQuery!]!
-
-  """
-  Shuttle query
-  """
-  shuttle(timestamp: DateTime = "2025-02-24T21:22:38.762924+09:00", period: [String!] = null, weekdays: [Boolean!] = null, routeName: [String!] = null, routeTag: [String!] = null, routeStart: [String!] = null, routeEnd: [String!] = null, stopName: [String!] = null, start: Time = null, end: Time = null, periodCurrent: Boolean = null, periodStart: Date = null, periodEnd: Date = null): ShuttleQuery!
-
-  """
-  Notice query
-  """
-  notice(language: String!, categoryId: Int = null, title: String = null): [NoticeQuery!]!
-
-  """
-  Calendar query
-  """
-  calendar(categoryId: Int = null, title: String = null): CalendarQuery!
-
-  """
-  Contact query
-  """
-  contact(campusId: Int = null, categoryId: Int = null, name: String = null): ContactQuery!
-}
-
-type BuildingQuery {
-  """
-  Building ID
-  """
-  id: String!
-
-  """
-  Building name
-  """
-  name: String!
-
-  """
-  Building latitude
-  """
-  latitude: Float!
-
-  """
-  Building longitude
-  """
-  longitude: Float!
-
-  """
-  Blog URL
-  """
-  url: String
-}
-
-type RoomQuery {
-  """
-  Room name
-  """
-  name: String!
-
-  """
-  Room number
-  """
-  number: String!
-
-  """
-  Building name
-  """
-  buildingName: String!
-
-  """
-  Building latitude
-  """
-  latitude: Float!
-
-  """
-  Building longitude
-  """
-  longitude: Float!
-}
-
-type CafeteriaQuery {
-  """
-  Cafeteria ID
-  """
-  id: Int!
-
-  """
-  Cafeteria name
-  """
-  name: String!
-
-  """
-  Cafeteria latitude
-  """
-  latitude: Float!
-
-  """
-  Cafeteria longitude
-  """
-  longitude: Float!
-
-  """
-  Cafeteria running time
-  """
-  runningTime: CafeteriaRunningTimeQuery!
-
-  """
-  Menu list
-  """
-  menu: [MenuQuery!]!
-}
-
-type CafeteriaRunningTimeQuery {
-  """
-  Breakfast running time
-  """
-  breakfast: String
-
-  """
-  Lunch running time
-  """
-  lunch: String
-
-  """
-  Dinner running time
-  """
-  dinner: String
-}
-
-type MenuQuery {
-  """
-  Feed date
-  """
-  date: Date!
-
-  """
-  Time type
-  """
-  type: String!
-
-  """
-  Menu
-  """
-  menu: String!
-
-  """
-  Price
-  """
-  price: String!
-}
+  """A unique label that represents the fragment being deferred"""
+  label: String
+) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 """
-Date (isoformat)
+This directive disables error propagation when a non nullable field returns null for the given operation.
 """
-scalar Date
-
-type ReadingRoomQuery {
-  """
-  Reading room ID
-  """
-  id: Int!
-
-  """
-  Reading room name
-  """
-  name: String!
-
-  """
-  Is reading room active
-  """
-  isActive: Boolean!
-
-  """
-  Total seats in reading room
-  """
-  total: Int!
-
-  """
-  Active seats in reading room
-  """
-  active: Int!
-
-  """
-  Occupied seats in reading room
-  """
-  occupied: Int!
-
-  """
-  Available seats in reading room
-  """
-  available: Int!
-
-  """
-  Last updated time
-  """
-  updatedAt: String!
-}
-
-type StationQuery {
-  """
-  Station ID
-  """
-  id: String!
-
-  """
-  Station name
-  """
-  name: String!
-
-  """
-  Station sequence
-  """
-  sequence: Int!
-
-  """
-  Route ID
-  """
-  routeID: String!
-
-  """
-  Timetable
-  """
-  timetable: TimetableListQuery!
-
-  """
-  Realtime
-  """
-  realtime: RealtimeListQuery!
-}
-
-type TimetableListQuery {
-  """
-  Up
-  """
-  up: [TimetableQuery!]!
-
-  """
-  Down
-  """
-  down: [TimetableQuery!]!
-}
-
-type TimetableQuery {
-  """
-  Is weekdays
-  """
-  weekdays: Boolean!
-
-  """
-  Departure time
-  """
-  time: String!
-
-  """
-  Departure hour
-  """
-  hour: Int!
-
-  """
-  Departure minute
-  """
-  minute: Int!
-
-  """
-  Start station
-  """
-  start: TimetableStation!
-
-  """
-  Terminal station
-  """
-  terminal: TimetableStation!
-}
-
-type TimetableStation {
-  """
-  Station ID
-  """
-  id: String!
-
-  """
-  Station name
-  """
-  name: String!
-}
-
-type RealtimeListQuery {
-  """
-  Up
-  """
-  up: [RealtimeQuery!]!
-
-  """
-  Down
-  """
-  down: [RealtimeQuery!]!
-}
-
-type RealtimeQuery {
-  """
-  Sequence
-  """
-  sequence: Int!
-
-  """
-  Location
-  """
-  location: String!
-
-  """
-  Stop
-  """
-  stop: Int!
-
-  """
-  Time
-  """
-  time: Float!
-
-  """
-  Train number
-  """
-  trainNo: String!
-
-  """
-  Is express
-  """
-  express: Boolean!
-
-  """
-  Is last
-  """
-  last: Boolean!
-
-  """
-  Status
-  """
-  status: Int!
-
-  """
-  Terminal station
-  """
-  terminal: TimetableStation!
-
-  """
-  Updated at
-  """
-  updatedAt: DateTime!
-}
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
 
 """
-Date with time (isoformat)
+A directive used by the Apollo iOS client to annotate operations or fragments that should be used exclusively for generating local cache mutations instead of as standard operations.
 """
-scalar DateTime
+directive @apollo_client_ios_localCacheMutation on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION
 
 """
-Time (isoformat)
+A directive used by the Apollo iOS code generation engine to generate custom import statements in operation or fragment definition files. An import statement to import a module with the name provided in the `module` argument will be added to the generated definition file.
 """
-scalar Time
-
-type StopQuery {
-  """
-  Stop ID
-  """
-  id: Int!
-
-  """
-  Stop name
-  """
-  name: String!
-
-  """
-  District code
-  """
-  districtCode: Int!
-
-  """
-  Region name
-  """
-  region: String!
-
-  """
-  Mobile number
-  """
-  mobileNumber: String!
-
-  """
-  Latitude
-  """
-  latitude: Float!
-
-  """
-  Longitude
-  """
-  longitude: Float!
-
-  """
-  Routes
-  """
-  routes: [BusStopRouteQuery!]!
-}
-
-type BusStopRouteQuery {
-  """
-  Sequence
-  """
-  sequence: Int!
-
-  """
-  Info
-  """
-  info: BusRouteQuery!
-
-  """
-  Minute from start stop
-  """
-  minuteFromStart: Int!
-
-  """
-  Timetable
-  """
-  timetable: [BusTimetableQuery!]!
-
-  """
-  Realtime
-  """
-  realtime: [BusRealtimeQuery!]!
-
-  """
-  Log
-  """
-  log: [BusDepartureLogQuery!]!
-}
-
-type BusRouteQuery {
-  """
-  Route ID
-  """
-  id: Int!
-
-  """
-  Route name
-  """
-  name: String!
-
-  """
-  Type
-  """
-  type: BusRouteTypeQuery!
-
-  """
-  Company
-  """
-  company: BusRouteCompanyQuery!
-
-  """
-  District code
-  """
-  districtCode: Int!
-
-  """
-  Running time
-  """
-  runningTime: BusRunningListQuery!
-
-  """
-  Start stop
-  """
-  start: BusStopItem!
-
-  """
-  End stop
-  """
-  end: BusStopItem!
-}
-
-type BusRouteTypeQuery {
-  """
-  Type code
-  """
-  code: String!
-
-  """
-  Type name
-  """
-  name: String!
-}
-
-type BusRouteCompanyQuery {
-  """
-  Company ID
-  """
-  id: Int!
-
-  """
-  Company name
-  """
-  name: String!
-
-  """
-  Company telephone
-  """
-  telephone: String!
-}
-
-type BusRunningListQuery {
-  """
-  Up
-  """
-  up: BusRunningTimeQuery!
-
-  """
-  Down
-  """
-  down: BusRunningTimeQuery!
-}
-
-type BusRunningTimeQuery {
-  """
-  First time
-  """
-  first: String!
-
-  """
-  Last time
-  """
-  last: String!
-}
-
-type BusStopItem {
-  """
-  Stop ID
-  """
-  id: Int!
-
-  """
-  Stop name
-  """
-  name: String!
-
-  """
-  District code
-  """
-  districtCode: Int!
-
-  """
-  Region name
-  """
-  region: String!
-
-  """
-  Mobile number
-  """
-  mobileNumber: String!
-
-  """
-  Latitude
-  """
-  latitude: Float!
-
-  """
-  Longitude
-  """
-  longitude: Float!
-}
-
-type BusTimetableQuery {
-  """
-  Is weekdays
-  """
-  weekdays: String!
-
-  """
-  Departure time
-  """
-  time: String!
-
-  """
-  Departure hour
-  """
-  departureHour: Int!
-
-  """
-  Departure minute
-  """
-  departureMinute: Int!
-}
-
-type BusRealtimeQuery {
-  """
-  Sequence
-  """
-  sequence: Int!
-
-  """
-  Stop
-  """
-  stop: Int!
-
-  """
-  Time
-  """
-  time: Float!
-
-  """
-  Seat
-  """
-  seat: Int!
-
-  """
-  Low floor
-  """
-  lowFloor: Boolean!
-
-  """
-  Updated at
-  """
-  updatedAt: DateTime!
-}
-
-type BusDepartureLogQuery {
-  """
-  Departure date
-  """
-  departureDate: Date!
-
-  """
-  Departure time
-  """
-  departureTime: Time!
-
-  """
-  Departure hour
-  """
-  departureHour: Int!
-
-  """
-  Departure minute
-  """
-  departureMinute: Int!
-
-  """
-  Vehicle ID
-  """
-  vehicleId: String!
-}
-
-type ShuttleQuery {
-  period: [ShuttlePeriodQuery!]!
-
-  holiday: [ShuttleHolidayQuery!]!
-
-  stop: [ShuttleStopQuery!]!
-
-  route: [ShuttleRouteQuery!]!
-
-  timetable: [ShuttleTimetableQuery!]!
-}
-
-type ShuttlePeriodQuery {
-  start: DateTime!
-
-  end: DateTime!
-
-  type: String!
-}
-
-type ShuttleHolidayQuery {
-  date: Date!
-
-  calendar: String!
-
-  type: String!
-}
-
-type ShuttleStopQuery {
-  name: String!
-
-  latitude: Float!
-
-  longitude: Float!
-
-  routes: [ShuttleStopRouteQuery!]!
-}
-
-type ShuttleStopRouteQuery {
-  name: String!
-
-  tag: String!
-
-  start: String!
-
-  end: String!
-
-  korean: String!
-
-  english: String!
-}
-
-type ShuttleRouteQuery {
-  name: String!
-
-  tag: String!
-
-  start: String!
-
-  end: String!
-
-  korean: String!
-
-  english: String!
-
-  stops: [ShuttleRouteStopQuery!]!
-}
-
-type ShuttleRouteStopQuery {
-  name: String!
-
-  sequence: Int!
-}
-
-type ShuttleTimetableQuery {
-  id: Int!
-
-  period: String!
-
-  weekdays: Boolean!
-
-  route: String!
-
-  tag: String!
-
-  stop: String!
-
-  time: String!
-
-  hour: Int!
-
-  minute: Int!
-
-  via: [ShuttleViaQuery!]!
-}
-
-type ShuttleViaQuery {
-  stop: String!
-
-  time: String!
-
-  hour: Int!
-
-  minute: Int!
-}
-
-type NoticeQuery {
-  """
-  Category of notice
-  """
-  category: NoticeCategoryQuery!
-
-  """
-  Notice ID
-  """
-  id: Int!
-
-  """
-  Notice title
-  """
-  title: String!
-
-  """
-  Notice URL
-  """
-  url: String!
-
-  """
-  Notice expired at
-  """
-  expiredAt: DateTime
-
-  """
-  User ID
-  """
-  userID: String!
-
-  """
-  Language
-  """
-  language: String!
-}
-
-type NoticeCategoryQuery {
-  """
-  Category ID
-  """
-  id: Int!
-
-  """
-  Category name
-  """
-  name: String!
-}
-
-type CalendarQuery {
-  """
-  Version of event
-  """
+directive @import(
+  """The name of the module to import."""
+  module: String!
+) repeatable on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION
+
+"""Attach extra information to a given type."""
+directive @typePolicy(
+  """
+  A selection set containing fields used to compute the cache key of an object. Referenced fields must have non-nullable scalar types. Order is important.
+  """
+  keyFields: String!
+) on OBJECT | INTERFACE
+
+"""
+A directive used by Apollo iOS to map query input data to cache keys of objects.
+"""
+directive @fieldPolicy(
+  """The field you are setting the @fieldPolicy for."""
+  forField: String!
+
+  """Set of fields used to compute the cache key."""
+  keyArgs: String!
+) repeatable on OBJECT | INTERFACE
+
+type AcademicCalendar {
   version: String!
-
-  """
-  List of events
-  """
-  data: [EventQuery!]!
+  categories: [AcademicCalendarCategory!]!
 }
 
-type EventQuery {
-  """
-  Category of event
-  """
-  category: CalendarCategoryQuery!
+type AcademicCalendarCategory {
+  seq: Int!
+  name: String!
+  events: [AcademicCalendarEvent!]!
+}
 
-  """
-  Calendar ID
-  """
-  id: Int!
-
-  """
-  Calendar title
-  """
+type AcademicCalendarEvent {
+  seq: Int!
   title: String!
-
-  """
-  Calendar description
-  """
   description: String!
-
-  """
-  Calendar start date
-  """
   start: Date!
-
-  """
-  Calendar end date
-  """
   end: Date!
 }
 
-type CalendarCategoryQuery {
-  """
-  Category ID
-  """
-  id: Int!
+""" 학사일정 버전, 학사일정 카테고리 및 학사일정을 반환하는 쿼리입니다."""
+input AcademicCalendarInput {
+  category: String
+  start: Date
+  end: Date
+}
 
-  """
-  Category name
-  """
+type Building {
+  seq: String
   name: String!
+  latitude: Float!
+  longitude: Float!
+  url: String
+  rooms: [Room!]!
 }
 
-type ContactQuery {
-  """
-  Version of event
-  """
-  version: String!
-
-  """
-  List of events
-  """
-  data: [ContactItemQuery!]!
-}
-
-type ContactItemQuery {
-  """
-  Category of contact
-  """
-  category: ContactCategoryQuery!
-
-  """
-  Contact ID
-  """
-  id: Int!
-
-  """
-  Contact name
-  """
-  name: String!
-
-  """
-  Contact phone number
-  """
-  phone: String!
-
-  """
-  Campus ID
-  """
-  campusID: Int!
-}
-
-type ContactCategoryQuery {
-  """
-  Category ID
-  """
-  id: Int!
-
-  """
-  Category name
-  """
-  name: String!
-}
-
-"""
-A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
-"""
-type __Schema {
-  description: String
-
-  """
-  A list of all types supported by this server.
-  """
-  types: [__Type!]!
-
-  """
-  The type that query operations will be rooted at.
-  """
-  queryType: __Type!
-
-  """
-  If this server supports mutation, the type that mutation operations will be rooted at.
-  """
-  mutationType: __Type
-
-  """
-  If this server support subscription, the type that subscription operations will be rooted at.
-  """
-  subscriptionType: __Type
-
-  """
-  A list of all directives supported by this server.
-  """
-  directives: [__Directive!]!
-}
-
-"""
-The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.
-
-Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
-"""
-type __Type {
-  kind: __TypeKind!
-
+""" 건물 및 강의실 정보를 반환하는 쿼리입니다."""
+input BuildingInput {
   name: String
-
-  description: String
-
-  specifiedByURL: String
-
-  fields(includeDeprecated: Boolean = false): [__Field!]
-
-  interfaces: [__Type!]
-
-  possibleTypes: [__Type!]
-
-  enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-
-  inputFields(includeDeprecated: Boolean = false): [__InputValue!]
-
-  ofType: __Type
-
-  isOneOf: Boolean
+  north: Float
+  south: Float
+  east: Float
+  west: Float
 }
 
-"""
-An enum describing what kind of type a given `__Type` is.
-"""
-enum __TypeKind {
-  """
-  Indicates this type is a scalar.
-  """
-  SCALAR
-
-  """
-  Indicates this type is an object. `fields` and `interfaces` are valid fields.
-  """
-  OBJECT
-
-  """
-  Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.
-  """
-  INTERFACE
-
-  """
-  Indicates this type is a union. `possibleTypes` is a valid field.
-  """
-  UNION
-
-  """
-  Indicates this type is an enum. `enumValues` is a valid field.
-  """
-  ENUM
-
-  """
-  Indicates this type is an input object. `inputFields` is a valid field.
-  """
-  INPUT_OBJECT
-
-  """
-  Indicates this type is a list. `ofType` is a valid field.
-  """
-  LIST
-
-  """
-  Indicates this type is a non-null. `ofType` is a valid field.
-  """
-  NON_NULL
+type BusArrival {
+  stops: Int
+  seats: Int
+  minutes: Int
+  lowFloor: Boolean
+  isRealtime: Boolean!
+  time: LocalTime
 }
 
-"""
-Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.
-"""
-type __Field {
+type BusCompany {
+  seq: Int!
   name: String!
-
-  description: String
-
-  args(includeDeprecated: Boolean = false): [__InputValue!]!
-
-  type: __Type!
-
-  isDeprecated: Boolean!
-
-  deprecationReason: String
+  telephone: String!
 }
 
-"""
-Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.
-"""
-type __InputValue {
+type BusDepartureLog {
+  seq: Int!
+  date: Date!
+  time: LocalTime!
+  vehicle: String!
+}
+
+type BusRealtime {
+  order: Int!
+  stops: Int!
+  seats: Int!
+  minutes: Int!
+  lowFloor: Boolean!
+  updatedAt: DateTime!
+}
+
+type BusRoute {
+  seq: Int!
   name: String!
-
-  description: String
-
-  type: __Type!
-
-  """
-  A GraphQL-formatted string representing the default value for this input value.
-  """
-  defaultValue: String
-
-  isDeprecated: Boolean!
-
-  deprecationReason: String
+  type: BusRouteType!
+  company: BusCompany!
+  runningTime: BusRunningTime!
 }
 
-"""
-One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.
-"""
-type __EnumValue {
+type BusRouteStop {
+  route: BusRoute!
+  stop: BusStop!
+  order: Int!
+  startStop: BusStop!
+  minutes: Int!
+  realtime: [BusRealtime!]!
+  timetable: [BusTimetable!]!
+  arrival: [BusArrival!]!
+  log: [BusDepartureLog!]!
+}
+
+""" 노선 버스 정보를 반환하는 쿼리입니다."""
+input BusRouteStopInput {
+  route: Int!
+  stop: Int!
+  after: LocalTime
+  limit: Int
+  dates: [Date!]
+  weekdays: [String!]
+}
+
+type BusRouteType {
+  code: String!
   name: String!
-
-  description: String
-
-  isDeprecated: Boolean!
-
-  deprecationReason: String
 }
 
-"""
-A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
+type BusRunningTime {
+  up: BusRunningTimeEntry!
+  down: BusRunningTimeEntry!
+}
 
-In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.
-"""
-type __Directive {
+type BusRunningTimeEntry {
+  first: LocalTime!
+  last: LocalTime!
+  terminal: BusStop!
+}
+
+type BusStop {
+  seq: Int!
   name: String!
+  districtCode: Int!
+  region: String!
+  mobileNumber: String!
+  latitude: Float!
+  longitude: Float!
+}
 
-  description: String
+type BusTimetable {
+  seq: Int!
+  time: LocalTime!
+  weekday: String!
+}
 
-  isRepeatable: Boolean!
+type Cafeteria {
+  seq: Int!
+  name: String!
+  campus: Int!
+  latitude: Float!
+  longitude: Float!
+  runningTime: CafeteriaRunningTime!
+  menus: [Menu!]!
+}
 
-  locations: [__DirectiveLocation!]!
+""" 학식 식당 및 메뉴 정보를 반환하는 쿼리입니다."""
+input CafeteriaInput {
+  date: Date
+  campus: Int
+}
 
-  args(includeDeprecated: Boolean = false): [__InputValue!]!
+type CafeteriaRunningTime {
+  breakfast: String
+  lunch: String
+  dinner: String
+}
+
+type CommuteShuttleDescription {
+  korean: String!
+  english: String!
+}
+
+""" 통학버스 노선 및 시간표를 반환하는 쿼리입니다."""
+type CommuteShuttleRoute {
+  name: String!
+  description: CommuteShuttleDescription!
+  timetable: [CommuteShuttleTimetable!]!
+}
+
+type CommuteShuttleStop {
+  name: String!
+  latitude: Float!
+  longitude: Float!
+  description: String!
+}
+
+type CommuteShuttleTimetable {
+  name: String!
+  order: Int!
+  stop: CommuteShuttleStop
+  time: LocalTime!
+}
+
+"""An RFC-3339 compliant Full Date Scalar"""
+scalar Date
+
+"""A slightly refined version of RFC-3339 compliant DateTime Scalar"""
+scalar DateTime
+
+enum ErrorDetail {
+  """
+  Unknown error.
+  
+  This error should only be returned when no other error detail applies.
+  If a client sees an unknown errorDetail, it will be interpreted as UNKNOWN.
+  
+  HTTP Mapping: 500 Internal Server Error
+  """
+  UNKNOWN
+
+  """
+  The requested field is not found in the schema.
+  
+  This differs from `NOT_FOUND` in that `NOT_FOUND` should be used when a
+  query is valid, but is unable to return a result (if, for example, a
+  specific video id doesn't exist). `FIELD_NOT_FOUND` is intended to be
+  returned by the server to signify that the requested field is not known to exist.
+  This may be returned in lieu of failing the entire query.
+  See also `PERMISSION_DENIED` for cases where the
+  requested field is invalid only for the given user or class of users.
+  
+  HTTP Mapping: 404 Not Found
+  Error Type: BAD_REQUEST
+  """
+  FIELD_NOT_FOUND
+
+  """
+  The provided cursor is not valid.
+  
+  The most common usage for this error is when a client is paginating
+  through a list that uses stateful cursors. In that case, the provided
+  cursor may be expired.
+  
+  HTTP Mapping: 404 Not Found
+  Error Type: NOT_FOUND
+  """
+  INVALID_CURSOR
+
+  """
+  The operation is not implemented or is not currently supported/enabled.
+  
+  HTTP Mapping: 501 Not Implemented
+  Error Type: BAD_REQUEST
+  """
+  UNIMPLEMENTED
+
+  """
+  The client specified an invalid argument.
+  
+  Note that this differs from `FAILED_PRECONDITION`.
+  `INVALID_ARGUMENT` indicates arguments that are problematic
+  regardless of the state of the system (e.g., a malformed file name).
+  
+  HTTP Mapping: 400 Bad Request
+  Error Type: BAD_REQUEST
+  """
+  INVALID_ARGUMENT
+
+  """
+  The deadline expired before the operation could complete.
+  
+  For operations that change the state of the system, this error
+  may be returned even if the operation has completed successfully.
+  For example, a successful response from a server could have been
+  delayed long enough for the deadline to expire.
+  
+  HTTP Mapping: 504 Gateway Timeout
+  Error Type: UNAVAILABLE
+  """
+  DEADLINE_EXCEEDED
+
+  """
+  Service Error.
+  
+  There is a problem with an upstream service.
+  
+  This may be returned if a gateway receives an unknown error from a service
+  or if a service is unreachable.
+  If a request times out which waiting on a response from a service,
+  `DEADLINE_EXCEEDED` may be returned instead.
+  If a service returns a more specific error Type, the specific error Type may
+  be returned instead.
+  
+  HTTP Mapping: 502 Bad Gateway
+  Error Type: UNAVAILABLE
+  """
+  SERVICE_ERROR
+
+  """
+  Request throttled based on server CPU limits
+  
+  HTTP Mapping: 503 Unavailable.
+  Error Type: UNAVAILABLE
+  """
+  THROTTLED_CPU
+
+  """
+  Request throttled based on server concurrency limits.
+  
+  HTTP Mapping: 503 Unavailable
+  Error Type: UNAVAILABLE
+  """
+  THROTTLED_CONCURRENCY
+
+  """
+  The server detected that the client is exhibiting a behavior that
+  might be generating excessive load.
+  
+  HTTP Mapping: 420 Enhance Your Calm
+  Error Type: UNAVAILABLE
+  """
+  ENHANCE_YOUR_CALM
+
+  """
+  The server detected that the client is exhibiting a behavior that
+  might be generating excessive load.
+  
+  HTTP Mapping: 429 Too Many Requests
+  Error Type: UNAVAILABLE
+  """
+  TOO_MANY_REQUESTS
+
+  """
+  Request failed due to network errors.
+  
+  HTTP Mapping: 503 Unavailable
+  Error Type: UNAVAILABLE
+  """
+  TCP_FAILURE
+
+  """
+  Unable to perform operation because a required resource is missing.
+  
+  Example: Client is attempting to refresh a list, but the specified
+  list is expired. This requires an action by the client to get a new list.
+  
+  If the user is simply trying GET a resource that is not found,
+  use the NOT_FOUND error type. FAILED_PRECONDITION.MISSING_RESOURCE
+  is to be used particularly when the user is performing an operation
+  that requires a particular resource to exist.
+  
+  HTTP Mapping: 400 Bad Request or 500 Internal Server Error
+  Error Type: FAILED_PRECONDITION
+  """
+  MISSING_RESOURCE
+}
+
+enum ErrorType {
+  """
+  Unknown error.
+  
+  For example, this error may be returned when
+  an error code received from another address space belongs to
+  an error space that is not known in this address space.  Also
+  errors raised by APIs that do not return enough error information
+  may be converted to this error.
+  
+  If a client sees an unknown errorType, it will be interpreted as UNKNOWN.
+  Unknown errors MUST NOT trigger any special behavior. These MAY be treated
+  by an implementation as being equivalent to INTERNAL.
+  
+  When possible, a more specific error should be provided.
+  
+  HTTP Mapping: 520 Unknown Error
+  """
+  UNKNOWN
+
+  """
+  Internal error.
+  
+  An unexpected internal error was encountered. This means that some
+  invariants expected by the underlying system have been broken.
+  This error code is reserved for serious errors.
+  
+  HTTP Mapping: 500 Internal Server Error
+  """
+  INTERNAL
+
+  """
+  The requested entity was not found.
+  
+  This could apply to a resource that has never existed (e.g. bad resource id),
+  or a resource that no longer exists (e.g. cache expired.)
+  
+  Note to server developers: if a request is denied for an entire class
+  of users, such as gradual feature rollout or undocumented allowlist,
+  `NOT_FOUND` may be used. If a request is denied for some users within
+  a class of users, such as user-based access control, `PERMISSION_DENIED`
+  must be used.
+  
+  HTTP Mapping: 404 Not Found
+  """
+  NOT_FOUND
+
+  """
+  The request does not have valid authentication credentials.
+  
+  This is intended to be returned only for routes that require
+  authentication.
+  
+  HTTP Mapping: 401 Unauthorized
+  """
+  UNAUTHENTICATED
+
+  """
+  The caller does not have permission to execute the specified
+  operation.
+  
+  `PERMISSION_DENIED` must not be used for rejections
+  caused by exhausting some resource or quota.
+  `PERMISSION_DENIED` must not be used if the caller
+  cannot be identified (use `UNAUTHENTICATED`
+  instead for those errors).
+  
+  This error Type does not imply the
+  request is valid or the requested entity exists or satisfies
+  other pre-conditions.
+  
+  HTTP Mapping: 403 Forbidden
+  """
+  PERMISSION_DENIED
+
+  """
+  Bad Request.
+  
+  There is a problem with the request.
+  Retrying the same request is not likely to succeed.
+  An example would be a query or argument that cannot be deserialized.
+  
+  HTTP Mapping: 400 Bad Request
+  """
+  BAD_REQUEST
+
+  """
+  Currently Unavailable.
+  
+  The service is currently unavailable.  This is most likely a
+  transient condition, which can be corrected by retrying with
+  a backoff.
+  
+  HTTP Mapping: 503 Unavailable
+  """
+  UNAVAILABLE
+
+  """
+  The operation was rejected because the system is not in a state
+  required for the operation's execution.  For example, the directory
+  to be deleted is non-empty, an rmdir operation is applied to
+  a non-directory, etc.
+  
+  Service implementers can use the following guidelines to decide
+  between `FAILED_PRECONDITION` and `UNAVAILABLE`:
+  
+  - Use `UNAVAILABLE` if the client can retry just the failing call.
+  - Use `FAILED_PRECONDITION` if the client should not retry until
+  the system state has been explicitly fixed.  E.g., if an "rmdir"
+       fails because the directory is non-empty, `FAILED_PRECONDITION`
+  should be returned since the client should not retry unless
+  the files are deleted from the directory.
+  
+  HTTP Mapping: 400 Bad Request or 500 Internal Server Error
+  """
+  FAILED_PRECONDITION
 }
 
 """
-A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.
+24-hour clock time value string in the format `hh:mm:ss` or `hh:mm:ss.sss`.
 """
-enum __DirectiveLocation {
-  """
-  Location adjacent to a query operation.
-  """
-  QUERY
+scalar LocalTime
 
-  """
-  Location adjacent to a mutation operation.
-  """
-  MUTATION
-
-  """
-  Location adjacent to a subscription operation.
-  """
-  SUBSCRIPTION
-
-  """
-  Location adjacent to a field.
-  """
-  FIELD
-
-  """
-  Location adjacent to a fragment definition.
-  """
-  FRAGMENT_DEFINITION
-
-  """
-  Location adjacent to a fragment spread.
-  """
-  FRAGMENT_SPREAD
-
-  """
-  Location adjacent to an inline fragment.
-  """
-  INLINE_FRAGMENT
-
-  """
-  Location adjacent to a variable definition.
-  """
-  VARIABLE_DEFINITION
-
-  """
-  Location adjacent to a schema definition.
-  """
-  SCHEMA
-
-  """
-  Location adjacent to a scalar definition.
-  """
-  SCALAR
-
-  """
-  Location adjacent to an object type definition.
-  """
-  OBJECT
-
-  """
-  Location adjacent to a field definition.
-  """
-  FIELD_DEFINITION
-
-  """
-  Location adjacent to an argument definition.
-  """
-  ARGUMENT_DEFINITION
-
-  """
-  Location adjacent to an interface definition.
-  """
-  INTERFACE
-
-  """
-  Location adjacent to a union definition.
-  """
-  UNION
-
-  """
-  Location adjacent to an enum definition.
-  """
-  ENUM
-
-  """
-  Location adjacent to an enum value definition.
-  """
-  ENUM_VALUE
-
-  """
-  Location adjacent to an input object type definition.
-  """
-  INPUT_OBJECT
-
-  """
-  Location adjacent to an input object field definition.
-  """
-  INPUT_FIELD_DEFINITION
+type Menu {
+  seq: Int!
+  type: String!
+  food: String!
+  price: String!
 }
 
-"""
-Directs the executor to include this field or fragment only when the `if` argument is true.
-"""
-directive @include ("Included when true." if: Boolean!) on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT
+type Notice {
+  seq: Int!
+  title: String!
+  url: String!
+  userID: String!
+  language: String!
+  expiredAt: DateTime!
+}
 
-"""
-Directs the executor to skip this field or fragment when the `if` argument is true.
-"""
-directive @skip ("Skipped when true." if: Boolean!) on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT
+type NoticeCategory {
+  seq: Int!
+  name: String!
+  notices: [Notice!]!
+}
 
-"""
-Marks an element of a GraphQL schema as no longer supported.
-"""
-directive @deprecated ("Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/)." reason: String = "No longer supported") on FIELD_DEFINITION|ARGUMENT_DEFINITION|INPUT_FIELD_DEFINITION|ENUM_VALUE
+""" 공지사항 카테고리와 공지사항을 반환하는 쿼리입니다."""
+input NoticeInput {
+  category: String
+  language: String
+  timestamp: DateTime
+}
 
-"""
-Exposes a URL that specifies the behavior of this scalar.
-"""
-directive @specifiedBy ("The URL that specifies the behavior of this scalar." url: String!) on SCALAR
+type Phonebook {
+  version: String!
+  categories: [PhonebookCategory!]!
+}
 
-schema {
-  query: Query
+type PhonebookCategory {
+  seq: Int!
+  name: String!
+  entries: [PhonebookEntry!]!
+}
+
+type PhonebookEntry {
+  seq: Int!
+  name: String!
+  phone: String!
+  campus: Int!
+}
+
+""" 전화부 버전, 전화부 카테고리 및 전화부 항목을 반환하는 쿼리입니다."""
+input PhonebookInput {
+  category: String
+  campus: Int
+  name: String
+  phone: String
+}
+
+type Query {
+  notices(input: NoticeInput): [NoticeCategory!]!
+  calendar(input: AcademicCalendarInput): AcademicCalendar!
+  phonebook(input: PhonebookInput): Phonebook!
+  readingRoom: [ReadingRoom!]!
+  commute: [CommuteShuttleRoute!]!
+  building(buildingInput: BuildingInput, roomInput: RoomInput): [Building!]!
+  cafeteria(input: CafeteriaInput!): [Cafeteria!]!
+  bus(input: [BusRouteStopInput!]!): [BusRouteStop!]!
+  subway(input: SubwayInput!): [SubwayStation!]!
+  shuttle(input: ShuttleInput!): Shuttle!
+  _service: _Service!
+}
+
+""" 열람실 정보와 열람실 좌석 정보를 반환하는 쿼리입니다."""
+type ReadingRoom {
+  seq: Int!
+  name: String!
+  campus: Int!
+  active: Boolean!
+  reservable: Boolean!
+  seats: ReadingRoomSeat!
+  updatedAt: DateTime!
+}
+
+type ReadingRoomSeat {
+  total: Int!
+  available: Int!
+  active: Int!
+  occupied: Int!
+}
+
+type Room {
+  seq: Int!
+  name: String!
+  number: String!
+}
+
+input RoomInput {
+  name: String
+}
+
+type Shuttle {
+  period: ShuttlePeriod
+  holiday: ShuttleHoliday
+  stops: [ShuttleStop!]!
+}
+
+type ShuttleArrival {
+  stop: String!
+  time: LocalTime!
+}
+
+type ShuttleHoliday {
+  seq: Int!
+  date: Date!
+  type: String!
+  calendar: String!
+}
+
+""" 셔틀버스 노선 및 시간표를 반환하는 쿼리입니다."""
+input ShuttleInput {
+  stops: [ShuttleStopInput!]
+  periods: [String!]
+  weekdays: [Boolean!]
+  date: Date
+  after: LocalTime
+}
+
+input ShuttleLimitInput {
+  order: Int
+  destination: Int
+}
+
+type ShuttlePeriod {
+  seq: Int!
+  type: String!
+  start: DateTime!
+  end: DateTime!
+}
+
+type ShuttleRoute {
+  name: String!
+  tag: String!
+}
+
+type ShuttleStop {
+  name: String!
+  latitude: Float!
+  longitude: Float!
+  timetable: ShuttleTimetable!
+}
+
+input ShuttleStopInput {
+  name: String!
+  limit: ShuttleLimitInput!
+  destinations: [String!]
+  routes: [String!]
+  tags: [String!]
+}
+
+type ShuttleTimetable {
+  order: [ShuttleTimetableEntry!]!
+  destination: [ShuttleTimetableGroup!]!
+}
+
+type ShuttleTimetableEntry {
+  seq: Int!
+  route: ShuttleRoute!
+  period: String!
+  weekday: Boolean!
+  time: LocalTime!
+  stops: [ShuttleArrival!]!
+}
+
+type ShuttleTimetableGroup {
+  destination: String!
+  entries: [ShuttleTimetableEntry!]!
+}
+
+type SubwayArrival {
+  minutes: Int!
+  origin: SubwayOriginTerminal
+  terminal: SubwayOriginTerminal!
+  isRealtime: Boolean!
+  location: String
+  stops: Int
+  trainNumber: String
+  isExpress: Boolean
+  isLast: Boolean
+  status: Int
+}
+
+type SubwayArrivalGroup {
+  direction: String!
+  entries: [SubwayArrival!]!
+}
+
+""" 전철 정보를 반환하는 쿼리입니다."""
+input SubwayInput {
+  keys: [SubwayStationInput!]!
+}
+
+type SubwayOriginTerminal {
+  stationID: String!
+  name: String!
+}
+
+type SubwayRealtime {
+  order: Int!
+  location: String!
+  stops: Int!
+  minutes: Int!
+  direction: String!
+  terminal: SubwayOriginTerminal!
+  trainNumber: String!
+  isExpress: Boolean!
+  isLast: Boolean!
+  status: Int!
+  updatedAt: DateTime!
+}
+
+type SubwayRoute {
+  seq: Int!
+  name: String!
+}
+
+type SubwayStation {
+  stationID: String!
+  name: String!
+  order: Int!
+  minutes: Int!
+  route: SubwayRoute!
+  realtime: [SubwayRealtime!]!
+  timetable: [SubwayTimetable!]!
+  arrival: [SubwayArrivalGroup!]!
+}
+
+input SubwayStationInput {
+  stationID: String!
+  direction: [String!]!
+  weekdays: [String!]!
+  limit: Int
+}
+
+type SubwayTimetable {
+  seq: Int!
+  time: LocalTime!
+  weekday: String!
+  direction: String!
+  origin: SubwayOriginTerminal!
+  terminal: SubwayOriginTerminal!
+}
+
+""""""
+scalar _FieldSet
+
+type _Service {
+  sdl: String!
 }

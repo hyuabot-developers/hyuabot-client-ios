@@ -1,14 +1,18 @@
 import RxSwift
-import QueryAPI
+import Api
+
+struct SubwayCombinedRealtimeData {
+    let campusBlue: SubwayRealtimePageQuery.Data.Subway?
+    let campusYellow: SubwayRealtimePageQuery.Data.Subway?
+    let oidoBlue: SubwayRealtimePageQuery.Data.Subway?
+    let oidoYellow: SubwayRealtimePageQuery.Data.Subway?
+}
 
 class SubwayRealtimeData {
     static let shared = SubwayRealtimeData()
     // Subway Realtime Data
     let realtimeData = BehaviorSubject<[SubwayRealtimePageQuery.Data.Subway]>(value: [])
-    let line4Up = BehaviorSubject<[SubwayRealtimeItem]>(value: [])
-    let line4Down = BehaviorSubject<[SubwayRealtimeItem]>(value: [])
-    let lineSuinUp = BehaviorSubject<[SubwayRealtimeItem]>(value: [])
-    let lineSuinDown = BehaviorSubject<[SubwayRealtimeItem]>(value: [])
+    let combinedRealtimeData = BehaviorSubject<SubwayCombinedRealtimeData?>(value: nil)
     let transferUp = BehaviorSubject<[SubwayTransferItem]>(value: [])
     let transferDown = BehaviorSubject<[SubwayTransferItem]>(value: [])
     // Loading State

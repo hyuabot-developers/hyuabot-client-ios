@@ -2,10 +2,10 @@ import UIKit
 
 class BusRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "BusRealtimeFooterView"
-    private var showEntireTimetable: ((_ stopID: Int, _ routes: [Int], _ title: String.LocalizationValue) -> Void)?
-    private var showDepartureLog: ((_ stopID: Int, _ routes: [Int]) -> Void)?
-    private var stopID: Int?
-    private var routes: [Int] = []
+    private var showEntireTimetable: ((_ stopID: Int32, _ routes: [Int32], _ title: String.LocalizationValue) -> Void)?
+    private var showDepartureLog: ((_ stopID: Int32, _ routes: [Int32]) -> Void)?
+    private var stopID: Int32?
+    private var routes: [Int32] = []
     private var title: String.LocalizationValue?
     private let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
@@ -57,11 +57,11 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
     }
     
     func setupUI(
-        stopID: Int,
-        routes: [Int],
+        stopID: Int32,
+        routes: [Int32],
         title: String.LocalizationValue,
-        showEntireTimetable: @escaping (_ stop: Int, _ routes: [Int], _ title: String.LocalizationValue) -> Void,
-        showDepartureLog: @escaping (_ stop: Int, _ routes: [Int]) -> Void
+        showEntireTimetable: @escaping (_ stop: Int32, _ routes: [Int32], _ title: String.LocalizationValue) -> Void,
+        showDepartureLog: @escaping (_ stop: Int32, _ routes: [Int32]) -> Void
     ) {
         self.stopID = stopID
         self.routes = routes

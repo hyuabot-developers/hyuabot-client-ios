@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 
 class ShuttleViaCellView: UITableViewCell {
@@ -10,7 +10,6 @@ class ShuttleViaCellView: UITableViewCell {
     private let shuttleTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
-    var item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable.Vium?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -36,7 +35,7 @@ class ShuttleViaCellView: UITableViewCell {
         }
     }
     
-    func setupUI(startStop: ShuttleRealtimePageQuery.Data.Shuttle.Timetable, item: ShuttleRealtimePageQuery.Data.Shuttle.Timetable.Vium) {
+    func setupUI(startStop: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order.Stop) {
         if item.stop == "dormitory_o" {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         } else if item.stop == "shuttlecock_o" {
@@ -52,14 +51,15 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(item.hour).\(item.minute)")
+        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
+        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(components.hour!).\(components.minute!)")
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray
         }
     }
     
-    func setupUI(startStop: ShuttleTimetablePageQuery.Data.Shuttle.Timetable, item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable.Vium) {
+    func setupUI(startStop: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry.Stop) {
         if item.stop == "dormitory_o" {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         } else if item.stop == "shuttlecock_o" {
@@ -75,7 +75,32 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(item.hour).\(item.minute)")
+        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
+        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(components.hour!).\(components.minute!)")
+        if (startStop.time > item.time) {
+            self.shuttleStopLabel.textColor = .gray
+            self.shuttleTimeLabel.textColor = .gray
+        }
+    }
+    
+    func setupUI(startStop: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order, item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order.Stop) {
+        if item.stop == "dormitory_o" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+        } else if item.stop == "shuttlecock_o" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+        } else if item.stop == "station" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.station")
+        } else if item.stop == "terminal" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
+        } else if item.stop == "jungang_stn" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
+        } else if item.stop == "shuttlecock_i" {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+        } else {
+            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+        }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
+        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(components.hour!).\(components.minute!)")
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray

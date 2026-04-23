@@ -1,5 +1,5 @@
 import Foundation
-import QueryAPI
+import Api
 import RealmSwift
 
 final class Event: RealmSwift.Object {
@@ -22,16 +22,18 @@ extension Event {
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
         
-    static func transform(from event: CalendarPageQuery.Data.Calendar.Datum) -> Event {
-        let newEvent = Event()
-        newEvent.id = event.id
-        newEvent.title = event.title
-        newEvent.descriptionText = event.description
-        newEvent.startDate = event.start
-        newEvent.endDate = event.end
-        newEvent.categoryID = event.category.id
-        newEvent.categoryName = event.category.name
-        return newEvent
+    static func transform(from category: CalendarPageQuery.Data.Calendar.Category) -> [Event] {
+        return category.events.map { event in
+            Event().then {
+                $0.id = event.seq
+                $0.title = event.title
+                $0.descriptionText = event.description
+                $0.startDate = event.start
+                $0.endDate = event.end
+                $0.categoryID = category.seq
+                $0.categoryName = category.name
+            }
+        }
     }
         
     

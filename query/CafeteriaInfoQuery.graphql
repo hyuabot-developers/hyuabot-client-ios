@@ -1,6 +1,6 @@
-query CafeteriaInfoQuery($id: Int!) {
-  menu(id_: $id) {
-    name, latitude, longitude, runningTime {
+query CafeteriaInfoQuery($campusID: Int!, $date: Date!) {
+  cafeteria(input: { campus: $campusID, date: $date }) {
+    seq, name, latitude, longitude, runningTime {
       breakfast, lunch, dinner
     }
   }

@@ -1,5 +1,5 @@
 import Foundation
-import QueryAPI
+import Api
 import RealmSwift
 
 final class Contact: RealmSwift.Object {
@@ -14,13 +14,15 @@ final class Contact: RealmSwift.Object {
 }
 
 extension Contact {
-    static func transform(from contact: ContactPageQuery.Data.Contact.Datum) -> Contact {
-        let newContact = Contact()
-        newContact.id = contact.id
-        newContact.campusID = contact.campusID
-        newContact.name = contact.name
-        newContact.phoneNumber = contact.phone
-        return newContact
+    static func transform(from category: ContactPageQuery.Data.Phonebook.Category) -> [Contact] {
+        category.entries.map { entry in
+            Contact().then {
+                $0.id = entry.seq
+                $0.campusID = entry.campus
+                $0.name = entry.name
+                $0.phoneNumber = entry.phone
+            }
+        }
     }
         
     

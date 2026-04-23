@@ -1,9 +1,9 @@
 import UIKit
-import QueryAPI
+import Api
 
 class ShuttleTimetableCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleTimetableCellView"
-    var item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable?
+    var item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order?
     private let shuttleTypeLabel = UILabel().then{
         $0.font = .godo(size: 16, weight: .regular)
     }
@@ -35,25 +35,33 @@ class ShuttleTimetableCellView: UITableViewCell {
         }
     }
     
-    func setupUI(option: ShuttleTimetableOptions, item: ShuttleTimetablePageQuery.Data.Shuttle.Timetable) {
+    func setupUI(option: ShuttleTimetableOptions, item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         if (option.start == "shuttle.stop.dormitory.out" || option.start == "shuttle.stop.shuttlecock.out") {
             if option.end == "shuttle.destination.shorten.station" {
-                if item.tag == "DH" || item.tag == "DJ" {
+                if item.route.tag == "DH" || item.route.tag == "DJ" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
                     self.shuttleTypeLabel.textColor = .busRed
                 }
-                else if item.tag == "C" {
+                else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if option.end == "shuttle.destination.shorten.terminal" {
-                if item.tag == "DY" {
+                if item.route.tag == "DY" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
                     self.shuttleTypeLabel.textColor = .busRed
                 }
-                else if item.tag == "C" {
+                else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if option.end == "shuttle.destination.shorten.jungang_station" {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
@@ -61,32 +69,41 @@ class ShuttleTimetableCellView: UITableViewCell {
             }
         } else if (option.start == "shuttle.stop.station") {
             if option.end == "shuttle.destination.shorten.campus" {
-                if item.tag == "DH" {
+                if item.route.tag == "DH" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
                     self.shuttleTypeLabel.textColor = .busRed
-                } else if item.tag == "DJ" {
+                } else if item.route.tag == "DJ" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
                     self.shuttleTypeLabel.textColor = .hanyangGreen
-                } else if item.tag == "C" {
+                } else if item.route.tag == "C" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    self.shuttleTypeLabel.textColor = .busBlue
+                    if UITraitCollection.current.userInterfaceStyle == .light {
+                        self.shuttleTypeLabel.textColor = .busBlue
+                    } else {
+                        self.shuttleTypeLabel.textColor = .white
+                    }
                 }
             } else if option.end == "shuttle.destination.shorten.terminal" {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                self.shuttleTypeLabel.textColor = .busBlue
+                if UITraitCollection.current.userInterfaceStyle == .light {
+                    self.shuttleTypeLabel.textColor = .busBlue
+                } else {
+                    self.shuttleTypeLabel.textColor = .white
+                }
             } else if option.end == "shuttle.destination.shorten.jungang_station" {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
                 self.shuttleTypeLabel.textColor = .hanyangGreen
             }
         } else if (option.start == "shuttle.stop.terminal" || option.start == "shuttle.stop.jungang.station" || option.start == "shuttle.stop.shuttlecock.in") {
             self.shuttleTypeLabel.textColor = .label
-            if (item.route.hasSuffix("S")) {
+            if (item.route.name.hasSuffix("S")) {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.shuttlecock")
-            } else if (item.route.hasSuffix("D")) {
+            } else if (item.route.name.hasSuffix("D")) {
                 self.shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
             }
         }
         self.item = item
-        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(item.hour).\(item.minute)")
+        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
+        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(components.hour!).\(components.minute!)")
     }
 }

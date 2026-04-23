@@ -1,15 +1,14 @@
 import Foundation
 
 import RxSwift
-import QueryAPI
+import Api
 
 class CafeteriaData {
     static let shared = CafeteriaData()
     private init() {}
     
     let feedDate = BehaviorSubject(value: Date.now)
-    let cafeteriaMenu = BehaviorSubject<[CafeteriaPageQuery.Data.Menu]> (value: [])
-    let breakfastItems = BehaviorSubject<[CafeteriaItem]> (value: [])
-    let lunchItems = BehaviorSubject<[CafeteriaItem]> (value: [])
-    let dinnerItems = BehaviorSubject<[CafeteriaItem]> (value: [])
+    let breakfastItems = BehaviorSubject<[CafeteriaPageQuery.Data.Cafeterium]> (value: [])
+    let lunchItems = BehaviorSubject<[CafeteriaPageQuery.Data.Cafeterium]> (value: [])
+    let dinnerItems = BehaviorSubject<[CafeteriaPageQuery.Data.Cafeterium]> (value: [])
 }

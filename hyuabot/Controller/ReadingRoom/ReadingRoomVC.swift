@@ -1,6 +1,6 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class ReadingRoomVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -94,11 +94,18 @@ class ReadingRoomVC: UIViewController {
     
     private func fetchReadingRoomData() {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
-        Network.shared.client.fetch(query: ReadingRoomPageQuery(campus: campusID)) { result in
-            self.isLoading.onNext(false)
-            if case .success(let response) = result {
-                self.refreshControl.endRefreshing()
-                self.roomSubject.onNext(response.data?.readingRoom ?? [])
+        Task {
+            defer {
+                Task { @MainActor in
+                    self.refreshControl.endRefreshing()
+                    self.isLoading.onNext(false)
+                }
+            }
+            let response = try? await Network.shared.client.fetch(query: ReadingRoomPageQuery())
+            if let data = response?.data {
+                await MainActor.run {
+                    self.roomSubject.onNext(data.readingRoom.filter { $0.campus == campusID })
+                }
             }
         }
     }

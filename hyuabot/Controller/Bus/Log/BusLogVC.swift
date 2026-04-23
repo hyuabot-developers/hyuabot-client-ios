@@ -1,14 +1,14 @@
 import UIKit
 import RxSwift
-import QueryAPI
+import Api
 
 class BusLogVC: UIViewController {
-    let stopID: Int
-    let routes: [Int]
+    let stopID: Int32
+    let routes: [Int32]
     private let disposeBag = DisposeBag()
-    private let firstLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Route.Log]> = .init(value: [])
-    private let secondLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Route.Log]> = .init(value: [])
-    private let thirdLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Route.Log]> = .init(value: [])
+    private let firstLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
+    private let secondLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
+    private let thirdLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
     
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
@@ -128,7 +128,7 @@ class BusLogVC: UIViewController {
         return view
     }()
     
-    required init(stopID: Int, routes: [Int]) {
+    required init(stopID: Int32, routes: [Int32]) {
         self.stopID = stopID
         self.routes = routes
         super.init(nibName: nil, bundle: nil)
@@ -172,33 +172,21 @@ class BusLogVC: UIViewController {
         self.thirdLogTitleLabel.text = dateFormatter.string(from: thirdDate)
         // Fetch Logs
         let queryDateFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd" }
-        Network.shared.client.fetch(query: BusDepartureLogDialogQuery(
-            stopID: self.stopID,
-            routes: self.routes,
-            dates: [
-                queryDateFormatter.string(from: firstDate),
-                queryDateFormatter.string(from: secondDate),
-                queryDateFormatter.string(from: thirdDate)
-            ]
-        )) { result in
-            if case .success(let response) = result {
-                var firstLogs: [BusDepartureLogDialogQuery.Data.Bus.Route.Log] = []
-                var secondLogs: [BusDepartureLogDialogQuery.Data.Bus.Route.Log] = []
-                var thirdLogs: [BusDepartureLogDialogQuery.Data.Bus.Route.Log] = []
-                response.data?.bus.first?.routes.forEach { route in
-                    route.log.forEach { log in
-                        if log.departureDate == queryDateFormatter.string(from: firstDate) {
-                            firstLogs.append(log)
-                        } else if log.departureDate == queryDateFormatter.string(from: secondDate) {
-                            secondLogs.append(log)
-                        } else if log.departureDate == queryDateFormatter.string(from: thirdDate) {
-                            thirdLogs.append(log)
-                        }
-                    }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: BusDepartureLogDialogQuery(
+                routeStops: routes.map { routeID in
+                    BusRouteStopInput(route: routeID, stop: stopID, dates: [
+                        queryDateFormatter.string(from: firstDate),
+                        queryDateFormatter.string(from: secondDate),
+                        queryDateFormatter.string(from: thirdDate)
+                    ])
                 }
-                self.firstLogs.onNext(firstLogs.sorted(by: { $0.departureTime < $1.departureTime }))
-                self.secondLogs.onNext(secondLogs.sorted(by: { $0.departureTime < $1.departureTime }))
-                self.thirdLogs.onNext(thirdLogs.sorted(by: { $0.departureTime < $1.departureTime }))
+            ))
+            if let data = response?.data {
+                let logs = data.bus.flatMap { $0.log }
+                self.firstLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: firstDate) }.sorted(by: { $0.time < $1.time }))
+                self.secondLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: secondDate) }.sorted(by: { $0.time < $1.time }))
+                self.thirdLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: thirdDate) }.sorted(by: { $0.time < $1.time }))
             }
         }
     }

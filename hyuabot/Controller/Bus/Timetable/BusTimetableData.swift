@@ -1,4 +1,5 @@
 import RxSwift
+import Api
 
 class BusTimetableData {
     static let shared = BusTimetableData()

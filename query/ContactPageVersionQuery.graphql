@@ -1,5 +1,5 @@
 query ContactPageVersionQuery {
-    contact {
+    phonebook {
         version
     }
 }

@@ -1,5 +1,5 @@
 import RxSwift
-import QueryAPI
+import Api
 
 class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
@@ -7,11 +7,9 @@ class ShuttleRealtimeData {
     var subscription: Disposable?
     // Realtime Query
     let isLoading = BehaviorSubject<Bool>(value: true)
-    let shuttleRealtimeData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
-    let shuttleDormitoryData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
-    let shuttleShuttlecockData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
-    let shuttleStationData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
-    let shuttleTerminalData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
-    let shuttleJungangStatioData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
-    let shuttleShuttlecockOppositeData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Timetable]?>(value: [])
+    let result = BehaviorSubject<[ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]?>(value: [])
+    let firstItem = BehaviorSubject<ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?>(value: nil)
+    let secondItem = BehaviorSubject<ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?>(value: nil)
+    let thirdItem = BehaviorSubject<ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?>(value: nil)
+    let fourthItem = BehaviorSubject<ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?>(value: nil)
 }

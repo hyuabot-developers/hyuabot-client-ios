@@ -1,11 +1,11 @@
 import UIKit
 import MapKit
 import RxSwift
-import QueryAPI
+import Api
 
 class CafeteriaInfoVC: UIViewController {
     private let cafeteriaID: Int
-    private let cafeteriaInfo: BehaviorSubject<CafeteriaInfoQuery.Data.Menu?> = BehaviorSubject(value: nil)
+    private let cafeteriaInfo: BehaviorSubject<CafeteriaInfoQuery.Data.Cafeterium?> = BehaviorSubject(value: nil)
     private let disposeBag = DisposeBag()
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
@@ -146,11 +146,13 @@ class CafeteriaInfoVC: UIViewController {
     }
     
     private func fetchCafeteriaInfo() {
-        Network.shared.client.fetch(query: CafeteriaInfoQuery(
-            id: self.cafeteriaID
-        )) { result in
-            if case .success(let response) = result {
-                self.cafeteriaInfo.onNext(response.data?.menu.first)
+        let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
+        Task {
+            let response = try? await Network.shared.client.fetch(query: CafeteriaInfoQuery(
+                campusID: Int32(campusID), date: Foundation.Date.now.toLocalDateString()
+            ))
+            if let data = response?.data {
+                self.cafeteriaInfo.onNext(data.cafeteria.first(where: { $0.seq == self.cafeteriaID }))
             }
         }
     }

@@ -1,7 +1,0 @@
-query SubwayTimetablePageUpQuery($station: String!) {
-    subway (id_: [$station]) {
-        timetable {
-            up { weekdays, time, hour, minute, terminal { id } },
-        }
-    }
-}

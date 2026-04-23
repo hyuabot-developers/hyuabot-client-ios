@@ -1,7 +1,7 @@
 import UIKit
 import RxSwift
 import RealmSwift
-import QueryAPI
+import Api
 
 class ContactVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -125,13 +125,12 @@ class ContactVC: UIViewController {
     private func updateContactVerion() {
         self.loadingLabel.text = String(localized: "contact.version.loading")
         self.isLoading.onNext(true)
-        Network.shared.client.fetch(query: ContactPageVersionQuery()) { result in
-            if case let .success(response) = result {
-                if let data = response.data {
-                    let previousVersion = UserDefaults.standard.string(forKey: "contactVersion") ?? ""
-                    if data.contact.version != previousVersion {
-                        self.updateContact()
-                    }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: ContactPageVersionQuery())
+            if let data = response?.data {
+                let previousVersion = UserDefaults.standard.string(forKey: "contactVersion") ?? ""
+                if data.phonebook.version != previousVersion {
+                    self.updateContact()
                 }
             }
         }
@@ -140,12 +139,11 @@ class ContactVC: UIViewController {
     
     private func updateContact() {
         self.loadingLabel.text = String(localized: "contact.database.loading")
-        Network.shared.client.fetch(query: ContactPageQuery()) { result in
-            if case let .success(response) = result {
-                if let data = response.data {
-                    Contact.replaceAll(with: data.contact.data.map { Contact.transform(from: $0) })
-                    UserDefaults.standard.set(data.contact.version, forKey: "contactVersion")
-                }
+        Task {
+            let response = try? await Network.shared.client.fetch(query: ContactPageQuery())
+            if let data = response?.data {
+                Contact.replaceAll(with: data.phonebook.categories.map { Contact.transform(from: $0) }.flatMap { $0 })
+                UserDefaults.standard.set(data.phonebook.version, forKey: "contactVersion")
             }
         }
     }

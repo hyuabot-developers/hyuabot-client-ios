@@ -1,7 +1,7 @@
 import UIKit
 import MapKit
 import RxSwift
-import QueryAPI
+import Api
 
 class MapVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -67,9 +67,14 @@ class MapVC: UIViewController {
     private func observeSubjects() {
         MapData.shared.searchKeyword.subscribe(onNext: { keyword in
             guard let keyword = keyword else { return }
-            Network.shared.client.fetch(query: MapPageSearchQuery(keyword: keyword)) { result in
-                if case .success(let response) = result {
-                    MapData.shared.searchResult.onNext(response.data?.room ?? [])
+            Task {
+                let response = try? await Network.shared.client.fetch(query: MapPageSearchQuery(keyword: keyword))
+                if let data = response?.data {
+                    MapData.shared.searchResult.onNext(data.building.map { building in
+                        building.rooms.map { room in
+                            RoomItem(name: room.name, number: room.name, building: building.name, latitude: building.latitude, longitude: building.longitude)
+                        }
+                    }.flatMap { $0 })
                 }
             }
         }).disposed(by: self.disposeBag)
@@ -81,11 +86,12 @@ class MapVC: UIViewController {
                 self.searchController.isActive = false
                 let nw = self.mapView.northWestCoordinate
                 let se = self.mapView.southEastCoordinate
-                Network.shared.client.fetch(query: MapPageQuery(
-                    north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
-                )) { result in
-                    if case .success(let response) = result {
-                        MapData.shared.buildingResult.onNext(response.data?.building ?? [])
+                Task {
+                    let response = try? await Network.shared.client.fetch(query: MapPageQuery(
+                        north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
+                    ))
+                    if let data = response?.data {
+                        MapData.shared.buildingResult.onNext(data.building)
                     }
                 }
             }
@@ -172,11 +178,12 @@ extension MapVC: MKMapViewDelegate {
         if (searchMode) { return }
         let nw = mapView.northWestCoordinate
         let se = mapView.southEastCoordinate
-        Network.shared.client.fetch(query: MapPageQuery(
-            north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
-        )) { result in
-            if case .success(let response) = result {
-                MapData.shared.buildingResult.onNext(response.data?.building ?? [])
+        Task {
+            let response = try? await Network.shared.client.fetch(query: MapPageQuery(
+                north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
+            ))
+            if let data = response?.data {
+                MapData.shared.buildingResult.onNext(data.building)
             }
         }
     }

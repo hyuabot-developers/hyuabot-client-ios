@@ -1,5 +1,5 @@
 import UIKit
-import QueryAPI
+import Api
 import RxSwift
 import FirebaseMessaging
 
@@ -58,9 +58,9 @@ class ReadingRoomCellView: UITableViewCell {
         self.item = item
         self.showSubscribeToastMessage = showSubscribeToastMessage
         self.showUnsubscribeToastMessage = showUnsubscribeToastMessage
-        self.nameLabel.text = getLocalizedString(readingRoomID: item.id)
-        self.seatLabel.text = "\(item.available) / \(item.active)"
-        let itemKey = "reading_room_\(item.id)"
+        self.nameLabel.text = getLocalizedString(readingRoomID: item.seq)
+        self.seatLabel.text = "\(item.seats.available) / \(item.seats.active)"
+        let itemKey = "reading_room_\(item.seq)"
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
         if (notifiedRooms.contains(itemKey)) {
             self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
@@ -90,12 +90,12 @@ class ReadingRoomCellView: UITableViewCell {
         guard let item = self.item else { return }
         guard let showSubscribeToastMessage = self.showSubscribeToastMessage else { return }
         guard let showUnsubscribeToastMessage = self.showUnsubscribeToastMessage else { return }
-        let itemKey = "reading_room_\(item.id)"
+        let itemKey = "reading_room_\(item.seq)"
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
         if (notifiedRooms.contains(itemKey)) {
             UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
             Messaging.messaging().unsubscribe(fromTopic: itemKey) { error in
-                showUnsubscribeToastMessage(self.getLocalizedString(readingRoomID: item.id))
+                showUnsubscribeToastMessage(self.getLocalizedString(readingRoomID: item.seq))
             }
             self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
         } else {
@@ -103,7 +103,7 @@ class ReadingRoomCellView: UITableViewCell {
             newNotifiedRooms.append(itemKey)
             UserDefaults.standard.set(newNotifiedRooms, forKey: "readingRoomNotificationArray")
             Messaging.messaging().subscribe(toTopic: itemKey) { error in
-                showSubscribeToastMessage(self.getLocalizedString(readingRoomID: item.id))
+                showSubscribeToastMessage(self.getLocalizedString(readingRoomID: item.seq))
             }
             self.alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
         }
