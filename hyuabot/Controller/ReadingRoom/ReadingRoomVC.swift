@@ -95,11 +95,17 @@ class ReadingRoomVC: UIViewController {
     private func fetchReadingRoomData() {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
         Task {
+            defer {
+                Task { @MainActor in
+                    self.refreshControl.endRefreshing()
+                    self.isLoading.onNext(false)
+                }
+            }
             let response = try? await Network.shared.client.fetch(query: ReadingRoomPageQuery())
             if let data = response?.data {
-                self.refreshControl.endRefreshing()
-                self.roomSubject.onNext(data.readingRoom.filter{ $0.campus == campusID })
-                self.isLoading.onNext(false)
+                await MainActor.run {
+                    self.roomSubject.onNext(data.readingRoom.filter { $0.campus == campusID })
+                }
             }
         }
     }
