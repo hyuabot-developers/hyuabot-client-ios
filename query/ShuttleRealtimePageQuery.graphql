@@ -1,5 +1,5 @@
 query ShuttleRealtimePageQuery($language: String!, $after: LocalTime) {
-    notices(input: {language: $language, category: "셔틀"}) {
+    notices(input: {language: $language, category: "셔틀,날씨"}) {
         notices {
             title
             url

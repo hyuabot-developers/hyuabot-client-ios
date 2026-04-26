@@ -8,7 +8,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleRealtimePageQuery($language: String!, $after: LocalTime) { notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 8, destination: 3 } } { name: "shuttlecock_o", limit: { order: 8, destination: 3 } } { name: "station", limit: { order: 8, destination: 3 } } { name: "terminal", limit: { order: 8, destination: 8 } } { name: "jungang_stn", limit: { order: 8, destination: 8 } } { name: "shuttlecock_i", limit: { order: 8, destination: 8 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename order { __typename route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename route { __typename tag name } time stops { __typename stop time } } } } } } }"#
+      #"query ShuttleRealtimePageQuery($language: String!, $after: LocalTime) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 8, destination: 3 } } { name: "shuttlecock_o", limit: { order: 8, destination: 3 } } { name: "station", limit: { order: 8, destination: 3 } } { name: "terminal", limit: { order: 8, destination: 8 } } { name: "jungang_stn", limit: { order: 8, destination: 8 } } { name: "shuttlecock_i", limit: { order: 8, destination: 8 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename order { __typename route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename route { __typename tag name } time stops { __typename stop time } } } } } } }"#
     ))
 
   public var language: String
@@ -35,7 +35,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
       .field("notices", [Notice].self, arguments: ["input": [
         "language": .variable("language"),
-        "category": "셔틀"
+        "category": "셔틀,날씨"
       ]]),
       .field("shuttle", Shuttle.self, arguments: ["input": [
         "stops": [[

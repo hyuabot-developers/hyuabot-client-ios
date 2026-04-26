@@ -27,7 +27,11 @@ class NoticeCell: UICollectionViewCell {
     }
     
     func setupUI(with notice: Notice) {
-        self.titleLabel.text = String(localized: "notice.title.\(notice.title)")
+        if (notice.title.hasPrefix("[")) {
+            self.titleLabel.text = notice.title
+        } else {
+            self.titleLabel.text = String(localized: "notice.title.\(notice.title)")
+        }
         self.contentView.isUserInteractionEnabled = notice.url != nil
     }
     
