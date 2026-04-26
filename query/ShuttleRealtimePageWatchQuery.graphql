@@ -11,18 +11,15 @@ query ShuttleRealtimePageWatchQuery (
             longitude
             name
             timetable {
-                destination {
-                    destination
-                    entries {
-                        route {
-                            tag
-                            name
-                        }
+                order {
+                    route {
+                        tag
+                        name
+                    }
+                    time
+                    stops {
+                        stop
                         time
-                        stops {
-                            stop
-                            time
-                        }
                     }
                 }
             }

@@ -328,7 +328,6 @@ class ShuttleStopInfoVC: UIViewController {
     }
     
     private func fetchStopInfo() {
-        let now = Date.now
         let stopID = if self.stop == .dormiotryOut {
             "dormitory_o"
         } else if self.stop == .shuttlecockOut {

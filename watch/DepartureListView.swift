@@ -70,42 +70,27 @@ struct DepartureListView: View {
                 if data.shuttle.stops.isEmpty { return }
                 if (self.stop == "기숙사") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "dormitory_o" })
-                    dataDelegate.firstItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "STATION" })?.entries.first)
-                    dataDelegate.secondItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "TERMINAL" })?.entries.first)
-                    dataDelegate.thirdItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "JUNGANG" })?.entries.first)
-                    dataDelegate.fourthItem.onNext(nil)
+                    dataDelegate.result.onNext(stop?.timetable.order)
                 } else if (self.stop == "셔틀콕") {
                     let stop1 = data.shuttle.stops.first(where: { $0.name == "shuttlecock_o" })
                     let stop2 = data.shuttle.stops.first(where: { $0.name == "shuttlecock_i" })
-                    dataDelegate.firstItem.onNext(stop1?.timetable.destination.first(where: { $0.destination == "STATION" })?.entries.first)
-                    dataDelegate.secondItem.onNext(stop1?.timetable.destination.first(where: { $0.destination == "TERMINAL" })?.entries.first)
-                    dataDelegate.thirdItem.onNext(stop1?.timetable.destination.first(where: { $0.destination == "JUNGANG" })?.entries.first)
-                    dataDelegate.fourthItem.onNext(stop2?.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.first)
+                    dataDelegate.result.onNext((stop1?.timetable.order ?? []) + (stop2?.timetable.order ?? []))
                 } else if (self.stop == "한대앞") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "station" })
-                    dataDelegate.firstItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.first)
-                    dataDelegate.secondItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "TERMINAL" })?.entries.first)
-                    dataDelegate.thirdItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "JUNGANG" })?.entries.first)
-                    dataDelegate.fourthItem.onNext(nil)
+                    dataDelegate.result.onNext(stop?.timetable.order)
                 } else if (self.stop == "예술인") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "terminal" })
-                    dataDelegate.firstItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.first)
-                    dataDelegate.secondItem.onNext(nil)
-                    dataDelegate.thirdItem.onNext(nil)
-                    dataDelegate.fourthItem.onNext(nil)
+                    dataDelegate.result.onNext(stop?.timetable.order)
                 } else if (self.stop == "중앙역") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "jungang_stn" })
-                    dataDelegate.firstItem.onNext(stop?.timetable.destination.first(where: { $0.destination == "CAMPUS" })?.entries.first)
-                    dataDelegate.secondItem.onNext(nil)
-                    dataDelegate.thirdItem.onNext(nil)
-                    dataDelegate.fourthItem.onNext(nil)
+                    dataDelegate.result.onNext(stop?.timetable.order)
                 }
             }
             dataDelegate.isLoading.onNext(false)
         }
     }
     
-    func setRouteName(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> String {
+    func setRouteName(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order) -> String {
         if (self.stop == "기숙사" || self.stop == "셔틀콕") {
             if (item.route.tag == "DH") { return "한대앞" }
             else if (item.route.tag == "DY") { return "예술인" }
@@ -124,7 +109,7 @@ struct DepartureListView: View {
         return ""
     }
     
-    private func isAfterNow(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool {
+    private func isAfterNow(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order) -> Bool {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
         let now = Date.now
@@ -149,7 +134,7 @@ struct DepartureListView: View {
         }
     }
     
-    private func setUITimeLabel(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> String {
+    private func setUITimeLabel(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order) -> String {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"

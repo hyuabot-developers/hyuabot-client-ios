@@ -8,7 +8,7 @@ nonisolated public struct ShuttleRealtimePageWatchQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleRealtimePageWatchQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleRealtimePageWatchQuery($stops: [ShuttleStopInput!]!, $after: LocalTime) { shuttle(input: { stops: $stops, after: $after }) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time stops { __typename stop time } } } } } } }"#
+      #"query ShuttleRealtimePageWatchQuery($stops: [ShuttleStopInput!]!, $after: LocalTime) { shuttle(input: { stops: $stops, after: $after }) { __typename stops { __typename latitude longitude name timetable { __typename order { __typename route { __typename tag name } time stops { __typename stop time } } } } } }"#
     ))
 
   public var stops: [ShuttleStopInput]
@@ -96,97 +96,76 @@ nonisolated public struct ShuttleRealtimePageWatchQuery: GraphQLQuery {
           @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleTimetable }
           @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
             .field("__typename", String.self),
-            .field("destination", [Destination].self),
+            .field("order", [Order].self),
           ] }
           @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
             ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.self
           ] }
 
-          public var destination: [Destination] { __data["destination"] }
+          public var order: [Order] { __data["order"] }
 
-          /// Shuttle.Stop.Timetable.Destination
+          /// Shuttle.Stop.Timetable.Order
           ///
-          /// Parent Type: `ShuttleTimetableGroup`
-          nonisolated public struct Destination: Api.SelectionSet {
+          /// Parent Type: `ShuttleTimetableEntry`
+          nonisolated public struct Order: Api.SelectionSet {
             @_spi(Unsafe) public let __data: DataDict
             @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
 
-            @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleTimetableGroup }
+            @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleTimetableEntry }
             @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
               .field("__typename", String.self),
-              .field("destination", String.self),
-              .field("entries", [Entry].self),
+              .field("route", Route.self),
+              .field("time", Api.LocalTime.self),
+              .field("stops", [Stop].self),
             ] }
             @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-              ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.self
+              ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order.self
             ] }
 
-            public var destination: String { __data["destination"] }
-            public var entries: [Entry] { __data["entries"] }
+            public var route: Route { __data["route"] }
+            public var time: Api.LocalTime { __data["time"] }
+            public var stops: [Stop] { __data["stops"] }
 
-            /// Shuttle.Stop.Timetable.Destination.Entry
+            /// Shuttle.Stop.Timetable.Order.Route
             ///
-            /// Parent Type: `ShuttleTimetableEntry`
-            nonisolated public struct Entry: Api.SelectionSet {
+            /// Parent Type: `ShuttleRoute`
+            nonisolated public struct Route: Api.SelectionSet {
               @_spi(Unsafe) public let __data: DataDict
               @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
 
-              @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleTimetableEntry }
+              @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleRoute }
               @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
                 .field("__typename", String.self),
-                .field("route", Route.self),
-                .field("time", Api.LocalTime.self),
-                .field("stops", [Stop].self),
+                .field("tag", String.self),
+                .field("name", String.self),
               ] }
               @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-                ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry.self
+                ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order.Route.self
               ] }
 
-              public var route: Route { __data["route"] }
+              public var tag: String { __data["tag"] }
+              public var name: String { __data["name"] }
+            }
+
+            /// Shuttle.Stop.Timetable.Order.Stop
+            ///
+            /// Parent Type: `ShuttleArrival`
+            nonisolated public struct Stop: Api.SelectionSet {
+              @_spi(Unsafe) public let __data: DataDict
+              @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+              @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleArrival }
+              @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+                .field("__typename", String.self),
+                .field("stop", String.self),
+                .field("time", Api.LocalTime.self),
+              ] }
+              @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+                ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order.Stop.self
+              ] }
+
+              public var stop: String { __data["stop"] }
               public var time: Api.LocalTime { __data["time"] }
-              public var stops: [Stop] { __data["stops"] }
-
-              /// Shuttle.Stop.Timetable.Destination.Entry.Route
-              ///
-              /// Parent Type: `ShuttleRoute`
-              nonisolated public struct Route: Api.SelectionSet {
-                @_spi(Unsafe) public let __data: DataDict
-                @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
-
-                @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleRoute }
-                @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
-                  .field("__typename", String.self),
-                  .field("tag", String.self),
-                  .field("name", String.self),
-                ] }
-                @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-                  ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry.Route.self
-                ] }
-
-                public var tag: String { __data["tag"] }
-                public var name: String { __data["name"] }
-              }
-
-              /// Shuttle.Stop.Timetable.Destination.Entry.Stop
-              ///
-              /// Parent Type: `ShuttleArrival`
-              nonisolated public struct Stop: Api.SelectionSet {
-                @_spi(Unsafe) public let __data: DataDict
-                @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
-
-                @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleArrival }
-                @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
-                  .field("__typename", String.self),
-                  .field("stop", String.self),
-                  .field("time", Api.LocalTime.self),
-                ] }
-                @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-                  ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Destination.Entry.Stop.self
-                ] }
-
-                public var stop: String { __data["stop"] }
-                public var time: Api.LocalTime { __data["time"] }
-              }
             }
           }
         }
