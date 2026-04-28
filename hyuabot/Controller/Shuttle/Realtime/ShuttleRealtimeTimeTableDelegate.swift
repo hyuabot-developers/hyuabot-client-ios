@@ -51,14 +51,14 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockData.value() else { return UITableViewCell() }
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: data[indexPath.row])
+                cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: data[indexPath.row])
                 return cell
             }
         } else if (self.stopID == .station) {
             guard let data = try? ShuttleRealtimeData.shared.shuttleStationData.value() else { return UITableViewCell() }
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: data[indexPath.row])
+                cell.setupUI(stopID: .station, indexPath: indexPath, item: data[indexPath.row])
                 return cell
             }
         } else if (self.stopID == .terminal) {
