@@ -13,6 +13,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let showViaVCByDestination: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void
     private let showStopVC: (ShuttleStopEnum) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
+    private var headerExpandedStates: [Int: Bool] = [:]
     private lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     private lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
@@ -49,7 +50,6 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
         return tableView
     }()
-    
     required init(
         stopID: ShuttleStopEnum,
         refreshMethod: @escaping () -> Void,
@@ -125,7 +125,11 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier) as? ShuttleRealtimeHeaderView else { return UIView() }
-        headerView.setupUI(title: String(localized: self.shuttleRealtimeSection[section]))
+        let isExpanded = headerExpandedStates[section] ?? false
+        headerView.setupUI(title: String(localized: self.shuttleRealtimeSection[section]), stop: self.stopID, section: section, isExpanded: isExpanded)
+        headerView.onToggle = { [weak self] isExpanded in
+            self?.headerExpandedStates[section] = isExpanded
+        }
         return headerView
     }
     
@@ -278,11 +282,18 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 50
+        return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 50
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
+        guard let header = tableView.headerView(forSection: section) as? ShuttleRealtimeHeaderView else {
+            return 50
+        }
+        return header.isExpanded ? 50 + header.routeAdapterHeight : 50
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

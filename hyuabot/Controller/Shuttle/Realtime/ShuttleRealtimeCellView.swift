@@ -124,13 +124,21 @@ class ShuttleRealtimeCellView: UITableViewCell {
         } else if (stopID == .station) {
             if indexPath.section == 0 {
                 if item.route.tag == "DH" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
+                    if item.route.name.hasSuffix("D") {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct.dormitory")
+                    } else if item.route.name.hasSuffix("S") {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.direct.shuttlecock")
+                    }
                     self.shuttleTypeLabel.textColor = .busRed
                 } else if item.route.tag == "DJ" {
                     self.shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
                     self.shuttleTypeLabel.textColor = .hanyangGreen
                 } else if item.route.tag == "C" {
-                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                    if item.route.name.hasSuffix("D") {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
+                    } else if item.route.name.hasSuffix("S") {
+                        self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
+                    }
                     if UITraitCollection.current.userInterfaceStyle == .light {
                         self.shuttleTypeLabel.textColor = .busBlue
                     } else {
@@ -138,7 +146,11 @@ class ShuttleRealtimeCellView: UITableViewCell {
                     }
                 }
             } else if indexPath.section == 1 {
-                self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                if item.route.name.hasSuffix("D") {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
+                } else if item.route.name.hasSuffix("S") {
+                    self.shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
+                }
                 if UITraitCollection.current.userInterfaceStyle == .light {
                     self.shuttleTypeLabel.textColor = .busBlue
                 } else {
