@@ -2163,6 +2163,22 @@
         }
       }
     },
+    "shuttle.realtime.duration.format.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minutes)lldmins"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minutes)lld분"
+          }
+        }
+      }
+    },
     "shuttle.realtime.empty" : {
       "localizations" : {
         "en" : {
@@ -2319,6 +2335,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "정류장 위치 & 첫차/막차"
+          }
+        }
+      }
+    },
+    "shuttle.stop.dormitory.in" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dormitory"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사"
           }
         }
       }
@@ -2627,6 +2659,38 @@
         }
       }
     },
+    "shuttle.type.circular.dormitory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circular (Dormitory)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "순환 (기숙사)"
+          }
+        }
+      }
+    },
+    "shuttle.type.circular.shuttlecock" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Circular (Shuttlecock)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "순환 (셔틀콕)"
+          }
+        }
+      }
+    },
     "shuttle.type.direct" : {
       "localizations" : {
         "en" : {
@@ -2639,6 +2703,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "직행"
+          }
+        }
+      }
+    },
+    "shuttle.type.direct.dormitory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct (Dormitory)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행 (기숙사)"
+          }
+        }
+      }
+    },
+    "shuttle.type.direct.shuttlecock" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct (Shuttlecock)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직행 (셔틀콕)"
           }
         }
       }
