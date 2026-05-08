@@ -78,6 +78,11 @@ class ShuttleRealtimeCellView: UITableViewCell {
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
+        if (UITraitCollection.current.userInterfaceStyle == .dark) {
+            self.infoImageView.tintColor = .white
+        } else {
+            self.infoImageView.tintColor = .hanyangBlue
+        }
     }
     
     func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
