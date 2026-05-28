@@ -282,7 +282,7 @@ class ShuttleRealtimeVC: UIViewController {
             }
         }
         Task {
-            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))))
+            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))), cachePolicy: .networkOnly)
             if let data = response?.data {
                 dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
                 dataDelegate.arrival.onNext(data.shuttle.stops)

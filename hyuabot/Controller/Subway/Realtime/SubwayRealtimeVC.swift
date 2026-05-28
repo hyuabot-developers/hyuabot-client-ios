@@ -193,7 +193,7 @@ class SubwayRealtimeVC: UIViewController {
         let component = Calendar.current.component(.weekday, from: today)
         let weekday = (component == 1 || component == 7) ? "weekends" : "weekdays"
         Task {
-            let response = try? await Network.shared.client.fetch(query: SubwayRealtimePageQuery(weekday: weekday))
+            let response = try? await Network.shared.client.fetch(query: SubwayRealtimePageQuery(weekday: weekday), cachePolicy: .networkOnly)
             if let data = response?.data {
                 SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
                 SubwayRealtimeData.shared.isLoading.onNext(false)
