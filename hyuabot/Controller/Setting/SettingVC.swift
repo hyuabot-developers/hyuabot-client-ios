@@ -17,8 +17,9 @@ class SettingVC: UIViewController {
     
     private func setupUI() {
         // Set default Value
-        if (UserDefaults.standard.integer(forKey: "campusID") == 0) {
+        if UserDefaults.standard.integer(forKey: "campusID") == 0 {
             UserDefaults.standard.set(2, forKey: "campusID")
+            UserDefaults(suiteName: "group.net.jaram.hyuabot")?.set(2, forKey: "campusID")
         }
             
         self.navigationItem.title = String(localized: "tabbar.setting")
