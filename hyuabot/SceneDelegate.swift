@@ -13,12 +13,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-        // Load app theme
         let theme = UserDefaults.standard.integer(forKey: "themeID")
         if theme == 0 {
             window.overrideUserInterfaceStyle = .unspecified
@@ -30,8 +26,58 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let vc = RootVC()
         window.rootViewController = vc
         window.makeKeyAndVisible()
-        
         self.window = window
+
+        if let urlContext = connectionOptions.urlContexts.first {
+            handleDeepLink(urlContext.url)
+        }
+    }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        if let url = URLContexts.first?.url {
+            handleDeepLink(url)
+        }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        guard url.scheme == "hyuabot",
+              let rootVC = window?.rootViewController as? RootVC else { return }
+        let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
+
+        switch url.host {
+        case "cafeteria":
+            rootVC.selectedIndex = 3
+            let tab = params?.first(where: { $0.name == "tab" })?.value
+            let tabIndex: Int? = switch tab {
+                case "breakfast": 0
+                case "lunch": 1
+                case "dinner": 2
+                default: nil
+            }
+            if let index = tabIndex {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if let nc = rootVC.viewControllers?[3] as? UINavigationController,
+                       let vc = nc.viewControllers.first as? CafeteriaVC {
+                        vc.scrollToMealTab(index)
+                    }
+                }
+            }
+
+        case "shuttle":
+            rootVC.selectedIndex = 0
+            let stop = params?.first(where: { $0.name == "stop" })?.value
+            if let stop {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if let nc = rootVC.viewControllers?[0] as? UINavigationController,
+                       let vc = nc.viewControllers.first as? ShuttleRealtimeVC {
+                        vc.scrollToStop(stop)
+                    }
+                }
+            }
+
+        default:
+            break
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

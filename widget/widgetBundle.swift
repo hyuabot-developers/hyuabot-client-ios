@@ -6,5 +6,6 @@ struct HyuabotWidgetBundle: WidgetBundle {
     var body: some Widget {
         CafeteriaWidget()
         ShuttleWidget()
+        TransferWidget()
     }
 }

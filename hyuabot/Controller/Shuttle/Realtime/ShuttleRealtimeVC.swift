@@ -187,15 +187,9 @@ class ShuttleRealtimeVC: UIViewController {
             make.trailing.equalTo(self.shuttleOptionView.snp.trailing).offset(-10)
         }
         self.view.addSubview(viewPager)
-        self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-        }
-        self.helpButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
-            make.width.height.equalTo(50)
         }
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -379,6 +373,23 @@ class ShuttleRealtimeVC: UIViewController {
     @objc private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
         ShuttleRealtimeData.shared.showArrivalByTime.onNext(sender.isOn)
         UserDefaults.standard.set(sender.isOn, forKey: "showArrivalByTime")
+    }
+}
+
+extension ShuttleRealtimeVC {
+    func scrollToStop(_ stopID: String) {
+        let index: Int
+        switch stopID {
+        case "dormitory_o":  index = 0
+        case "shuttlecock_o": index = 1
+        case "station":      index = 2
+        case "terminal":     index = 3
+        case "jungang_stn":  index = 4
+        case "shuttlecock_i": index = 5
+        default: return
+        }
+        viewPager.tabView.moveToTab(index: index)
+        viewPager.contentView.moveToPage(index: index)
     }
 }
 

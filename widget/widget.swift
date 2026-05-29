@@ -1,5 +1,6 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 private let appGroupID = "group.net.jaram.hyuabot"
 
@@ -67,13 +68,29 @@ enum MealType {
         case .closed: return "moon.zzz.fill"
         }
     }
+
+    var deepLinkURL: URL {
+        switch self {
+        case .breakfast, .closed:
+            return URL(string: "hyuabot://cafeteria?tab=breakfast")!
+        case .lunch:
+            return URL(string: "hyuabot://cafeteria?tab=lunch")!
+        case .dinner:
+            return URL(string: "hyuabot://cafeteria?tab=dinner")!
+        }
+    }
+}
+
+struct CafeteriaMenuRow: Identifiable {
+    let id = UUID()
+    let food: String
+    let price: String
 }
 
 struct CafeteriaMenuItem: Identifiable {
     let id = UUID()
     let cafeteriaName: String
-    let foods: [String]
-    let price: String
+    let menus: [CafeteriaMenuRow]
     let runningTime: String?
 }
 
@@ -96,20 +113,22 @@ private func currentMealType(for date: Foundation.Date = .now) -> MealType {
 }
 
 private func cafeteriaDisplayName(for seq: Int) -> String {
+    let key: String
     switch seq {
-    case 1: return "학생회관"
-    case 2: return "생활과학관"
-    case 4: return "신소재공학관"
-    case 6: return "제1생활관"
-    case 7: return "제2생활관"
-    case 8: return "행원파크"
-    case 11: return "교직원식당"
-    case 12: return "학생식당"
-    case 13: return "창의인재원"
-    case 14: return "푸드코트"
-    case 15: return "창업보육센터"
-    default: return "식당"
+    case 1:  key = "cafeteria.title.1"
+    case 2:  key = "cafeteria.title.2"
+    case 4:  key = "cafeteria.title.4"
+    case 6:  key = "cafeteria.title.6"
+    case 7:  key = "cafeteria.title.7"
+    case 8:  key = "cafeteria.title.8"
+    case 11: key = "cafeteria.title.11"
+    case 12: key = "cafeteria.title.12"
+    case 13: key = "cafeteria.title.13"
+    case 14: key = "cafeteria.title.14"
+    case 15: key = "cafeteria.title.15"
+    default: key = "cafeteria.default"
     }
+    return String(localized: LocalizedStringResource(stringLiteral: key))
 }
 
 private func nextMealTransition(after date: Foundation.Date) -> Foundation.Date {
@@ -136,8 +155,20 @@ struct CafeteriaProvider: TimelineProvider {
             date: .now,
             mealType: .lunch,
             items: [
-                CafeteriaMenuItem(cafeteriaName: "학생회관", foods: ["된장찌개", "돈까스", "잡채"], price: "3500", runningTime: "11:00~13:30"),
-                CafeteriaMenuItem(cafeteriaName: "생활과학관", foods: ["뼈다귀탕", "볶음밥"], price: "5000", runningTime: "11:30~13:30")
+                CafeteriaMenuItem(cafeteriaName: "학생식당", menus: [
+                    CafeteriaMenuRow(food: "된장찌개", price: "2000"),
+                    CafeteriaMenuRow(food: "돈까스", price: "4000"),
+                    CafeteriaMenuRow(food: "잡채", price: "1500")
+                ], runningTime: "11:00~13:30"),
+                CafeteriaMenuItem(cafeteriaName: "창업보육센터", menus: [
+                    CafeteriaMenuRow(food: "뼈다귀탕", price: "5500"),
+                    CafeteriaMenuRow(food: "볶음밥", price: "3000"),
+                    CafeteriaMenuRow(food: "미역국", price: "2000")
+                ], runningTime: "11:30~13:30"),
+                CafeteriaMenuItem(cafeteriaName: "창의인재관식당", menus: [
+                    CafeteriaMenuRow(food: "닭갈비", price: "6000"),
+                    CafeteriaMenuRow(food: "쌀국수", price: "4500")
+                ], runningTime: "11:30~13:00")
             ]
         )
     }
@@ -185,10 +216,14 @@ struct CafeteriaProvider: TimelineProvider {
                 .compactMap { cafe in
                     let filtered = cafe.menus.filter { $0.type.contains(typeStr) }
                     guard !filtered.isEmpty else { return nil }
-                    let foods = filtered.map { $0.food }
-                    let price = (filtered.first?.price ?? "")
-                        .replacingOccurrences(of: "원", with: "")
-                        .trimmingCharacters(in: .whitespaces)
+                    let menus = filtered.map { m in
+                        CafeteriaMenuRow(
+                            food: m.food,
+                            price: m.price
+                                .replacingOccurrences(of: "원", with: "")
+                                .trimmingCharacters(in: .whitespaces)
+                        )
+                    }
                     let runningTime: String? = {
                         switch mealType {
                         case .breakfast, .closed: return cafe.runningTime.breakfast
@@ -198,8 +233,7 @@ struct CafeteriaProvider: TimelineProvider {
                     }()
                     return CafeteriaMenuItem(
                         cafeteriaName: cafeteriaDisplayName(for: cafe.seq),
-                        foods: foods,
-                        price: price,
+                        menus: menus,
                         runningTime: runningTime
                     )
                 }
@@ -212,136 +246,6 @@ struct CafeteriaProvider: TimelineProvider {
 }
 
 // MARK: - Views
-
-struct CafeteriaWidgetView: View {
-    @Environment(\.widgetFamily) var family
-    let entry: CafeteriaEntry
-
-    var body: some View {
-        switch family {
-        case .systemSmall:
-            CafeteriaSmallView(entry: entry)
-        case .systemMedium:
-            CafeteriaMediumView(entry: entry)
-        case .systemLarge:
-            CafeteriaLargeView(entry: entry)
-        default:
-            CafeteriaSmallView(entry: entry)
-        }
-    }
-}
-
-struct CafeteriaSmallView: View {
-    let entry: CafeteriaEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
-                Image(systemName: entry.mealType.icon)
-                    .foregroundStyle(.blue)
-                    .font(.caption2)
-                Text(entry.mealType.title)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.blue)
-                Spacer()
-            }
-
-            if let first = entry.items.first {
-                Text(first.cafeteriaName)
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .lineLimit(1)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    ForEach(first.foods.prefix(3), id: \.self) { food in
-                        Text(food)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                }
-
-                Spacer(minLength: 0)
-
-                if !first.price.isEmpty {
-                    Text("\(first.price)원")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.blue)
-                }
-            } else {
-                Spacer()
-                Text("cafeteria.no.menu")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-        }
-        .padding(12)
-    }
-}
-
-struct CafeteriaMediumView: View {
-    let entry: CafeteriaEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: entry.mealType.icon)
-                    .foregroundStyle(.blue)
-                    .font(.subheadline)
-                Text(entry.mealType.title)
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.blue)
-                Spacer()
-                Text(entry.date, style: .time)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-
-            Divider()
-
-            if entry.items.isEmpty {
-                Text("cafeteria.no.data")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                HStack(alignment: .top, spacing: 0) {
-                    ForEach(Array(entry.items.prefix(2).enumerated()), id: \.offset) { index, item in
-                        if index > 0 {
-                            Divider()
-                                .padding(.horizontal, 8)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.cafeteriaName)
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .lineLimit(1)
-                            ForEach(item.foods.prefix(3), id: \.self) { food in
-                                Text(food)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                            Spacer(minLength: 0)
-                            if !item.price.isEmpty {
-                                Text("\(item.price)원")
-                                    .font(.caption2)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-            }
-        }
-        .padding(12)
-    }
-}
 
 struct CafeteriaLargeView: View {
     let entry: CafeteriaEntry
@@ -356,53 +260,67 @@ struct CafeteriaLargeView: View {
                     .fontWeight(.bold)
                     .foregroundStyle(.blue)
                 Spacer()
-                Text(entry.date, style: .date)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(entry.date, style: .date)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    Text(entry.date, style: .time)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                Button(intent: RefreshCafeteriaIntent()) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
             }
 
             Divider()
 
             if entry.items.isEmpty {
-                Spacer()
                 Text("cafeteria.no.data")
                     .font(.body)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                Spacer()
+                    .padding(.top, 16)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(entry.items.prefix(6)) { item in
+                    ForEach(entry.items) { item in
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {
                                 Text(item.cafeteriaName)
                                     .font(.subheadline)
                                     .fontWeight(.bold)
-                                Spacer()
-                                if !item.price.isEmpty {
-                                    Text("\(item.price)원")
-                                        .font(.caption)
-                                        .foregroundStyle(.blue)
+                                if let rt = item.runningTime {
+                                    Text(rt)
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
                                 }
+                                Spacer()
                             }
-                            if let rt = item.runningTime {
-                                Text(rt)
-                                    .font(.caption2)
-                                    .foregroundStyle(.tertiary)
-                            }
-                            ForEach(item.foods.prefix(4), id: \.self) { food in
-                                Text("· \(food)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
+                            ForEach(item.menus) { menu in
+                                HStack {
+                                    Text(menu.food)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                    Spacer()
+                                    if !menu.price.isEmpty {
+                                        Text("\(menu.price)원")
+                                            .font(.caption)
+                                            .foregroundStyle(.blue)
+                                    }
+                                }
                             }
                         }
                         Divider()
                     }
                 }
             }
+            Spacer(minLength: 0)
         }
         .padding(12)
+        .widgetURL(entry.mealType.deepLinkURL)
     }
 }
 
@@ -413,39 +331,16 @@ struct CafeteriaWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CafeteriaProvider()) { entry in
-            CafeteriaWidgetView(entry: entry)
+            CafeteriaLargeView(entry: entry)
                 .containerBackground(.background, for: .widget)
         }
         .configurationDisplayName("widget.cafeteria.name")
         .description("widget.cafeteria.description")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemLarge, .systemExtraLarge])
     }
 }
 
 // MARK: - Preview
-
-#Preview("Small", as: .systemSmall) {
-    CafeteriaWidget()
-} timeline: {
-    CafeteriaEntry(
-        date: .now,
-        mealType: .lunch,
-        items: [CafeteriaMenuItem(cafeteriaName: "학생회관", foods: ["된장찌개", "돈까스", "잡채"], price: "3500", runningTime: "11:00~13:30")]
-    )
-}
-
-#Preview("Medium", as: .systemMedium) {
-    CafeteriaWidget()
-} timeline: {
-    CafeteriaEntry(
-        date: .now,
-        mealType: .lunch,
-        items: [
-            CafeteriaMenuItem(cafeteriaName: "학생회관", foods: ["된장찌개", "돈까스", "잡채"], price: "3500", runningTime: "11:00~13:30"),
-            CafeteriaMenuItem(cafeteriaName: "생활과학관", foods: ["뼈다귀탕", "볶음밥", "미역국"], price: "5000", runningTime: "11:30~13:30")
-        ]
-    )
-}
 
 #Preview("Large", as: .systemLarge) {
     CafeteriaWidget()
@@ -454,9 +349,20 @@ struct CafeteriaWidget: Widget {
         date: .now,
         mealType: .lunch,
         items: [
-            CafeteriaMenuItem(cafeteriaName: "학생회관", foods: ["된장찌개", "돈까스", "잡채", "계란프라이"], price: "3500", runningTime: "11:00~13:30"),
-            CafeteriaMenuItem(cafeteriaName: "생활과학관", foods: ["뼈다귀탕", "볶음밥", "미역국"], price: "5000", runningTime: "11:30~13:30"),
-            CafeteriaMenuItem(cafeteriaName: "제1생활관", foods: ["닭갈비", "쌀국수"], price: "4000", runningTime: "11:30~13:00")
+            CafeteriaMenuItem(cafeteriaName: "학생식당", menus: [
+                CafeteriaMenuRow(food: "된장찌개", price: "2000"),
+                CafeteriaMenuRow(food: "돈까스", price: "4000"),
+                CafeteriaMenuRow(food: "잡채", price: "1500")
+            ], runningTime: "11:00~13:30"),
+            CafeteriaMenuItem(cafeteriaName: "창업보육센터", menus: [
+                CafeteriaMenuRow(food: "뼈다귀탕", price: "5500"),
+                CafeteriaMenuRow(food: "볶음밥", price: "3000"),
+                CafeteriaMenuRow(food: "미역국", price: "2000")
+            ], runningTime: "11:30~13:30"),
+            CafeteriaMenuItem(cafeteriaName: "창의인재관식당", menus: [
+                CafeteriaMenuRow(food: "닭갈비", price: "6000"),
+                CafeteriaMenuRow(food: "쌀국수", price: "4500")
+            ], runningTime: "11:30~13:00")
         ]
     )
 }

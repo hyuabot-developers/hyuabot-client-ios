@@ -154,4 +154,9 @@ class CafeteriaVC: UIViewController {
         }
         self.present(vc, animated: true, completion: nil)
     }
+
+    func scrollToMealTab(_ index: Int) {
+        viewPager.tabView.moveToTab(index: index)
+        viewPager.contentView.moveToPage(index: index)
+    }
 }

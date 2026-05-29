@@ -2211,6 +2211,42 @@
         }
       }
     },
+    "shuttle.transfer.section.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Transfer Connections" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "환승 연결 정보" } }
+      }
+    },
+    "shuttle.transfer.bus50.to.kwangmyeong" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bus 50 (For Gwangmyeong)" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "50번(KTX광명)" } }
+      }
+    },
+    "shuttle.transfer.bus50.to.ansan" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bus 50 To Ansan" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "50번 안산행" } }
+      }
+    },
+    "shuttle.transfer.bus50.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bus 50 Transfer" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "50번 버스 환승" } }
+      }
+    },
+    "shuttle.transfer.dormitory.info" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Subway at Station · Bus 50(KTX Gwangmyeong) at Terminal" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "한대앞역 지하철 / 예술인 50번(KTX광명)" } }
+      }
+    },
+    "shuttle.transfer.terminal.info" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ansan Parkpurgio Opp. Stop · To Ansan" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "안산파크푸르지오 건너편 · 안산 방면" } }
+      }
+    },
     "shuttle.realtime.showDepartureTime" : {
       "localizations" : {
         "en" : {
@@ -2865,6 +2901,18 @@
             "value" : "%1$lld분 (%2$@ 출발)"
           }
         }
+      }
+    },
+    "subway.line4" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Line 4" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "4호선" } }
+      }
+    },
+    "subway.suin" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Suin Line" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "수인선" } }
       }
     },
     "subway.realtime.empty" : {

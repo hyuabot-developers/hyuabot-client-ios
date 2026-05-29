@@ -1,17 +1,18 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
 import CoreLocation
 
-private let shuttleQuery = """
+let shuttleQuery = """
 query ShuttleWidgetQuery($after: LocalTime) {
     shuttle(input: {
         stops: [
-            { name: "dormitory_o", limit: { order: 8, destination: 3 } },
-            { name: "shuttlecock_o", limit: { order: 8, destination: 3 } },
-            { name: "station", limit: { order: 8, destination: 3 } },
-            { name: "terminal", limit: { order: 8, destination: 3 } },
-            { name: "jungang_stn", limit: { order: 8, destination: 3 } },
-            { name: "shuttlecock_i", limit: { order: 8, destination: 3 } }
+            { name: "dormitory_o", limit: { destination: 8 } },
+            { name: "shuttlecock_o", limit: { destination: 8 } },
+            { name: "station", limit: { destination: 8 } },
+            { name: "terminal", limit: { destination: 8 } },
+            { name: "jungang_stn", limit: { destination: 8 } },
+            { name: "shuttlecock_i", limit: { destination: 8 } }
         ],
         after: $after
     }) {
@@ -62,16 +63,17 @@ private struct ShuttleResponse: Decodable {
 
 // MARK: - Models
 
-struct ShuttleArrival: Identifiable {
+struct ShuttleDestinationGroup: Identifiable {
     let id = UUID()
     let destination: String
-    let time: String
+    let times: [String]
 }
 
 struct ShuttleEntry: TimelineEntry {
     let date: Foundation.Date
     let stopDisplayName: String
-    let arrivals: [ShuttleArrival]
+    let stopID: String
+    let groups: [ShuttleDestinationGroup]
     let errorState: ShuttleErrorState
 }
 
@@ -83,7 +85,15 @@ enum ShuttleErrorState {
 
 // MARK: - Helpers
 
-private func stopDisplayName(for stopID: String) -> String {
+func maxTimesInWidth(_ width: CGFloat) -> Int {
+    let destWidth: CGFloat = 80
+    let timeWidth: CGFloat = 38
+    let spacing: CGFloat = 6
+    let raw = Int((width - destWidth + spacing) / (timeWidth + spacing))
+    return max(1, raw - 1)
+}
+
+func stopDisplayName(for stopID: String) -> String {
     switch stopID {
     case "dormitory_o": return String(localized: "stop.dormitory")
     case "shuttlecock_o": return String(localized: "stop.shuttlecock")
@@ -95,7 +105,7 @@ private func stopDisplayName(for stopID: String) -> String {
     }
 }
 
-private func destinationDisplayName(for destination: String) -> String {
+func destinationDisplayName(for destination: String) -> String {
     switch destination {
     case "STATION": return String(localized: "destination.station")
     case "TERMINAL": return String(localized: "destination.terminal")
@@ -105,7 +115,7 @@ private func destinationDisplayName(for destination: String) -> String {
     }
 }
 
-private func formatTime(_ time: String) -> String {
+func formatTime(_ time: String) -> String {
     let parts = time.split(separator: ":")
     guard parts.count >= 2 else { return time }
     return "\(parts[0]):\(parts[1])"
@@ -172,11 +182,11 @@ struct ShuttleProvider: TimelineProvider {
         ShuttleEntry(
             date: .now,
             stopDisplayName: "한대앞",
-            arrivals: [
-                ShuttleArrival(destination: "기숙사", time: "15:30"),
-                ShuttleArrival(destination: "터미널", time: "15:45"),
-                ShuttleArrival(destination: "기숙사", time: "16:00"),
-                ShuttleArrival(destination: "중앙역", time: "16:10")
+            stopID: "station",
+            groups: [
+                ShuttleDestinationGroup(destination: "기숙사", times: ["15:30", "16:00", "16:30"]),
+                ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15"]),
+                ShuttleDestinationGroup(destination: "중앙역", times: ["16:10", "16:40"])
             ],
             errorState: .none
         )
@@ -206,7 +216,7 @@ struct ShuttleProvider: TimelineProvider {
         let location = await locationFetcher.getCurrentLocation()
 
         guard let location else {
-            return ShuttleEntry(date: .now, stopDisplayName: "", arrivals: [], errorState: .noLocation)
+            return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noLocation)
         }
 
         let timeFormatter = DateFormatter()
@@ -223,7 +233,7 @@ struct ShuttleProvider: TimelineProvider {
 
             let stops = response.shuttle.stops
             guard !stops.isEmpty else {
-                return ShuttleEntry(date: .now, stopDisplayName: "", arrivals: [], errorState: .noData)
+                return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
             }
 
             let nearestStop = stops.min { a, b in
@@ -232,28 +242,40 @@ struct ShuttleProvider: TimelineProvider {
             }
 
             guard let stop = nearestStop else {
-                return ShuttleEntry(date: .now, stopDisplayName: "", arrivals: [], errorState: .noData)
+                return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
             }
 
-            let arrivals: [ShuttleArrival] = stop.timetable.destination
-                .flatMap { group in
-                    group.entries.prefix(2).map { entry in
-                        ShuttleArrival(
-                            destination: destinationDisplayName(for: group.destination),
-                            time: formatTime(entry.time)
-                        )
-                    }
+            func makeGroups(from timetable: ShuttleResponse.ShuttleData.Stop.Timetable) -> [ShuttleDestinationGroup] {
+                timetable.destination.compactMap { group in
+                    let times = group.entries.prefix(6).map { formatTime($0.time) }
+                    guard !times.isEmpty else { return nil }
+                    return ShuttleDestinationGroup(
+                        destination: destinationDisplayName(for: group.destination),
+                        times: Array(times)
+                    )
                 }
-                .sorted { $0.time < $1.time }
+            }
+
+            var groups = makeGroups(from: stop.timetable)
+            var displayStopName = stopDisplayName(for: stop.name)
+
+            if stop.name == "shuttlecock_o" || stop.name == "shuttlecock_i" {
+                let companionName = stop.name == "shuttlecock_o" ? "shuttlecock_i" : "shuttlecock_o"
+                if let companion = stops.first(where: { $0.name == companionName }) {
+                    groups += makeGroups(from: companion.timetable)
+                }
+                displayStopName = String(localized: "stop.shuttlecock")
+            }
 
             return ShuttleEntry(
                 date: .now,
-                stopDisplayName: stopDisplayName(for: stop.name),
-                arrivals: arrivals,
+                stopDisplayName: displayStopName,
+                stopID: stop.name,
+                groups: groups,
                 errorState: .none
             )
         } catch {
-            return ShuttleEntry(date: .now, stopDisplayName: "", arrivals: [], errorState: .noData)
+            return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
         }
     }
 }
@@ -285,13 +307,22 @@ struct ShuttleSmallView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 4) {
                 Image(systemName: "bus.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color("hanyangBlue"))
                     .font(.caption2)
                 Text("shuttle.title")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color("hanyangBlue"))
                 Spacer()
+                Text(entry.date, style: .time)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                Button(intent: RefreshShuttleIntent()) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
             }
 
             switch entry.errorState {
@@ -315,20 +346,27 @@ struct ShuttleSmallView: View {
                     .font(.subheadline)
                     .fontWeight(.bold)
                     .lineLimit(1)
-
                 Spacer(minLength: 2)
 
-                ForEach(entry.arrivals.prefix(3)) { arrival in
-                    HStack {
-                        Text(arrival.destination)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                        Spacer()
-                        Text(arrival.time)
-                            .font(.caption2)
-                            .fontWeight(.semibold)
-                            .monospacedDigit()
+                if entry.groups.isEmpty {
+                    Text("shuttle.no.data")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(entry.groups) { group in
+                        HStack {
+                            Text(group.destination)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                            Spacer()
+                            if let first = group.times.first {
+                                Text(first)
+                                    .font(.caption2)
+                                    .fontWeight(.semibold)
+                                    .monospacedDigit()
+                            }
+                        }
                     }
                 }
             }
@@ -344,12 +382,12 @@ struct ShuttleMediumView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
                 Image(systemName: "bus.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color("hanyangBlue"))
                     .font(.subheadline)
                 Text("shuttle.title")
                     .font(.subheadline)
                     .fontWeight(.bold)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color("hanyangBlue"))
                 if !entry.stopDisplayName.isEmpty {
                     Text("· \(entry.stopDisplayName)")
                         .font(.subheadline)
@@ -359,6 +397,12 @@ struct ShuttleMediumView: View {
                 Text(entry.date, style: .time)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                Button(intent: RefreshShuttleIntent()) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
             }
 
             Divider()
@@ -382,21 +426,36 @@ struct ShuttleMediumView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .none:
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 4) {
-                    ForEach(entry.arrivals.prefix(6)) { arrival in
-                        HStack {
-                            Text(arrival.destination)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                            Spacer()
-                            Text(arrival.time)
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                                .monospacedDigit()
+                if entry.groups.isEmpty {
+                    Text("shuttle.no.data")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                GeometryReader { geo in
+                    let count = maxTimesInWidth(geo.size.width)
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(entry.groups) { group in
+                            HStack(spacing: 0) {
+                                Text(group.destination)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: 80, alignment: .leading)
+                                    .lineLimit(1)
+                                Spacer()
+                                HStack(spacing: 6) {
+                                    ForEach(group.times.prefix(count), id: \.self) { time in
+                                        Text(time)
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .monospacedDigit()
+                                    }
+                                }
+                            }
                         }
-                        .padding(.vertical, 2)
                     }
+                    .frame(width: geo.size.width, alignment: .topLeading)
+                }
                 }
             }
         }
@@ -411,11 +470,11 @@ struct ShuttleLargeView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
                 Image(systemName: "bus.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color("hanyangBlue"))
                 Text("shuttle.title")
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color("hanyangBlue"))
                 if !entry.stopDisplayName.isEmpty {
                     Text("· \(entry.stopDisplayName)")
                         .font(.headline)
@@ -425,6 +484,12 @@ struct ShuttleLargeView: View {
                 Text(entry.date, style: .time)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                Button(intent: RefreshShuttleIntent()) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
             }
 
             Divider()
@@ -454,19 +519,30 @@ struct ShuttleLargeView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
             case .none:
+                let sorted = entry.groups
+                    .flatMap { g in g.times.map { (dest: g.destination, time: $0) } }
+                    .sorted { $0.time < $1.time }
+                if sorted.isEmpty {
+                    Spacer()
+                    Text("shuttle.no.data")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    Spacer()
+                } else {
                 VStack(spacing: 0) {
-                    ForEach(entry.arrivals.prefix(8)) { arrival in
+                    ForEach(Array(sorted.prefix(8).enumerated()), id: \.offset) { _, item in
                         HStack {
                             HStack(spacing: 6) {
                                 Image(systemName: "arrow.right.circle.fill")
-                                    .foregroundStyle(.green.opacity(0.7))
+                                    .foregroundStyle(Color("hanyangBlue").opacity(0.7))
                                     .font(.caption)
-                                Text(arrival.destination)
+                                Text(item.dest)
                                     .font(.subheadline)
                                     .fontWeight(.medium)
                             }
                             Spacer()
-                            Text(arrival.time)
+                            Text(item.time)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .monospacedDigit()
@@ -475,6 +551,7 @@ struct ShuttleLargeView: View {
                         Divider()
                     }
                 }
+                } // else
             }
         }
         .padding(12)
@@ -490,6 +567,7 @@ struct ShuttleWidget: Widget {
         StaticConfiguration(kind: kind, provider: ShuttleProvider()) { entry in
             ShuttleWidgetView(entry: entry)
                 .containerBackground(.background, for: .widget)
+                .widgetURL(entry.stopID.isEmpty ? nil : URL(string: "hyuabot://shuttle?stop=\(entry.stopID)"))
         }
         .configurationDisplayName("widget.shuttle.name")
         .description("widget.shuttle.description")
@@ -499,55 +577,26 @@ struct ShuttleWidget: Widget {
 
 // MARK: - Preview
 
+private let previewGroups: [ShuttleDestinationGroup] = [
+    ShuttleDestinationGroup(destination: "기숙사", times: ["15:30", "16:00", "16:30", "17:00", "17:30", "18:00"]),
+    ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15", "16:45", "17:15"]),
+    ShuttleDestinationGroup(destination: "중앙역", times: ["16:10", "16:40", "17:10"])
+]
+
 #Preview("Small", as: .systemSmall) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(
-        date: .now,
-        stopDisplayName: "한대앞",
-        arrivals: [
-            ShuttleArrival(destination: "기숙사", time: "15:30"),
-            ShuttleArrival(destination: "터미널", time: "15:45"),
-            ShuttleArrival(destination: "기숙사", time: "16:00")
-        ],
-        errorState: .none
-    )
+    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
 
 #Preview("Medium", as: .systemMedium) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(
-        date: .now,
-        stopDisplayName: "한대앞",
-        arrivals: [
-            ShuttleArrival(destination: "기숙사", time: "15:30"),
-            ShuttleArrival(destination: "터미널", time: "15:45"),
-            ShuttleArrival(destination: "기숙사", time: "16:00"),
-            ShuttleArrival(destination: "중앙역", time: "16:10"),
-            ShuttleArrival(destination: "기숙사", time: "16:30"),
-            ShuttleArrival(destination: "터미널", time: "16:45")
-        ],
-        errorState: .none
-    )
+    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
 
 #Preview("Large", as: .systemLarge) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(
-        date: .now,
-        stopDisplayName: "한대앞",
-        arrivals: [
-            ShuttleArrival(destination: "기숙사", time: "15:30"),
-            ShuttleArrival(destination: "터미널", time: "15:45"),
-            ShuttleArrival(destination: "기숙사", time: "16:00"),
-            ShuttleArrival(destination: "중앙역", time: "16:10"),
-            ShuttleArrival(destination: "기숙사", time: "16:30"),
-            ShuttleArrival(destination: "터미널", time: "16:45"),
-            ShuttleArrival(destination: "기숙사", time: "17:00"),
-            ShuttleArrival(destination: "중앙역", time: "17:20")
-        ],
-        errorState: .none
-    )
+    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
