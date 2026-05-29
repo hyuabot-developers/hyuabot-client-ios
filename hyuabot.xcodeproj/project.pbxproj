@@ -11,6 +11,9 @@
 		C72A95EB2DAA961600979B22 /* watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C72A95E12DAA961500979B22 /* watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; };
 		C73CB6312D410341005E9731 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		C79048C72FC947FD005BF1C1 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C79048C62FC947FD005BF1C1 /* WidgetKit.framework */; };
+		C79048C92FC947FD005BF1C1 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C79048C82FC947FD005BF1C1 /* SwiftUI.framework */; };
+		C79048DA2FC947FE005BF1C1 /* widgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C79048C52FC947FD005BF1C1 /* widgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0362D2804EA00BBE940 /* FirebaseMessaging */; };
 		C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */; };
 		C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB03D2D294AE400BBE940 /* Apollo */; };
@@ -31,6 +34,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = C72A95E02DAA961500979B22;
 			remoteInfo = "watch Watch App";
+		};
+		C79048D82FC947FE005BF1C1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C056E32D277910007A228B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C79048C42FC947FD005BF1C1;
+			remoteInfo = widgetExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -57,14 +67,35 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C79048DB2FC947FE005BF1C1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C79048DA2FC947FE005BF1C1 /* widgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C72A95E12DAA961500979B22 /* watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C79048C52FC947FD005BF1C1 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C79048C62FC947FD005BF1C1 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C79048C82FC947FD005BF1C1 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		C7C056EB2D277910007A228B /* hyuabot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hyuabot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C79048DF2FC947FE005BF1C1 /* Exceptions for "widget" folder in "widgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C79048C42FC947FD005BF1C1 /* widgetExtension */;
+		};
 		C7C056FD2D277911007A228B /* Exceptions for "hyuabot" folder in "hyuabot" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -90,6 +121,14 @@
 			path = watch;
 			sourceTree = "<group>";
 		};
+		C79048CA2FC947FD005BF1C1 /* widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C79048DF2FC947FE005BF1C1 /* Exceptions for "widget" folder in "widgetExtension" target */,
+			);
+			path = widget;
+			sourceTree = "<group>";
+		};
 		C7C056ED2D277910007A228B /* hyuabot */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -109,6 +148,15 @@
 				C7CBC01C2F91E85A00010444 /* Api in Frameworks */,
 				C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */,
 				C7E4689D2DAE2ED500E8975E /* Then in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C79048C22FC947FD005BF1C1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C79048C92FC947FD005BF1C1 /* SwiftUI.framework in Frameworks */,
+				C79048C72FC947FD005BF1C1 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,6 +184,7 @@
 			children = (
 				C7C056ED2D277910007A228B /* hyuabot */,
 				C72A95E22DAA961500979B22 /* watch */,
+				C79048CA2FC947FD005BF1C1 /* widget */,
 				C7CBC01A2F91E85A00010444 /* Frameworks */,
 				C7C056EC2D277910007A228B /* Products */,
 			);
@@ -146,6 +195,7 @@
 			children = (
 				C7C056EB2D277910007A228B /* hyuabot.app */,
 				C72A95E12DAA961500979B22 /* watch.app */,
+				C79048C52FC947FD005BF1C1 /* widgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -153,6 +203,8 @@
 		C7CBC01A2F91E85A00010444 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C79048C62FC947FD005BF1C1 /* WidgetKit.framework */,
+				C79048C82FC947FD005BF1C1 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -186,6 +238,28 @@
 			productReference = C72A95E12DAA961500979B22 /* watch.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C79048C42FC947FD005BF1C1 /* widgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C79048DE2FC947FE005BF1C1 /* Build configuration list for PBXNativeTarget "widgetExtension" */;
+			buildPhases = (
+				C79048C12FC947FD005BF1C1 /* Sources */,
+				C79048C22FC947FD005BF1C1 /* Frameworks */,
+				C79048C32FC947FD005BF1C1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C79048CA2FC947FD005BF1C1 /* widget */,
+			);
+			name = widgetExtension;
+			packageProductDependencies = (
+			);
+			productName = widgetExtension;
+			productReference = C79048C52FC947FD005BF1C1 /* widgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		C7C056EA2D277910007A228B /* hyuabot */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C7C056FE2D277911007A228B /* Build configuration list for PBXNativeTarget "hyuabot" */;
@@ -195,12 +269,14 @@
 				C7C056E92D277910007A228B /* Resources */,
 				C73CB6302D4101A2005E9731 /* Embed Frameworks */,
 				C72A95EC2DAA961600979B22 /* Embed Watch Content */,
+				C79048DB2FC947FE005BF1C1 /* Embed Foundation Extensions */,
 				C7BAB03B2D28098B00BBE940 /* Crashlytics */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				C72A95EA2DAA961600979B22 /* PBXTargetDependency */,
+				C79048D92FC947FE005BF1C1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C7C056ED2D277910007A228B /* hyuabot */,
@@ -228,11 +304,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					C72A95E02DAA961500979B22 = {
 						CreatedOnToolsVersion = 16.3;
+					};
+					C79048C42FC947FD005BF1C1 = {
+						CreatedOnToolsVersion = 26.5;
 					};
 					C7C056EA2D277910007A228B = {
 						CreatedOnToolsVersion = 16.2;
@@ -265,12 +344,20 @@
 			targets = (
 				C7C056EA2D277910007A228B /* hyuabot */,
 				C72A95E02DAA961500979B22 /* watch */,
+				C79048C42FC947FD005BF1C1 /* widgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		C72A95DF2DAA961500979B22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C79048C32FC947FD005BF1C1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -322,6 +409,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C79048C12FC947FD005BF1C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C7C056E72D277910007A228B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -336,6 +430,11 @@
 			isa = PBXTargetDependency;
 			target = C72A95E02DAA961500979B22 /* watch */;
 			targetProxy = C72A95E92DAA961600979B22 /* PBXContainerItemProxy */;
+		};
+		C79048D92FC947FE005BF1C1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C79048C42FC947FD005BF1C1 /* widgetExtension */;
+			targetProxy = C79048D82FC947FE005BF1C1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -397,6 +496,66 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		C79048DC2FC947FE005BF1C1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = widget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 26.05.28;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C79048DD2FC947FE005BF1C1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = widget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 26.05.28;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -603,6 +762,15 @@
 			buildConfigurations = (
 				C72A95ED2DAA961600979B22 /* Debug */,
 				C72A95EE2DAA961600979B22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C79048DE2FC947FE005BF1C1 /* Build configuration list for PBXNativeTarget "widgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C79048DC2FC947FE005BF1C1 /* Debug */,
+				C79048DD2FC947FE005BF1C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
