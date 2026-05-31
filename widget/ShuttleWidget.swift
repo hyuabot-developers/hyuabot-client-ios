@@ -7,12 +7,12 @@ let shuttleQuery = """
 query ShuttleWidgetQuery($after: LocalTime) {
     shuttle(input: {
         stops: [
-            { name: "dormitory_o", limit: { destination: 8 } },
-            { name: "shuttlecock_o", limit: { destination: 8 } },
-            { name: "station", limit: { destination: 8 } },
-            { name: "terminal", limit: { destination: 8 } },
-            { name: "jungang_stn", limit: { destination: 8 } },
-            { name: "shuttlecock_i", limit: { destination: 8 } }
+            { name: "dormitory_o", limit: { order: 0, destination: 8 } },
+            { name: "shuttlecock_o", limit: { order: 0, destination: 8 } },
+            { name: "station", limit: { order: 0, destination: 8 } },
+            { name: "terminal", limit: { order: 0, destination: 8 } },
+            { name: "jungang_stn", limit: { order: 0, destination: 8 } },
+            { name: "shuttlecock_i", limit: { order: 0, destination: 8 } }
         ],
         after: $after
     }) {

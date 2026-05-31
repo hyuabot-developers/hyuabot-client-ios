@@ -209,7 +209,7 @@ struct TransferProvider: TimelineProvider {
                 stopID = nearestStop.name
             }
 
-            let weekday = widgetWeekdayString()
+            let weekday = widgetWeekday()
             let transitArrivals = await fetchTransit(for: stopID, weekday: weekday)
 
             return TransferEntry(
@@ -312,13 +312,6 @@ private struct ShuttleWidgetResponse: Decodable {
     }
 }
 
-private func widgetWeekdayString() -> String {
-    switch Calendar.current.component(.weekday, from: Foundation.Date.now) {
-    case 1: return "sunday"
-    case 7: return "saturday"
-    default: return "weekday"
-    }
-}
 
 // MARK: - Views
 

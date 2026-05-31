@@ -2,11 +2,13 @@ import Foundation
 
 private let graphqlURL = URL(string: "https://backend.hyuabot.app/graphql")!
 
-func widgetGraphQL<T: Decodable>(query: String, variables: [String: Any]) async throws -> T {
+func widgetGraphQL<T: Decodable>(query: String, variables: [String: Any] = [:]) async throws -> T {
     var request = URLRequest(url: graphqlURL)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.httpBody = try JSONSerialization.data(withJSONObject: ["query": query, "variables": variables])
+    var body: [String: Any] = ["query": query]
+    if !variables.isEmpty { body["variables"] = variables }
+    request.httpBody = try JSONSerialization.data(withJSONObject: body)
     let (data, _) = try await URLSession.shared.data(for: request)
     let response = try JSONDecoder().decode(GraphQLResponse<T>.self, from: data)
     guard let result = response.data else {
@@ -17,4 +19,12 @@ func widgetGraphQL<T: Decodable>(query: String, variables: [String: Any]) async 
 
 struct GraphQLResponse<T: Decodable>: Decodable {
     let data: T?
+}
+
+func widgetWeekday() -> String {
+    switch Calendar.current.component(.weekday, from: Foundation.Date.now) {
+    case 1: return "sunday"
+    case 7: return "saturday"
+    default: return "weekday"
+    }
 }
