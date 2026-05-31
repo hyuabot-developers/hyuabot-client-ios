@@ -108,11 +108,11 @@ query($weekday: String!) {
 """
 
 private let dormitoryBusQuery = """
-query { bus(input: [{ route: 200000015, stop: 216000070, limit: 2 }]) { route { seq name } arrival { minutes stops } } }
+query { bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { route { seq name } arrival { minutes stops } } }
 """
 
 private let terminalBusQuery = """
-query { bus(input: [{ route: 216000104, stop: 216000117, limit: 2 }]) { route { seq name } arrival { minutes stops } } }
+query { bus(input: [{ route: 216000075, stop: 216000117, limit: 2 }]) { route { seq name } arrival { minutes stops } } }
 """
 
 private func boundLabel(stationID: String, fallback: String) -> String {

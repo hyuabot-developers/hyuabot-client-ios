@@ -201,11 +201,11 @@ class ShuttleTransferInfoView: UIView {
             guard let station = data.first(where: { $0.stationID == stationID }) else { continue }
             guard let info = lineMap[stationID] else { continue }
             var parts: [String] = []
-            if let upEntry = station.arrival.first(where: { $0.direction == "up" })?.entries.first {
+            if let upEntry = station.arrival.first(where: { $0.direction == "up" })?.entries.first(where: { $0.isRealtime }) {
                 let name = localizedStationName(stationID: upEntry.terminal.stationID, fallback: upEntry.terminal.name)
                 parts.append(String(format: fmt, upEntry.minutes, name))
             }
-            if let downEntry = station.arrival.first(where: { $0.direction == "down" })?.entries.first {
+            if let downEntry = station.arrival.first(where: { $0.direction == "down" })?.entries.first(where: { $0.isRealtime }) {
                 let name = localizedStationName(stationID: downEntry.terminal.stationID, fallback: downEntry.terminal.name)
                 parts.append(String(format: fmt, downEntry.minutes, name))
             }
@@ -227,19 +227,13 @@ class ShuttleTransferInfoView: UIView {
         loadingIndicator.stopAnimating()
         let timeFmt = String(localized: "transfer.bus.time.format")
         let stopsFmt = String(localized: "transfer.bus.stops.suffix")
-        let timeStrings = data.flatMap { $0.arrival }.prefix(2).compactMap { arrival -> String? in
-            if let m = arrival.minutes {
-                var result = String(format: timeFmt, m)
-                if let s = arrival.stops, s > 0 {
-                    result += String(format: stopsFmt, s)
-                }
-                return result
+        let timeStrings = data.flatMap { $0.arrival }.filter { $0.isRealtime }.prefix(2).compactMap { arrival -> String? in
+            guard let m = arrival.minutes else { return nil }
+            var result = String(format: timeFmt, m)
+            if let s = arrival.stops, s > 0 {
+                result += String(format: stopsFmt, s)
             }
-            if let t = arrival.time {
-                let parts = t.split(separator: ":")
-                return parts.count >= 2 ? "\(parts[0]):\(parts[1])" : nil
-            }
-            return nil
+            return result
         }
         guard !timeStrings.isEmpty else { return }
         let row = TransferRowView(name: label, times: timeStrings.joined(separator: "  "), nameColor: color)
@@ -269,7 +263,7 @@ private func subwayQuery(stationIDs: [String]) -> String {
 
 private let kwangmyeongBusQuery = """
 query {
-    bus(input: [{ route: 200000015, stop: 216000070, limit: 2 }]) {
+    bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) {
         route { seq name }
         arrival { minutes stops isRealtime time }
     }
@@ -278,7 +272,7 @@ query {
 
 private let ansanBusQuery = """
 query {
-    bus(input: [{ route: 216000104, stop: 216000117, limit: 2 }]) {
+    bus(input: [{ route: 216000075, stop: 216000117, limit: 2 }]) {
         route { seq name }
         arrival { minutes stops isRealtime time }
     }
