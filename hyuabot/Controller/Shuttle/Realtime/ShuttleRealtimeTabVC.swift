@@ -89,7 +89,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.view.addSubview(self.shuttleRealtimeTableView)
         self.view.addSubview(self.shuttleRealtimeTableTimeView)
 
-        let transferStops: [ShuttleStopEnum] = [.dormiotryOut, .shuttlecockOut, .terminal]
+        let transferStops: [ShuttleStopEnum] = [.dormiotryOut, .shuttlecockOut]
         if transferStops.contains(self.stopID) {
             let transferView = ShuttleTransferInfoView(stopID: self.stopID)
             self.view.addSubview(transferView)

@@ -196,17 +196,18 @@ class ShuttleTransferInfoView: UIView {
             "K449": (String(localized: "subway.line4"), .line4Color),
             "K251": (String(localized: "subway.suin"), .suinColor)
         ]
+        let fmt = String(localized: "transfer.subway.time.format")
         for stationID in ["K449", "K251"] {
             guard let station = data.first(where: { $0.stationID == stationID }) else { continue }
             guard let info = lineMap[stationID] else { continue }
             var parts: [String] = []
             if let upEntry = station.arrival.first(where: { $0.direction == "up" })?.entries.first {
-                let label = appBoundLabel(stationID: upEntry.terminal.stationID, fallback: upEntry.terminal.name)
-                parts.append("\(label) \(upEntry.minutes)분")
+                let name = localizedStationName(stationID: upEntry.terminal.stationID, fallback: upEntry.terminal.name)
+                parts.append(String(format: fmt, upEntry.minutes, name))
             }
             if let downEntry = station.arrival.first(where: { $0.direction == "down" })?.entries.first {
-                let label = appBoundLabel(stationID: downEntry.terminal.stationID, fallback: downEntry.terminal.name)
-                parts.append("\(label) \(downEntry.minutes)분")
+                let name = localizedStationName(stationID: downEntry.terminal.stationID, fallback: downEntry.terminal.name)
+                parts.append(String(format: fmt, downEntry.minutes, name))
             }
             guard !parts.isEmpty else { continue }
             let row = TransferRowView(name: info.name, times: parts.joined(separator: "  "), nameColor: info.color)
@@ -215,21 +216,23 @@ class ShuttleTransferInfoView: UIView {
         }
     }
 
-    private func appBoundLabel(stationID: String, fallback: String) -> String {
+    private func localizedStationName(stationID: String, fallback: String) -> String {
         let nameKey = "subway.station.\(stationID.lowercased())"
-        let localizedName = String(localized: String.LocalizationValue(stringLiteral: nameKey))
-        let stationName = (localizedName == nameKey) ? fallback : localizedName
-        return String(format: String(localized: "subway.terminal.%@"), stationName)
+        let localized = String(localized: String.LocalizationValue(stringLiteral: nameKey))
+        return (localized == nameKey) ? fallback : localized
     }
 
     @MainActor
     private func renderBus(data: [BusTransferData.BusRoute], label: String, color: UIColor) {
         loadingIndicator.stopAnimating()
+        let timeFmt = String(localized: "transfer.bus.time.format")
+        let stopsFmt = String(localized: "transfer.bus.stops.suffix")
         let timeStrings = data.flatMap { $0.arrival }.prefix(2).compactMap { arrival -> String? in
-            var result: String
             if let m = arrival.minutes {
-                result = "\(m)분"
-                if let s = arrival.stops, s > 0 { result += "(\(s)전 정류장)" }
+                var result = String(format: timeFmt, m)
+                if let s = arrival.stops, s > 0 {
+                    result += String(format: stopsFmt, s)
+                }
                 return result
             }
             if let t = arrival.time {
