@@ -30,4 +30,4 @@ func widgetWeekday() -> String {
     default: return "weekday"
     }
 }
-}
+

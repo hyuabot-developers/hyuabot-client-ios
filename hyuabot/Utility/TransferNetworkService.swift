@@ -18,7 +18,9 @@ func fetchTransferData<T: Decodable>(query: String, variables: [String: Any] = [
 }
 
 func currentWeekdayString() -> String {
-    switch Calendar.current.component(.weekday, from: Date()) {
+    var cal = Calendar.current
+    cal.timeZone = TimeZone(identifier: "Asia/Seoul") ?? cal.timeZone
+    switch cal.component(.weekday, from: Date()) {
     case 1: return "sunday"
     case 7: return "saturday"
     default: return "weekday"
