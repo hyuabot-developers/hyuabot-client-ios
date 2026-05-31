@@ -21,11 +21,17 @@ class ShuttleRealtimeVC: UIViewController {
         $0.text = String(localized: "shuttle.realtime.showByDestination")
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.6
+        $0.lineBreakMode = .byTruncatingTail
     }
     private let shuttleShowDepartureTimeLabel = UILabel().then {
         $0.text = String(localized: "shuttle.realtime.showDepartureTime")
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.6
+        $0.lineBreakMode = .byTruncatingTail
     }
     private lazy var shuttleShowByDestination = UISwitch().then {
         $0.subviews.first?.subviews.first?.backgroundColor = .gray
@@ -173,10 +179,12 @@ class ShuttleRealtimeVC: UIViewController {
         self.shuttleShowByDestinationLabel.snp.makeConstraints { make in
             make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
             make.leading.equalTo(self.shuttleOptionView.snp.leading).offset(10)
+            make.trailing.lessThanOrEqualTo(self.shuttleShowByDestination.snp.leading).offset(-6)
         }
         self.shuttleShowDepartureTimeLabel.snp.makeConstraints { make in
             make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
             make.leading.equalTo(self.shuttleOptionView.snp.centerX).offset(10)
+            make.trailing.lessThanOrEqualTo(self.shuttleShowDepartureTime.snp.leading).offset(-6)
         }
         self.shuttleShowByDestination.snp.makeConstraints { make in
             make.centerY.equalTo(self.shuttleOptionView.snp.centerY)

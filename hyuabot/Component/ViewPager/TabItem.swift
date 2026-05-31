@@ -7,6 +7,9 @@ class TabItem: UIView, TabItemProtocol {
         $0.text = title
         $0.textColor = .white
         $0.textAlignment = .center
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.6
+        $0.lineBreakMode = .byTruncatingTail
     }
     private let indicatorView = UIView().then {
         $0.backgroundColor = .white

@@ -12,16 +12,22 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         var title = AttributedString.init(String(localized: "bus.show.entire.timetable"))
         title.font = .godo(size: 16, weight: .medium)
         conf.attributedTitle = title
+        conf.titleLineBreakMode = .byTruncatingTail
         $0.configuration = conf
         $0.tintColor = .plainButtonText
+        $0.titleLabel?.adjustsFontSizeToFitWidth = true
+        $0.titleLabel?.minimumScaleFactor = 0.6
     }
     private let showDeparuteLogButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "bus.show.departure.log"))
         title.font = .godo(size: 16, weight: .medium)
         conf.attributedTitle = title
+        conf.titleLineBreakMode = .byTruncatingTail
         $0.configuration = conf
         $0.tintColor = .plainButtonText
+        $0.titleLabel?.adjustsFontSizeToFitWidth = true
+        $0.titleLabel?.minimumScaleFactor = 0.6
     }
     private lazy var buttonStackView: UIView = {
         let view = UIView()
