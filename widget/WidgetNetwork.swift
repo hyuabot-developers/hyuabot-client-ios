@@ -22,9 +22,12 @@ struct GraphQLResponse<T: Decodable>: Decodable {
 }
 
 func widgetWeekday() -> String {
-    switch Calendar.current.component(.weekday, from: Foundation.Date.now) {
+    var cal = Calendar.current
+    cal.timeZone = TimeZone(identifier: "Asia/Seoul") ?? cal.timeZone
+    switch cal.component(.weekday, from: Foundation.Date.now) {
     case 1: return "sunday"
     case 7: return "saturday"
     default: return "weekday"
     }
+}
 }
