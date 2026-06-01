@@ -1,4 +1,5 @@
 import UIKit
+import WidgetKit
 
 class SettingCellView: UITableViewCell {
     static let reuseIdentifier = "SettingCellView"
@@ -150,11 +151,13 @@ class SettingCellView: UITableViewCell {
     }
     
     private func selectCampus(_ campus: String.LocalizationValue) {
+        let campusID = campus == "campus.seoul" ? 1 : 2
+        UserDefaults.standard.set(campusID, forKey: "campusID")
+        UserDefaults(suiteName: "group.net.jaram.hyuabot")?.set(campusID, forKey: "campusID")
+        WidgetCenter.shared.reloadTimelines(ofKind: "CafeteriaWidget")
         if campus == "campus.seoul" {
-            UserDefaults.standard.set(1, forKey: "campusID")
             self.setButtonTitle(self.campusButton, "campus.seoul")
         } else {
-            UserDefaults.standard.set(2, forKey: "campusID")
             self.setButtonTitle(self.campusButton, "campus.erica")
         }
     }

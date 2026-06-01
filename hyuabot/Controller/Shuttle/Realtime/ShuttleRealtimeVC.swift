@@ -21,11 +21,17 @@ class ShuttleRealtimeVC: UIViewController {
         $0.text = String(localized: "shuttle.realtime.showByDestination")
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.6
+        $0.lineBreakMode = .byTruncatingTail
     }
     private let shuttleShowDepartureTimeLabel = UILabel().then {
         $0.text = String(localized: "shuttle.realtime.showDepartureTime")
         $0.textColor = .white
         $0.font = .godo(size: 14, weight: .bold)
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.6
+        $0.lineBreakMode = .byTruncatingTail
     }
     private lazy var shuttleShowByDestination = UISwitch().then {
         $0.subviews.first?.subviews.first?.backgroundColor = .gray
@@ -173,10 +179,12 @@ class ShuttleRealtimeVC: UIViewController {
         self.shuttleShowByDestinationLabel.snp.makeConstraints { make in
             make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
             make.leading.equalTo(self.shuttleOptionView.snp.leading).offset(10)
+            make.trailing.lessThanOrEqualTo(self.shuttleShowByDestination.snp.leading).offset(-6)
         }
         self.shuttleShowDepartureTimeLabel.snp.makeConstraints { make in
             make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
             make.leading.equalTo(self.shuttleOptionView.snp.centerX).offset(10)
+            make.trailing.lessThanOrEqualTo(self.shuttleShowDepartureTime.snp.leading).offset(-6)
         }
         self.shuttleShowByDestination.snp.makeConstraints { make in
             make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
@@ -187,15 +195,9 @@ class ShuttleRealtimeVC: UIViewController {
             make.trailing.equalTo(self.shuttleOptionView.snp.trailing).offset(-10)
         }
         self.view.addSubview(viewPager)
-        self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-        }
-        self.helpButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
-            make.width.height.equalTo(50)
         }
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -282,7 +284,7 @@ class ShuttleRealtimeVC: UIViewController {
             }
         }
         Task {
-            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))))
+            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))), cachePolicy: .networkOnly)
             if let data = response?.data {
                 dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
                 dataDelegate.arrival.onNext(data.shuttle.stops)
@@ -379,6 +381,23 @@ class ShuttleRealtimeVC: UIViewController {
     @objc private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
         ShuttleRealtimeData.shared.showArrivalByTime.onNext(sender.isOn)
         UserDefaults.standard.set(sender.isOn, forKey: "showArrivalByTime")
+    }
+}
+
+extension ShuttleRealtimeVC {
+    func scrollToStop(_ stopID: String) {
+        let index: Int
+        switch stopID {
+        case "dormitory_o":  index = 0
+        case "shuttlecock_o": index = 1
+        case "station":      index = 2
+        case "terminal":     index = 3
+        case "jungang_stn":  index = 4
+        case "shuttlecock_i": index = 5
+        default: return
+        }
+        viewPager.tabView.moveToTab(index: index)
+        viewPager.contentView.moveToPage(index: index)
     }
 }
 

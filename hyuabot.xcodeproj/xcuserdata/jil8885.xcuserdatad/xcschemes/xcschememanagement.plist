@@ -44,18 +44,23 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
+		<key>widgetExtension.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>C72A95E02DAA961500979B22</key>
 		<dict>
 			<key>primary</key>
-			<true />
+			<true/>
 		</dict>
 		<key>C7C056EA2D277910007A228B</key>
 		<dict>
 			<key>primary</key>
-			<true />
+			<true/>
 		</dict>
 	</dict>
 </dict>

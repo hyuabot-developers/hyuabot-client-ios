@@ -200,7 +200,7 @@ class BusRealtimeVC: UIViewController {
             }
         }
         Task {
-            let response = try? await Network.shared.client.fetch(query: BusRealtimePageQuery(language: noticeLanguage))
+            let response = try? await Network.shared.client.fetch(query: BusRealtimePageQuery(language: noticeLanguage), cachePolicy: .networkOnly)
             if let data = response?.data {
                 BusRealtimeData.shared.isLoading.onNext(false)
                 BusRealtimeData.shared.busRealtimeData.onNext(data.bus)

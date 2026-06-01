@@ -88,11 +88,29 @@ class ShuttleRealtimeTabVC: UIViewController {
     private func setupUI() {
         self.view.addSubview(self.shuttleRealtimeTableView)
         self.view.addSubview(self.shuttleRealtimeTableTimeView)
-        self.shuttleRealtimeTableView.snp.makeConstraints { (make) in
-            make.edges.equalToSuperview()
-        }
-        self.shuttleRealtimeTableTimeView.snp.makeConstraints { (make) in
-            make.edges.equalToSuperview()
+
+        let transferStops: [ShuttleStopEnum] = [.dormiotryOut, .shuttlecockOut]
+        if transferStops.contains(self.stopID) {
+            let transferView = ShuttleTransferInfoView(stopID: self.stopID)
+            self.view.addSubview(transferView)
+            transferView.snp.makeConstraints { make in
+                make.leading.trailing.bottom.equalToSuperview()
+            }
+            self.shuttleRealtimeTableView.snp.makeConstraints { make in
+                make.top.leading.trailing.equalToSuperview()
+                make.bottom.equalTo(transferView.snp.top)
+            }
+            self.shuttleRealtimeTableTimeView.snp.makeConstraints { make in
+                make.top.leading.trailing.equalToSuperview()
+                make.bottom.equalTo(transferView.snp.top)
+            }
+        } else {
+            self.shuttleRealtimeTableView.snp.makeConstraints { (make) in
+                make.edges.equalToSuperview()
+            }
+            self.shuttleRealtimeTableTimeView.snp.makeConstraints { (make) in
+                make.edges.equalToSuperview()
+            }
         }
     }
     
