@@ -194,7 +194,8 @@ struct CafeteriaProvider: TimelineProvider {
     }
 
     private func fetchEntry(for date: Foundation.Date) async -> CafeteriaEntry {
-        let campusID = UserDefaults(suiteName: appGroupID)?.integer(forKey: "campusID") ?? 2
+        let storedCampusID = UserDefaults(suiteName: appGroupID)?.integer(forKey: "campusID") ?? 0
+        let campusID = storedCampusID == 0 ? 2 : storedCampusID
         let mealType = currentMealType(for: date)
 
         let dateFormatter = DateFormatter()
