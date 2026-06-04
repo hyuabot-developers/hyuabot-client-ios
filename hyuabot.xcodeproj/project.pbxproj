@@ -517,7 +517,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.05.31;
+				MARKETING_VERSION = 26.06.04;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -548,7 +548,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.05.31;
+				MARKETING_VERSION = 26.06.04;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -583,7 +583,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.05.31;
+				MARKETING_VERSION = 26.06.04;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -615,7 +615,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.05.31;
+				MARKETING_VERSION = 26.06.04;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
