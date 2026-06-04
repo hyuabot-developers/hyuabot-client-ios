@@ -55,6 +55,11 @@ class ContactVC: UIViewController {
         notificationToken?.invalidate()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.contact)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -180,6 +185,7 @@ extension ContactVC: UITableViewDelegate, UITableViewDataSource {
         guard let items = try? self.searchResultSubject.value() else { return }
         guard !items.isEmpty else { return }
         let contact = items[indexPath.row]
+        AnalyticsManager.logSelect(.contactSelectRow, type: .listItem, name: contact.name)
         let url = URL(string: "tel://\(contact.phoneNumber)")
         if UIApplication.shared.canOpenURL(url!) {
             UIApplication.shared.open(url!, options: [:], completionHandler: nil)

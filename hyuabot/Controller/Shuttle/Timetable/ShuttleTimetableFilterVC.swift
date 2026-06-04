@@ -128,6 +128,11 @@ class ShuttleTimetableFilterVC: UIViewController {
     private var selectedStartStop: String.LocalizationValue? = nil
     private var selectedEndStop: String.LocalizationValue? = nil
     private var selectedPeriod: String.LocalizationValue? = nil
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.shuttleTimetableFilter)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -199,6 +204,7 @@ class ShuttleTimetableFilterVC: UIViewController {
     }
     
     private func selectStartStop(_ stop: String.LocalizationValue) {
+        AnalyticsManager.logSelect(.shuttleFilterSelectStart, type: .menu)
         self.setStartStopTitle(stop)
         self.selectedStartStop = stop
         if stop == "shuttle.stop.dormitory.out" || stop == "shuttle.stop.shuttlecock.out" {
@@ -211,6 +217,7 @@ class ShuttleTimetableFilterVC: UIViewController {
             ]
             let items = availableEndStops.map { stop in
                 UIAction(title: String(localized: stop), handler: { _ in
+                    AnalyticsManager.logSelect(.shuttleFilterSelectEnd, type: .menu)
                     self.setEndStopTitle(stop)
                     self.selectedEndStop = stop
                 })
@@ -228,6 +235,7 @@ class ShuttleTimetableFilterVC: UIViewController {
             ]
             let items = availableEndStops.map { stop in
                 UIAction(title: String(localized: stop), handler: { _ in
+                    AnalyticsManager.logSelect(.shuttleFilterSelectEnd, type: .menu)
                     self.setEndStopTitle(stop)
                     self.selectedEndStop = stop
                 })
@@ -240,6 +248,7 @@ class ShuttleTimetableFilterVC: UIViewController {
             self.selectedEndStop = "shuttle.destination.shorten.campus"
             let menu = UIMenu(title: "", children: [
                 UIAction(title: String(localized: "shuttle.destination.shorten.campus"), handler: { _ in
+                    AnalyticsManager.logSelect(.shuttleFilterSelectEnd, type: .menu)
                     self.setEndStopTitle("shuttle.destination.shorten.campus")
                     self.selectedEndStop = "shuttle.destination.shorten.campus"
                 })
@@ -250,6 +259,7 @@ class ShuttleTimetableFilterVC: UIViewController {
     }
     
     private func selectPeriod(_ period: String.LocalizationValue) {
+        AnalyticsManager.logSelect(.shuttleFilterSelectPeriod, type: .menu)
         self.setPeriodTitle(period)
         self.selectedPeriod = period
         if (period == "shuttle.period.custom") {
@@ -260,6 +270,7 @@ class ShuttleTimetableFilterVC: UIViewController {
     }
     
     @objc private func okButtonTapped() {
+        AnalyticsManager.logSelect(.shuttleFilterConfirm)
         guard let selectedStartStop = self.selectedStartStop else { return }
         guard let selectedEndStop = self.selectedEndStop else { return }
         if (selectedPeriod == "shuttle.period.custom") {

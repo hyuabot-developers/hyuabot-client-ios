@@ -10,6 +10,11 @@ class SettingVC: UIViewController {
         $0.register(SettingCellView.self, forCellReuseIdentifier: SettingCellView.reuseIdentifier)
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.setting)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -50,6 +55,10 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let titleKeys = ["setting.campus", "setting.theme", "setting.language", "setting.developer", "setting.version"]
+        if indexPath.row < titleKeys.count {
+            AnalyticsManager.logSelect(.settingSelectRow, type: .listItem, name: titleKeys[indexPath.row])
+        }
         if self.titles[indexPath.row] == "setting.language" {
             self.openAppSetting()
         }

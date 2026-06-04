@@ -33,6 +33,7 @@ class ShuttleRealtimeTableFooterView: UIView {
     }
     
     @objc func showStopModalButtonTapped() {
+        AnalyticsManager.logSelect(.shuttleShowStopModal)
         self.showStopModal(stopID)
     }
 }

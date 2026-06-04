@@ -33,9 +33,36 @@ class RootVC: UITabBarController {
         if let moreTableView = self.moreNavigationController.viewControllers.first?.view as? UITableView {
             moreTableView.delegate = self
         }
+        self.delegate = self
         self.setViewControllers([shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC], animated: true)
         // Appearance
         UITabBar.appearance().backgroundColor = .systemBackground
+    }
+
+    /// Maps a tab's view controller to its analytics item for tab-switch tracking.
+    func analyticsItem(for viewController: UIViewController?) -> AnalyticsItem? {
+        switch viewController {
+        case shuttleNC:     return .tabShuttle
+        case busNC:         return .tabBus
+        case subwayNC:      return .tabSubway
+        case cafeteriaNC:   return .tabCafeteria
+        case mapNC:         return .tabMap
+        case readingRoomNC: return .tabReadingRoom
+        case contactNC:     return .tabContact
+        case calendarNC:    return .tabCalendar
+        case settingNC:     return .tabSetting
+        case chatVC:        return .tabChat
+        case donateVC:      return .tabDonate
+        default:            return nil
+        }
+    }
+}
+
+extension RootVC: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        if let item = analyticsItem(for: viewController) {
+            AnalyticsManager.logSelect(item, type: .tab)
+        }
     }
 }
 
@@ -71,6 +98,9 @@ extension RootVC: UITableViewDelegate {
             self.selectedViewController = donateVC
         default:
             break
+        }
+        if let item = analyticsItem(for: self.selectedViewController) {
+            AnalyticsManager.logSelect(item, type: .tab)
         }
     }
 }

@@ -37,6 +37,11 @@ class MapVC: UIViewController {
         $0.register(SearchResultCellView.self, forCellReuseIdentifier: SearchResultCellView.reuseIdentifier)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.map)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -146,6 +151,7 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = try? MapData.shared.searchResult.value()[indexPath.row] else { return }
+        AnalyticsManager.logSelect(.mapSelectSearchResult, type: .listItem, name: item.name)
         MapData.shared.searchMode.onNext(true)
         self.mapView.do {
             $0.removeAnnotations($0.annotations)

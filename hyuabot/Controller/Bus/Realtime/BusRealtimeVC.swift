@@ -98,6 +98,11 @@ class BusRealtimeVC: UIViewController {
             make.center.equalToSuperview()
         }
     }
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.busRealtime)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -247,6 +252,7 @@ class BusRealtimeVC: UIViewController {
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
     @objc func openHelpVC() {
+        AnalyticsManager.logSelect(.busOpenHelp)
         let vc = BusHelpVC()
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]

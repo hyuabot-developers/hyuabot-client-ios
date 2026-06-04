@@ -623,6 +623,7 @@ class ShuttleRealtimeHeaderView: UITableViewHeaderFooterView {
     }
     
     @objc private func toggleRouteAdapter() {
+        AnalyticsManager.logSelect(.shuttleRouteToggle)
         guard let routeAdapter = self.routeAdapter else { return }
         isExpanded.toggle()
         routeAdapter.isHidden = !self.isExpanded

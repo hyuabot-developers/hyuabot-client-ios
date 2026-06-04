@@ -143,6 +143,11 @@ class ShuttleRealtimeVC: UIViewController {
         return viewPager
     }()
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.shuttleRealtime)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -365,6 +370,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
         
     @objc private func openHelpVC() {
+        AnalyticsManager.logSelect(.shuttleOpenHelp)
         let vc = ShuttleHelpVC()
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
@@ -374,11 +380,13 @@ class ShuttleRealtimeVC: UIViewController {
     }
     
     @objc private func onClickDepartureSwitch(sender: UISwitch) {
+        AnalyticsManager.logSelect(.shuttleDepartureSwitch, type: .toggle)
         ShuttleRealtimeData.shared.showRemainingTime.onNext(!sender.isOn)
         UserDefaults.standard.set(!sender.isOn, forKey: "showRemainingTime")
     }
     
     @objc private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
+        AnalyticsManager.logSelect(.shuttleArrivalByTimeSwitch, type: .toggle)
         ShuttleRealtimeData.shared.showArrivalByTime.onNext(sender.isOn)
         UserDefaults.standard.set(sender.isOn, forKey: "showArrivalByTime")
     }

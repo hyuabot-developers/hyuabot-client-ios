@@ -83,11 +83,13 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
     }
     
     @objc func entireTimetableButtonTapped() {
+        AnalyticsManager.logSelect(.busShowEntireTimetable)
         guard let stopID = self.stopID, let title = self.title else { return }
         self.showEntireTimetable?(stopID, routes, title)
     }
     
     @objc func departureLogButtonTapped() {
+        AnalyticsManager.logSelect(.busShowDepartureLog)
         guard let stopID = self.stopID else { return }
         self.showDepartureLog?(stopID, routes)
     }

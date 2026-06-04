@@ -34,6 +34,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     }
     
     @objc func showEntireTimeTable() {
+        AnalyticsManager.logSelect(.shuttleShowEntireTimetable)
         guard let stopID = self.stopID, let section = self.section else { return }
         self.showEntireTimetable?(stopID, section)
     }

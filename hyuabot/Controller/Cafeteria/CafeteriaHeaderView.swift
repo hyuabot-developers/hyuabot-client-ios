@@ -79,6 +79,7 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
     }
     
     @objc private func infoButtonTapped() {
+        AnalyticsManager.logSelect(.cafeteriaInfoButton)
         self.showCafeteriaInfoVC()
     }
 }

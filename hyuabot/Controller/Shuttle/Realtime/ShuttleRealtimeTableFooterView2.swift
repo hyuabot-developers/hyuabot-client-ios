@@ -102,11 +102,13 @@ class ShuttleRealtimeTableFooterView2: UIView {
     }
     
     @objc func showStopModalButtonTapped() {
+        AnalyticsManager.logSelect(.shuttleShowStopModal)
         self.showStopModal(stopID)
     }
     
     
     @objc func showEntireTimeTable(_ sender: UIButton) {
+        AnalyticsManager.logSelect(.shuttleShowEntireTimetable)
         guard let showEntireTimetable = self.showEntireTimetable else { return }
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
             if (sender == self.showEntireTimeTableButton1) {

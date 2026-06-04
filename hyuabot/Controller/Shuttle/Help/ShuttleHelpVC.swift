@@ -16,6 +16,11 @@ class ShuttleHelpVC: UIViewController {
         $0.register(ShuttleHelpItemCell.self, forCellReuseIdentifier: ShuttleViaCellView.reuseIdentifier)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.shuttleHelp)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()

@@ -86,6 +86,7 @@ class BusRealtimeTabVC: UIViewController {
     }
     
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
+        AnalyticsManager.logSelect(.busRefresh)
         self.refreshMethod()
     }
 }

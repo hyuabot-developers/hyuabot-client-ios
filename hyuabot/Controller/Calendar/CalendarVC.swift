@@ -68,6 +68,11 @@ class CalendarVC: UIViewController {
         notificationToken?.invalidate()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.calendar)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()

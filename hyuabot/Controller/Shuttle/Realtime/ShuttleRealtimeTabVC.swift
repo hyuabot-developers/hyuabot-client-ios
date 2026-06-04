@@ -132,6 +132,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
+        AnalyticsManager.logSelect(.shuttleRefresh)
         self.refreshMethod()
     }
 }
@@ -317,6 +318,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView else { return }
         guard let item = cell.itemByDestination else { return }
+        AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
         self.showViaVCByDestination(item)
     }
 }

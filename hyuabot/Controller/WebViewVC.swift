@@ -15,6 +15,7 @@ class WebViewVC: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.logScreenView(.webView)
         let safariVC = SFSafariViewController(url: url)
         present(safariVC, animated: true, completion: {
             self.navigationController?.popViewController(animated: false)

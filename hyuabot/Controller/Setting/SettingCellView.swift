@@ -152,6 +152,7 @@ class SettingCellView: UITableViewCell {
     
     private func selectCampus(_ campus: String.LocalizationValue) {
         let campusID = campus == "campus.seoul" ? 1 : 2
+        AnalyticsManager.logSelect(.settingSelectCampus, type: .menu, name: campusID == 1 ? "seoul" : "erica")
         UserDefaults.standard.set(campusID, forKey: "campusID")
         UserDefaults(suiteName: "group.net.jaram.hyuabot")?.set(campusID, forKey: "campusID")
         WidgetCenter.shared.reloadTimelines(ofKind: "CafeteriaWidget")
@@ -163,6 +164,8 @@ class SettingCellView: UITableViewCell {
     }
     
     private func selectTheme(_ theme: String.LocalizationValue) {
+        let themeName = theme == "theme.system" ? "system" : (theme == "theme.light" ? "light" : "dark")
+        AnalyticsManager.logSelect(.settingSelectTheme, type: .menu, name: themeName)
         let scenes = UIApplication.shared.connectedScenes
         let windowScene = scenes.first as? UIWindowScene
         let window = windowScene?.windows.first

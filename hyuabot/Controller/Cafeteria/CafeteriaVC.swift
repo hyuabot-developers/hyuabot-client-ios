@@ -73,6 +73,11 @@ class CafeteriaVC: UIViewController {
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.cafeteria)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -136,13 +141,16 @@ class CafeteriaVC: UIViewController {
     }
     
     @objc private func previousDateButtonTapped() {
+        AnalyticsManager.logSelect(.cafeteriaPreviousDate, type: .dateControl)
         let date = Calendar.current.date(byAdding: .day, value: -1, to: feedDatePicker.date)
         CafeteriaData.shared.feedDate.onNext(date!)
     }
     @objc private func datePickerValueChanged() {
+        AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
         CafeteriaData.shared.feedDate.onNext(feedDatePicker.date)
     }
     @objc private func nextDateButtonTapped() {
+        AnalyticsManager.logSelect(.cafeteriaNextDate, type: .dateControl)
         let date = Calendar.current.date(byAdding: .day, value: 1, to: feedDatePicker.date)
         CafeteriaData.shared.feedDate.onNext(date!)
     }

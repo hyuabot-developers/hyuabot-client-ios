@@ -51,6 +51,11 @@ class BusStopInfoVC: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.busStopInfo)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
