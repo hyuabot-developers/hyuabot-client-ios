@@ -59,6 +59,11 @@ class SubwayRealtimeVC: UIViewController {
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.subwayRealtime)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()

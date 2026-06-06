@@ -72,6 +72,11 @@ class ShuttleTimetableVC: UIViewController {
         ))
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.shuttleTimetable)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -224,6 +229,7 @@ class ShuttleTimetableVC: UIViewController {
     }
     
     @objc private func openFilterVC() {
+        AnalyticsManager.logSelect(.shuttleOpenFilter)
         let vc = ShuttleTimetableFilterVC()
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom(resolver: { _ in

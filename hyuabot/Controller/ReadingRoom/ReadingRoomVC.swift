@@ -41,6 +41,11 @@ class ReadingRoomVC: UIViewController {
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.readingRoom)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
@@ -64,6 +69,7 @@ class ReadingRoomVC: UIViewController {
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
+        AnalyticsManager.logSelect(.readingRoomRefresh)
         self.fetchReadingRoomData()
     }
     

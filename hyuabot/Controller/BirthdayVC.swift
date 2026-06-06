@@ -106,6 +106,11 @@ class BirthdayVC: UIViewController {
         ])
         return view
     }()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.logScreenView(.birthday)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
@@ -119,6 +124,7 @@ class BirthdayVC: UIViewController {
     }
     
     @objc private func onBackgroundClicked() {
+        AnalyticsManager.logSelect(.birthdayDismiss)
         self.dismiss(animated: true, completion: nil)
         if (backgroundClicked != nil) {
             backgroundClicked!()
@@ -126,6 +132,7 @@ class BirthdayVC: UIViewController {
     }
     
     @objc private func onDoNotShowCheckboxTapped(_ sender: UIButton) {
+        AnalyticsManager.logSelect(.birthdayDoNotShow)
         sender.isSelected.toggle()
         if sender.isSelected {
             UserDefaults.standard.set(true, forKey: "hideBirthdayPopup\(currentYear)")

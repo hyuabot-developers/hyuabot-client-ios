@@ -87,6 +87,7 @@ class ReadingRoomCellView: UITableViewCell {
     }
     
     @objc func alarmButtonTapped() {
+        AnalyticsManager.logSelect(.readingRoomAlarmToggle, type: .toggle)
         guard let item = self.item else { return }
         guard let showSubscribeToastMessage = self.showSubscribeToastMessage else { return }
         guard let showUnsubscribeToastMessage = self.showUnsubscribeToastMessage else { return }

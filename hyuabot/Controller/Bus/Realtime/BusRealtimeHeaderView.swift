@@ -39,6 +39,7 @@ class BusRealtimeHeaderView: UITableViewHeaderFooterView {
     }
     
     @objc private func stopButtonTapped() {
+        AnalyticsManager.logSelect(.busStopButton)
         self.showStopVC()
     }
 }

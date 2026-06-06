@@ -90,6 +90,7 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
         guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView else { return }
         if (cell.itemByOrder != nil) {
             let item = cell.itemByOrder!
+            AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
             self.showViaVC(item)
         }
     }

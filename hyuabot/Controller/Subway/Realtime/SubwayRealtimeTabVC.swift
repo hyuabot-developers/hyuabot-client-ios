@@ -74,6 +74,7 @@ class SubwayRealtimeTabVC: UIViewController {
     }
     
     @objc func refreshTableView(_ sender: UIRefreshControl) {
+        AnalyticsManager.logSelect(.subwayRefresh)
         self.refreshMethod()
     }
 }

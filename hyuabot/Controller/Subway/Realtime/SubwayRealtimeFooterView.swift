@@ -31,6 +31,7 @@ class SubwayRealtimeFooterView: UITableViewHeaderFooterView {
     }
     
     @objc func showEntireTimeTable() {
+        AnalyticsManager.logSelect(.subwayShowEntireTimetable)
         self.showEntireTimetable()
     }
 }

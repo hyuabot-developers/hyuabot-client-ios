@@ -102,6 +102,7 @@ extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleTimetableCellView else { return }
         guard let item = cell.item else { return }
+        AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
         self.showViaVC(item)
     }
 }
