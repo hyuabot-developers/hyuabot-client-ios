@@ -88,7 +88,7 @@ class ReadingRoomVC: UIViewController {
     private func startPolling() {
         self.isLoading.onNext(true)
         self.fetchReadingRoomData()
-        subscription = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
+        subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
             .subscribe(onNext: { _ in
                 self.fetchReadingRoomData()
             })
