@@ -162,7 +162,8 @@ class CalendarVC: UIViewController {
             let response = try? await Network.shared.client.fetch(query: CalendarPageVersionQuery())
             if let data = response?.data {
                 let previousVersion = UserDefaults.standard.string(forKey: "calendarVersion") ?? ""
-                if data.calendar.version != previousVersion {
+                let isEmpty = Database.shared.database.objects(Event.self).isEmpty
+                if data.calendar.version != previousVersion || isEmpty {
                     self.updateEvent()
                 }
             }
