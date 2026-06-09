@@ -28,6 +28,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         ReviewRequestManager.shared.trackLaunch()
+        self.showLanguageSuggestionIfNeeded()
 
         if let urlContext = connectionOptions.urlContexts.first {
             handleDeepLink(urlContext.url)
@@ -79,6 +80,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         default:
             break
         }
+    }
+
+    private func showLanguageSuggestionIfNeeded() {
+        guard LanguageManager.shared.shouldShowSuggestion else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.presentLanguageSuggestion()
+        }
+    }
+
+    private func presentLanguageSuggestion() {
+        guard let rootVC = window?.rootViewController else { return }
+        LanguageManager.shared.markSuggestionShown()
+        let alert = UIAlertController(
+            title: String(localized: "language.suggestion.title"),
+            message: String(localized: "language.suggestion.message"),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "language.open.settings"), style: .default) { _ in
+            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+        })
+        alert.addAction(UIAlertAction(title: String(localized: "language.keep.current"), style: .cancel))
+        rootVC.present(alert, animated: true)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {}
