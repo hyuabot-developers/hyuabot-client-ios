@@ -27,6 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
+        CoachMarkManager.shared.initialize()
         ReviewRequestManager.shared.trackLaunch()
         self.showLanguageSuggestionIfNeeded()
 

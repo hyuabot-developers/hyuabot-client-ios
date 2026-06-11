@@ -119,6 +119,9 @@ class ShuttleRealtimeVC: UIViewController {
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
     }
 
+    private var isShowingCoachMarks = false
+    private var pendingGPSTabIndex: Int?
+    private let widgetCoachMarkAnchor = UIView().then { $0.isUserInteractionEnabled = false }
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView, noticeView: self.noticeView)
@@ -146,6 +149,148 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.shuttleRealtime)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return }
+
+        isShowingCoachMarks = true
+        viewPager.tabView.moveToTab(index: 0)
+        viewPager.contentView.moveToPage(index: 0)
+
+        var items: [CoachMarkItem] = [
+            CoachMarkItem(
+                id: "shuttle.tabs",
+                targetView: viewPager.tabView,
+                title: String(localized: "coach.shuttle.tabs.title"),
+                message: String(localized: "coach.shuttle.tabs.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.byDestination",
+                targetView: shuttleShowByDestination,
+                title: String(localized: "coach.shuttle.byDestination.title"),
+                message: String(localized: "coach.shuttle.byDestination.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.departureTime",
+                targetView: shuttleShowDepartureTime,
+                title: String(localized: "coach.shuttle.departureTime.title"),
+                message: String(localized: "coach.shuttle.departureTime.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.sectionHelp",
+                targetViewProvider: { [weak self] in self?.dormitoryOutTabVC.firstSectionHeaderHelpView },
+                title: String(localized: "coach.shuttle.help.title"),
+                message: String(localized: "coach.shuttle.help.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.row",
+                targetView: dormitoryOutTabVC.visibleTableView,
+                title: String(localized: "coach.shuttle.row.title"),
+                message: String(localized: "coach.shuttle.row.message")
+            ),
+        ]
+
+        if let transferView = dormitoryOutTabVC.transferInfoView {
+            items.append(CoachMarkItem(
+                id: "shuttle.transfer",
+                targetView: transferView,
+                title: String(localized: "coach.shuttle.transfer.title"),
+                message: String(localized: "coach.shuttle.transfer.message")
+            ))
+        }
+
+        items.append(CoachMarkItem(
+            id: "shuttle.widget",
+            targetView: widgetCoachMarkAnchor,
+            title: String(localized: "coach.shuttle.widget.title"),
+            message: String(localized: "coach.shuttle.widget.message")
+        ))
+
+        if !noticeView.isHidden {
+            items.append(CoachMarkItem(
+                id: "shuttle.notice",
+                targetView: noticeView,
+                title: String(localized: "coach.shuttle.notice.title"),
+                message: String(localized: "coach.shuttle.notice.message")
+            ))
+        }
+
+        presentCoachMarks(pageId: "shuttle.realtime", items: items, shouldMarkAsShown: false) { [weak self] in
+            self?.showFooterCoachMarksWhenReady()
+        }
+    }
+
+    private func showFooterCoachMarksWhenReady() {
+        let scroll: () -> Void = { [weak self] in
+            guard let self else { return }
+            self.dormitoryOutTabVC.scrollToFooter()
+            // Wait one extra frame so UITableView finishes rendering section footers
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.presentFooterCoachMarks()
+            }
+        }
+        let isLoaded = (try? ShuttleRealtimeData.shared.arrival.value())?.isEmpty == false
+        if isLoaded {
+            scroll()
+        } else {
+            ShuttleRealtimeData.shared.arrival
+                .filter { !$0.isEmpty }
+                .take(1)
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] _ in
+                    guard let self else { return }
+                    DispatchQueue.main.async { scroll() }
+                })
+                .disposed(by: disposeBag)
+        }
+    }
+
+    private func presentFooterCoachMarks() {
+        let items: [CoachMarkItem] = [
+            CoachMarkItem(
+                id: "shuttle.footer.timetable",
+                targetViewProvider: { [weak self] in self?.dormitoryOutTabVC.lastSectionFooterTimetableButton },
+                title: String(localized: "coach.shuttle.footer.timetable.title"),
+                message: String(localized: "coach.shuttle.footer.timetable.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.footer.stopModal",
+                targetView: dormitoryOutTabVC.tableFooterView1.showStopModalButton,
+                title: String(localized: "coach.shuttle.footer.title"),
+                message: String(localized: "coach.shuttle.footer.message")
+            ),
+        ]
+        let validItems = items.filter { item in
+            guard let v = item.targetView else { return true }
+            return v.window != nil && !v.isHidden
+        }
+        guard !validItems.isEmpty,
+              let window = view.window,
+              !window.subviews.contains(where: { $0 is CoachMarkView }) else {
+            finishCoachMarks()
+            return
+        }
+        let overlay = CoachMarkView()
+        overlay.frame = window.bounds
+        window.addSubview(overlay)
+        overlay.onComplete = { [weak self] in self?.finishCoachMarks() }
+        overlay.present(items: validItems)
+    }
+
+    private func finishCoachMarks() {
+        CoachMarkManager.shared.markPageShown("shuttle.realtime")
+        isShowingCoachMarks = false
+        if let pendingIndex = pendingGPSTabIndex {
+            pendingGPSTabIndex = nil
+            viewPager.tabView.moveToTab(index: pendingIndex)
+            viewPager.contentView.moveToPage(index: pendingIndex)
+            showToastMessage(
+                image: UIImage(systemName: "checkmark.circle.fill"),
+                message: String(localized: "toast.success.shuttle.realtime.location.\(viewPager.tabView.tabs[pendingIndex].title)")
+            )
+        }
     }
 
     override func viewDidLoad() {
@@ -203,6 +348,10 @@ class ShuttleRealtimeVC: UIViewController {
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        }
+        self.view.addSubview(widgetCoachMarkAnchor)
+        widgetCoachMarkAnchor.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -416,13 +565,18 @@ extension ShuttleRealtimeVC: CLLocationManagerDelegate {
         for location in stopLocation {
             distances.append(currentLocation.distance(from: location))
         }
-        let position = distances.firstIndex(of: distances.min()!)
+        let position = distances.firstIndex(of: distances.min()!)!
+        if isShowingCoachMarks {
+            pendingGPSTabIndex = position
+            locationManager.stopUpdatingLocation()
+            return
+        }
         self.showToastMessage(
             image: UIImage(systemName: "checkmark.circle.fill"),
-            message: String(localized: "toast.success.shuttle.realtime.location.\(self.viewPager.tabView.tabs[position!].title)" )
+            message: String(localized: "toast.success.shuttle.realtime.location.\(self.viewPager.tabView.tabs[position].title)")
         )
-        self.viewPager.tabView.moveToTab(index: position!)
-        self.viewPager.contentView.moveToPage(index: position!)
+        self.viewPager.tabView.moveToTab(index: position)
+        self.viewPager.contentView.moveToPage(index: position)
         self.locationManager.stopUpdatingLocation()
     }
     

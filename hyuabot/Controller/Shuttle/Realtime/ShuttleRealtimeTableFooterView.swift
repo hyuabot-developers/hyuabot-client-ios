@@ -3,7 +3,7 @@ import UIKit
 class ShuttleRealtimeTableFooterView: UIView {
     private let showStopModal: ((_ stop: ShuttleStopEnum) -> Void)
     private let stopID: ShuttleStopEnum
-    private let showStopModalButton = UIButton().then {
+    let showStopModalButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "shuttle.show.stop.modal"))
         title.font = .godo(size: 16, weight: .medium)
