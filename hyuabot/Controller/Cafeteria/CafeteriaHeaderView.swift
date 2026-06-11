@@ -13,7 +13,7 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         $0.textAlignment = .center
     }
     private var showCafeteriaInfoVC: () -> () = {}
-    private lazy var infoButton = UIButton().then {
+    lazy var infoButton = UIButton().then {
         $0.setImage(UIImage(systemName: "info.circle"), for: .normal)
         $0.addTarget(self, action: #selector(infoButtonTapped), for: .touchUpInside)
         $0.tintColor = .white

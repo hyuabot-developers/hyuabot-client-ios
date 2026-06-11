@@ -54,6 +54,10 @@ class CafeteriaTabVC: UIViewController {
         self.showCafeteriaInfoVC(cafeteriaID)
     }
     
+    var firstSectionHeaderInfoButton: UIView? {
+        (cafeteriaTableView.headerView(forSection: 0) as? CafeteriaHeaderView)?.infoButton
+    }
+
     func reload() {
         self.cafeteriaTableView.reloadData()
         if (self.cafeteriaTableView.numberOfSections == 0) {

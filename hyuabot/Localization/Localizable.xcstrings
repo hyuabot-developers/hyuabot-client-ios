@@ -8623,6 +8623,64 @@
         }
       }
     },
+    "coach.cafeteria.header.info.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "식당 정보"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cafeteria Info"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "食堂情報"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "餐厅信息"
+          }
+        }
+      }
+    },
+    "coach.cafeteria.header.info.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "버튼을 눌러 식당 이름, 운영 시간 및 위치 정보를 확인하세요"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to view the cafeteria name, operating hours, and location"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボタンをタップして食堂名、営業時間、場所を確認できます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击按钮查看餐厅名称、营业时间及位置信息"
+          }
+        }
+      }
+    },
     "coach.map.search.title": {
       "extractionState": "manual",
       "localizations": {
