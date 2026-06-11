@@ -8,7 +8,7 @@ class BusRealtimeHeaderView: UITableViewHeaderFooterView {
         $0.textAlignment = .center
     }
     private var showStopVC: () -> () = {}
-    private lazy var locationButton = UIButton().then {
+    lazy var locationButton = UIButton().then {
         $0.setImage(UIImage(systemName: "location.magnifyingglass"), for: .normal)
         $0.addTarget(self, action: #selector(stopButtonTapped), for: .touchUpInside)
         $0.tintColor = .white

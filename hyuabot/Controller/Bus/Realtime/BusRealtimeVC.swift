@@ -101,6 +101,70 @@ class BusRealtimeVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.busRealtime)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        guard CoachMarkManager.shared.shouldShowPage("bus.realtime") else { return }
+        let isLoaded = (try? BusRealtimeData.shared.isLoading.value()) == false
+        if isLoaded {
+            presentBusRealtimeCoachMarks()
+        } else {
+            BusRealtimeData.shared.isLoading
+                .filter { !$0 }
+                .take(1)
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        self?.presentBusRealtimeCoachMarks()
+                    }
+                })
+                .disposed(by: disposeBag)
+        }
+    }
+
+    private func presentBusRealtimeCoachMarks() {
+        var items: [CoachMarkItem] = [
+            CoachMarkItem(
+                id: "bus.tabs",
+                targetView: viewPager.tabView,
+                title: String(localized: "coach.bus.tabs.title"),
+                message: String(localized: "coach.bus.tabs.message")
+            ),
+        ]
+        if !noticeView.isHidden {
+            items.append(CoachMarkItem(
+                id: "bus.notice",
+                targetView: noticeView,
+                title: String(localized: "coach.bus.notice.title"),
+                message: String(localized: "coach.bus.notice.message")
+            ))
+        }
+        items.append(CoachMarkItem(
+            id: "bus.help",
+            targetView: helpButton,
+            title: String(localized: "coach.bus.help.title"),
+            message: String(localized: "coach.bus.help.message")
+        ))
+        items.append(CoachMarkItem(
+            id: "bus.header.location",
+            targetViewProvider: { [weak self] in self?.cityBusTabVC.firstSectionHeaderLocationButton },
+            title: String(localized: "coach.bus.header.location.title"),
+            message: String(localized: "coach.bus.header.location.message")
+        ))
+        items.append(CoachMarkItem(
+            id: "bus.footer.timetable",
+            targetViewProvider: { [weak self] in self?.cityBusTabVC.firstSectionFooterTimetableButton },
+            title: String(localized: "coach.bus.footer.timetable.title"),
+            message: String(localized: "coach.bus.footer.timetable.message")
+        ))
+        items.append(CoachMarkItem(
+            id: "bus.footer.log",
+            targetViewProvider: { [weak self] in self?.cityBusTabVC.firstSectionFooterLogButton },
+            title: String(localized: "coach.bus.footer.log.title"),
+            message: String(localized: "coach.bus.footer.log.message")
+        ))
+        presentCoachMarks(pageId: "bus.realtime", items: items)
     }
 
     override func viewDidLoad() {

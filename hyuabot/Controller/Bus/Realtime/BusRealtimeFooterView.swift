@@ -7,7 +7,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
     private var stopID: Int32?
     private var routes: [Int32] = []
     private var title: String.LocalizationValue?
-    private let showEntireTimeTableButton = UIButton().then {
+    let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "bus.show.entire.timetable"))
         title.font = .godo(size: 16, weight: .medium)
@@ -18,7 +18,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         $0.titleLabel?.adjustsFontSizeToFitWidth = true
         $0.titleLabel?.minimumScaleFactor = 0.6
     }
-    private let showDeparuteLogButton = UIButton().then {
+    let showDeparuteLogButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "bus.show.departure.log"))
         title.font = .godo(size: 16, weight: .medium)
