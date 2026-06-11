@@ -8449,6 +8449,64 @@
         }
       }
     },
+    "coach.subway.transfer.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "환승 정보"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer Info"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "乗換情報"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "换乘信息"
+          }
+        }
+      }
+    },
+    "coach.subway.transfer.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오이도역에서 수인선으로 환승하면 인천에서 한대앞까지 직통으로 가는 것보다 빠를 수 있어요. 환승 정보를 확인하고 더 빠르게 이동하세요"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transferring to the Suin Line at Oido Station can be faster than riding directly from Incheon to Hanyang University. Check transfer info for a quicker route"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "烏耳島駅で水仁線に乗り換えると、仁川から漢大前まで直通より速い場合があります。乗換情報を確認してより早く移動しましょう"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在鸟耳岛站换乘水仁线，可能比从仁川直达汉阳大学站更快。查看换乘信息，选择更快的路线"
+          }
+        }
+      }
+    },
     "coach.cafeteria.date.title": {
       "extractionState": "manual",
       "localizations": {

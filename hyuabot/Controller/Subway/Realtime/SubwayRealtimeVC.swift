@@ -62,6 +62,24 @@ class SubwayRealtimeVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.subwayRealtime)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        presentCoachMarks(pageId: "subway.realtime", items: [
+            CoachMarkItem(
+                id: "subway.tabs",
+                targetView: viewPager.tabView,
+                title: String(localized: "coach.subway.tabs.title"),
+                message: String(localized: "coach.subway.tabs.message")
+            ),
+            CoachMarkItem(
+                id: "subway.transfer",
+                targetViewProvider: { [weak self] in self?.viewPager.tabView.tabCellView(at: 2) },
+                title: String(localized: "coach.subway.transfer.title"),
+                message: String(localized: "coach.subway.transfer.message")
+            ),
+        ])
     }
 
     override func viewDidLoad() {
