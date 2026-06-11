@@ -38,6 +38,10 @@ class ShuttleTimetableTabVC: UIViewController {
         }
     }
     
+    var firstVisibleCell: UIView? {
+        shuttleTimetableTableView.visibleCells.first
+    }
+
     func reload() {
         self.shuttleTimetableTableView.reloadData()
         if (self.isWeekdays) {

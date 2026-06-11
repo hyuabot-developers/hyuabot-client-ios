@@ -8042,6 +8042,180 @@
           }
         }
       }
+    },
+    "coach.shuttle.timetable.tabs.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "평일/주말 시간표"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekday/Weekend Timetable"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平日/週末時刻表"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作日/周末时刻表"
+          }
+        }
+      }
+    },
+    "coach.shuttle.timetable.tabs.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "탭을 눌러 평일과 주말 시간표를 각각 확인하세요"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to view weekday and weekend timetables separately"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タブをタップして平日と週末の時刻表をそれぞれ確認できます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击标签分别查看工作日和周末的时刻表"
+          }
+        }
+      }
+    },
+    "coach.shuttle.timetable.row.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간표 행"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timetable Row"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時刻表の行"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时刻表行"
+          }
+        }
+      }
+    },
+    "coach.shuttle.timetable.row.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "행을 탭하면 해당 시각에 출발하는 셔틀버스가 각 정류장에 도착하는 시간을 확인할 수 있습니다"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a row to see the arrival times at each stop for the shuttle departing at that time"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "行をタップすると、その時刻に出発するシャトルバスの各停留所への到着時刻を確認できます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击行可查看该时刻出发的班车在各站的到达时间"
+          }
+        }
+      }
+    },
+    "coach.shuttle.timetable.filter.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검색 조건 변경"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Search Conditions"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "検索条件の変更"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改搜索条件"
+          }
+        }
+      }
+    },
+    "coach.shuttle.timetable.filter.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "버튼을 탭하면 기간·날짜·출발지에서 목적지로 가는 시간표 검색 조건을 수정할 수 있습니다"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to modify the timetable search conditions including period, date, and origin to destination"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボタンをタップすると、期間・日付・出発地から目的地への時刻表の検索条件を変更できます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击按钮可修改时刻表搜索条件，包括时间段、日期以及出发地到目的地"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
