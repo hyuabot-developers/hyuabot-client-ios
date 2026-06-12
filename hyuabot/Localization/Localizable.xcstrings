@@ -7434,6 +7434,64 @@
         }
       }
     },
+    "coach.root.more.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더보기"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "もっと見る"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更多"
+          }
+        }
+      }
+    },
+    "coach.root.more.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• 열람실 잔여 좌석 조회, 빈자리 알림\n• 건물 및 강의실 검색\n• 학교 전화번호 검색\n• 학사일정\n• 언어, 캠퍼스, 앱 테마 설정"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• Reading room seat availability & vacancy alerts\n• Building and classroom search\n• Campus phone directory\n• Academic calendar\n• Language, campus, and app theme settings"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• 閲覧室の残席確認・空席通知\n• 建物・講義室の検索\n• 学校の電話番号検索\n• 学事暦\n• 言語・キャンパス・アプリテーマ設定"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• 阅览室剩余座位查询及空位提醒\n• 建筑及教室搜索\n• 学校电话号码搜索\n• 学事历\n• 语言、校区、应用主题设置"
+          }
+        }
+      }
+    },
     "coach.shuttle.byDestination.title": {
       "extractionState": "manual",
       "localizations": {

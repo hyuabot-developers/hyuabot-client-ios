@@ -34,9 +34,14 @@ final class CoachMarkManager {
 
     func markPageShown(_ pageId: String, version: Int = 1) {
         UserDefaults.standard.set(true, forKey: pageKey(pageId, version))
+        NotificationCenter.default.post(name: .coachMarkPageShown, object: nil, userInfo: ["pageId": pageId])
     }
 
     private func pageKey(_ pageId: String, _ version: Int) -> String {
         "coachMark.\(pageId).v\(version)"
     }
+}
+
+extension Notification.Name {
+    static let coachMarkPageShown = Notification.Name("CoachMarkPageShown")
 }
