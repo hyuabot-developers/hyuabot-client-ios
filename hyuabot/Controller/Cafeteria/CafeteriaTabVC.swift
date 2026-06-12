@@ -54,6 +54,13 @@ class CafeteriaTabVC: UIViewController {
         self.showCafeteriaInfoVC(cafeteriaID)
     }
     
+    private func languageFilteredMenus(
+        _ menus: [CafeteriaPageQuery.Data.Cafeterium.Menu],
+        type: String
+    ) -> [CafeteriaPageQuery.Data.Cafeterium.Menu] {
+        return menus.filter { $0.type.contains(type) }
+    }
+
     var firstSectionHeaderInfoButton: UIView? {
         (cafeteriaTableView.headerView(forSection: 0) as? CafeteriaHeaderView)?.infoButton
     }
@@ -112,30 +119,30 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
-            return cafeteriaItems[section].menus.filter({ $0.type.contains("조식") }).count
+            return languageFilteredMenus(cafeteriaItems[section].menus, type: "조식").count
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return 0 }
-            return cafeteriaItems[section].menus.filter({ $0.type.contains("중식") }).count
+            return languageFilteredMenus(cafeteriaItems[section].menus, type: "중식").count
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return 0 }
-            return cafeteriaItems[section].menus.filter({ $0.type.contains("석식") }).count
+            return languageFilteredMenus(cafeteriaItems[section].menus, type: "석식").count
         }
         return 0
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CafeteriaMenuCellView.reuseIdentifier) as? CafeteriaMenuCellView else { return UITableViewCell() }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menus.filter({ $0.type.contains("조식") })[indexPath.row]
+            let item = languageFilteredMenus(cafeteriaItems[indexPath.section].menus, type: "조식")[indexPath.row]
             cell.setupUI(item: item)
         } else if (self.cafeteriaType == .lunch) {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menus.filter({ $0.type.contains("중식") })[indexPath.row]
+            let item = languageFilteredMenus(cafeteriaItems[indexPath.section].menus, type: "중식")[indexPath.row]
             cell.setupUI(item: item)
         } else if (self.cafeteriaType == .dinner) {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UITableViewCell() }
-            let item = cafeteriaItems[indexPath.section].menus.filter({ $0.type.contains("석식") })[indexPath.row]
+            let item = languageFilteredMenus(cafeteriaItems[indexPath.section].menus, type: "석식")[indexPath.row]
             cell.setupUI(item: item)
         }
         return cell

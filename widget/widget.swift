@@ -211,15 +211,27 @@ struct CafeteriaProvider: TimelineProvider {
             )
 
             let typeStr = mealType.typeString
+            let isKorean = (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
+            let hangulRegex = try! NSRegularExpression(pattern: "\\p{Hangul}")
+            func localizedFood(_ food: String) -> String {
+                let cleaned = food.replacingOccurrences(of: "\"", with: "")
+                guard isKorean else { return cleaned }
+                let tokens = cleaned.components(separatedBy: .whitespaces)
+                let filtered = tokens.filter { token in
+                    hangulRegex.firstMatch(in: token, range: NSRange(token.startIndex..., in: token)) != nil
+                }
+                let result = filtered.joined(separator: " ")
+                return result.isEmpty ? cleaned : result
+            }
             let items: [CafeteriaMenuItem] = response.cafeteria
                 .filter { $0.menus.contains(where: { $0.type.contains(typeStr) }) }
                 .sorted { $0.seq < $1.seq }
                 .compactMap { cafe in
-                    let filtered = cafe.menus.filter { $0.type.contains(typeStr) }
-                    guard !filtered.isEmpty else { return nil }
-                    let menus = filtered.map { m in
+                    let typed = cafe.menus.filter { $0.type.contains(typeStr) }
+                    guard !typed.isEmpty else { return nil }
+                    let menus = typed.map { m in
                         CafeteriaMenuRow(
-                            food: m.food,
+                            food: localizedFood(m.food),
                             price: m.price
                                 .replacingOccurrences(of: "원", with: "")
                                 .trimmingCharacters(in: .whitespaces)
