@@ -5,6 +5,8 @@ import SnapKit
 
 private class CoachMarkTooltipView: UIView {
     var onNext: (() -> Void)?
+    var onPrev: (() -> Void)?
+    var onSkip: (() -> Void)?
 
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 15, weight: .bold)
@@ -15,6 +17,17 @@ private class CoachMarkTooltipView: UIView {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .secondaryLabel
         $0.numberOfLines = 0
+    }
+    private lazy var skipButton = UIButton(type: .system).then {
+        $0.titleLabel?.font = .godo(size: 13, weight: .regular)
+        $0.setTitleColor(.tertiaryLabel, for: .normal)
+        $0.setTitle(String(localized: "coach.skip"), for: .normal)
+        $0.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
+    }
+    private lazy var prevButton = UIButton(type: .system).then {
+        $0.titleLabel?.font = .godo(size: 14, weight: .bold)
+        $0.setTitle(String(localized: "coach.prev"), for: .normal)
+        $0.addTarget(self, action: #selector(prevTapped), for: .touchUpInside)
     }
     private lazy var nextButton = UIButton(type: .system).then {
         $0.titleLabel?.font = .godo(size: 14, weight: .bold)
@@ -37,6 +50,8 @@ private class CoachMarkTooltipView: UIView {
 
         addSubview(titleLabel)
         addSubview(messageLabel)
+        addSubview(skipButton)
+        addSubview(prevButton)
         addSubview(nextButton)
         addSubview(counterLabel)
 
@@ -56,6 +71,14 @@ private class CoachMarkTooltipView: UIView {
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().inset(14)
         }
+        prevButton.snp.makeConstraints { make in
+            make.trailing.equalTo(nextButton.snp.leading).offset(-12)
+            make.centerY.equalTo(nextButton)
+        }
+        skipButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalTo(nextButton)
+        }
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -65,9 +88,13 @@ private class CoachMarkTooltipView: UIView {
         messageLabel.text = message
         nextButton.setTitle(buttonTitle, for: .normal)
         counterLabel.text = "\(current) / \(total)"
+        prevButton.isHidden = current <= 1
+        skipButton.isHidden = total <= 1 || current == total
     }
 
     @objc private func nextTapped() { onNext?() }
+    @objc private func prevTapped() { onPrev?() }
+    @objc private func skipTapped() { onSkip?() }
 }
 
 // MARK: - CoachMarkView
@@ -88,6 +115,8 @@ class CoachMarkView: UIView {
 
         addSubview(tooltip)
         tooltip.onNext = { [weak self] in self?.advance() }
+        tooltip.onPrev = { [weak self] in self?.goBack() }
+        tooltip.onSkip = { [weak self] in self?.dismiss() }
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         addGestureRecognizer(tap)
@@ -177,6 +206,15 @@ class CoachMarkView: UIView {
             self.tooltip.alpha = 0
         }) { _ in
             self.show(at: self.currentIndex + 1)
+        }
+    }
+
+    private func goBack() {
+        guard currentIndex > 0 else { return }
+        UIView.animate(withDuration: 0.15, animations: {
+            self.tooltip.alpha = 0
+        }) { _ in
+            self.show(at: self.currentIndex - 1)
         }
     }
 
