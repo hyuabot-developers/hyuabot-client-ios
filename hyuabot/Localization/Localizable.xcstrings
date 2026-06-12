@@ -9029,6 +9029,64 @@
         }
       }
     },
+    "coach.contact.item.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전화 연결"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "電話発信"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拨打电话"
+          }
+        }
+      }
+    },
+    "coach.contact.item.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "항목을 누르면 해당 번호로 바로 전화를 걸 수 있어요"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap an item to directly call that number"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "項目をタップすると、その番号に直接電話をかけられます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击条目可直接拨打该号码"
+          }
+        }
+      }
+    },
     "coach.calendar.calendar.title": {
       "extractionState": "manual",
       "localizations": {

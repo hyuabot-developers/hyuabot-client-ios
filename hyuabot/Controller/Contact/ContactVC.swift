@@ -58,6 +58,60 @@ class ContactVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.contact)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        presentCoachMarks(
+            pageId: "contact",
+            items: [
+                CoachMarkItem(
+                    id: "contact.search",
+                    targetView: searchController.searchBar,
+                    title: String(localized: "coach.contact.search.title"),
+                    message: String(localized: "coach.contact.search.message")
+                ),
+            ],
+            shouldMarkAsShown: false,
+            onComplete: { [weak self] in self?.showContactItemCoachMarkWhenReady() }
+        )
+    }
+
+    private func showContactItemCoachMarkWhenReady() {
+        if let items = try? searchResultSubject.value(), !items.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.presentContactItemCoachMark()
+            }
+            return
+        }
+        searchResultSubject
+            .filter { !$0.isEmpty }
+            .take(1)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    self?.presentContactItemCoachMark()
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func presentContactItemCoachMark() {
+        presentCoachMarks(
+            pageId: "contact",
+            items: [
+                CoachMarkItem(
+                    id: "contact.item",
+                    targetViewProvider: { [weak self] in
+                        self?.searchResultView.cellForRow(at: IndexPath(row: 0, section: 0))
+                    },
+                    title: String(localized: "coach.contact.item.title"),
+                    message: String(localized: "coach.contact.item.message")
+                ),
+            ],
+            shouldMarkAsShown: false,
+            onComplete: { CoachMarkManager.shared.markPageShown("contact") }
+        )
     }
 
     override func viewDidLoad() {
