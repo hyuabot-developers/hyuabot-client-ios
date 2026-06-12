@@ -12,7 +12,7 @@ class ReadingRoomCellView: UITableViewCell {
         $0.font = .godo(size: 16, weight: .bold)
         $0.numberOfLines = 1
     }
-    private lazy var alarmButton = UIButton().then {
+    lazy var alarmButton = UIButton().then {
         $0.setImage(UIImage(systemName: "bell"), for: .normal)
         $0.tintColor = .plainButtonText
         $0.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)

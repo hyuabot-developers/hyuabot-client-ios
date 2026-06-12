@@ -8913,6 +8913,64 @@
         }
       }
     },
+    "coach.readingroom.alarm.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잔여 좌석 알림"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seat Availability Alert"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残席通知"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "剩余座位提醒"
+          }
+        }
+      }
+    },
+    "coach.readingroom.alarm.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "벨 아이콘을 누르면 잔여 좌석이 생겼을 때 알림을 받을 수 있어요"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the bell icon to get notified when a seat becomes available"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ベルアイコンをタップすると、空席が出た際に通知を受け取れます"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击铃铛图标，当有空位时可接收通知"
+          }
+        }
+      }
+    },
     "coach.contact.search.title": {
       "extractionState": "manual",
       "localizations": {
