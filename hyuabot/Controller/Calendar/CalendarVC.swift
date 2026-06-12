@@ -148,7 +148,10 @@ class CalendarVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         logScreenView(.calendar)
-        showCoachMarksIfNeeded()
+        scrollView.layoutIfNeeded()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.showCoachMarksIfNeeded()
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -546,7 +549,13 @@ class CalendarVC: UIViewController {
     private func showCoachMarksIfNeeded() {
         presentCoachMarks(pageId: "calendar", items: [
             CoachMarkItem(
-                id: "calendar.calendar",
+                id: "calendar.nav",
+                targetView: monthNavView,
+                title: String(localized: "coach.calendar.nav.title"),
+                message: String(localized: "coach.calendar.nav.message")
+            ),
+            CoachMarkItem(
+                id: "calendar.date",
                 targetView: calendarCollectionView,
                 title: String(localized: "coach.calendar.calendar.title"),
                 message: String(localized: "coach.calendar.calendar.message")
