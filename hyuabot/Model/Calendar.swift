@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Api
 import RealmSwift
 
@@ -48,5 +49,43 @@ extension Event {
     static func fetchAll() -> Results<Event> {
         let realm = Database.shared.database
         return realm.objects(Event.self)
+    }
+
+    private static let dateOnlyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return f
+    }()
+
+    private var startDateOnly: String { String(startDate.prefix(10)) }
+    private var endDateOnly: String { String(endDate.prefix(10)) }
+
+    var isSingleDay: Bool { startDateOnly == endDateOnly }
+
+    var isOngoing: Bool {
+        let today = Self.dateOnlyFormatter.string(from: Date())
+        return startDateOnly <= today && endDateOnly >= today
+    }
+
+    var isPast: Bool {
+        let today = Self.dateOnlyFormatter.string(from: Date())
+        return endDateOnly < today
+    }
+
+    var daysUntilStart: Int? {
+        let today = Self.dateOnlyFormatter.string(from: Date())
+        guard startDateOnly > today else { return nil }
+        guard let start = Self.dateOnlyFormatter.date(from: startDateOnly) else { return nil }
+        return Calendar.current.dateComponents([.day], from: Date(), to: start).day
+    }
+
+    private static let categoryPalette: [UIColor] = [
+        .systemBlue, .systemOrange, .systemGreen, .systemPurple,
+        .systemRed, .systemTeal, .systemIndigo, .systemBrown
+    ]
+
+    var categoryColor: UIColor {
+        Self.categoryPalette[abs(categoryID) % Self.categoryPalette.count]
     }
 }
