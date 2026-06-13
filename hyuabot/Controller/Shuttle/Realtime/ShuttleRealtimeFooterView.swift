@@ -5,7 +5,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
     private var stopID: ShuttleStopEnum?
     private var section: Int?
-    private let showEntireTimeTableButton = UIButton().then {
+    let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "shuttle.show.entire.timetable"))
         title.font = .godo(size: 16, weight: .medium)

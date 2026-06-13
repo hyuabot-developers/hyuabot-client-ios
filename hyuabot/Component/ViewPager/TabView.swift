@@ -59,6 +59,12 @@ class TabView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    var currentIndex: Int { selectedIndex }
+
+    func tabCellView(at index: Int) -> UIView? {
+        collectionView.cellForItem(at: IndexPath(item: index, section: 0))
+    }
+
     func moveToTab(index: Int) {
         self.collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
         self.tabs[selectedIndex].onDeselected()

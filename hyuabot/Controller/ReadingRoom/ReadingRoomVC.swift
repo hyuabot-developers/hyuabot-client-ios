@@ -44,6 +44,62 @@ class ReadingRoomVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.readingRoom)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        guard CoachMarkManager.shared.shouldShowPage("readingroom") else { return }
+        if let items = try? roomSubject.value(), !items.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.presentListCoachMark()
+            }
+            return
+        }
+        roomSubject
+            .filter { !$0.isEmpty }
+            .take(1)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    self?.presentListCoachMark()
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func presentListCoachMark() {
+        presentCoachMarks(
+            pageId: "readingroom",
+            items: [
+                CoachMarkItem(
+                    id: "readingroom.list",
+                    targetView: readingRoomView,
+                    title: String(localized: "coach.readingroom.list.title"),
+                    message: String(localized: "coach.readingroom.list.message")
+                ),
+            ],
+            shouldMarkAsShown: false,
+            onComplete: { [weak self] in self?.presentAlarmCoachMark() }
+        )
+    }
+
+    private func presentAlarmCoachMark() {
+        presentCoachMarks(
+            pageId: "readingroom",
+            items: [
+                CoachMarkItem(
+                    id: "readingroom.alarm",
+                    targetViewProvider: { [weak self] in
+                        let ip = IndexPath(row: 0, section: 0)
+                        return (self?.readingRoomView.cellForRow(at: ip) as? ReadingRoomCellView)?.alarmButton
+                    },
+                    title: String(localized: "coach.readingroom.alarm.title"),
+                    message: String(localized: "coach.readingroom.alarm.message")
+                ),
+            ],
+            shouldMarkAsShown: false,
+            onComplete: { CoachMarkManager.shared.markPageShown("readingroom") }
+        )
     }
 
     override func viewDidLoad() {

@@ -10,7 +10,7 @@ class ShuttleRealtimeHeaderView: UITableViewHeaderFooterView {
         $0.textColor = .white
         $0.textAlignment = .center
     }
-    private lazy var helpImageView = UIImageView(image: UIImage(systemName: "questionmark.message")).then {
+    lazy var helpImageView = UIImageView(image: UIImage(systemName: "questionmark.message")).then {
         $0.tintColor = .white
         $0.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleRouteAdapter))

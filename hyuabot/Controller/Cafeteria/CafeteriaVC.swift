@@ -76,6 +76,60 @@ class CafeteriaVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.cafeteria)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        guard CoachMarkManager.shared.shouldShowPage("cafeteria") else { return }
+        presentCoachMarks(pageId: "cafeteria", items: [
+            CoachMarkItem(
+                id: "cafeteria.date",
+                targetView: feedDatePicker,
+                title: String(localized: "coach.cafeteria.date.title"),
+                message: String(localized: "coach.cafeteria.date.message")
+            ),
+            CoachMarkItem(
+                id: "cafeteria.tabs",
+                targetView: viewPager.tabView,
+                title: String(localized: "coach.cafeteria.tabs.title"),
+                message: String(localized: "coach.cafeteria.tabs.message")
+            ),
+        ], shouldMarkAsShown: false, onComplete: { [weak self] in
+            self?.showHeaderCoachMarkWhenReady()
+        })
+    }
+
+    private func showHeaderCoachMarkWhenReady() {
+        let isLoaded = (try? CafeteriaData.shared.lunchItems.value())?.isEmpty == false
+        if isLoaded {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.presentHeaderCoachMark()
+            }
+        } else {
+            CafeteriaData.shared.lunchItems
+                .filter { !$0.isEmpty }
+                .take(1)
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        self?.presentHeaderCoachMark()
+                    }
+                })
+                .disposed(by: disposeBag)
+        }
+    }
+
+    private func presentHeaderCoachMark() {
+        presentCoachMarks(pageId: "cafeteria", items: [
+            CoachMarkItem(
+                id: "cafeteria.header.info",
+                targetViewProvider: { [weak self] in self?.breakfastVC.firstSectionHeaderInfoButton },
+                title: String(localized: "coach.cafeteria.header.info.title"),
+                message: String(localized: "coach.cafeteria.header.info.message")
+            ),
+        ], shouldMarkAsShown: false, onComplete: {
+            CoachMarkManager.shared.markPageShown("cafeteria")
+        })
     }
 
     override func viewDidLoad() {

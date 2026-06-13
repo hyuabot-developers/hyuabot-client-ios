@@ -325,6 +325,8 @@
 				en,
 				Base,
 				ko,
+				ja,
+				"zh-Hans",
 			);
 			mainGroup = C7C056E22D277910007A228B;
 			minimizedProjectReferenceProxies = 1;
@@ -583,7 +585,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.06.04;
+				MARKETING_VERSION = 26.06.12;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -615,7 +617,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.06.04;
+				MARKETING_VERSION = 26.06.12;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";

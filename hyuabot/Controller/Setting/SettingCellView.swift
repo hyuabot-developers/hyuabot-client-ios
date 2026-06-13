@@ -74,11 +74,11 @@ class SettingCellView: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.setupUI()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func setupUI() {
         self.selectionStyle = .none
         self.contentView.addSubview(self.iconImageView)
@@ -113,7 +113,7 @@ class SettingCellView: UITableViewCell {
             make.centerY.equalToSuperview()
         }
     }
-    
+
     func setupUI(imageName: String, title: String.LocalizationValue) {
         self.iconImageView.image = UIImage(systemName: imageName)
         self.titleLabel.text = String(localized: title)
@@ -149,7 +149,7 @@ class SettingCellView: UITableViewCell {
             self.contentLabel.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         }
     }
-    
+
     private func selectCampus(_ campus: String.LocalizationValue) {
         let campusID = campus == "campus.seoul" ? 1 : 2
         AnalyticsManager.logSelect(.settingSelectCampus, type: .menu, name: campusID == 1 ? "seoul" : "erica")
@@ -162,7 +162,7 @@ class SettingCellView: UITableViewCell {
             self.setButtonTitle(self.campusButton, "campus.erica")
         }
     }
-    
+
     private func selectTheme(_ theme: String.LocalizationValue) {
         let themeName = theme == "theme.system" ? "system" : (theme == "theme.light" ? "light" : "dark")
         AnalyticsManager.logSelect(.settingSelectTheme, type: .menu, name: themeName)
@@ -183,7 +183,7 @@ class SettingCellView: UITableViewCell {
             self.setButtonTitle(self.themeButton, "theme.dark")
         }
     }
-    
+
     private func setButtonTitle(_ button: UIButton, _ title: String.LocalizationValue) {
         var config = button.configuration
         var title = AttributedString.init(String(localized: title))

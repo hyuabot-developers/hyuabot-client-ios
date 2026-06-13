@@ -75,6 +75,50 @@ class ShuttleTimetableVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.shuttleTimetable)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        guard CoachMarkManager.shared.shouldShowPage("shuttle.timetable") else { return }
+        let isLoaded = (try? ShuttleTimetableData.shared.weekdays.value())?.isEmpty == false
+        if isLoaded {
+            presentTimetableCoachMarks()
+        } else {
+            ShuttleTimetableData.shared.weekdays
+                .filter { !$0.isEmpty }
+                .take(1)
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        self?.presentTimetableCoachMarks()
+                    }
+                })
+                .disposed(by: disposeBag)
+        }
+    }
+
+    private func presentTimetableCoachMarks() {
+        let items: [CoachMarkItem] = [
+            CoachMarkItem(
+                id: "shuttle.timetable.tabs",
+                targetView: viewPager.tabView,
+                title: String(localized: "coach.shuttle.timetable.tabs.title"),
+                message: String(localized: "coach.shuttle.timetable.tabs.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.timetable.row",
+                targetView: viewPager.contentView,
+                title: String(localized: "coach.shuttle.timetable.row.title"),
+                message: String(localized: "coach.shuttle.timetable.row.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.timetable.filter",
+                targetView: filterButton,
+                title: String(localized: "coach.shuttle.timetable.filter.title"),
+                message: String(localized: "coach.shuttle.timetable.filter.message")
+            ),
+        ]
+        presentCoachMarks(pageId: "shuttle.timetable", items: items)
     }
 
     override func viewDidLoad() {

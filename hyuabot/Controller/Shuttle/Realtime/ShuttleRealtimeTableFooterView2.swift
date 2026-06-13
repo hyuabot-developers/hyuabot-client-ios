@@ -5,7 +5,7 @@ class ShuttleRealtimeTableFooterView2: UIView {
     private let stopID: ShuttleStopEnum
     private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
     private var section: Int?
-    private let showEntireTimeTableButton1 = UIButton().then {
+    let showEntireTimeTableButton1 = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "shuttle.show.entire.timetable.station"))
         title.font = .godo(size: 16, weight: .medium)
@@ -38,7 +38,7 @@ class ShuttleRealtimeTableFooterView2: UIView {
         $0.tintColor = .plainButtonText
     }
     
-    private let showStopModalButton = UIButton().then {
+    let showStopModalButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "shuttle.show.stop.modal"))
         title.font = .godo(size: 16, weight: .medium)

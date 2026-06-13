@@ -13,6 +13,26 @@ class SettingVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.setting)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        guard CoachMarkManager.shared.shouldShowPage("setting") else { return }
+        let rows: [(Int, String, String, String)] = [
+            (0, "setting.campus", "coach.setting.campus.title", "coach.setting.campus.message"),
+            (1, "setting.theme", "coach.setting.theme.title", "coach.setting.theme.message"),
+            (2, "setting.language", "coach.setting.language.title", "coach.setting.language.message"),
+        ]
+        let items: [CoachMarkItem] = rows.compactMap { row, _, titleKey, msgKey in
+            guard let cell = settingView.cellForRow(at: IndexPath(row: row, section: 0)) else { return nil }
+            return CoachMarkItem(
+                id: "setting.\(row)",
+                targetView: cell,
+                title: String(localized: String.LocalizationValue(titleKey)),
+                message: String(localized: String.LocalizationValue(msgKey))
+            )
+        }
+        presentCoachMarks(pageId: "setting", items: items)
     }
 
     override func viewDidLoad() {

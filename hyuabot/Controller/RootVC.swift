@@ -16,6 +16,46 @@ class RootVC: UITabBarController {
     let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
     let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onCoachMarkPageShown(_:)),
+            name: .coachMarkPageShown,
+            object: nil
+        )
+        // Shuttle marks already shown on a previous launch — show immediately
+        if !CoachMarkManager.shared.shouldShowPage("shuttle.realtime") {
+            showMoreCoachMarkIfNeeded()
+        }
+    }
+
+    @objc private func onCoachMarkPageShown(_ notification: Notification) {
+        guard let pageId = notification.userInfo?["pageId"] as? String,
+              pageId == "shuttle.realtime" else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            self?.showMoreCoachMarkIfNeeded()
+        }
+    }
+
+    func showMoreCoachMarkIfNeeded() {
+        presentCoachMarks(pageId: "root.more", items: [
+            CoachMarkItem(
+                id: "root.more",
+                targetViewProvider: { [weak self] in self?.moreButtonView },
+                title: String(localized: "coach.root.more.title"),
+                message: String(localized: "coach.root.more.message")
+            ),
+        ])
+    }
+
+    private var moreButtonView: UIView? {
+        guard tabBar.bounds.width > 0 else { return nil }
+        let slotWidth = tabBar.bounds.width / 5
+        let point = CGPoint(x: slotWidth * 4.5, y: tabBar.bounds.midY)
+        return tabBar.hitTest(point, with: nil)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // TabBar

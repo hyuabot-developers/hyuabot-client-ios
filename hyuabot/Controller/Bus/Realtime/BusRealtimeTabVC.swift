@@ -84,6 +84,18 @@ class BusRealtimeTabVC: UIViewController {
         self.busRealtimeTableView.reloadData()
         self.refreshControl.endRefreshing()
     }
+
+    var firstSectionHeaderLocationButton: UIView? {
+        (busRealtimeTableView.headerView(forSection: 0) as? BusRealtimeHeaderView)?.locationButton
+    }
+
+    var firstSectionFooterTimetableButton: UIView? {
+        (busRealtimeTableView.footerView(forSection: 0) as? BusRealtimeFooterView)?.showEntireTimeTableButton
+    }
+
+    var firstSectionFooterLogButton: UIView? {
+        (busRealtimeTableView.footerView(forSection: 0) as? BusRealtimeFooterView)?.showDeparuteLogButton
+    }
     
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
         AnalyticsManager.logSelect(.busRefresh)

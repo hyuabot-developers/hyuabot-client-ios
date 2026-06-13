@@ -40,6 +40,24 @@ class MapVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.map)
+        self.showCoachMarksIfNeeded()
+    }
+
+    private func showCoachMarksIfNeeded() {
+        presentCoachMarks(pageId: "map", items: [
+            CoachMarkItem(
+                id: "map.search",
+                targetView: searchController.searchBar,
+                title: String(localized: "coach.map.search.title"),
+                message: String(localized: "coach.map.search.message")
+            ),
+            CoachMarkItem(
+                id: "map.map",
+                targetView: mapView,
+                title: String(localized: "coach.map.map.title"),
+                message: String(localized: "coach.map.map.message")
+            ),
+        ])
     }
 
     override func viewDidLoad() {

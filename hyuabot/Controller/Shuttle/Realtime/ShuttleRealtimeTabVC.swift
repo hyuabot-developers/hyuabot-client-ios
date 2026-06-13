@@ -14,8 +14,9 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let showStopVC: (ShuttleStopEnum) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
-    private lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
-    private lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
+    private(set) var transferInfoView: ShuttleTransferInfoView?
+    lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
+    lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
         let tableView = UITableView().then{
             $0.delegate = self
@@ -92,6 +93,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         let transferStops: [ShuttleStopEnum] = [.dormiotryOut, .shuttlecockOut]
         if transferStops.contains(self.stopID) {
             let transferView = ShuttleTransferInfoView(stopID: self.stopID)
+            self.transferInfoView = transferView
             self.view.addSubview(transferView)
             transferView.snp.makeConstraints { make in
                 make.leading.trailing.bottom.equalToSuperview()
@@ -121,10 +123,33 @@ class ShuttleRealtimeTabVC: UIViewController {
         }).disposed(by: self.disposeBag)
     }
     
+    var visibleTableView: UITableView {
+        shuttleRealtimeTableView.isHidden ? shuttleRealtimeTableTimeView : shuttleRealtimeTableView
+    }
+
+    var firstSectionHeaderHelpView: UIView? {
+        (visibleTableView.headerView(forSection: 0) as? ShuttleRealtimeHeaderView)?.helpImageView
+    }
+
     func reload() {
         self.shuttleRealtimeTableView.reloadData()
         self.shuttleRealtimeTableTimeView.reloadData()
         self.refreshControl.endRefreshing()
+    }
+
+    func scrollToFooter() {
+        shuttleRealtimeTableView.layoutIfNeeded()
+        let offset = max(0, shuttleRealtimeTableView.contentSize.height - shuttleRealtimeTableView.bounds.height)
+        shuttleRealtimeTableView.setContentOffset(CGPoint(x: 0, y: offset), animated: false)
+        // Force UITableView to re-render visible section footers at the new scroll position
+        shuttleRealtimeTableView.setNeedsLayout()
+        shuttleRealtimeTableView.layoutIfNeeded()
+    }
+
+    var lastSectionFooterTimetableButton: UIView? {
+        let n = shuttleRealtimeTableView.numberOfSections
+        guard n > 0 else { return nil }
+        return (shuttleRealtimeTableView.footerView(forSection: n - 1) as? ShuttleRealtimeFooterView)?.showEntireTimeTableButton
     }
     
     private func showStopModal(_ stop: ShuttleStopEnum) {

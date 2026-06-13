@@ -40,8 +40,22 @@ class CafeteriaMenuCellView: UITableViewCell {
         }
     }
     
+    private static let isKoreanApp: Bool = (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
+    private static let hangulRegex = try! NSRegularExpression(pattern: "\\p{Hangul}")
+
+    static func localizedFood(_ food: String) -> String {
+        let cleaned = food.replacingOccurrences(of: "\"", with: "")
+        guard isKoreanApp else { return cleaned }
+        let tokens = cleaned.components(separatedBy: .whitespaces)
+        let filtered = tokens.filter { token in
+            hangulRegex.firstMatch(in: token, range: NSRange(token.startIndex..., in: token)) != nil
+        }
+        let result = filtered.joined(separator: " ")
+        return result.isEmpty ? cleaned : result
+    }
+
     func setupUI(item: CafeteriaPageQuery.Data.Cafeterium.Menu) {
-        self.menuLabel.text = item.food
+        self.menuLabel.text = Self.localizedFood(item.food)
         self.pricaLabel.text = String(localized: "cafeteria.menu.price.\(item.price.replacingOccurrences(of: "원", with: ""))")
     }
 }
