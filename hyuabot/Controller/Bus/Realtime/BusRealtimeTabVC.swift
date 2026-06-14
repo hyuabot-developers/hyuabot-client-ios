@@ -27,6 +27,11 @@ class BusRealtimeTabVC: UIViewController {
         }
         return tableView
     }()
+    private lazy var route50MapView: BusRoute50MapView = {
+        let mapView = BusRoute50MapView()
+        mapView.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 86)
+        return mapView
+    }()
     
     required init (
         tabType: BusRealtimeType,
@@ -74,6 +79,9 @@ class BusRealtimeTabVC: UIViewController {
         self.busRealtimeTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        if tabType == .other {
+            busRealtimeTableView.tableHeaderView = route50MapView
+        }
     }
     
     private func showStopModal(_ stopID: Int32, routes: [Int32] = []) {
@@ -83,6 +91,11 @@ class BusRealtimeTabVC: UIViewController {
     func reload() {
         self.busRealtimeTableView.reloadData()
         self.refreshControl.endRefreshing()
+        if tabType == .other,
+           let ansanBound = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value(),
+           let gwangmyeong = try? BusRealtimeData.shared.busRealtimeKTXFromStation.value() {
+            route50MapView.updateBuses(ansanBound: ansanBound, gwangmyeong: gwangmyeong)
+        }
     }
 
     var firstSectionHeaderLocationButton: UIView? {
