@@ -8,7 +8,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "BusRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusRealtimePageQuery($language: String!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus( input: [ { route: 216000068, stop: 216000138, limit: 3 } { route: 216000068, stop: 216000383, limit: 3 } { route: 216000068, stop: 216000381, limit: 3 } { route: 216000068, stop: 216000379, limit: 3 } { route: 216000061, stop: 216000383, limit: 3 } { route: 216000061, stop: 216000381, limit: 3 } { route: 216000061, stop: 216000379, limit: 3 } { route: 216000043, stop: 216000719, limit: 3 } { route: 216000026, stop: 216000719, limit: 3 } { route: 216000096, stop: 216000719, limit: 3 } { route: 216000104, stop: 216000070, limit: 3 } { route: 200000015, stop: 216000070, limit: 3 } { route: 216000075, stop: 216000759, limit: 3 } { route: 216000075, stop: 213000487, limit: 3 } { route: 216000016, stop: 216000152, limit: 3 } ] ) { __typename route { __typename seq name } stop { __typename seq } order arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
+      #"query BusRealtimePageQuery($language: String!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus( input: [ { route: 216000068, stop: 216000138, limit: 3 } { route: 216000068, stop: 216000383, limit: 3 } { route: 216000068, stop: 216000381, limit: 3 } { route: 216000068, stop: 216000379, limit: 3 } { route: 216000061, stop: 216000383, limit: 3 } { route: 216000061, stop: 216000381, limit: 3 } { route: 216000061, stop: 216000379, limit: 3 } { route: 216000043, stop: 216000719, limit: 3 } { route: 216000026, stop: 216000719, limit: 3 } { route: 216000096, stop: 216000719, limit: 3 } { route: 216000104, stop: 216000070, limit: 3 } { route: 200000015, stop: 216000070, limit: 3 } { route: 216000075, stop: 216000759, limit: 3 } { route: 216000075, stop: 213000487, limit: 3 } { route: 216000016, stop: 216000152, limit: 3 } ] ) { __typename route { __typename seq name } stop { __typename seq } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime } } }"#
     ))
 
   public var language: String
@@ -220,6 +220,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
           .field("lowFloor", Bool?.self),
           .field("isRealtime", Bool.self),
           .field("time", Api.LocalTime?.self),
+          .field("arrivalTime", Api.LocalTime?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           BusRealtimePageQuery.Data.Bus.Arrival.self
@@ -231,6 +232,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         public var lowFloor: Bool? { __data["lowFloor"] }
         public var isRealtime: Bool { __data["isRealtime"] }
         public var time: Api.LocalTime? { __data["time"] }
+        public var arrivalTime: Api.LocalTime? { __data["arrivalTime"] }
       }
     }
   }

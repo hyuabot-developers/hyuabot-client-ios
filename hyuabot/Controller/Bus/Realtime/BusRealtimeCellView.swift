@@ -67,7 +67,7 @@ class BusRealtimeCellView: UITableViewCell {
                 }
             }
         } else if (!item.item.isRealtime) {
-            let time = self.calendar.dateComponents([.hour, .minute], from: item.item.time!.toLocalTime())
+            let time = self.calendar.dateComponents([.hour, .minute], from: item.item.arrivalTime!.toLocalTime())
             self.busTimeLabel.text = String(localized: "bus.realtime.time.\(time.hour!).\(time.minute!)")
         }
     }
