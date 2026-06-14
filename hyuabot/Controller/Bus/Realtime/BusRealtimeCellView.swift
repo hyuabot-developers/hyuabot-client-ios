@@ -67,13 +67,22 @@ class BusRealtimeCellView: UITableViewCell {
                 }
             }
         } else if (!item.item.isRealtime) {
-            let time = self.calendar.dateComponents([.hour, .minute], from: item.item.arrivalTime!.toLocalTime())
-            self.busTimeLabel.text = String(localized: "bus.realtime.time.\(time.hour!).\(time.minute!)")
+            let arrival = item.item.arrivalTime!.toLocalTime()
+            let now = Foundation.Date()
+            let toServiceSec: (Foundation.Date) -> Int = { date in
+                let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
+                let s = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
+                return s < 4 * 3600 ? s + 86400 : s
+            }
+            let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
+            self.busTimeLabel.text = String(localized: "bus.realtime.estimated.\(remainingMinutes)")
+            self.busTimeLabel.textColor = .secondaryLabel
         }
     }
     
     private func setRealtimeAttributedText(_ text: String) {
         let attributeString = NSMutableAttributedString(string: text)
+        attributeString.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: attributeString.length))
         attributeString.addAttribute(
             .foregroundColor,
             value: UIColor.red, range: NSRange(

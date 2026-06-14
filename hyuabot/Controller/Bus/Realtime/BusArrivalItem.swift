@@ -5,7 +5,7 @@ struct BusArrivalItem {
     var route: String
     var item: BusRealtimePageQuery.Data.Bus.Arrival
     var convertedTime: String? {
-        guard let time = item.time else { return nil }
+        guard let time = item.arrivalTime else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
         if (components.hour! < 4) {
             return String(format: "%02d:%02d", components.hour! + 24, components.minute!)

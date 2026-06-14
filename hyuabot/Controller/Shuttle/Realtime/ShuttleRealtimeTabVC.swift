@@ -1,5 +1,6 @@
 import UIKit
 import RxSwift
+import SnapKit
 import Api
 
 class ShuttleRealtimeTabVC: UIViewController {

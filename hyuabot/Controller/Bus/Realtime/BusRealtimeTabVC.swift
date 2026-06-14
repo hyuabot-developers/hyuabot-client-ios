@@ -27,12 +27,6 @@ class BusRealtimeTabVC: UIViewController {
         }
         return tableView
     }()
-    private lazy var route50MapView: BusRoute50MapView = {
-        let mapView = BusRoute50MapView()
-        mapView.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 86)
-        return mapView
-    }()
-    
     required init (
         tabType: BusRealtimeType,
         refreshMethod: @escaping () -> (),
@@ -79,9 +73,6 @@ class BusRealtimeTabVC: UIViewController {
         self.busRealtimeTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        if tabType == .other {
-            busRealtimeTableView.tableHeaderView = route50MapView
-        }
     }
     
     private func showStopModal(_ stopID: Int32, routes: [Int32] = []) {
@@ -91,11 +82,6 @@ class BusRealtimeTabVC: UIViewController {
     func reload() {
         self.busRealtimeTableView.reloadData()
         self.refreshControl.endRefreshing()
-        if tabType == .other,
-           let ansanBound = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value(),
-           let gwangmyeong = try? BusRealtimeData.shared.busRealtimeKTXFromStation.value() {
-            route50MapView.updateBuses(ansanBound: ansanBound, gwangmyeong: gwangmyeong)
-        }
     }
 
     var firstSectionHeaderLocationButton: UIView? {
@@ -222,31 +208,31 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         if self.tabType == .city {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 5)
             } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromStation.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 5)
             }
         } else if self.tabType == .seoul {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSeoulFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 5)
             } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeGunpoFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 5)
             }
         } else if self.tabType == .suwon {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSuwonFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 10)
             }
         } else if self.tabType == .other {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 5)
             } else if section == 1 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromStation.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 3)
+                return items.isEmpty ? 1 : min(items.count, 5)
             }
         }
         return 1
