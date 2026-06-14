@@ -15,6 +15,36 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
+    private var busAlternativeBannerHeightConstraint: Constraint?
+    private lazy var busAlternativeBanner: UIView = {
+        let banner = UIView()
+        banner.backgroundColor = .hanyangOrange
+        banner.clipsToBounds = true
+        let routeLabel = UILabel().then {
+            $0.tag = 100
+            $0.font = .systemFont(ofSize: 13, weight: .bold)
+            $0.textColor = .white
+            $0.text = String(localized: "shuttle.bus.alternative.route")
+        }
+        let timeLabel = UILabel().then {
+            $0.tag = 101
+            $0.font = .systemFont(ofSize: 13)
+            $0.textColor = .white
+            $0.textAlignment = .right
+        }
+        banner.addSubview(routeLabel)
+        banner.addSubview(timeLabel)
+        routeLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
+            $0.centerY.equalToSuperview()
+        }
+        timeLabel.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(16)
+            $0.centerY.equalToSuperview()
+            $0.leading.greaterThanOrEqualTo(routeLabel.snp.trailing).offset(8)
+        }
+        return banner
+    }()
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
@@ -87,26 +117,34 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
     
     private func setupUI() {
-        self.view.addSubview(self.shuttleRealtimeTableView)
-        self.view.addSubview(self.shuttleRealtimeTableTimeView)
-
         let transferStops: [ShuttleStopEnum] = [.dormiotryOut, .shuttlecockOut]
         if transferStops.contains(self.stopID) {
             let transferView = ShuttleTransferInfoView(stopID: self.stopID)
             self.transferInfoView = transferView
+            self.view.addSubview(busAlternativeBanner)
+            self.view.addSubview(self.shuttleRealtimeTableView)
+            self.view.addSubview(self.shuttleRealtimeTableTimeView)
             self.view.addSubview(transferView)
+            busAlternativeBanner.snp.makeConstraints { make in
+                make.top.leading.trailing.equalToSuperview()
+                busAlternativeBannerHeightConstraint = make.height.equalTo(0).constraint
+            }
             transferView.snp.makeConstraints { make in
                 make.leading.trailing.bottom.equalToSuperview()
             }
             self.shuttleRealtimeTableView.snp.makeConstraints { make in
-                make.top.leading.trailing.equalToSuperview()
+                make.top.equalTo(busAlternativeBanner.snp.bottom)
+                make.leading.trailing.equalToSuperview()
                 make.bottom.equalTo(transferView.snp.top)
             }
             self.shuttleRealtimeTableTimeView.snp.makeConstraints { make in
-                make.top.leading.trailing.equalToSuperview()
+                make.top.equalTo(busAlternativeBanner.snp.bottom)
+                make.leading.trailing.equalToSuperview()
                 make.bottom.equalTo(transferView.snp.top)
             }
         } else {
+            self.view.addSubview(self.shuttleRealtimeTableView)
+            self.view.addSubview(self.shuttleRealtimeTableTimeView)
             self.shuttleRealtimeTableView.snp.makeConstraints { (make) in
                 make.edges.equalToSuperview()
             }
@@ -121,6 +159,40 @@ class ShuttleRealtimeTabVC: UIViewController {
             self?.shuttleRealtimeTableView.isHidden = showArrivalByTime
             self?.shuttleRealtimeTableTimeView.isHidden = !showArrivalByTime
         }).disposed(by: self.disposeBag)
+
+        if stopID == .dormiotryOut || stopID == .shuttlecockOut {
+            let busSubject = stopID == .dormiotryOut
+                ? ShuttleRealtimeData.shared.busAlternativeDormitory.asObservable()
+                : ShuttleRealtimeData.shared.busAlternativeShuttlecock.asObservable()
+            let shuttleSubject = stopID == .dormiotryOut
+                ? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.asObservable()
+                : ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.asObservable()
+            Observable.combineLatest(busSubject, shuttleSubject)
+                .subscribe(onNext: { [weak self] busData, shuttleEntries in
+                    guard let self else { return }
+                    guard let busMinutes = busData?.arrival.first?.minutes else {
+                        self.updateBusAlternativeBanner(visible: false, minutes: 0)
+                        return
+                    }
+                    guard let nextShuttle = shuttleEntries.first else {
+                        self.updateBusAlternativeBanner(visible: true, minutes: busMinutes)
+                        return
+                    }
+                    let shuttleMinutes = Int(nextShuttle.time.toLocalTime().timeIntervalSince(Date.now)) / 60
+                    self.updateBusAlternativeBanner(visible: busMinutes < shuttleMinutes, minutes: busMinutes)
+                }).disposed(by: self.disposeBag)
+        }
+    }
+
+    private func updateBusAlternativeBanner(visible: Bool, minutes: Int) {
+        let height: CGFloat = visible ? 44 : 0
+        UIView.animate(withDuration: 0.3) {
+            self.busAlternativeBannerHeightConstraint?.update(offset: height)
+            self.view.layoutIfNeeded()
+        }
+        if visible, let timeLabel = busAlternativeBanner.viewWithTag(101) as? UILabel {
+            timeLabel.text = String(localized: "shuttle.bus.alternative.time.\(minutes)")
+        }
     }
     
     var visibleTableView: UITableView {

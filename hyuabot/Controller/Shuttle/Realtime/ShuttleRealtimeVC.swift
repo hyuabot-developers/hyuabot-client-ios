@@ -444,6 +444,13 @@ class ShuttleRealtimeVC: UIViewController {
                 dataDelegate.arrival.onNext(data.shuttle.stops)
             }
         }
+        Task {
+            let busResponse = try? await Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
+            if let busData = busResponse?.data {
+                dataDelegate.busAlternativeDormitory.onNext(busData.bus.first(where: { $0.stop.seq == 216000383 }))
+                dataDelegate.busAlternativeShuttlecock.onNext(busData.bus.first(where: { $0.stop.seq == 216000379 }))
+            }
+        }
     }
     
     private func moveToEntireTimetable(_ stop: ShuttleStopEnum, _ section: Int) {
