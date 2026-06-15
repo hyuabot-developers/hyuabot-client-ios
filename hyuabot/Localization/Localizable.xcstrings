@@ -3336,25 +3336,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When shuttle departures are infrequent (weekends or breaks), 10-1 bus arrival info appears here as an alternative"
+            "value": "When shuttle bus departures are infrequent, such as during breaks or on weekends, alternative route arrival information is provided for your convenience."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "休暇や週末などシャトルバスの間隔が長い時、代替手段として10-1バスの到着情報がここに表示されます"
+            "value": "休暇や週末などシャトルバスの配車間隔が長い時に活用できるよう、代替路線の到着情報が提供されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "방학이나 주말처럼 셔틀 배차 간격이 넓을 때, 대체 수단으로 10-1 버스 도착 정보가 여기에 표시됩니다"
+            "value": "방학이나 주말처럼 셔틀버스 배차 간격이 넓을 때 활용할 수 있도록 대체 노선의 도착 정보가 제공됩니다."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "寒暑假或周末班车间隔较长时，这里会显示10-1路公交车的到站信息作为替代方案"
+            "value": "假期或周末等校车发车间隔较长时，为方便出行将提供替代路线的到站信息。"
           }
         }
       }
@@ -3365,25 +3365,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bus Alternative"
+            "value": "Shuttle Bus Alternative Info"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "バス代替手段"
+            "value": "シャトルバス代替路線情報"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "10-1 버스 대체 수단"
+            "value": "셔틀버스 대체 정보 제공"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "公交替代方案"
+            "value": "班车替代路线信息"
           }
         }
       }
