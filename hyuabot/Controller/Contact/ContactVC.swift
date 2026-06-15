@@ -71,6 +71,35 @@ class ContactVC: UIViewController {
                     title: String(localized: "coach.contact.search.title"),
                     message: String(localized: "coach.contact.search.message")
                 ),
+            ],
+            shouldMarkAsShown: false,
+            onComplete: { [weak self] in self?.showContactItemCoachMarkWhenReady() }
+        )
+    }
+
+    private func showContactItemCoachMarkWhenReady() {
+        if let items = try? searchResultSubject.value(), !items.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.presentContactItemCoachMark()
+            }
+            return
+        }
+        searchResultSubject
+            .filter { !$0.isEmpty }
+            .take(1)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    self?.presentContactItemCoachMark()
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+
+    private func presentContactItemCoachMark() {
+        presentCoachMarks(
+            pageId: "contact",
+            items: [
                 CoachMarkItem(
                     id: "contact.item",
                     targetViewProvider: { [weak self] in
@@ -79,7 +108,9 @@ class ContactVC: UIViewController {
                     title: String(localized: "coach.contact.item.title"),
                     message: String(localized: "coach.contact.item.message")
                 ),
-            ]
+            ],
+            shouldMarkAsShown: false,
+            onComplete: { CoachMarkManager.shared.markPageShown("contact") }
         )
     }
 
