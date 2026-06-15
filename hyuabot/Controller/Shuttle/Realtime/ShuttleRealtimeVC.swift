@@ -449,6 +449,7 @@ class ShuttleRealtimeVC: UIViewController {
             if let busData = busResponse?.data {
                 dataDelegate.busAlternativeDormitory.onNext(busData.bus.first(where: { $0.stop.seq == 216000383 }))
                 dataDelegate.busAlternativeShuttlecock.onNext(busData.bus.first(where: { $0.stop.seq == 216000379 }))
+                dataDelegate.busAlternativeStation.onNext(busData.bus.first(where: { $0.stop.seq == 216000138 }))
             }
         }
     }

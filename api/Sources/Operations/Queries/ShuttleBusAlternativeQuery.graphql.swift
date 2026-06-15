@@ -8,7 +8,7 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleBusAlternativeQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleBusAlternativeQuery { bus(input: [{ route: 216000068, stop: 216000383, limit: 1 } { route: 216000068, stop: 216000379, limit: 1 }]) { __typename stop { __typename seq } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
+      #"query ShuttleBusAlternativeQuery { bus( input: [ { route: 216000068, stop: 216000383, limit: 1 } { route: 216000068, stop: 216000379, limit: 1 } { route: 216000068, stop: 216000138, limit: 1 } ] ) { __typename stop { __typename seq } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
     ))
 
   public init() {}
@@ -19,7 +19,19 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
 
     @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.Query }
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
-      .field("bus", [Bus].self, arguments: ["input": [["route": 216000068, "stop": 216000383, "limit": 1], ["route": 216000068, "stop": 216000379, "limit": 1]]]),
+      .field("bus", [Bus].self, arguments: ["input": [[
+        "route": 216000068,
+        "stop": 216000383,
+        "limit": 1
+      ], [
+        "route": 216000068,
+        "stop": 216000379,
+        "limit": 1
+      ], [
+        "route": 216000068,
+        "stop": 216000138,
+        "limit": 1
+      ]]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
       ShuttleBusAlternativeQuery.Data.self
@@ -79,7 +91,7 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
           .field("stops", Int?.self),
           .field("seats", Int?.self),
           .field("minutes", Int?.self),
-          .field("lowFloor", Bool.self),
+          .field("lowFloor", Bool?.self),
           .field("isRealtime", Bool.self),
           .field("time", Api.LocalTime?.self),
         ] }
@@ -90,7 +102,7 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
         public var stops: Int? { __data["stops"] }
         public var seats: Int? { __data["seats"] }
         public var minutes: Int? { __data["minutes"] }
-        public var lowFloor: Bool { __data["lowFloor"] }
+        public var lowFloor: Bool? { __data["lowFloor"] }
         public var isRealtime: Bool { __data["isRealtime"] }
         public var time: Api.LocalTime? { __data["time"] }
       }
