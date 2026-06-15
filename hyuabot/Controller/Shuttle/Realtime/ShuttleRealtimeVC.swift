@@ -257,8 +257,7 @@ class ShuttleRealtimeVC: UIViewController {
                 .filter { !$0.isEmpty }
                 .take(1)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] _ in
-                    guard let self else { return }
+                .subscribe(onNext: { _ in
                     DispatchQueue.main.async { scroll() }
                 })
                 .disposed(by: disposeBag)
