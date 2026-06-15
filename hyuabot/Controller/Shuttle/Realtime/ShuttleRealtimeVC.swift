@@ -203,6 +203,24 @@ class ShuttleRealtimeVC: UIViewController {
                 title: String(localized: "coach.shuttle.busAlternative.title"),
                 message: String(localized: "coach.shuttle.busAlternative.message")
             ),
+            CoachMarkItem(
+                id: "shuttle.footer.timetable",
+                targetViewProvider: { [weak self] in
+                    guard let self else { return nil }
+                    self.dormitoryOutTabVC.scrollToFooter()
+                    return self.dormitoryOutTabVC.lastSectionFooterTimetableButton
+                },
+                title: String(localized: "coach.shuttle.footer.timetable.title"),
+                message: String(localized: "coach.shuttle.footer.timetable.message")
+            ),
+            CoachMarkItem(
+                id: "shuttle.footer.stopModal",
+                targetViewProvider: { [weak self] in
+                    self?.dormitoryOutTabVC.tableFooterView1.showStopModalButton
+                },
+                title: String(localized: "coach.shuttle.footer.title"),
+                message: String(localized: "coach.shuttle.footer.message")
+            ),
         ]
 
         if let transferView = dormitoryOutTabVC.transferInfoView {
@@ -235,66 +253,8 @@ class ShuttleRealtimeVC: UIViewController {
             items: items,
             shouldMarkAsShown: false,
             onSkip: { [weak self] in self?.finishCoachMarks() },
-            onComplete: { [weak self] in self?.showFooterCoachMarksWhenReady() }
+            onComplete: { [weak self] in self?.finishCoachMarks() }
         )
-    }
-
-    private func showFooterCoachMarksWhenReady() {
-        dormitoryOutTabVC.forceShowBusAlternative = false
-        dormitoryOutTabVC.reloadSection0()
-        let scroll: () -> Void = { [weak self] in
-            guard let self else { return }
-            self.dormitoryOutTabVC.scrollToFooter()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.presentFooterCoachMarks()
-            }
-        }
-        let isLoaded = (try? ShuttleRealtimeData.shared.arrival.value())?.isEmpty == false
-        if isLoaded {
-            scroll()
-        } else {
-            ShuttleRealtimeData.shared.arrival
-                .filter { !$0.isEmpty }
-                .take(1)
-                .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] _ in
-                    guard let self else { return }
-                    DispatchQueue.main.async { scroll() }
-                })
-                .disposed(by: disposeBag)
-        }
-    }
-
-    private func presentFooterCoachMarks() {
-        let items: [CoachMarkItem] = [
-            CoachMarkItem(
-                id: "shuttle.footer.timetable",
-                targetViewProvider: { [weak self] in self?.dormitoryOutTabVC.lastSectionFooterTimetableButton },
-                title: String(localized: "coach.shuttle.footer.timetable.title"),
-                message: String(localized: "coach.shuttle.footer.timetable.message")
-            ),
-            CoachMarkItem(
-                id: "shuttle.footer.stopModal",
-                targetView: dormitoryOutTabVC.tableFooterView1.showStopModalButton,
-                title: String(localized: "coach.shuttle.footer.title"),
-                message: String(localized: "coach.shuttle.footer.message")
-            ),
-        ]
-        let validItems = items.filter { item in
-            guard let v = item.targetView else { return true }
-            return v.window != nil && !v.isHidden
-        }
-        guard !validItems.isEmpty,
-              let window = view.window,
-              !window.subviews.contains(where: { $0 is CoachMarkView }) else {
-            finishCoachMarks()
-            return
-        }
-        let overlay = CoachMarkView()
-        overlay.frame = window.bounds
-        window.addSubview(overlay)
-        overlay.onComplete = { [weak self] in self?.finishCoachMarks() }
-        overlay.present(items: validItems)
     }
 
     private func finishCoachMarks() {
