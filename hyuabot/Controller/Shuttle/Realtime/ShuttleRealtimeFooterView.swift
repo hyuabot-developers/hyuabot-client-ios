@@ -8,7 +8,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     private var stopID: ShuttleStopEnum?
     private var section: Int?
 
-    private let busAlternativeContainer = UIView()
+    let busAlternativeContainer = UIView()
     private let busAccentBar = UIView().then {
         $0.backgroundColor = .busGreen
     }
@@ -75,7 +75,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         busAlternativeContainer.isHidden = true
     }
 
-    func setupUI(stopID: ShuttleStopEnum, section: Int, busMinutes: Int?, showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void) {
+    func setupUI(stopID: ShuttleStopEnum, section: Int, busMinutes: Int?, forceShow: Bool = false, showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void) {
         self.stopID = stopID
         self.section = section
         self.showEntireTimetable = showEntireTimetable
@@ -83,6 +83,11 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             let routeKey = stopID == .station ? "shuttle.bus.alternative.route.campus" : "shuttle.bus.alternative.route"
             busRouteLabel.text = String(localized: String.LocalizationValue(routeKey))
             busTimeLabel.text = String(localized: "shuttle.bus.alternative.time.\(minutes)")
+            busAlternativeContainer.isHidden = false
+        } else if forceShow {
+            let routeKey = stopID == .station ? "shuttle.bus.alternative.route.campus" : "shuttle.bus.alternative.route"
+            busRouteLabel.text = String(localized: String.LocalizationValue(routeKey))
+            busTimeLabel.text = String(localized: "shuttle.bus.alternative.no.data")
             busAlternativeContainer.isHidden = false
         } else {
             busAlternativeContainer.isHidden = true

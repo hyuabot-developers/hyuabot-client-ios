@@ -17,6 +17,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
     private var busAlternativeMinutes: Int? = nil
+    var forceShowBusAlternative = false
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
@@ -183,6 +184,21 @@ class ShuttleRealtimeTabVC: UIViewController {
         return (shuttleRealtimeTableView.footerView(forSection: n - 1) as? ShuttleRealtimeFooterView)?.showEntireTimeTableButton
     }
 
+    var busAlternativeView: UIView? {
+        (visibleTableView.footerView(forSection: 0) as? ShuttleRealtimeFooterView)?.busAlternativeContainer
+    }
+
+    func reloadSection0() {
+        UIView.performWithoutAnimation {
+            visibleTableView.reloadSections(IndexSet(integer: 0), with: .none)
+        }
+    }
+
+    func scrollToTop() {
+        visibleTableView.setContentOffset(.zero, animated: false)
+        visibleTableView.layoutIfNeeded()
+    }
+
     private func showStopModal(_ stop: ShuttleStopEnum) {
         self.showStopVC(stop)
     }
@@ -211,7 +227,8 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView else { return UIView() }
         let busMinutes = section == 0 ? busAlternativeMinutes : nil
-        footerView.setupUI(stopID: self.stopID, section: section, busMinutes: busMinutes, showEntireTimetable: showEntireTimetable)
+        let forceShow = section == 0 && forceShowBusAlternative
+        footerView.setupUI(stopID: self.stopID, section: section, busMinutes: busMinutes, forceShow: forceShow, showEntireTimetable: showEntireTimetable)
         return footerView
     }
 
@@ -362,7 +379,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        if section == 0, busAlternativeMinutes != nil {
+        if section == 0, busAlternativeMinutes != nil || forceShowBusAlternative {
             return 100
         }
         return 50

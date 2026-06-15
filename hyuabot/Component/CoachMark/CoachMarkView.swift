@@ -101,11 +101,13 @@ private class CoachMarkTooltipView: UIView {
 
 class CoachMarkView: UIView {
     var onComplete: (() -> Void)?
+    var onSkip: (() -> Void)?
 
     private let maskLayer = CAShapeLayer()
     private let tooltip = CoachMarkTooltipView()
     private var items: [CoachMarkItem] = []
     private var currentIndex = 0
+    private var skippedByUser = false
 
     init() {
         super.init(frame: .zero)
@@ -116,7 +118,10 @@ class CoachMarkView: UIView {
         addSubview(tooltip)
         tooltip.onNext = { [weak self] in self?.advance() }
         tooltip.onPrev = { [weak self] in self?.goBack() }
-        tooltip.onSkip = { [weak self] in self?.dismiss() }
+        tooltip.onSkip = { [weak self] in
+            self?.skippedByUser = true
+            self?.dismiss()
+        }
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         addGestureRecognizer(tap)
@@ -223,7 +228,11 @@ class CoachMarkView: UIView {
             self.alpha = 0
         }) { _ in
             self.removeFromSuperview()
-            self.onComplete?()
+            if self.skippedByUser, let skipHandler = self.onSkip {
+                skipHandler()
+            } else {
+                self.onComplete?()
+            }
         }
     }
 
@@ -241,6 +250,7 @@ extension UIViewController {
         items: [CoachMarkItem],
         version: Int = 1,
         shouldMarkAsShown: Bool = true,
+        onSkip: (() -> Void)? = nil,
         onComplete: (() -> Void)? = nil
     ) {
         guard CoachMarkManager.shared.shouldShowPage(pageId, version: version) else { return }
@@ -260,6 +270,12 @@ extension UIViewController {
                 CoachMarkManager.shared.markPageShown(pageId, version: version)
             }
             onComplete?()
+        }
+        overlay.onSkip = {
+            if shouldMarkAsShown {
+                CoachMarkManager.shared.markPageShown(pageId, version: version)
+            }
+            onSkip?()
         }
         overlay.present(items: validItems)
     }

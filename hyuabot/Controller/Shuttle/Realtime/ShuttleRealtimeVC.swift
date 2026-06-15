@@ -156,6 +156,8 @@ class ShuttleRealtimeVC: UIViewController {
         guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return }
 
         isShowingCoachMarks = true
+        dormitoryOutTabVC.forceShowBusAlternative = true
+        dormitoryOutTabVC.reloadSection0()
         viewPager.tabView.moveToTab(index: 0)
         viewPager.contentView.moveToPage(index: 0)
 
@@ -190,6 +192,17 @@ class ShuttleRealtimeVC: UIViewController {
                 title: String(localized: "coach.shuttle.row.title"),
                 message: String(localized: "coach.shuttle.row.message")
             ),
+            CoachMarkItem(
+                id: "shuttle.busAlternative",
+                targetViewProvider: { [weak self] in
+                    guard let self else { return nil }
+                    self.dormitoryOutTabVC.reloadSection0()
+                    self.dormitoryOutTabVC.scrollToTop()
+                    return self.dormitoryOutTabVC.busAlternativeView
+                },
+                title: String(localized: "coach.shuttle.busAlternative.title"),
+                message: String(localized: "coach.shuttle.busAlternative.message")
+            ),
         ]
 
         if let transferView = dormitoryOutTabVC.transferInfoView {
@@ -217,16 +230,21 @@ class ShuttleRealtimeVC: UIViewController {
             ))
         }
 
-        presentCoachMarks(pageId: "shuttle.realtime", items: items, shouldMarkAsShown: false) { [weak self] in
-            self?.showFooterCoachMarksWhenReady()
-        }
+        presentCoachMarks(
+            pageId: "shuttle.realtime",
+            items: items,
+            shouldMarkAsShown: false,
+            onSkip: { [weak self] in self?.finishCoachMarks() },
+            onComplete: { [weak self] in self?.showFooterCoachMarksWhenReady() }
+        )
     }
 
     private func showFooterCoachMarksWhenReady() {
+        dormitoryOutTabVC.forceShowBusAlternative = false
+        dormitoryOutTabVC.reloadSection0()
         let scroll: () -> Void = { [weak self] in
             guard let self else { return }
             self.dormitoryOutTabVC.scrollToFooter()
-            // Wait one extra frame so UITableView finishes rendering section footers
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                 self?.presentFooterCoachMarks()
             }
@@ -281,6 +299,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func finishCoachMarks() {
         CoachMarkManager.shared.markPageShown("shuttle.realtime")
+        dormitoryOutTabVC.forceShowBusAlternative = false
+        dormitoryOutTabVC.reloadSection0()
         isShowingCoachMarks = false
         if let pendingIndex = pendingGPSTabIndex {
             pendingGPSTabIndex = nil
