@@ -2982,6 +2982,64 @@
         }
       }
     },
+    "coach.readingroom.extend_alarm.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to set a notification 10 minutes before your 3 or 4 hour session ends"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3時間・4時間の利用時間終了10分前に通知を設定できます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3시간 또는 4시간 이용 종료 10분 전에 알림을 받을 수 있어요"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可在3小时或4小时使用结束前10分钟收到提醒"
+          }
+        }
+      }
+    },
+    "coach.readingroom.extend_alarm.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session End Reminder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "利用時間終了リマインダー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이용 종료 알림"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用时间结束提醒"
+          }
+        }
+      }
+    },
     "coach.readingroom.alarm.message": {
       "extractionState": "manual",
       "localizations": {
@@ -9955,6 +10013,54 @@
             "value": "未知"
           }
         }
+      }
+    },
+    "reading_room.alarm.3hour": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "3-hour alarm" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "3時間後に通知" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "3시간 후 알림" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "3小时后提醒" } }
+      }
+    },
+    "reading_room.alarm.4hour": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "4-hour alarm" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "4時間後に通知" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "4시간 후 알림" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "4小时后提醒" } }
+      }
+    },
+    "reading_room.alarm.cancel": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Cancel alarm" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "通知をキャンセル" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "알림 취소" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "取消提醒" } }
+      }
+    },
+    "reading_room.alarm.notification.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Reading Room Usage Time Notice" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "閲覧室利用時間のお知らせ" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "열람실 이용 시간 연장 안내" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "阅览室使用时间提醒" } }
+      }
+    },
+    "reading_room.alarm.notification.body": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your reading room usage expires in 10 minutes. Please renew if needed." } },
+        "ja": { "stringUnit": { "state": "translated", "value": "閲覧室の利用時間が10分後に終了します。延長が必要な場合はご確認ください。" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "열람실 이용 시간이 10분 후 만료됩니다. 연장이 필요하시면 확인해 주세요." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "阅览室使用时间将在10分钟后到期，如需延长请确认。" } }
+      }
+    },
+    "reading_room.alarm.running_format": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Alarm set for %@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@ に通知が設定されています" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%@ 에 알림이 설정되어 있어요." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已设置 %@ 提醒" } }
       }
     }
   },
