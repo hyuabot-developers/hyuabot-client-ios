@@ -4,19 +4,20 @@ class NoticeCarouselView: UIView {
     private var notices: [Notice] = []
     private var currentIndex: Int = 0
     private var timer: Timer?
+    private var manuallyScrolled: Bool = false
     var onNoticeTapped: ((String) -> Void)?
-    
+
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
-        
+
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.isPagingEnabled = true
         collectionView.showsHorizontalScrollIndicator = false
-        collectionView.isScrollEnabled = false
+        collectionView.isScrollEnabled = true
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(NoticeCell.self, forCellWithReuseIdentifier: NoticeCell.reuseIdentifier)
@@ -43,20 +44,38 @@ class NoticeCarouselView: UIView {
     
     func startAutoScroll() {
         self.stopAutoScroll()
-        guard notices.count > 1 else { return }
+        guard notices.count > 1, !manuallyScrolled else { return }
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             self?.scrollToNext()
         }
     }
-    
+
     func stopAutoScroll() {
         timer?.invalidate()
         timer = nil
+    }
+
+    func resumeAutoScroll() {
+        manuallyScrolled = false
+        startAutoScroll()
     }
     
     private func scrollToNext() {
         currentIndex = (currentIndex + 1) % notices.count
         collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: .centeredHorizontally, animated: true)
+    }
+}
+
+extension NoticeCarouselView: UIScrollViewDelegate {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        manuallyScrolled = true
+        stopAutoScroll()
+    }
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        let pageWidth = collectionView.bounds.width
+        guard pageWidth > 0 else { return }
+        currentIndex = Int(round(collectionView.contentOffset.x / pageWidth))
     }
 }
 

@@ -176,7 +176,7 @@ class BusRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
-        self.noticeView.startAutoScroll()
+        self.noticeView.resumeAutoScroll()
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
