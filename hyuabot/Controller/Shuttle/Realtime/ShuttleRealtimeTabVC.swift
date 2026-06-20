@@ -1,5 +1,6 @@
 import UIKit
 import RxSwift
+import SnapKit
 import Api
 
 class ShuttleRealtimeTabVC: UIViewController {
@@ -15,6 +16,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
+    private var busAlternativeMinutes: Int? = nil
+    var forceShowBusAlternative = false
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
@@ -75,25 +78,24 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(showViaVC: showViaVCByOrder, stopID: self.stopID)
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
         self.observeSubjects()
     }
-    
-    private func setupUI() {
-        self.view.addSubview(self.shuttleRealtimeTableView)
-        self.view.addSubview(self.shuttleRealtimeTableTimeView)
 
+    private func setupUI() {
         let transferStops: [ShuttleStopEnum] = [.dormiotryOut, .shuttlecockOut]
         if transferStops.contains(self.stopID) {
             let transferView = ShuttleTransferInfoView(stopID: self.stopID)
             self.transferInfoView = transferView
+            self.view.addSubview(self.shuttleRealtimeTableView)
+            self.view.addSubview(self.shuttleRealtimeTableTimeView)
             self.view.addSubview(transferView)
             transferView.snp.makeConstraints { make in
                 make.leading.trailing.bottom.equalToSuperview()
@@ -107,6 +109,8 @@ class ShuttleRealtimeTabVC: UIViewController {
                 make.bottom.equalTo(transferView.snp.top)
             }
         } else {
+            self.view.addSubview(self.shuttleRealtimeTableView)
+            self.view.addSubview(self.shuttleRealtimeTableTimeView)
             self.shuttleRealtimeTableView.snp.makeConstraints { (make) in
                 make.edges.equalToSuperview()
             }
@@ -115,14 +119,42 @@ class ShuttleRealtimeTabVC: UIViewController {
             }
         }
     }
-    
+
     private func observeSubjects() {
         ShuttleRealtimeData.shared.showArrivalByTime.subscribe(onNext: { [weak self] showArrivalByTime in
             self?.shuttleRealtimeTableView.isHidden = showArrivalByTime
             self?.shuttleRealtimeTableTimeView.isHidden = !showArrivalByTime
         }).disposed(by: self.disposeBag)
+
+        let busSubject: Observable<ShuttleBusAlternativeQuery.Data.Bus?>?
+
+        switch stopID {
+        case .dormiotryOut:
+            busSubject = ShuttleRealtimeData.shared.busAlternativeDormitory.asObservable()
+        case .shuttlecockOut:
+            busSubject = ShuttleRealtimeData.shared.busAlternativeShuttlecock.asObservable()
+        case .station:
+            busSubject = ShuttleRealtimeData.shared.busAlternativeStation.asObservable()
+        default:
+            busSubject = nil
+        }
+
+        if let busSubject = busSubject {
+            busSubject.subscribe(onNext: { [weak self] busData in
+                guard let self else { return }
+                self.updateBusAlternative(minutes: busData?.arrival.first?.minutes)
+            }).disposed(by: self.disposeBag)
+        }
     }
-    
+
+    private func updateBusAlternative(minutes: Int?) {
+        guard busAlternativeMinutes != minutes else { return }
+        busAlternativeMinutes = minutes
+        UIView.performWithoutAnimation {
+            self.shuttleRealtimeTableView.reloadSections(IndexSet(integer: 0), with: .none)
+        }
+    }
+
     var visibleTableView: UITableView {
         shuttleRealtimeTableView.isHidden ? shuttleRealtimeTableTimeView : shuttleRealtimeTableView
     }
@@ -151,7 +183,22 @@ class ShuttleRealtimeTabVC: UIViewController {
         guard n > 0 else { return nil }
         return (shuttleRealtimeTableView.footerView(forSection: n - 1) as? ShuttleRealtimeFooterView)?.showEntireTimeTableButton
     }
-    
+
+    var busAlternativeView: UIView? {
+        (visibleTableView.footerView(forSection: 0) as? ShuttleRealtimeFooterView)?.busAlternativeContainer
+    }
+
+    func reloadSection0() {
+        UIView.performWithoutAnimation {
+            visibleTableView.reloadSections(IndexSet(integer: 0), with: .none)
+        }
+    }
+
+    func scrollToTop() {
+        visibleTableView.setContentOffset(.zero, animated: false)
+        visibleTableView.layoutIfNeeded()
+    }
+
     private func showStopModal(_ stop: ShuttleStopEnum) {
         self.showStopVC(stop)
     }
@@ -176,13 +223,15 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         return headerView
     }
-    
+
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView else { return UIView() }
-        footerView.setupUI(stopID: self.stopID, section: section, showEntireTimetable: showEntireTimetable)
+        let busMinutes = section == 0 ? busAlternativeMinutes : nil
+        let forceShow = section == 0 && forceShowBusAlternative
+        footerView.setupUI(stopID: self.stopID, section: section, busMinutes: busMinutes, forceShow: forceShow, showEntireTimetable: showEntireTimetable)
         return footerView
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (self.stopID == .dormiotryOut) {
             if section == 0 {
@@ -229,7 +278,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         return 0
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if (self.stopID == .dormiotryOut) {
             if indexPath.section == 0 {
@@ -324,22 +373,25 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier, for: indexPath)
     }
-    
+
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return UITableView.automaticDimension
     }
-    
+
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        if section == 0, busAlternativeMinutes != nil || forceShowBusAlternative {
+            return 100
+        }
         return 50
     }
-    
+
     func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
         guard let header = tableView.headerView(forSection: section) as? ShuttleRealtimeHeaderView else {
             return 50
         }
         return header.isExpanded ? 50 + header.routeAdapterHeight : 50
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView else { return }
         guard let item = cell.itemByDestination else { return }

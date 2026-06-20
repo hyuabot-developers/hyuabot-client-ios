@@ -51,7 +51,13 @@ class ShuttleRealtimeTableFooterView2: UIView {
         self.showEntireTimetable = showEntireTimetable
         self.showStopModal = showStopModal
         self.stopID = stopID
-        super.init(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: 200))
+        let visibleButtonCount: Int
+        if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
+            visibleButtonCount = 2
+        } else {
+            visibleButtonCount = 4
+        }
+        super.init(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: CGFloat(visibleButtonCount * 50)))
         self.setupUI()
     }
     

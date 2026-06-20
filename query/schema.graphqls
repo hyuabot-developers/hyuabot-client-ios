@@ -105,6 +105,7 @@ type BusArrival {
   lowFloor: Boolean
   isRealtime: Boolean!
   time: LocalTime
+  arrivalTime: LocalTime
 }
 
 type BusCompany {

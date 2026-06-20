@@ -1,0 +1,10 @@
+query ShuttleBusAlternativeQuery {
+    bus(input: [
+        { route: 216000068, stop: 216000383, limit: 1 },
+        { route: 216000068, stop: 216000379, limit: 1 },
+        { route: 216000068, stop: 216000138, limit: 1 },
+    ]) {
+        stop { seq }
+        arrival { stops seats minutes lowFloor isRealtime time }
+    }
+}

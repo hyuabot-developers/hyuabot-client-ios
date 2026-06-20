@@ -156,6 +156,8 @@ class ShuttleRealtimeVC: UIViewController {
         guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return }
 
         isShowingCoachMarks = true
+        dormitoryOutTabVC.forceShowBusAlternative = true
+        dormitoryOutTabVC.reloadSection0()
         viewPager.tabView.moveToTab(index: 0)
         viewPager.contentView.moveToPage(index: 0)
 
@@ -190,6 +192,17 @@ class ShuttleRealtimeVC: UIViewController {
                 title: String(localized: "coach.shuttle.row.title"),
                 message: String(localized: "coach.shuttle.row.message")
             ),
+            CoachMarkItem(
+                id: "shuttle.busAlternative",
+                targetViewProvider: { [weak self] in
+                    guard let self else { return nil }
+                    self.dormitoryOutTabVC.reloadSection0()
+                    self.dormitoryOutTabVC.scrollToTop()
+                    return self.dormitoryOutTabVC.busAlternativeView
+                },
+                title: String(localized: "coach.shuttle.busAlternative.title"),
+                message: String(localized: "coach.shuttle.busAlternative.message")
+            ),
         ]
 
         if let transferView = dormitoryOutTabVC.transferInfoView {
@@ -217,16 +230,21 @@ class ShuttleRealtimeVC: UIViewController {
             ))
         }
 
-        presentCoachMarks(pageId: "shuttle.realtime", items: items, shouldMarkAsShown: false) { [weak self] in
-            self?.showFooterCoachMarksWhenReady()
-        }
+        presentCoachMarks(
+            pageId: "shuttle.realtime",
+            items: items,
+            shouldMarkAsShown: false,
+            onSkip: { [weak self] in self?.finishCoachMarks() },
+            onComplete: { [weak self] in self?.showFooterCoachMarksWhenReady() }
+        )
     }
 
     private func showFooterCoachMarksWhenReady() {
+        dormitoryOutTabVC.forceShowBusAlternative = false
+        dormitoryOutTabVC.reloadSection0()
         let scroll: () -> Void = { [weak self] in
             guard let self else { return }
             self.dormitoryOutTabVC.scrollToFooter()
-            // Wait one extra frame so UITableView finishes rendering section footers
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                 self?.presentFooterCoachMarks()
             }
@@ -239,8 +257,7 @@ class ShuttleRealtimeVC: UIViewController {
                 .filter { !$0.isEmpty }
                 .take(1)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] _ in
-                    guard let self else { return }
+                .subscribe(onNext: { _ in
                     DispatchQueue.main.async { scroll() }
                 })
                 .disposed(by: disposeBag)
@@ -281,6 +298,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func finishCoachMarks() {
         CoachMarkManager.shared.markPageShown("shuttle.realtime")
+        dormitoryOutTabVC.forceShowBusAlternative = false
+        dormitoryOutTabVC.reloadSection0()
         isShowingCoachMarks = false
         if let pendingIndex = pendingGPSTabIndex {
             pendingGPSTabIndex = nil
@@ -304,7 +323,7 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
-        self.noticeView.startAutoScroll()
+        self.noticeView.resumeAutoScroll()
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -444,6 +463,14 @@ class ShuttleRealtimeVC: UIViewController {
                 dataDelegate.arrival.onNext(data.shuttle.stops)
             }
         }
+        Task {
+            let busResponse = try? await Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
+            if let busData = busResponse?.data {
+                dataDelegate.busAlternativeDormitory.onNext(busData.bus.first(where: { $0.stop.seq == 216000383 }))
+                dataDelegate.busAlternativeShuttlecock.onNext(busData.bus.first(where: { $0.stop.seq == 216000379 }))
+                dataDelegate.busAlternativeStation.onNext(busData.bus.first(where: { $0.stop.seq == 216000138 }))
+            }
+        }
     }
     
     private func moveToEntireTimetable(_ stop: ShuttleStopEnum, _ section: Int) {
@@ -454,7 +481,9 @@ class ShuttleRealtimeVC: UIViewController {
     private func openShuttleViaVCByOrder(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.custom(resolver: { context in
+                min(vc.sheetHeight, context.maximumDetentValue)
+            })]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
@@ -463,7 +492,9 @@ class ShuttleRealtimeVC: UIViewController {
     private func openShuttleViaVCByDestination(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.custom(resolver: { context in
+                min(vc.sheetHeight, context.maximumDetentValue)
+            })]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)

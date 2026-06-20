@@ -1,9 +1,12 @@
 import UIKit
+import CoreLocation
 import RxSwift
 import Api
 
-class BusRealtimeVC: UIViewController {
+class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private let disposeBag = DisposeBag()
+    private let locationManager = CLLocationManager()
+    private var didSelectBusStop = false
     private lazy var cityBusTabVC = BusRealtimeTabVC(
         tabType: .city,
         refreshMethod: fetchBusRealtimeData,
@@ -176,7 +179,8 @@ class BusRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
-        self.noticeView.startAutoScroll()
+        self.noticeView.resumeAutoScroll()
+        self.selectNearestBusStop()
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -208,25 +212,82 @@ class BusRealtimeVC: UIViewController {
         }
     }
     
+    private func selectNearestBusStop() {
+        guard !didSelectBusStop else { return }
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        let status = locationManager.authorizationStatus
+        if status == .authorizedWhenInUse || status == .authorizedAlways {
+            locationManager.requestLocation()
+        } else if status == .notDetermined {
+            locationManager.requestWhenInUseAuthorization()
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse || status == .authorizedAlways {
+            locationManager.requestLocation()
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last, !didSelectBusStop else { return }
+        let stops: [(id: Int, lat: Double, lng: Double)] = [
+            (216000379, 37.2935, 126.8368),
+            (216000381, 37.2953, 126.8382),
+            (216000383, 37.2966, 126.8394)
+        ]
+        let nearest = stops.min {
+            let d1 = pow(location.coordinate.latitude - $0.lat, 2) + pow(location.coordinate.longitude - $0.lng, 2)
+            let d2 = pow(location.coordinate.latitude - $1.lat, 2) + pow(location.coordinate.longitude - $1.lng, 2)
+            return d1 < d2
+        }
+        if let stop = nearest {
+            UserDefaults.standard.set(stop.id, forKey: "busStopID")
+            BusRealtimeData.shared.selectedBusStopID.onNext(Int32(stop.id))
+            didSelectBusStop = true
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        // Use default stop (216000379) on location failure
+    }
+
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
             guard let self = self else { return }
-            // Get the data for each bus stop and route}
-            guard let busRealtimeCityFromCampus = result.first(where: { $0.stop.seq == 216000379 && $0.route.seq == 216000068 }) else { return }
-            guard let busRealtimeCityFromStation = result.first(where: { $0.stop.seq == 216000138 && $0.route.seq == 216000068 }) else { return }
-            guard let busRealtimeSeoulFromCampus = result.first(where: { $0.stop.seq == 216000379 && $0.route.seq == 216000061 }) else { return }
-            let busRealtimeGunpoFromCampus = result.filter { $0.stop.seq == 216000719 && ($0.route.seq == 216000096 || $0.route.seq == 216000026 || $0.route.seq == 216000043) }
-            let busRealtimeSuwonBusJunctionData = result.filter { $0.stop.seq == 216000070 && ($0.route.seq == 216000104 || $0.route.seq == 200000015) }
-            guard let busRealtimeAnsanToGwangmyeongData = result.first(where: { $0.stop.seq == 216000759 && $0.route.seq == 216000075 }) else { return }
-            guard let busRealtimeGwangmyeongToAnsanData = result.first(where: { $0.stop.seq == 213000487 && $0.route.seq == 216000075 }) else { return }
-            // Combine the data
-            BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(busRealtimeCityFromCampus.arrival.map { BusArrivalItem(route: busRealtimeCityFromCampus.route.name, item: $0) }.sorted())
-            BusRealtimeData.shared.busRealtimeCityFromStation.onNext(busRealtimeCityFromStation.arrival.map { BusArrivalItem(route: busRealtimeCityFromStation.route.name, item: $0) }.sorted())
-            BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(busRealtimeSeoulFromCampus.arrival.map { BusArrivalItem(route: busRealtimeSeoulFromCampus.route.name, item: $0) }.sorted())
-            BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(busRealtimeGunpoFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted())
-            BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(busRealtimeSuwonBusJunctionData.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted())
-            BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(busRealtimeAnsanToGwangmyeongData.arrival.map { BusArrivalItem(route: busRealtimeAnsanToGwangmyeongData.route.name, item: $0) }.sorted())
-            BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(busRealtimeGwangmyeongToAnsanData.arrival.map { BusArrivalItem(route: busRealtimeGwangmyeongToAnsanData.route.name, item: $0) }.sorted())
+            let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
+            // City bus (10-1) — always update regardless of Seoul bus availability
+            let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216000068 })
+            BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(
+                cityFromCampus.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
+            )
+            let cityFromStation = result.first(where: { $0.stop.seq == 216000138 && $0.route.seq == 216000068 })
+            BusRealtimeData.shared.busRealtimeCityFromStation.onNext(
+                cityFromStation.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
+            )
+            // Seoul bus (3102) — may not serve all stops, set empty if not available
+            let seoulFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216000061 })
+            BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(
+                seoulFromCampus.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
+            )
+            // Other fixed-stop buses
+            let gunpoFromCampus = result.filter { $0.stop.seq == 216000719 && ($0.route.seq == 216000096 || $0.route.seq == 216000026 || $0.route.seq == 216000043) }
+            BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(
+                gunpoFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted()
+            )
+            let suwonFromCampus = result.filter { $0.stop.seq == 216000070 && ($0.route.seq == 216000104 || $0.route.seq == 200000015) }
+            BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(
+                suwonFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted()
+            )
+            let ktxFromCampus = result.first(where: { $0.stop.seq == 216000759 && $0.route.seq == 216000075 })
+            BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(
+                ktxFromCampus.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
+            )
+            let ktxFromStation = result.first(where: { $0.stop.seq == 213000487 && $0.route.seq == 216000075 })
+            BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(
+                ktxFromStation.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
+            )
             // Reload the table view
             self.cityBusTabVC.reload()
             self.seoulBusTabVC.reload()

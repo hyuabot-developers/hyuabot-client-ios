@@ -35,6 +35,7 @@ query BusRealtimePageQuery($language: String!) {
             lowFloor
             isRealtime
             time
+            arrivalTime
         }
     }
 }

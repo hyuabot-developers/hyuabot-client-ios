@@ -1,4 +1,5 @@
 import UIKit
+import UserNotifications
 import RxSwift
 import Api
 
@@ -8,6 +9,41 @@ class ReadingRoomVC: UIViewController {
     private let isLoading = BehaviorSubject<Bool>(value: false)
     private let refreshControl = UIRefreshControl()
     private let roomSubject = BehaviorSubject<[ReadingRoomPageQuery.Data.ReadingRoom]>(value: [])
+    // Extend alarm UI
+    private lazy var alarm3HourButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.title = String(localized: "reading_room.alarm.3hour")
+        config.baseBackgroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        let btn = UIButton(configuration: config)
+        btn.addTarget(self, action: #selector(alarm3HourTapped), for: .touchUpInside)
+        return btn
+    }()
+    private lazy var alarm4HourButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.title = String(localized: "reading_room.alarm.4hour")
+        config.baseBackgroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        let btn = UIButton(configuration: config)
+        btn.addTarget(self, action: #selector(alarm4HourTapped), for: .touchUpInside)
+        return btn
+    }()
+    private lazy var alarmCancelButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.title = String(localized: "reading_room.alarm.cancel")
+        config.baseBackgroundColor = .systemRed
+        config.cornerStyle = .medium
+        let btn = UIButton(configuration: config)
+        btn.isHidden = true
+        btn.addTarget(self, action: #selector(alarmCancelTapped), for: .touchUpInside)
+        return btn
+    }()
+    private let runningAlarmLabel = UILabel().then {
+        $0.font = .godo(size: 13, weight: .regular)
+        $0.textColor = .hanyangBlue
+        $0.isHidden = true
+        $0.numberOfLines = 1
+    }
     private lazy var readingRoomView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -47,6 +83,65 @@ class ReadingRoomVC: UIViewController {
         self.showCoachMarksIfNeeded()
     }
 
+    // MARK: - Alarm Actions
+
+    @objc private func alarm3HourTapped() { scheduleLocalAlarm(hours: 3) }
+    @objc private func alarm4HourTapped() { scheduleLocalAlarm(hours: 4) }
+    @objc private func alarmCancelTapped() { cancelLocalAlarm() }
+
+    private func scheduleLocalAlarm(hours: Int) {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { [weak self] granted, _ in
+            guard granted else { return }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["reading_room_extend_alarm"])
+            let triggerMinutes = hours * 60 - 10
+            let content = UNMutableNotificationContent()
+            content.title = String(localized: "reading_room.alarm.notification.title")
+            content.body = String(localized: "reading_room.alarm.notification.body")
+            content.sound = .default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(triggerMinutes * 60), repeats: false)
+            let request = UNNotificationRequest(identifier: "reading_room_extend_alarm", content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request)
+            DispatchQueue.main.async {
+                let alarmTime = Foundation.Date().addingTimeInterval(TimeInterval(triggerMinutes * 60))
+                UserDefaults.standard.set(alarmTime.timeIntervalSince1970, forKey: "readingRoomExtendAlarmTime")
+                self?.updateAlarmUI(alarmTime: alarmTime)
+                AnalyticsManager.logSelect(.readingRoomAlarmToggle)
+            }
+        }
+    }
+
+    private func cancelLocalAlarm() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["reading_room_extend_alarm"])
+        UserDefaults.standard.removeObject(forKey: "readingRoomExtendAlarmTime")
+        updateAlarmUI(alarmTime: nil)
+        AnalyticsManager.logSelect(.readingRoomAlarmToggle)
+    }
+
+    private func updateAlarmUI(alarmTime: Foundation.Date?) {
+        if let time = alarmTime {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm"
+            runningAlarmLabel.text = String(format: String(localized: "reading_room.alarm.running_format"), formatter.string(from: time))
+            runningAlarmLabel.isHidden = false
+            alarmCancelButton.isHidden = false
+        } else {
+            runningAlarmLabel.isHidden = true
+            alarmCancelButton.isHidden = true
+        }
+    }
+
+    private func restoreAlarmUI() {
+        let savedTimestamp = UserDefaults.standard.double(forKey: "readingRoomExtendAlarmTime")
+        guard savedTimestamp > 0 else { updateAlarmUI(alarmTime: (Foundation.Date?.none)); return }
+        let alarmTime = Foundation.Date(timeIntervalSince1970: savedTimestamp)
+        if alarmTime > Foundation.Date() {
+            updateAlarmUI(alarmTime: alarmTime)
+        } else {
+            UserDefaults.standard.removeObject(forKey: "readingRoomExtendAlarmTime")
+            updateAlarmUI(alarmTime: Foundation.Date?.none)
+        }
+    }
+
     private func showCoachMarksIfNeeded() {
         guard CoachMarkManager.shared.shouldShowPage("readingroom") else { return }
         if let items = try? roomSubject.value(), !items.isEmpty {
@@ -77,16 +172,6 @@ class ReadingRoomVC: UIViewController {
                     title: String(localized: "coach.readingroom.list.title"),
                     message: String(localized: "coach.readingroom.list.message")
                 ),
-            ],
-            shouldMarkAsShown: false,
-            onComplete: { [weak self] in self?.presentAlarmCoachMark() }
-        )
-    }
-
-    private func presentAlarmCoachMark() {
-        presentCoachMarks(
-            pageId: "readingroom",
-            items: [
                 CoachMarkItem(
                     id: "readingroom.alarm",
                     targetViewProvider: { [weak self] in
@@ -96,8 +181,14 @@ class ReadingRoomVC: UIViewController {
                     title: String(localized: "coach.readingroom.alarm.title"),
                     message: String(localized: "coach.readingroom.alarm.message")
                 ),
+                CoachMarkItem(
+                    id: "readingroom.extend_alarm",
+                    targetView: alarm3HourButton,
+                    title: String(localized: "coach.readingroom.extend_alarm.title"),
+                    message: String(localized: "coach.readingroom.extend_alarm.message")
+                ),
             ],
-            shouldMarkAsShown: false,
+            shouldMarkAsShown: true,
             onComplete: { CoachMarkManager.shared.markPageShown("readingroom") }
         )
     }
@@ -111,6 +202,7 @@ class ReadingRoomVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.startPolling()
+        self.restoreAlarmUI()
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -131,10 +223,30 @@ class ReadingRoomVC: UIViewController {
     
     private func setupUI() {
         self.navigationItem.title = String(localized: "tabbar.readingroom")
+        // Alarm button stack
+        let buttonStack = UIStackView(arrangedSubviews: [alarm3HourButton, alarm4HourButton])
+        buttonStack.axis = .horizontal
+        buttonStack.spacing = 8
+        buttonStack.distribution = .fillEqually
+        let alarmInfoStack = UIStackView(arrangedSubviews: [runningAlarmLabel, alarmCancelButton])
+        alarmInfoStack.axis = .horizontal
+        alarmInfoStack.spacing = 8
+        alarmInfoStack.alignment = .center
+        let alarmContainerStack = UIStackView(arrangedSubviews: [buttonStack, alarmInfoStack])
+        alarmContainerStack.axis = .vertical
+        alarmContainerStack.spacing = 6
+        alarmContainerStack.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        alarmContainerStack.isLayoutMarginsRelativeArrangement = true
+        self.view.addSubview(alarmContainerStack)
         self.view.addSubview(self.readingRoomView)
         self.view.addSubview(self.loadingView)
+        alarmContainerStack.snp.makeConstraints { make in
+            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.equalToSuperview()
+        }
         self.readingRoomView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(alarmContainerStack.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
         }
         self.loadingView.snp.makeConstraints { make in
             make.edges.equalTo(self.readingRoomView)

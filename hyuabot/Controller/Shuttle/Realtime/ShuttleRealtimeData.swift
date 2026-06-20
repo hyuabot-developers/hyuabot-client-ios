@@ -25,6 +25,10 @@ class ShuttleRealtimeData {
     let shuttleJungangStationToCampusData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleShuttlecockInData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
     let shuttleShuttlecockInToDormitoryData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    // Bus alternative data (10-1 bus)
+    let busAlternativeDormitory = BehaviorSubject<ShuttleBusAlternativeQuery.Data.Bus?>(value: nil)
+    let busAlternativeShuttlecock = BehaviorSubject<ShuttleBusAlternativeQuery.Data.Bus?>(value: nil)
+    let busAlternativeStation = BehaviorSubject<ShuttleBusAlternativeQuery.Data.Bus?>(value: nil)
     // Show Remaining Time
     let showRemainingTime = BehaviorSubject<Bool>(value: true)
     // Show arrival by time
