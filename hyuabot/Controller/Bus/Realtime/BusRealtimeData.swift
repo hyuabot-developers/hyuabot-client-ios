@@ -1,3 +1,4 @@
+import Foundation
 import RxSwift
 import Api
 
@@ -16,4 +17,9 @@ class BusRealtimeData {
     let notices = BehaviorSubject<[BusRealtimePageQuery.Data.Notice.Notice]>(value: [])
     // Loading State
     let isLoading = BehaviorSubject<Bool>(value: true)
+    // Selected Bus Stop (GPS-based)
+    let selectedBusStopID: BehaviorSubject<Int32> = {
+        let savedID = UserDefaults.standard.integer(forKey: "busStopID")
+        return BehaviorSubject(value: savedID == 0 ? 216000379 : Int32(savedID))
+    }()
 }

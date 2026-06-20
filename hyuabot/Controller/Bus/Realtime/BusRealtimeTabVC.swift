@@ -111,11 +111,12 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeHeaderView.reuseIdentifier) as? BusRealtimeHeaderView else {
             return UIView()
         }
+        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
         var stopID: Int32 = 0
         var routes: [Int32] = []
         if self.tabType == .city {
             if section == 0 {
-                stopID = 216000379
+                stopID = selectedStopID
                 routes = [216000068]
             }
             else if section == 1 {
@@ -124,7 +125,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if self.tabType == .seoul {
             if section == 0 {
-                stopID = 216000379
+                stopID = selectedStopID
                 routes = [216000061]
             }
             else if section == 1 {
@@ -159,11 +160,12 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeFooterView.reuseIdentifier) as? BusRealtimeFooterView else {
             return UIView()
         }
+        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
         var stopID: Int32 = 0
         var routes: [Int32] = []
         if self.tabType == .city {
             if section == 0 {
-                stopID = 216000379
+                stopID = selectedStopID
                 routes = [216000068]
             }
             else if section == 1 {
@@ -172,7 +174,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if self.tabType == .seoul {
             if section == 0 {
-                stopID = 216000379
+                stopID = selectedStopID
                 routes = [216000061]
             }
             else if section == 1 {
