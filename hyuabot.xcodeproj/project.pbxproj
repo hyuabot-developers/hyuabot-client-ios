@@ -270,6 +270,7 @@
 				C73CB6302D4101A2005E9731 /* Embed Frameworks */,
 				C72A95EC2DAA961600979B22 /* Embed Watch Content */,
 				C79048DB2FC947FE005BF1C1 /* Embed Foundation Extensions */,
+				C7D5A0012FEF000100000001 /* Generate Firebase Framework dSYMs */,
 				C7BAB03B2D28098B00BBE940 /* Crashlytics */,
 			);
 			buildRules = (
@@ -376,6 +377,41 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		C7D5A0012FEF000100000001 /* Generate Firebase Framework dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/FirebaseAnalytics.framework/FirebaseAnalytics",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/GoogleAppMeasurement.framework/GoogleAppMeasurement",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport",
+			);
+			name = "Generate Firebase Framework dSYMs";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/FirebaseAnalytics.framework.dSYM/Contents/Info.plist",
+				"${DWARF_DSYM_FOLDER_PATH}/FirebaseAnalytics.framework.dSYM/Contents/Resources/DWARF/FirebaseAnalytics",
+				"${DWARF_DSYM_FOLDER_PATH}/FirebaseAnalytics.framework.dSYM/Contents/Resources/Relocations/aarch64/FirebaseAnalytics.yml",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAdsOnDeviceConversion.framework.dSYM/Contents/Info.plist",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAdsOnDeviceConversion.framework.dSYM/Contents/Resources/DWARF/GoogleAdsOnDeviceConversion",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAdsOnDeviceConversion.framework.dSYM/Contents/Resources/Relocations/aarch64/GoogleAdsOnDeviceConversion.yml",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAppMeasurement.framework.dSYM/Contents/Info.plist",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAppMeasurement.framework.dSYM/Contents/Resources/DWARF/GoogleAppMeasurement",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAppMeasurement.framework.dSYM/Contents/Resources/Relocations/aarch64/GoogleAppMeasurement.yml",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAppMeasurementIdentitySupport.framework.dSYM/Contents/Info.plist",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAppMeasurementIdentitySupport.framework.dSYM/Contents/Resources/DWARF/GoogleAppMeasurementIdentitySupport",
+				"${DWARF_DSYM_FOLDER_PATH}/GoogleAppMeasurementIdentitySupport.framework.dSYM/Contents/Resources/Relocations/aarch64/GoogleAppMeasurementIdentitySupport.yml",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nif [ \"${SKIP_INSTALL}\" = \"YES\" ]; then\n  exit 0\nfi\n\nmkdir -p \"${DWARF_DSYM_FOLDER_PATH}\"\n\nfor framework in FirebaseAnalytics GoogleAdsOnDeviceConversion GoogleAppMeasurement GoogleAppMeasurementIdentitySupport; do\n  binary=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/${framework}.framework/${framework}\"\n  output=\"${DWARF_DSYM_FOLDER_PATH}/${framework}.framework.dSYM\"\n\n  if [ ! -f \"${binary}\" ]; then\n    echo \"warning: ${framework}.framework binary not found at ${binary}\"\n    continue\n  fi\n\n  dsymutil \"${binary}\" -o \"${output}\"\ndone\n";
+		};
 		C7BAB03B2D28098B00BBE940 /* Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
