@@ -481,7 +481,9 @@ class ShuttleRealtimeVC: UIViewController {
     private func openShuttleViaVCByOrder(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.custom(resolver: { context in
+                min(vc.sheetHeight, context.maximumDetentValue)
+            })]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
@@ -490,7 +492,9 @@ class ShuttleRealtimeVC: UIViewController {
     private func openShuttleViaVCByDestination(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.custom(resolver: { context in
+                min(vc.sheetHeight, context.maximumDetentValue)
+            })]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)

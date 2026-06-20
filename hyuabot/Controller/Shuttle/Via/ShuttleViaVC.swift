@@ -54,6 +54,25 @@ class ShuttleViaVC: UIViewController {
         super.viewDidLoad()
         self.setupUI()
     }
+
+    var sheetHeight: CGFloat {
+        let titleHeight: CGFloat = 60
+        let rowHeight: CGFloat = 52
+        let bottomPadding: CGFloat = 16
+        let rows = max(self.routeStopCount, 1)
+        return titleHeight + CGFloat(rows) * rowHeight + bottomPadding
+    }
+
+    private var routeStopCount: Int {
+        if let itemByOrder {
+            return itemByOrder.stops.count
+        } else if let itemByDestination {
+            return itemByDestination.stops.count
+        } else if let timetableItem {
+            return timetableItem.stops.count
+        }
+        return 0
+    }
     
     private func setupUI() {
         self.view.backgroundColor = .hanyangBlue
@@ -77,14 +96,7 @@ extension ShuttleViaVC: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if (self.itemByOrder?.stops.count ?? 0) > 0 {
-            return self.itemByOrder?.stops.count ?? 0
-        } else if (self.itemByDestination?.stops.count ?? 0) > 0 {
-            return self.itemByDestination?.stops.count ?? 0
-        } else if (self.timetableItem?.stops.count ?? 0) > 0 {
-            return self.timetableItem?.stops.count ?? 0
-        }
-        return 0
+        return self.routeStopCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

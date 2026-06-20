@@ -266,7 +266,9 @@ class ShuttleTimetableVC: UIViewController {
     private func openShuttleViaVC(_ item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.custom(resolver: { context in
+                min(vc.sheetHeight, context.maximumDetentValue)
+            })]
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
