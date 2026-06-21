@@ -354,14 +354,23 @@ class ShuttleStopInfoVC: UIViewController {
         ShuttleTimetableData.shared.isLoading.onNext(true)
         Task {
             let response = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: Foundation.Date.now)))
-            if let data = response?.data {
-                let period = data.shuttle.period!.type
-                let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(stopID: stopID, period: [period]))
-                if let stopData = stopResponse?.data {
-                    self.stopInfo.onNext(stopData.shuttle.stops.first)
-                    self.timetable.onNext(stopData.shuttle.stops.first?.timetable.destination ?? [])
-                }
+            guard let period = response?.data?.shuttle.period?.type else {
+                publishStopInfo(nil, timetable: [])
+                return
             }
+            let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(stopID: stopID, period: [period]))
+            let stop = stopResponse?.data?.shuttle.stops.first
+            publishStopInfo(stop, timetable: stop?.timetable.destination ?? [])
+        }
+    }
+
+    private func publishStopInfo(
+        _ stop: ShuttleStopDialogQuery.Data.Shuttle.Stop?,
+        timetable: [ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            self?.stopInfo.onNext(stop)
+            self?.timetable.onNext(timetable)
         }
     }
     
