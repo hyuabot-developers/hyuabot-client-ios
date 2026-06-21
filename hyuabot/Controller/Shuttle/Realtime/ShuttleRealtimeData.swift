@@ -21,16 +21,27 @@ struct ShuttleAlarmStop: Equatable {
 
 struct ShuttleAlarmContext: Equatable {
     let key: String
+    let routeName: String
+    let routeDisplayName: String
+    let directionDisplayName: String
     let boardingStop: ShuttleAlarmStop
     let routeStops: [ShuttleAlarmStop]
     let departureTime: Foundation.Date
     let minutesUntilDeparture: Int
+    let createdAt: Foundation.Date
 
     var destinationStops: [ShuttleAlarmStop] {
         guard let boardingIndex = routeStops.firstIndex(where: { $0.id == boardingStop.id }) else {
             return []
         }
         return Array(routeStops.dropFirst(boardingIndex + 1))
+    }
+
+    var boardingCheckpointStops: [ShuttleAlarmStop] {
+        guard let boardingIndex = routeStops.firstIndex(where: { $0.id == boardingStop.id }) else {
+            return [boardingStop]
+        }
+        return Array(routeStops.prefix(boardingIndex + 1))
     }
 }
 

@@ -5,6 +5,7 @@ class ShuttleRealtimeTimeTableDelegate: NSObject {
     let showViaVC: ((_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void)
     let showAlarmVC: ((_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void)
     let stopID: ShuttleStopEnum
+    var activeBoardingAlarmKeys: Set<String> = []
     
     required init(
         showViaVC: @escaping (_: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
@@ -51,7 +52,7 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
+                cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .dormiotryOut, item: item)) { [weak self] in
                     self?.showAlarmVC(.dormiotryOut, item)
                 }
                 return cell
@@ -61,7 +62,7 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
+                cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .shuttlecockOut, item: item)) { [weak self] in
                     self?.showAlarmVC(.shuttlecockOut, item)
                 }
                 return cell
@@ -71,7 +72,7 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
+                cell.setupUI(stopID: .station, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .station, item: item)) { [weak self] in
                     self?.showAlarmVC(.station, item)
                 }
                 return cell
@@ -81,7 +82,7 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .terminal, indexPath: indexPath, item: item) { [weak self] in
+                cell.setupUI(stopID: .terminal, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .terminal, item: item)) { [weak self] in
                     self?.showAlarmVC(.terminal, item)
                 }
                 return cell
@@ -91,7 +92,7 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .jungangStation, indexPath: indexPath, item: item) { [weak self] in
+                cell.setupUI(stopID: .jungangStation, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .jungangStation, item: item)) { [weak self] in
                     self?.showAlarmVC(.jungangStation, item)
                 }
                 return cell
@@ -101,13 +102,20 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: item) { [weak self] in
+                cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .shuttlecockIn, item: item)) { [weak self] in
                     self?.showAlarmVC(.shuttlecockIn, item)
                 }
                 return cell
             }
         }
         return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier, for: indexPath)
+    }
+
+    private func isBoardingAlarmActive(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Bool {
+        guard let context = ShuttleRealtimeTabVC.makeAlarmContext(stopID: stopID, item: item, directionDisplayName: nil) else {
+            return false
+        }
+        return activeBoardingAlarmKeys.contains(context.key)
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

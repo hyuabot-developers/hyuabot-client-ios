@@ -1,5 +1,6 @@
 import UIKit
 import UserNotifications
+import CoreLocation
 import SnapKit
 import Then
 
@@ -8,6 +9,7 @@ class ShuttleAlarmVC: UIViewController {
     private var selectedDestinationIndex = 0
     private var isBoardingAlarmActive = false
     private var isAlightingAlarmActive = false
+    private let locationPermissionRequester = ShuttleAlarmLocationPermissionRequester()
     var shareJourney: ((String) -> Void)?
 
     private let titleLabel = UILabel().then {
@@ -163,10 +165,11 @@ class ShuttleAlarmVC: UIViewController {
             dismiss(animated: true)
             return
         }
-        requestNotificationAuthorization { [weak self] granted in
+        requestNotificationAndLocationAuthorization { [weak self] granted in
             guard let self else { return }
             if granted {
                 ShuttleAlarmNotificationService.shared.scheduleBoardingAlarm(context: self.context)
+                NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
                 self.dismiss(animated: true)
             } else {
                 self.presentPermissionAlert()
@@ -182,7 +185,7 @@ class ShuttleAlarmVC: UIViewController {
         }
         guard context.destinationStops.indices.contains(selectedDestinationIndex) else { return }
         let destination = context.destinationStops[selectedDestinationIndex]
-        requestNotificationAuthorization { [weak self] granted in
+        requestNotificationAndLocationAuthorization { [weak self] granted in
             guard let self else { return }
             if granted {
                 ShuttleAlarmNotificationService.shared.scheduleAlightingAlarm(context: self.context, destination: destination)
@@ -218,6 +221,19 @@ class ShuttleAlarmVC: UIViewController {
             URLQueryItem(name: "to", value: destination.id)
         ]
         return components.url?.absoluteString ?? "hyuabot://shuttle?stop=\(context.boardingStop.id)"
+    }
+
+    private func requestNotificationAndLocationAuthorization(completion: @escaping (Bool) -> Void) {
+        requestNotificationAuthorization { [weak self] granted in
+            guard let self else { return }
+            guard granted else {
+                completion(false)
+                return
+            }
+            self.locationPermissionRequester.requestIfNeeded {
+                completion(true)
+            }
+        }
     }
 
     private func requestNotificationAuthorization(completion: @escaping (Bool) -> Void) {
@@ -295,6 +311,32 @@ class ShuttleAlarmVC: UIViewController {
         formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
+    }
+}
+
+private final class ShuttleAlarmLocationPermissionRequester: NSObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+    private var completion: (() -> Void)?
+
+    override init() {
+        super.init()
+        manager.delegate = self
+    }
+
+    func requestIfNeeded(completion: @escaping () -> Void) {
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            self.completion = completion
+            manager.requestWhenInUseAuthorization()
+        default:
+            completion()
+        }
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        guard manager.authorizationStatus != .notDetermined else { return }
+        completion?()
+        completion = nil
     }
 }
 
@@ -434,7 +476,24 @@ private final class ShuttleDestinationSelectionCell: UITableViewCell {
     }
 }
 
-private final class ShuttleAlarmNotificationService {
+struct ShuttleActiveBoardingAlarm {
+    let identifier: String
+    let key: String
+    let routeName: String
+    let routeDisplayName: String
+    let boardingStopName: String
+    let departureTime: Date
+
+    var minutesUntilDeparture: Int {
+        max(Int(ceil(departureTime.timeIntervalSince(Date.now) / 60)), 0)
+    }
+}
+
+extension Notification.Name {
+    static let shuttleBoardingAlarmStateDidChange = Notification.Name("shuttleBoardingAlarmStateDidChange")
+}
+
+final class ShuttleAlarmNotificationService {
     static let shared = ShuttleAlarmNotificationService()
 
     private init() {}
@@ -448,13 +507,65 @@ private final class ShuttleAlarmNotificationService {
         }
     }
 
+    func activeBoardingKeys(completion: @escaping (Set<String>) -> Void) {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let keys = requests.compactMap { request -> String? in
+                guard request.identifier.hasSuffix(".boarding") else { return nil }
+                if let key = request.content.userInfo["key"] as? String {
+                    return key
+                }
+                return request.identifier.replacingOccurrences(of: ".boarding", with: "")
+            }
+            DispatchQueue.main.async {
+                completion(Set(keys))
+            }
+        }
+    }
+
+    func activeBoardingAlarm(completion: @escaping (ShuttleActiveBoardingAlarm?) -> Void) {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let alarm = requests.compactMap { request -> ShuttleActiveBoardingAlarm? in
+                guard request.identifier.hasSuffix(".boarding"),
+                      let trigger = request.trigger as? UNCalendarNotificationTrigger,
+                      let departureTime = trigger.nextTriggerDate(),
+                      departureTime > Date.now else { return nil }
+                let userInfo = request.content.userInfo
+                return ShuttleActiveBoardingAlarm(
+                    identifier: request.identifier,
+                    key: userInfo["key"] as? String ?? request.identifier.replacingOccurrences(of: ".boarding", with: ""),
+                    routeName: userInfo["routeName"] as? String ?? "",
+                    routeDisplayName: userInfo["routeDisplayName"] as? String ?? userInfo["routeName"] as? String ?? "",
+                    boardingStopName: userInfo["boardingStopName"] as? String ?? "",
+                    departureTime: departureTime
+                )
+            }
+            .sorted { $0.departureTime < $1.departureTime }
+            .first
+            DispatchQueue.main.async {
+                completion(alarm)
+            }
+        }
+    }
+
     func scheduleBoardingAlarm(context: ShuttleAlarmContext) {
         let content = UNMutableNotificationContent()
         content.title = String(format: String(localized: "shuttle.alarm.boarding.notification.title"), context.boardingStop.name)
         content.body = String(format: String(localized: "shuttle.alarm.boarding.notification.body"), context.minutesUntilDeparture, context.boardingStop.name)
         content.sound = .default
-        content.userInfo = ["url": "hyuabot://shuttle"]
-        schedule(identifier: boardingIdentifier(context.key), content: content, date: context.departureTime)
+        content.userInfo = [
+            "url": "hyuabot://shuttle",
+            "key": context.key,
+            "type": "boarding",
+            "routeName": context.routeName,
+            "routeDisplayName": context.routeDisplayName,
+            "boardingStopName": context.boardingStop.name
+        ]
+        replaceShuttleAlarm {
+            self.schedule(identifier: self.boardingIdentifier(context.key), content: content, date: context.departureTime) {
+                NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
+            }
+            ShuttleBoardingLiveActivityManager.shared.start(context: context)
+        }
     }
 
     func scheduleAlightingAlarm(context: ShuttleAlarmContext, destination: ShuttleAlarmStop) {
@@ -463,23 +574,51 @@ private final class ShuttleAlarmNotificationService {
         content.body = String(format: String(localized: "shuttle.alarm.alighting.notification.body"), destination.name)
         content.sound = .default
         content.userInfo = ["url": "hyuabot://shuttle"]
-        schedule(identifier: alightingIdentifier(context.key), content: content, date: destination.time)
+        replaceShuttleAlarm {
+            self.schedule(identifier: self.alightingIdentifier(context.key), content: content, date: destination.time) {
+                NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
+            }
+        }
     }
 
     func cancelBoardingAlarm(for key: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [boardingIdentifier(key)])
+        ShuttleBoardingLiveActivityManager.shared.end(for: key)
+        NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
     }
 
     func cancelAlightingAlarm(for key: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [alightingIdentifier(key)])
     }
 
-    private func schedule(identifier: String, content: UNNotificationContent, date: Date) {
+    private func schedule(identifier: String, content: UNNotificationContent, date: Date, completion: (() -> Void)? = nil) {
         guard date > Date.now else { return }
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { _ in
+            DispatchQueue.main.async {
+                completion?()
+            }
+        }
+    }
+
+    private func replaceShuttleAlarm(scheduleNewAlarm: @escaping () -> Void) {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let identifiers = requests
+                .map(\.identifier)
+                .filter { self.isShuttleAlarmIdentifier($0) }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+            DispatchQueue.main.async {
+                ShuttleBoardingLiveActivityManager.shared.endAll()
+                NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
+                scheduleNewAlarm()
+            }
+        }
+    }
+
+    private func isShuttleAlarmIdentifier(_ identifier: String) -> Bool {
+        identifier.hasSuffix(".boarding") || identifier.hasSuffix(".alighting")
     }
 
     private func boardingIdentifier(_ key: String) -> String {

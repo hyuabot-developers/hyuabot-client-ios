@@ -40,6 +40,11 @@ class ShuttleRealtimeCellView: UITableViewCell {
     var itemByOrder: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order?
     var itemByDestination: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
     private var showAlarm: (() -> Void)?
+    private var isBoardingAlarmActive = false {
+        didSet {
+            updateAlarmButtonAppearance()
+        }
+    }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -89,21 +94,24 @@ class ShuttleRealtimeCellView: UITableViewCell {
         } else {
             self.alarmButton.tintColor = .hanyangBlue
         }
+        self.updateAlarmButtonAppearance()
     }
     
-    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order, showAlarm: @escaping () -> Void) {
+    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order, isBoardingAlarmActive: Bool = false, showAlarm: @escaping () -> Void) {
         self.shuttleAlertView.isHidden = true
         self.itemByDestination = nil
         self.showAlarm = showAlarm
+        self.isBoardingAlarmActive = isBoardingAlarmActive
         self.setTypeText(stopID: stopID, item: item)
         self.itemByOrder = item
         self.setUITimeLabel(time: item.time)
     }
     
-    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry, showAlarm: @escaping () -> Void) {
+    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry, isBoardingAlarmActive: Bool = false, showAlarm: @escaping () -> Void) {
         self.shuttleAlertView.isHidden = true
         self.itemByOrder = nil
         self.showAlarm = showAlarm
+        self.isBoardingAlarmActive = isBoardingAlarmActive
         if (stopID == .dormiotryOut || stopID == .shuttlecockOut) {
             if indexPath.section == 0 {
                 if item.route.tag == "DH" || item.route.tag == "DJ" {
@@ -269,5 +277,12 @@ class ShuttleRealtimeCellView: UITableViewCell {
 
     @objc private func alarmButtonTapped() {
         self.showAlarm?()
+    }
+
+    private func updateAlarmButtonAppearance() {
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+        let imageName = isBoardingAlarmActive ? "bell.fill" : "bell"
+        self.alarmButton.setImage(UIImage(systemName: imageName, withConfiguration: symbolConfiguration), for: .normal)
+        self.alarmButton.accessibilityValue = isBoardingAlarmActive ? String(localized: "shuttle.alarm.cancel") : nil
     }
 }

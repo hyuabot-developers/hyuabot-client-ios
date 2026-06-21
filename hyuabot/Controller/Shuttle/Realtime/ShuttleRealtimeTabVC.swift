@@ -19,6 +19,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
     private var busAlternatives: [String: [ShuttleBusAlternativeDisplayData]] = [:]
+    private var activeBoardingAlarmKeys: Set<String> = []
     var forceShowBusAlternative = false
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
@@ -86,7 +87,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(
             showViaVC: showViaVCByOrder,
             showAlarmVC: { stopID, item in
-                guard let context = Self.makeAlarmContext(stopID: stopID, item: item) else { return }
+                guard let context = Self.makeAlarmContext(stopID: stopID, item: item, directionDisplayName: nil) else { return }
                 showAlarmVC(stopID, context)
             },
             stopID: self.stopID
@@ -102,6 +103,17 @@ class ShuttleRealtimeTabVC: UIViewController {
         super.viewDidLoad()
         self.setupUI()
         self.observeSubjects()
+        self.observeAlarmStateChanges()
+        self.reloadActiveBoardingAlarmKeys()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.reloadActiveBoardingAlarmKeys()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func setupUI() {
@@ -143,8 +155,33 @@ class ShuttleRealtimeTabVC: UIViewController {
 
         ShuttleRealtimeData.shared.busAlternatives
             .subscribe(onNext: { [weak self] alternatives in
-                self?.updateBusAlternatives(alternatives)
+            self?.updateBusAlternatives(alternatives)
             }).disposed(by: self.disposeBag)
+    }
+
+    private func observeAlarmStateChanges() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(boardingAlarmStateDidChange),
+            name: .shuttleBoardingAlarmStateDidChange,
+            object: nil
+        )
+    }
+
+    @objc private func boardingAlarmStateDidChange() {
+        reloadActiveBoardingAlarmKeys()
+    }
+
+    private func reloadActiveBoardingAlarmKeys() {
+        ShuttleAlarmNotificationService.shared.activeBoardingKeys { [weak self] keys in
+            guard let self else { return }
+            self.activeBoardingAlarmKeys = keys
+            self.timetableDelegate.activeBoardingAlarmKeys = keys
+            UIView.performWithoutAnimation {
+                self.shuttleRealtimeTableView.reloadData()
+                self.shuttleRealtimeTableTimeView.reloadData()
+            }
+        }
     }
 
     private func updateBusAlternatives(_ alternatives: [String: [ShuttleBusAlternativeDisplayData]]) {
@@ -204,44 +241,43 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.showStopVC(stop)
     }
 
-    private static func makeAlarmContext(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> ShuttleAlarmContext? {
+    static func makeAlarmContext(
+        stopID: ShuttleStopEnum,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order,
+        directionDisplayName: String?
+    ) -> ShuttleAlarmContext? {
         makeAlarmContext(
             stopID: stopID,
             routeName: item.route.name,
+            routeTag: item.route.tag,
+            directionDisplayName: directionDisplayName,
             departureTime: item.time,
             stops: item.stops.map { ShuttleAlarmRouteStop(id: $0.stop, time: $0.time) }
         )
     }
 
-    private static func makeAlarmContext(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> ShuttleAlarmContext? {
+    static func makeAlarmContext(
+        stopID: ShuttleStopEnum,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry,
+        directionDisplayName: String?
+    ) -> ShuttleAlarmContext? {
         makeAlarmContext(
             stopID: stopID,
             routeName: item.route.name,
+            routeTag: item.route.tag,
+            directionDisplayName: directionDisplayName,
             departureTime: item.time,
             stops: item.stops.map { ShuttleAlarmRouteStop(id: $0.stop, time: $0.time) }
         )
     }
 
-    private static func makeAlarmContext(stopID: ShuttleStopEnum, routeName: String, departureTime: LocalTime, stops: [ShuttleAlarmRouteStop]) -> ShuttleAlarmContext? {
+    private static func makeAlarmContext(stopID: ShuttleStopEnum, routeName: String, routeTag: String, directionDisplayName: String?, departureTime: LocalTime, stops: [ShuttleAlarmRouteStop]) -> ShuttleAlarmContext? {
         let boardingStopID = shuttleAlarmStopID(stopID)
         let departureDate = normalizedScheduleDate(for: departureTime.toLocalTime(), after: Foundation.Date.now)
-        let routeStops = stops.enumerated().map { index, routeStop in
-            let date = normalizedScheduleDate(for: routeStop.time.toLocalTime(), after: departureDate.addingTimeInterval(-1))
-            let location = shuttleAlarmLocation(for: routeStop.id)
-            return (
-                index: index,
-                stop: ShuttleAlarmStop(
-                    id: routeStop.id,
-                    name: shuttleAlarmStopName(routeStop.id),
-                    time: date,
-                    latitude: location?.latitude,
-                    longitude: location?.longitude
-                )
-            )
-        }
-        guard let boardingRouteStop = routeStops.first(where: { $0.stop.id == boardingStopID }) else {
+        guard let boardingRouteStopIndex = stops.firstIndex(where: { $0.id == boardingStopID }) else {
             return nil
         }
+        let routeStops = normalizeAlarmRouteStops(stops, boardingIndex: boardingRouteStopIndex, departureDate: departureDate)
         let boardingLocation = shuttleAlarmLocation(for: boardingStopID)
         let boardingStop = ShuttleAlarmStop(
             id: boardingStopID,
@@ -250,27 +286,107 @@ class ShuttleRealtimeTabVC: UIViewController {
             latitude: boardingLocation?.latitude,
             longitude: boardingLocation?.longitude
         )
+        var normalizedStops = routeStops
+        normalizedStops[boardingRouteStopIndex] = boardingStop
+        let orderedStops = normalizedStops
         let key = ["shuttle", boardingStopID, routeName, departureTime.replacingOccurrences(of: ":", with: "")].joined(separator: "_")
         let minutes = max(Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60)), 0)
-        var normalizedStops = routeStops
-        if let index = normalizedStops.firstIndex(where: { $0.stop.id == boardingRouteStop.stop.id }) {
-            normalizedStops[index].stop = boardingStop
-        }
-        let orderedStops = normalizedStops
-            .sorted {
-                if $0.stop.time == $1.stop.time {
-                    return $0.index < $1.index
-                }
-                return $0.stop.time < $1.stop.time
-            }
-            .map(\.stop)
         return ShuttleAlarmContext(
             key: key,
+            routeName: routeName,
+            routeDisplayName: shuttleAlarmRouteDisplayName(stopID: stopID, routeName: routeName, routeTag: routeTag),
+            directionDisplayName: directionDisplayName ?? normalizedStops.last?.name ?? boardingStop.name,
             boardingStop: boardingStop,
             routeStops: orderedStops,
             departureTime: departureDate,
-            minutesUntilDeparture: minutes
+            minutesUntilDeparture: minutes,
+            createdAt: Foundation.Date.now
         )
+    }
+
+    private static func normalizeAlarmRouteStops(
+        _ stops: [ShuttleAlarmRouteStop],
+        boardingIndex: Int,
+        departureDate: Foundation.Date
+    ) -> [ShuttleAlarmStop] {
+        var dates = Array(repeating: departureDate, count: stops.count)
+
+        var nextDate = departureDate
+        if boardingIndex > 0 {
+            for index in stride(from: boardingIndex - 1, through: 0, by: -1) {
+                var date = scheduleDate(onSameDayAs: departureDate, time: stops[index].time.toLocalTime())
+                while date >= nextDate {
+                    date = date.addingTimeInterval(-24 * 60 * 60)
+                }
+                dates[index] = date
+                nextDate = date
+            }
+        }
+
+        var previousDate = departureDate
+        if boardingIndex < stops.count - 1 {
+            for index in (boardingIndex + 1)..<stops.count {
+                var date = scheduleDate(onSameDayAs: departureDate, time: stops[index].time.toLocalTime())
+                while date <= previousDate {
+                    date = date.addingTimeInterval(24 * 60 * 60)
+                }
+                dates[index] = date
+                previousDate = date
+            }
+        }
+
+        return stops.enumerated().map { index, routeStop in
+            let location = shuttleAlarmLocation(for: routeStop.id)
+            return ShuttleAlarmStop(
+                id: routeStop.id,
+                name: shuttleAlarmStopName(routeStop.id),
+                time: dates[index],
+                latitude: location?.latitude,
+                longitude: location?.longitude
+            )
+        }
+    }
+
+    private static func scheduleDate(onSameDayAs date: Foundation.Date, time: Foundation.Date) -> Foundation.Date {
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
+        var components = DateComponents()
+        components.year = dateComponents.year
+        components.month = dateComponents.month
+        components.day = dateComponents.day
+        components.hour = timeComponents.hour
+        components.minute = timeComponents.minute
+        components.second = timeComponents.second
+        return calendar.date(from: components) ?? time
+    }
+
+    private static func shuttleAlarmRouteDisplayName(stopID: ShuttleStopEnum, routeName: String, routeTag: String) -> String {
+        switch stopID {
+        case .dormiotryOut, .shuttlecockOut:
+            switch routeTag {
+            case "DH": return String(localized: "shuttle_type_school_station")
+            case "DY": return String(localized: "shuttle_type_school_terminal")
+            case "DJ": return String(localized: "shuttle_type_school_jungang_station")
+            case "C": return String(localized: "shuttle_type_school_circular")
+            default: return routeName
+            }
+        case .station:
+            if routeTag == "DH" {
+                return routeName.hasSuffix("S") ? String(localized: "shuttle_type_shuttlecock") : String(localized: "shuttle_type_dormitory")
+            } else if routeTag == "DJ" {
+                return String(localized: "shuttle_type_jungang_station")
+            } else if routeTag == "C" {
+                return routeName.hasSuffix("S") ? String(localized: "shuttle_type_station_circular_shuttlecock") : String(localized: "shuttle_type_station_circular_dormitory")
+            }
+            return routeName
+        case .terminal:
+            return routeName.hasSuffix("S") ? String(localized: "shuttle_type_shuttlecock") : String(localized: "shuttle_type_dormitory")
+        case .jungangStation:
+            return String(localized: "shuttle_type_dormitory")
+        case .shuttlecockIn:
+            return routeName.hasSuffix("S") ? String(localized: "shuttle_type_shuttlecock_finishing") : String(localized: "shuttle_type_dormitory")
+        }
     }
 
     private static func normalizedScheduleDate(for date: Foundation.Date, after previousDate: Foundation.Date) -> Foundation.Date {
@@ -416,8 +532,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .dormiotryOut, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.dormiotryOut, context)
                     }
                     return cell
@@ -427,8 +544,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .dormiotryOut, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.dormiotryOut, context)
                     }
                     return cell
@@ -438,8 +556,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .dormiotryOut, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.dormiotryOut, context)
                     }
                     return cell
@@ -451,8 +570,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .shuttlecockOut, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.shuttlecockOut, context)
                     }
                     return cell
@@ -462,8 +582,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .shuttlecockOut, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.shuttlecockOut, context)
                     }
                     return cell
@@ -473,8 +594,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .shuttlecockOut, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.shuttlecockOut, context)
                     }
                     return cell
@@ -486,8 +608,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .station, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.station, context)
                     }
                     return cell
@@ -497,8 +620,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .station, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.station, context)
                     }
                     return cell
@@ -508,8 +632,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
-                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item) else { return }
+                    let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .station, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                         self.showAlarmVC(.station, context)
                     }
                     return cell
@@ -520,8 +645,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if data.indices.contains(indexPath.row) {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .terminal, indexPath: indexPath, item: item) { [weak self] in
-                    guard let self, let context = Self.makeAlarmContext(stopID: .terminal, item: item) else { return }
+                let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                cell.setupUI(stopID: .terminal, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .terminal, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                    guard let self, let context = Self.makeAlarmContext(stopID: .terminal, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                     self.showAlarmVC(.terminal, context)
                 }
                 return cell
@@ -531,8 +657,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if data.indices.contains(indexPath.row) {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .jungangStation, indexPath: indexPath, item: item) { [weak self] in
-                    guard let self, let context = Self.makeAlarmContext(stopID: .jungangStation, item: item) else { return }
+                let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                cell.setupUI(stopID: .jungangStation, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .jungangStation, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                    guard let self, let context = Self.makeAlarmContext(stopID: .jungangStation, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                     self.showAlarmVC(.jungangStation, context)
                 }
                 return cell
@@ -542,8 +669,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if data.indices.contains(indexPath.row) {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
-                cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: item) { [weak self] in
-                    guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockIn, item: item) else { return }
+                let directionDisplayName = self.directionDisplayName(section: indexPath.section)
+                cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: item, isBoardingAlarmActive: isBoardingAlarmActive(stopID: .shuttlecockIn, item: item, directionDisplayName: directionDisplayName)) { [weak self] in
+                    guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockIn, item: item, directionDisplayName: self.directionDisplayName(section: indexPath.section)) else { return }
                     self.showAlarmVC(.shuttlecockIn, context)
                 }
                 return cell
@@ -604,5 +732,21 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         default:
             return ""
         }
+    }
+
+    private func directionDisplayName(section: Int) -> String? {
+        guard shuttleRealtimeSection.indices.contains(section) else { return nil }
+        return String(localized: shuttleRealtimeSection[section])
+    }
+
+    private func isBoardingAlarmActive(
+        stopID: ShuttleStopEnum,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry,
+        directionDisplayName: String?
+    ) -> Bool {
+        guard let context = Self.makeAlarmContext(stopID: stopID, item: item, directionDisplayName: directionDisplayName) else {
+            return false
+        }
+        return activeBoardingAlarmKeys.contains(context.key)
     }
 }
