@@ -13,6 +13,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let showViaVCByOrder: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
     private let showViaVCByDestination: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void
     private let showStopVC: (ShuttleStopEnum) -> Void
+    private let showBusAlternativeStop: (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
@@ -62,7 +63,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void,
         showViaVCByOrder: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
         showViaVCByDestination: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void,
-        showStopVC: @escaping (ShuttleStopEnum) -> Void
+        showStopVC: @escaping (ShuttleStopEnum) -> Void,
+        showBusAlternativeStop: @escaping (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void
     ) {
         self.stopID = stopID
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
@@ -77,6 +79,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.showViaVCByOrder = showViaVCByOrder
         self.showViaVCByDestination = showViaVCByDestination
         self.showStopVC = showStopVC
+        self.showBusAlternativeStop = showBusAlternativeStop
         self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(showViaVC: showViaVCByOrder, stopID: self.stopID)
         super.init(nibName: nil, bundle: nil)
     }
@@ -216,7 +219,10 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView else { return UIView() }
         let alternatives = busAlternatives[busAlternativeKey(section: section)] ?? []
         let forceShow = section == 0 && forceShowBusAlternative
-        footerView.setupUI(stopID: self.stopID, section: section, busAlternatives: alternatives, forceShow: forceShow, showEntireTimetable: showEntireTimetable)
+        footerView.setupUI(stopID: self.stopID, section: section, busAlternatives: alternatives, forceShow: forceShow, showEntireTimetable: showEntireTimetable) { [weak self] alternative in
+            guard let self else { return }
+            self.showBusAlternativeStop(self.stopID, alternative)
+        }
         return footerView
     }
 

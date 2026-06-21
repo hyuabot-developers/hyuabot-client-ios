@@ -6,6 +6,9 @@ struct ShuttleBusAlternativeDisplayData: Equatable {
     let routeName: String
     let minutes: Int?
     let color: UIColor
+    let busStopName: String
+    let busStopLatitude: Double
+    let busStopLongitude: Double
 }
 
 class ShuttleRealtimeData {

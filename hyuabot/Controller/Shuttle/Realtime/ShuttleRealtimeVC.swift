@@ -67,7 +67,8 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
@@ -75,7 +76,8 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
@@ -83,7 +85,8 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
@@ -91,7 +94,8 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
@@ -99,7 +103,8 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
@@ -107,7 +112,8 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC
     )
     private lazy var helpButton = UIButton().then {
         var config = UIButton.Configuration.filled()
@@ -478,7 +484,14 @@ class ShuttleRealtimeVC: UIViewController {
 
         func display(_ bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor) -> ShuttleBusAlternativeDisplayData? {
             guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
-            return ShuttleBusAlternativeDisplayData(routeName: routeName, minutes: minutes, color: color)
+            return ShuttleBusAlternativeDisplayData(
+                routeName: routeName,
+                minutes: minutes,
+                color: color,
+                busStopName: bus.stop.name,
+                busStopLatitude: bus.stop.latitude,
+                busStopLongitude: bus.stop.longitude
+            )
         }
 
         func bestRoute(_ options: [(bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor)]) -> ShuttleBusAlternativeDisplayData? {
@@ -567,6 +580,88 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
+    }
+
+    private func openBusAlternativeStopVC(_ stop: ShuttleStopEnum, _ alternative: ShuttleBusAlternativeDisplayData) {
+        guard let shuttleStop = shuttleStopPoint(stop) else { return }
+        let vc = BusAlternativeStopVC(
+            shuttleStopName: shuttleStop.name,
+            shuttleStopLatitude: shuttleStop.latitude,
+            shuttleStopLongitude: shuttleStop.longitude,
+            busStopName: alternative.busStopName,
+            busStopLatitude: alternative.busStopLatitude,
+            busStopLongitude: alternative.busStopLongitude
+        )
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
+
+    private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> (name: String, latitude: Double, longitude: Double)? {
+        let name = String(localized: String.LocalizationValue(shuttleStopLocalizationKey(stop)))
+        if let stops = try? ShuttleRealtimeData.shared.arrival.value(),
+           let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
+            return (name, shuttleStop.latitude, shuttleStop.longitude)
+        }
+
+        guard let fallbackIndex = shuttleStopFallbackIndex(stop), stopLocation.indices.contains(fallbackIndex) else {
+            return nil
+        }
+        let fallback = stopLocation[fallbackIndex]
+        return (name, fallback.coordinate.latitude, fallback.coordinate.longitude)
+    }
+
+    private func shuttleStopAPIName(_ stop: ShuttleStopEnum) -> String {
+        switch stop {
+        case .dormiotryOut:
+            return "dormitory_o"
+        case .shuttlecockOut:
+            return "shuttlecock_o"
+        case .station:
+            return "station"
+        case .terminal:
+            return "terminal"
+        case .jungangStation:
+            return "jungang_stn"
+        case .shuttlecockIn:
+            return "shuttlecock_i"
+        }
+    }
+
+    private func shuttleStopLocalizationKey(_ stop: ShuttleStopEnum) -> String {
+        switch stop {
+        case .dormiotryOut:
+            return "shuttle.stop.dormitory.out"
+        case .shuttlecockOut:
+            return "shuttle.stop.shuttlecock.out"
+        case .station:
+            return "shuttle.stop.station"
+        case .terminal:
+            return "shuttle.stop.terminal"
+        case .jungangStation:
+            return "shuttle.stop.jungang.station"
+        case .shuttlecockIn:
+            return "shuttle.stop.shuttlecock.in"
+        }
+    }
+
+    private func shuttleStopFallbackIndex(_ stop: ShuttleStopEnum) -> Int? {
+        switch stop {
+        case .dormiotryOut:
+            return 0
+        case .shuttlecockOut:
+            return 1
+        case .station:
+            return 2
+        case .terminal:
+            return 3
+        case .jungangStation:
+            return 4
+        case .shuttlecockIn:
+            return 5
+        }
     }
 
     private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Bool {

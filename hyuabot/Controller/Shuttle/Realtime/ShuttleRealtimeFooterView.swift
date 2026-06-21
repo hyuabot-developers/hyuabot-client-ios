@@ -5,8 +5,10 @@ import SnapKit
 class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "ShuttleRealtimeFooterView"
     private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
+    private var showBusAlternativeStop: ((_ alternative: ShuttleBusAlternativeDisplayData) -> Void)?
     private var stopID: ShuttleStopEnum?
     private var section: Int?
+    private var alternatives: [ShuttleBusAlternativeDisplayData] = []
 
     let busAlternativeContainer = UIView()
     private let busAlternativeStackView = UIStackView().then {
@@ -54,10 +56,11 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         busAlternativeContainer.isHidden = true
     }
 
-    func setupUI(stopID: ShuttleStopEnum, section: Int, busAlternatives: [ShuttleBusAlternativeDisplayData], forceShow: Bool = false, showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void) {
+    func setupUI(stopID: ShuttleStopEnum, section: Int, busAlternatives: [ShuttleBusAlternativeDisplayData], forceShow: Bool = false, showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void, showBusAlternativeStop: @escaping (_ alternative: ShuttleBusAlternativeDisplayData) -> Void) {
         self.stopID = stopID
         self.section = section
         self.showEntireTimetable = showEntireTimetable
+        self.showBusAlternativeStop = showBusAlternativeStop
 
         busAlternativeStackView.arrangedSubviews.forEach {
             busAlternativeStackView.removeArrangedSubview($0)
@@ -68,17 +71,21 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             ? [ShuttleBusAlternativeDisplayData(
                 routeName: String(localized: String.LocalizationValue(stopID == .station ? "shuttle.bus.alternative.route.campus" : "shuttle.bus.alternative.route")),
                 minutes: nil,
-                color: .busGreen
+                color: .busGreen,
+                busStopName: "",
+                busStopLatitude: 0,
+                busStopLongitude: 0
             )]
             : busAlternatives
+        self.alternatives = alternatives
 
         guard !alternatives.isEmpty else {
             busAlternativeContainer.isHidden = true
             return
         }
 
-        alternatives.forEach { alternative in
-            let row = makeAlternativeRow(alternative: alternative)
+        alternatives.enumerated().forEach { index, alternative in
+            let row = makeAlternativeRow(alternative: alternative, index: index)
             busAlternativeStackView.addArrangedSubview(row)
             row.snp.makeConstraints { make in
                 make.height.equalTo(50)
@@ -87,7 +94,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         busAlternativeContainer.isHidden = false
     }
 
-    private func makeAlternativeRow(alternative: ShuttleBusAlternativeDisplayData) -> UIView {
+    private func makeAlternativeRow(alternative: ShuttleBusAlternativeDisplayData, index: Int) -> UIView {
         let row = UIView()
         let accent = UIView().then {
             $0.backgroundColor = alternative.color
@@ -108,10 +115,22 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
                 $0.text = String(localized: "shuttle.bus.alternative.no.data")
             }
         }
+        let infoButton = UIButton(type: .system).then {
+            $0.tag = index
+            let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+            $0.setImage(UIImage(systemName: "info.circle", withConfiguration: symbolConfiguration), for: .normal)
+            $0.tintColor = alternative.color
+            $0.accessibilityLabel = String(localized: "coach.shuttle.footer.title")
+            $0.addTarget(self, action: #selector(showAlternativeStop(_:)), for: .touchUpInside)
+            let hasStopInfo = alternative.busStopLatitude != 0 && alternative.busStopLongitude != 0
+            $0.isEnabled = hasStopInfo
+            $0.alpha = hasStopInfo ? 1 : 0.38
+        }
 
         row.addSubview(accent)
         row.addSubview(route)
         row.addSubview(time)
+        row.addSubview(infoButton)
         accent.snp.makeConstraints { make in
             make.leading.top.bottom.equalToSuperview()
             make.width.equalTo(4)
@@ -120,12 +139,22 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
-        time.snp.makeConstraints { make in
+        infoButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(20)
+        }
+        time.snp.makeConstraints { make in
+            make.trailing.equalTo(infoButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
             make.leading.greaterThanOrEqualTo(route.snp.trailing).offset(8)
         }
         return row
+    }
+
+    @objc private func showAlternativeStop(_ sender: UIButton) {
+        guard alternatives.indices.contains(sender.tag) else { return }
+        showBusAlternativeStop?(alternatives[sender.tag])
     }
 
     @objc func showEntireTimeTable() {
