@@ -11,8 +11,15 @@ class ContentViewCell: UICollectionViewCell {
             self.setupUI()
         }
     }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.contentView.subviews.forEach { $0.removeFromSuperview() }
+        self.content = nil
+    }
     
     private func setupUI() {
+        self.contentView.subviews.forEach { $0.removeFromSuperview() }
         guard let content = self.content else { return }
         self.contentView.addSubview(content)
         content.snp.makeConstraints { make in

@@ -28,7 +28,15 @@ class TabCell: UICollectionViewCell {
     
     override init(frame: CGRect) { super.init(frame: frame) }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.contentView.subviews.forEach { $0.removeFromSuperview() }
+        self.tabItem = nil
+    }
+
     private func setupUI() {
+        self.contentView.subviews.forEach { $0.removeFromSuperview() }
         guard let itemView = self.tabItem as? UIView else { return }
         self.contentView.addSubview(itemView)
         itemView.translatesAutoresizingMaskIntoConstraints = false
