@@ -11,6 +11,29 @@ struct ShuttleBusAlternativeDisplayData: Equatable {
     let busStopLongitude: Double
 }
 
+struct ShuttleAlarmStop: Equatable {
+    let id: String
+    let name: String
+    let time: Foundation.Date
+    let latitude: Double?
+    let longitude: Double?
+}
+
+struct ShuttleAlarmContext: Equatable {
+    let key: String
+    let boardingStop: ShuttleAlarmStop
+    let routeStops: [ShuttleAlarmStop]
+    let departureTime: Foundation.Date
+    let minutesUntilDeparture: Int
+
+    var destinationStops: [ShuttleAlarmStop] {
+        guard let boardingIndex = routeStops.firstIndex(where: { $0.id == boardingStop.id }) else {
+            return []
+        }
+        return Array(routeStops.dropFirst(boardingIndex + 1))
+    }
+}
+
 class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
     private init() {}

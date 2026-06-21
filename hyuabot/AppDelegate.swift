@@ -138,7 +138,10 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
       let userInfo = response.notification.request.content.userInfo
       Messaging.messaging().appDidReceiveMessage(userInfo)
+      if let urlString = userInfo["url"] as? String,
+         let url = URL(string: urlString) {
+          UIApplication.shared.open(url)
+      }
       completionHandler()
     }
 }
-

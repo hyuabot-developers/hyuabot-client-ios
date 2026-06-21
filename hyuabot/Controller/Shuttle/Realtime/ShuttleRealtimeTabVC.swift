@@ -14,6 +14,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let showViaVCByDestination: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void
     private let showStopVC: (ShuttleStopEnum) -> Void
     private let showBusAlternativeStop: (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void
+    private let showAlarmVC: (ShuttleStopEnum, ShuttleAlarmContext) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
@@ -64,7 +65,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         showViaVCByOrder: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
         showViaVCByDestination: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void,
         showStopVC: @escaping (ShuttleStopEnum) -> Void,
-        showBusAlternativeStop: @escaping (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void
+        showBusAlternativeStop: @escaping (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void,
+        showAlarmVC: @escaping (ShuttleStopEnum, ShuttleAlarmContext) -> Void
     ) {
         self.stopID = stopID
         if (self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut) {
@@ -80,7 +82,15 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.showViaVCByDestination = showViaVCByDestination
         self.showStopVC = showStopVC
         self.showBusAlternativeStop = showBusAlternativeStop
-        self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(showViaVC: showViaVCByOrder, stopID: self.stopID)
+        self.showAlarmVC = showAlarmVC
+        self.timetableDelegate = ShuttleRealtimeTimeTableDelegate(
+            showViaVC: showViaVCByOrder,
+            showAlarmVC: { stopID, item in
+                guard let context = Self.makeAlarmContext(stopID: stopID, item: item) else { return }
+                showAlarmVC(stopID, context)
+            },
+            stopID: self.stopID
+        )
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -194,10 +204,122 @@ class ShuttleRealtimeTabVC: UIViewController {
         self.showStopVC(stop)
     }
 
+    private static func makeAlarmContext(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> ShuttleAlarmContext? {
+        makeAlarmContext(
+            stopID: stopID,
+            routeName: item.route.name,
+            departureTime: item.time,
+            stops: item.stops.map { ShuttleAlarmRouteStop(id: $0.stop, time: $0.time) }
+        )
+    }
+
+    private static func makeAlarmContext(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> ShuttleAlarmContext? {
+        makeAlarmContext(
+            stopID: stopID,
+            routeName: item.route.name,
+            departureTime: item.time,
+            stops: item.stops.map { ShuttleAlarmRouteStop(id: $0.stop, time: $0.time) }
+        )
+    }
+
+    private static func makeAlarmContext(stopID: ShuttleStopEnum, routeName: String, departureTime: LocalTime, stops: [ShuttleAlarmRouteStop]) -> ShuttleAlarmContext? {
+        let boardingStopID = shuttleAlarmStopID(stopID)
+        let departureDate = normalizedScheduleDate(for: departureTime.toLocalTime(), after: Foundation.Date.now)
+        let routeStops = stops.map { routeStop in
+            let date = normalizedScheduleDate(for: routeStop.time.toLocalTime(), after: departureDate.addingTimeInterval(-1))
+            let location = shuttleAlarmLocation(for: routeStop.id)
+            return ShuttleAlarmStop(
+                id: routeStop.id,
+                name: shuttleAlarmStopName(routeStop.id),
+                time: date,
+                latitude: location?.latitude,
+                longitude: location?.longitude
+            )
+        }
+        guard let boardingRouteStop = routeStops.first(where: { $0.id == boardingStopID }) else {
+            return nil
+        }
+        let boardingLocation = shuttleAlarmLocation(for: boardingStopID)
+        let boardingStop = ShuttleAlarmStop(
+            id: boardingStopID,
+            name: shuttleAlarmStopName(boardingStopID),
+            time: departureDate,
+            latitude: boardingLocation?.latitude,
+            longitude: boardingLocation?.longitude
+        )
+        let key = ["shuttle", boardingStopID, routeName, departureTime.replacingOccurrences(of: ":", with: "")].joined(separator: "_")
+        let minutes = max(Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60)), 0)
+        var normalizedStops = routeStops
+        if let index = normalizedStops.firstIndex(where: { $0.id == boardingRouteStop.id }) {
+            normalizedStops[index] = boardingStop
+        }
+        return ShuttleAlarmContext(
+            key: key,
+            boardingStop: boardingStop,
+            routeStops: normalizedStops,
+            departureTime: departureDate,
+            minutesUntilDeparture: minutes
+        )
+    }
+
+    private static func normalizedScheduleDate(for date: Foundation.Date, after previousDate: Foundation.Date) -> Foundation.Date {
+        var scheduledDate = date
+        while scheduledDate <= previousDate {
+            scheduledDate = scheduledDate.addingTimeInterval(24 * 60 * 60)
+        }
+        return scheduledDate
+    }
+
+    private static func shuttleAlarmStopID(_ stopID: ShuttleStopEnum) -> String {
+        switch stopID {
+        case .dormiotryOut:
+            return "dormitory_o"
+        case .shuttlecockOut:
+            return "shuttlecock_o"
+        case .station:
+            return "station"
+        case .terminal:
+            return "terminal"
+        case .jungangStation:
+            return "jungang_stn"
+        case .shuttlecockIn:
+            return "shuttlecock_i"
+        }
+    }
+
+    private static func shuttleAlarmStopName(_ stopID: String) -> String {
+        switch stopID {
+        case "dormitory_o", "dormitory_i":
+            return String(localized: "shuttle.stop.dormitory.out")
+        case "shuttlecock_o":
+            return String(localized: "shuttle.stop.shuttlecock.out")
+        case "station":
+            return String(localized: "shuttle.stop.station")
+        case "terminal":
+            return String(localized: "shuttle.stop.terminal")
+        case "jungang_stn":
+            return String(localized: "shuttle.stop.jungang.station")
+        case "shuttlecock_i":
+            return String(localized: "shuttle.stop.shuttlecock.in")
+        default:
+            return String(localized: "shuttle.stop.dormitory.out")
+        }
+    }
+
+    private static func shuttleAlarmLocation(for stopID: String) -> ShuttleRealtimePageQuery.Data.Shuttle.Stop? {
+        let locationStopID = stopID == "dormitory_i" ? "dormitory_o" : stopID
+        return (try? ShuttleRealtimeData.shared.arrival.value())?.first(where: { $0.name == locationStopID })
+    }
+
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
         AnalyticsManager.logSelect(.shuttleRefresh)
         self.refreshMethod()
     }
+}
+
+private struct ShuttleAlarmRouteStop {
+    let id: String
+    let time: LocalTime
 }
 
 extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
@@ -279,21 +401,33 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item) else { return }
+                        self.showAlarmVC(.dormiotryOut, context)
+                    }
                     return cell
                 }
             } else if indexPath.section == 1 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item) else { return }
+                        self.showAlarmVC(.dormiotryOut, context)
+                    }
                     return cell
                 }
             } else if indexPath.section == 2 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .dormiotryOut, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .dormiotryOut, item: item) else { return }
+                        self.showAlarmVC(.dormiotryOut, context)
+                    }
                     return cell
                 }
             }
@@ -302,21 +436,33 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item) else { return }
+                        self.showAlarmVC(.shuttlecockOut, context)
+                    }
                     return cell
                 }
             } else if indexPath.section == 1 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item) else { return }
+                        self.showAlarmVC(.shuttlecockOut, context)
+                    }
                     return cell
                 }
             } else if indexPath.section == 2 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .shuttlecockOut, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockOut, item: item) else { return }
+                        self.showAlarmVC(.shuttlecockOut, context)
+                    }
                     return cell
                 }
             }
@@ -325,21 +471,33 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .station, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item) else { return }
+                        self.showAlarmVC(.station, context)
+                    }
                     return cell
                 }
             } else if indexPath.section == 1 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .station, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item) else { return }
+                        self.showAlarmVC(.station, context)
+                    }
                     return cell
                 }
             } else if indexPath.section == 2 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value() else { return UITableViewCell() }
                 if !data.isEmpty {
                     let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                    cell.setupUI(stopID: .station, indexPath: indexPath, item: data[indexPath.row])
+                    let item = data[indexPath.row]
+                    cell.setupUI(stopID: .station, indexPath: indexPath, item: item) { [weak self] in
+                        guard let self, let context = Self.makeAlarmContext(stopID: .station, item: item) else { return }
+                        self.showAlarmVC(.station, context)
+                    }
                     return cell
                 }
             }
@@ -347,21 +505,33 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             guard let data = try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value() else { return UITableViewCell() }
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                cell.setupUI(stopID: .terminal, indexPath: indexPath, item: data[indexPath.row])
+                let item = data[indexPath.row]
+                cell.setupUI(stopID: .terminal, indexPath: indexPath, item: item) { [weak self] in
+                    guard let self, let context = Self.makeAlarmContext(stopID: .terminal, item: item) else { return }
+                    self.showAlarmVC(.terminal, context)
+                }
                 return cell
             }
         } else if (self.stopID == .jungangStation) {
             guard let data = try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value() else { return UITableViewCell() }
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                cell.setupUI(stopID: .jungangStation, indexPath: indexPath, item: data[indexPath.row])
+                let item = data[indexPath.row]
+                cell.setupUI(stopID: .jungangStation, indexPath: indexPath, item: item) { [weak self] in
+                    guard let self, let context = Self.makeAlarmContext(stopID: .jungangStation, item: item) else { return }
+                    self.showAlarmVC(.jungangStation, context)
+                }
                 return cell
             }
         } else if (self.stopID == .shuttlecockIn) {
             guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value() else { return UITableViewCell() }
             if !data.isEmpty {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeCellView.reuseIdentifier, for: indexPath) as! ShuttleRealtimeCellView
-                cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: data[indexPath.row])
+                let item = data[indexPath.row]
+                cell.setupUI(stopID: .shuttlecockIn, indexPath: indexPath, item: item) { [weak self] in
+                    guard let self, let context = Self.makeAlarmContext(stopID: .shuttlecockIn, item: item) else { return }
+                    self.showAlarmVC(.shuttlecockIn, context)
+                }
                 return cell
             }
         }

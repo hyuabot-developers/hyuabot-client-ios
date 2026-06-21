@@ -10239,6 +10239,126 @@
         }
       }
     },
+    "common.ok": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "OK" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "確認" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "확인" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "确认" } }
+      }
+    },
+    "shuttle.alarm.alighting": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Alighting Alert · Share Trip" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "降車アラート · 行程を共有" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "하차 알림 · 여정 공유" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下车提醒 · 分享行程" } }
+      }
+    },
+    "shuttle.alarm.alighting.notification.body": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Scheduled arrival time for %@ stop." } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@停留所の到着予定時刻です。" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%@ 정류장 도착 예정 시간입니다." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已到%@站的预计到达时间。" } }
+      }
+    },
+    "shuttle.alarm.alighting.notification.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%@ Alighting Prep" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@ 降車準備" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%@ 하차 준비" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%@ 下车准备" } }
+      }
+    },
+    "shuttle.alarm.boarding": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Boarding Alert" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "乗車アラート" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "승차 알림" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上车提醒" } }
+      }
+    },
+    "shuttle.alarm.boarding.initial": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Departs in %d min" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%d分後に出発" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%d분 후 출발" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%d分钟后出发" } }
+      }
+    },
+    "shuttle.alarm.boarding.notification.body": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%d min · %@ departure" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%d分 · %@ 出発" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%d분 · %@ 출발" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%d分钟 · %@ 出发" } }
+      }
+    },
+    "shuttle.alarm.boarding.notification.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%@ Boarding Alert" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@ 乗車アラート" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%@ 탑승 알림" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%@ 上车提醒" } }
+      }
+    },
+    "shuttle.alarm.button.description": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Set Notification" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "通知設定" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "알림 설정" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "设置通知" } }
+      }
+    },
+    "shuttle.alarm.cancel": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Cancel Alert" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "アラートキャンセル" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "알림 취소" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "取消提醒" } }
+      }
+    },
+    "shuttle.alarm.no.permission": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Notification permission required" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "通知権限が必要です" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "알림 권한이 필요합니다" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "需要通知权限" } }
+      }
+    },
+    "shuttle.alarm.start": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Start Alert" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "アラート開始" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "알림 시작" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开始提醒" } }
+      }
+    },
+    "shuttle.alarm.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Shuttle Bus Alerts" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "シャトルバス通知" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "셔틀버스 알림" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "校车通知" } }
+      }
+    },
+    "shuttle.share.journey": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Share trip" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "行程を共有" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "여정 공유" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分享行程" } }
+      }
+    },
+    "shuttle.share.journey.format": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Want to take the shuttle together?\n\nBoard  %@ · %@\nGet off  %@ · %@\n\nLive shuttle info is here\n%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "シャトル、一緒に乗りませんか？\n\n乗車  %@ · %@\n下車  %@ · %@\n\nリアルタイム情報はこちら\n%@" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "셔틀 같이 탈래요?\n\n승차  %@ · %@\n하차  %@ · %@\n\n실시간 정보는 여기서 볼 수 있어요\n%@" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "一起坐校车吗？\n\n上车  %@ · %@\n下车  %@ · %@\n\n实时校车信息在这里\n%@" } }
+      }
+    },
     "reading_room.alarm.3hour": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "3-hour alarm" } },

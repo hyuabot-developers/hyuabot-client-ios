@@ -68,7 +68,8 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
@@ -77,7 +78,8 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
@@ -86,7 +88,8 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
@@ -95,7 +98,8 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
@@ -104,7 +108,8 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
@@ -113,7 +118,8 @@ class ShuttleRealtimeVC: UIViewController {
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
         showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var helpButton = UIButton().then {
         var config = UIButton.Configuration.filled()
@@ -567,6 +573,21 @@ class ShuttleRealtimeVC: UIViewController {
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom(resolver: { context in
                 min(vc.sheetHeight, context.maximumDetentValue)
+            })]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
+
+    private func openShuttleAlarmVC(_ stop: ShuttleStopEnum, _ context: ShuttleAlarmContext) {
+        let vc = ShuttleAlarmVC(context: context)
+        vc.shareJourney = { [weak self] text in
+            let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+            self?.present(activityVC, animated: true)
+        }
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom(resolver: { resolverContext in
+                min(vc.sheetHeight, resolverContext.maximumDetentValue)
             })]
             sheet.prefersGrabberVisible = true
         }
