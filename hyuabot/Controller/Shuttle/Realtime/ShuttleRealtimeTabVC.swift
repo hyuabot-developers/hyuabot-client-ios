@@ -225,18 +225,21 @@ class ShuttleRealtimeTabVC: UIViewController {
     private static func makeAlarmContext(stopID: ShuttleStopEnum, routeName: String, departureTime: LocalTime, stops: [ShuttleAlarmRouteStop]) -> ShuttleAlarmContext? {
         let boardingStopID = shuttleAlarmStopID(stopID)
         let departureDate = normalizedScheduleDate(for: departureTime.toLocalTime(), after: Foundation.Date.now)
-        let routeStops = stops.map { routeStop in
+        let routeStops = stops.enumerated().map { index, routeStop in
             let date = normalizedScheduleDate(for: routeStop.time.toLocalTime(), after: departureDate.addingTimeInterval(-1))
             let location = shuttleAlarmLocation(for: routeStop.id)
-            return ShuttleAlarmStop(
-                id: routeStop.id,
-                name: shuttleAlarmStopName(routeStop.id),
-                time: date,
-                latitude: location?.latitude,
-                longitude: location?.longitude
+            return (
+                index: index,
+                stop: ShuttleAlarmStop(
+                    id: routeStop.id,
+                    name: shuttleAlarmStopName(routeStop.id),
+                    time: date,
+                    latitude: location?.latitude,
+                    longitude: location?.longitude
+                )
             )
         }
-        guard let boardingRouteStop = routeStops.first(where: { $0.id == boardingStopID }) else {
+        guard let boardingRouteStop = routeStops.first(where: { $0.stop.id == boardingStopID }) else {
             return nil
         }
         let boardingLocation = shuttleAlarmLocation(for: boardingStopID)
@@ -250,13 +253,21 @@ class ShuttleRealtimeTabVC: UIViewController {
         let key = ["shuttle", boardingStopID, routeName, departureTime.replacingOccurrences(of: ":", with: "")].joined(separator: "_")
         let minutes = max(Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60)), 0)
         var normalizedStops = routeStops
-        if let index = normalizedStops.firstIndex(where: { $0.id == boardingRouteStop.id }) {
-            normalizedStops[index] = boardingStop
+        if let index = normalizedStops.firstIndex(where: { $0.stop.id == boardingRouteStop.stop.id }) {
+            normalizedStops[index].stop = boardingStop
         }
+        let orderedStops = normalizedStops
+            .sorted {
+                if $0.stop.time == $1.stop.time {
+                    return $0.index < $1.index
+                }
+                return $0.stop.time < $1.stop.time
+            }
+            .map(\.stop)
         return ShuttleAlarmContext(
             key: key,
             boardingStop: boardingStop,
-            routeStops: normalizedStops,
+            routeStops: orderedStops,
             departureTime: departureDate,
             minutesUntilDeparture: minutes
         )

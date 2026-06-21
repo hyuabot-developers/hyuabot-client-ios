@@ -42,7 +42,7 @@ class ShuttleAlarmVC: UIViewController {
             return outgoing
         }
         $0.configuration = configuration
-        $0.showsMenuAsPrimaryAction = true
+        $0.contentHorizontalAlignment = .center
     }
     private lazy var alightingButton = makeActionButton()
     private let shareButton = UIButton(type: .system).then {
@@ -112,7 +112,8 @@ class ShuttleAlarmVC: UIViewController {
         stackView.addArrangedSubview(boardingCard)
 
         guard !context.destinationStops.isEmpty else { return }
-        configureDestinationMenu()
+        configureDestinationButton()
+        destinationButton.addTarget(self, action: #selector(destinationButtonTapped), for: .touchUpInside)
         alightingButton.addTarget(self, action: #selector(alightingButtonTapped), for: .touchUpInside)
         shareButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
         let alightingStack = makeCardStack([alightingTitleLabel, destinationButton, alightingButton, shareButton])
@@ -137,15 +138,23 @@ class ShuttleAlarmVC: UIViewController {
         alightingButton.configuration?.title = String(localized: isAlightingAlarmActive ? "shuttle.alarm.cancel" : "shuttle.alarm.start")
     }
 
-    private func configureDestinationMenu() {
-        let actions = context.destinationStops.enumerated().map { index, stop in
-            UIAction(title: stop.name, state: index == selectedDestinationIndex ? .on : .off) { [weak self] _ in
-                self?.selectedDestinationIndex = index
-                self?.configureDestinationMenu()
-            }
-        }
-        destinationButton.menu = UIMenu(children: actions)
+    private func configureDestinationButton() {
         destinationButton.configuration?.title = context.destinationStops[selectedDestinationIndex].name
+    }
+
+    @objc private func destinationButtonTapped() {
+        let vc = ShuttleDestinationSelectionVC(
+            stops: context.destinationStops,
+            selectedIndex: selectedDestinationIndex
+        ) { [weak self] index in
+            self?.selectedDestinationIndex = index
+            self?.configureDestinationButton()
+        }
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom(resolver: { _ in vc.sheetHeight })]
+            sheet.prefersGrabberVisible = true
+        }
+        present(vc, animated: true)
     }
 
     @objc private func boardingButtonTapped() {
@@ -286,6 +295,142 @@ class ShuttleAlarmVC: UIViewController {
         formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
+    }
+}
+
+private final class ShuttleDestinationSelectionVC: UIViewController {
+    private let stops: [ShuttleAlarmStop]
+    private let selectedIndex: Int
+    private let onSelect: (Int) -> Void
+
+    private let titleLabel = UILabel().then {
+        $0.font = .godo(size: 18, weight: .bold)
+        $0.textColor = .label
+        $0.text = String(localized: "shuttle.alarm.alighting")
+    }
+    private let tableView = UITableView(frame: .zero, style: .plain).then {
+        $0.backgroundColor = .clear
+        $0.separatorInset = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18)
+        $0.rowHeight = 68
+        $0.register(ShuttleDestinationSelectionCell.self, forCellReuseIdentifier: ShuttleDestinationSelectionCell.reuseIdentifier)
+    }
+
+    var sheetHeight: CGFloat {
+        min(CGFloat(stops.count) * 68 + 72, 460)
+    }
+
+    init(stops: [ShuttleAlarmStop], selectedIndex: Int, onSelect: @escaping (Int) -> Void) {
+        self.stops = stops
+        self.selectedIndex = selectedIndex
+        self.onSelect = onSelect
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        tableView.dataSource = self
+        tableView.delegate = self
+
+        view.addSubview(titleLabel)
+        view.addSubview(tableView)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(18)
+            make.leading.trailing.equalToSuperview().inset(18)
+        }
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(12)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+    }
+
+    private func timeText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+}
+
+extension ShuttleDestinationSelectionVC: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        stops.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: ShuttleDestinationSelectionCell.reuseIdentifier,
+            for: indexPath
+        ) as? ShuttleDestinationSelectionCell else { return UITableViewCell() }
+        let stop = stops[indexPath.row]
+        cell.configure(name: stop.name, time: timeText(stop.time), isSelected: indexPath.row == selectedIndex)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        onSelect(indexPath.row)
+        dismiss(animated: true)
+    }
+}
+
+private final class ShuttleDestinationSelectionCell: UITableViewCell {
+    static let reuseIdentifier = "ShuttleDestinationSelectionCell"
+
+    private let nameLabel = UILabel().then {
+        $0.font = .godo(size: 16, weight: .medium)
+        $0.textColor = .label
+        $0.lineBreakMode = .byTruncatingTail
+    }
+    private let timeLabel = UILabel().then {
+        $0.font = .godo(size: 13, weight: .regular)
+        $0.textColor = .secondaryLabel
+        $0.lineBreakMode = .byTruncatingTail
+    }
+    private let checkImageView = UIImageView().then {
+        $0.image = UIImage(systemName: "checkmark")
+        $0.tintColor = .hanyangBlue
+        $0.contentMode = .scaleAspectFit
+    }
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        backgroundColor = .systemBackground
+        contentView.addSubview(nameLabel)
+        contentView.addSubview(timeLabel)
+        contentView.addSubview(checkImageView)
+
+        nameLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(11)
+            make.leading.equalToSuperview().offset(18)
+            make.trailing.lessThanOrEqualTo(checkImageView.snp.leading).offset(-12)
+        }
+        timeLabel.snp.makeConstraints { make in
+            make.top.equalTo(nameLabel.snp.bottom).offset(5)
+            make.leading.equalTo(nameLabel)
+            make.trailing.lessThanOrEqualTo(checkImageView.snp.leading).offset(-12)
+            make.bottom.lessThanOrEqualToSuperview().offset(-10)
+        }
+        checkImageView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(18)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(18)
+        }
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(name: String, time: String, isSelected: Bool) {
+        nameLabel.text = name
+        timeLabel.text = time
+        checkImageView.isHidden = !isSelected
     }
 }
 
