@@ -5729,6 +5729,174 @@
         }
       }
     },
+    "shuttle.bus.alternative.route.62.dormitory": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (to Shuttlecock)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (シャトルコック方面)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (셔틀콕 방면)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (羽毛球场方向)"
+          }
+        }
+      }
+    },
+    "shuttle.bus.alternative.route.62.terminal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (Seongangil Entrance)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (城安キル入口)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (성안길입구)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "62 (城安街入口)"
+          }
+        }
+      }
+    },
+    "shuttle.bus.alternative.route.80a": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80A (Gyeonggi Techno Park)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80A (京畿テクノパーク)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80A (경기테크노파크)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80A (京畿技术园区)"
+          }
+        }
+      }
+    },
+    "shuttle.bus.alternative.route.80b": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80B (to Dormitory)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80B (寮方面)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80B (기숙사 방면)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "80B (宿舍方向)"
+          }
+        }
+      }
+    },
+    "shuttle.bus.alternative.route.n80a": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80A (Gyeonggi Techno Park)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80A (京畿テクノパーク)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80A (경기테크노파크)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80A (京畿技术园区)"
+          }
+        }
+      }
+    },
+    "shuttle.bus.alternative.route.n80b": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80B (to Dormitory)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80B (寮方面)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80B (기숙사 방면)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N80B (宿舍方向)"
+          }
+        }
+      }
+    },
     "shuttle.bus.alternative.no.data": {
       "extractionState": "manual",
       "localizations": {

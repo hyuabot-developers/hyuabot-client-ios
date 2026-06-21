@@ -466,11 +466,71 @@ class ShuttleRealtimeVC: UIViewController {
         Task {
             let busResponse = try? await Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
             if let busData = busResponse?.data {
-                dataDelegate.busAlternativeDormitory.onNext(busData.bus.first(where: { $0.stop.seq == 216000383 }))
-                dataDelegate.busAlternativeShuttlecock.onNext(busData.bus.first(where: { $0.stop.seq == 216000379 }))
-                dataDelegate.busAlternativeStation.onNext(busData.bus.first(where: { $0.stop.seq == 216000138 }))
+                dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(busData.bus))
             }
         }
+    }
+
+    private static func buildBusAlternatives(_ busList: [ShuttleBusAlternativeQuery.Data.Bus]) -> [String: [ShuttleBusAlternativeDisplayData]] {
+        func item(routeSeq: Int, stopSeq: Int) -> ShuttleBusAlternativeQuery.Data.Bus? {
+            busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
+        }
+
+        func display(_ bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor) -> ShuttleBusAlternativeDisplayData? {
+            guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
+            return ShuttleBusAlternativeDisplayData(routeName: routeName, minutes: minutes, color: color)
+        }
+
+        func bestRoute(_ options: [(bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor)]) -> ShuttleBusAlternativeDisplayData? {
+            options.compactMap { option in
+                display(option.bus, routeName: option.routeName, color: option.color)
+            }.min { lhs, rhs in
+                (lhs.minutes ?? Int.max) < (rhs.minutes ?? Int.max)
+            }
+        }
+
+        let green = UIColor(named: "busGreen") ?? .systemGreen
+        let blue = UIColor(named: "busBlue") ?? .systemBlue
+
+        let route10ToSangnoksu = String(localized: "shuttle.bus.alternative.route")
+        let route10FromSangnoksu = String(localized: "shuttle.bus.alternative.route.campus")
+        let route62Terminal = String(localized: "shuttle.bus.alternative.route.62.terminal")
+        let route62Dormitory = String(localized: "shuttle.bus.alternative.route.62.dormitory")
+        let route80A = String(localized: "shuttle.bus.alternative.route.80a")
+        let routeN80A = String(localized: "shuttle.bus.alternative.route.n80a")
+        let route80B = String(localized: "shuttle.bus.alternative.route.80b")
+        let routeN80B = String(localized: "shuttle.bus.alternative.route.n80b")
+
+        let dormitory10 = display(item(routeSeq: 216000068, stopSeq: 216000383), routeName: route10ToSangnoksu, color: green)
+        let shuttlecock10 = display(item(routeSeq: 216000068, stopSeq: 216000379), routeName: route10ToSangnoksu, color: green)
+        let station10 = display(item(routeSeq: 216000068, stopSeq: 216000138), routeName: route10FromSangnoksu, color: green)
+        let dormitory80 = bestRoute([
+            (item(routeSeq: 216000081, stopSeq: 216000028), route80A, blue),
+            (item(routeSeq: 216000101, stopSeq: 216000028), routeN80A, blue)
+        ])
+        let shuttlecock62 = display(item(routeSeq: 216000016, stopSeq: 216000152), routeName: route62Terminal, color: green)
+        let terminal80 = bestRoute([
+            (item(routeSeq: 216000082, stopSeq: 216000077), route80B, blue),
+            (item(routeSeq: 216000102, stopSeq: 216000077), routeN80B, blue)
+        ])
+        let terminal62 = display(item(routeSeq: 216000016, stopSeq: 216000074), routeName: route62Dormitory, color: green)
+        let jungang80 = bestRoute([
+            (item(routeSeq: 216000082, stopSeq: 217000140), route80B, blue),
+            (item(routeSeq: 216000102, stopSeq: 217000140), routeN80B, blue)
+        ])
+        let jungang62 = display(item(routeSeq: 216000016, stopSeq: 217000264), routeName: route62Dormitory, color: green)
+
+        return [
+            "dormitory_station": [dormitory10].compactMap { $0 },
+            "dormitory_terminal": [dormitory80].compactMap { $0 },
+            "dormitory_jungang": [dormitory80].compactMap { $0 },
+            "shuttlecock_station": [shuttlecock10].compactMap { $0 },
+            "shuttlecock_terminal": [shuttlecock62].compactMap { $0 },
+            "shuttlecock_jungang": [shuttlecock62].compactMap { $0 },
+            "station_dormitory": [station10].compactMap { $0 },
+            "terminal_dormitory": [terminal80, terminal62].compactMap { $0 },
+            "jungang_dormitory": [jungang80, jungang62].compactMap { $0 }
+        ]
     }
     
     private func moveToEntireTimetable(_ stop: ShuttleStopEnum, _ section: Int) {

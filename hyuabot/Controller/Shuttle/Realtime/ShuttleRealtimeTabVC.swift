@@ -16,7 +16,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
-    private var busAlternativeMinutes: Int? = nil
+    private var busAlternatives: [String: [ShuttleBusAlternativeDisplayData]] = [:]
     var forceShowBusAlternative = false
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
@@ -126,32 +126,18 @@ class ShuttleRealtimeTabVC: UIViewController {
             self?.shuttleRealtimeTableTimeView.isHidden = !showArrivalByTime
         }).disposed(by: self.disposeBag)
 
-        let busSubject: Observable<ShuttleBusAlternativeQuery.Data.Bus?>?
-
-        switch stopID {
-        case .dormiotryOut:
-            busSubject = ShuttleRealtimeData.shared.busAlternativeDormitory.asObservable()
-        case .shuttlecockOut:
-            busSubject = ShuttleRealtimeData.shared.busAlternativeShuttlecock.asObservable()
-        case .station:
-            busSubject = ShuttleRealtimeData.shared.busAlternativeStation.asObservable()
-        default:
-            busSubject = nil
-        }
-
-        if let busSubject = busSubject {
-            busSubject.subscribe(onNext: { [weak self] busData in
-                guard let self else { return }
-                self.updateBusAlternative(minutes: busData?.arrival.first?.minutes)
+        ShuttleRealtimeData.shared.busAlternatives
+            .subscribe(onNext: { [weak self] alternatives in
+                self?.updateBusAlternatives(alternatives)
             }).disposed(by: self.disposeBag)
-        }
     }
 
-    private func updateBusAlternative(minutes: Int?) {
-        guard busAlternativeMinutes != minutes else { return }
-        busAlternativeMinutes = minutes
+    private func updateBusAlternatives(_ alternatives: [String: [ShuttleBusAlternativeDisplayData]]) {
+        guard busAlternatives != alternatives else { return }
+        busAlternatives = alternatives
         UIView.performWithoutAnimation {
-            self.shuttleRealtimeTableView.reloadSections(IndexSet(integer: 0), with: .none)
+            let sections = IndexSet(integersIn: 0..<self.shuttleRealtimeSection.count)
+            self.shuttleRealtimeTableView.reloadSections(sections, with: .none)
         }
     }
 
@@ -226,9 +212,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView else { return UIView() }
-        let busMinutes = section == 0 ? busAlternativeMinutes : nil
+        let alternatives = busAlternatives[busAlternativeKey(section: section)] ?? []
         let forceShow = section == 0 && forceShowBusAlternative
-        footerView.setupUI(stopID: self.stopID, section: section, busMinutes: busMinutes, forceShow: forceShow, showEntireTimetable: showEntireTimetable)
+        footerView.setupUI(stopID: self.stopID, section: section, busAlternatives: alternatives, forceShow: forceShow, showEntireTimetable: showEntireTimetable)
         return footerView
     }
 
@@ -379,7 +365,11 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        if section == 0, busAlternativeMinutes != nil || forceShowBusAlternative {
+        let alternativesCount = busAlternatives[busAlternativeKey(section: section)]?.count ?? 0
+        if alternativesCount > 0 {
+            return CGFloat(50 + 50 * alternativesCount)
+        }
+        if section == 0, forceShowBusAlternative {
             return 100
         }
         return 50
@@ -397,5 +387,30 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let item = cell.itemByDestination else { return }
         AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
         self.showViaVCByDestination(item)
+    }
+
+    private func busAlternativeKey(section: Int) -> String {
+        switch (stopID, section) {
+        case (.dormiotryOut, 0):
+            return "dormitory_station"
+        case (.dormiotryOut, 1):
+            return "dormitory_terminal"
+        case (.dormiotryOut, 2):
+            return "dormitory_jungang"
+        case (.shuttlecockOut, 0):
+            return "shuttlecock_station"
+        case (.shuttlecockOut, 1):
+            return "shuttlecock_terminal"
+        case (.shuttlecockOut, 2):
+            return "shuttlecock_jungang"
+        case (.station, 0):
+            return "station_dormitory"
+        case (.terminal, 0):
+            return "terminal_dormitory"
+        case (.jungangStation, 0):
+            return "jungang_dormitory"
+        default:
+            return ""
+        }
     }
 }

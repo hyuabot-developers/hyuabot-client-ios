@@ -8,7 +8,7 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleBusAlternativeQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleBusAlternativeQuery { bus( input: [ { route: 216000068, stop: 216000383, limit: 1 } { route: 216000068, stop: 216000379, limit: 1 } { route: 216000068, stop: 216000138, limit: 1 } ] ) { __typename stop { __typename seq } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
+      #"query ShuttleBusAlternativeQuery { bus( input: [ { route: 216000068, stop: 216000383, limit: 1 } { route: 216000068, stop: 216000379, limit: 1 } { route: 216000068, stop: 216000138, limit: 1 } { route: 216000081, stop: 216000028, limit: 1 } { route: 216000101, stop: 216000028, limit: 1 } { route: 216000016, stop: 216000152, limit: 1 } { route: 216000082, stop: 216000077, limit: 1 } { route: 216000102, stop: 216000077, limit: 1 } { route: 216000016, stop: 216000074, limit: 1 } { route: 216000082, stop: 217000140, limit: 1 } { route: 216000102, stop: 217000140, limit: 1 } { route: 216000016, stop: 217000264, limit: 1 } ] ) { __typename route { __typename seq } stop { __typename seq name latitude longitude } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
     ))
 
   public init() {}
@@ -31,6 +31,42 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
         "route": 216000068,
         "stop": 216000138,
         "limit": 1
+      ], [
+        "route": 216000081,
+        "stop": 216000028,
+        "limit": 1
+      ], [
+        "route": 216000101,
+        "stop": 216000028,
+        "limit": 1
+      ], [
+        "route": 216000016,
+        "stop": 216000152,
+        "limit": 1
+      ], [
+        "route": 216000082,
+        "stop": 216000077,
+        "limit": 1
+      ], [
+        "route": 216000102,
+        "stop": 216000077,
+        "limit": 1
+      ], [
+        "route": 216000016,
+        "stop": 216000074,
+        "limit": 1
+      ], [
+        "route": 216000082,
+        "stop": 217000140,
+        "limit": 1
+      ], [
+        "route": 216000102,
+        "stop": 217000140,
+        "limit": 1
+      ], [
+        "route": 216000016,
+        "stop": 217000264,
+        "limit": 1
       ]]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -49,6 +85,7 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusRouteStop }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
+        .field("route", Route.self),
         .field("stop", Stop.self),
         .field("arrival", [Arrival].self),
       ] }
@@ -56,8 +93,28 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
         ShuttleBusAlternativeQuery.Data.Bus.self
       ] }
 
+      public var route: Route { __data["route"] }
       public var stop: Stop { __data["stop"] }
       public var arrival: [Arrival] { __data["arrival"] }
+
+      /// Bus.Route
+      ///
+      /// Parent Type: `BusRoute`
+      nonisolated public struct Route: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusRoute }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("seq", Int.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          ShuttleBusAlternativeQuery.Data.Bus.Route.self
+        ] }
+
+        public var seq: Int { __data["seq"] }
+      }
 
       /// Bus.Stop
       ///
@@ -70,12 +127,18 @@ nonisolated public struct ShuttleBusAlternativeQuery: GraphQLQuery {
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .field("seq", Int.self),
+          .field("name", String.self),
+          .field("latitude", Double.self),
+          .field("longitude", Double.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           ShuttleBusAlternativeQuery.Data.Bus.Stop.self
         ] }
 
         public var seq: Int { __data["seq"] }
+        public var name: String { __data["name"] }
+        public var latitude: Double { __data["latitude"] }
+        public var longitude: Double { __data["longitude"] }
       }
 
       /// Bus.Arrival
