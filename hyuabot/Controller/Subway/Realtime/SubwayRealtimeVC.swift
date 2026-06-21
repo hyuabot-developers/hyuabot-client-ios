@@ -127,13 +127,14 @@ class SubwayRealtimeVC: UIViewController {
         }).disposed(by: disposeBag)
         SubwayRealtimeData.shared.combinedRealtimeData.subscribe(onNext: {[weak self] data in
             guard
-                data?.campusBlue != nil,
-                data?.campusYellow != nil,
-                data?.oidoBlue != nil,
-                data?.oidoYellow != nil else { return }
+                let data,
+                let campusBlue = data.campusBlue,
+                let campusYellow = data.campusYellow,
+                let oidoBlue = data.oidoBlue,
+                let oidoYellow = data.oidoYellow else { return }
             guard let self = self else { return }
-            SubwayRealtimeData.shared.transferUp.onNext(self.processUpDirection(oidoBlue: data!.oidoBlue!, oidoYellow: data!.oidoYellow!))
-            SubwayRealtimeData.shared.transferDown.onNext(self.processDownDirection(campusBlue: data!.campusBlue!, campusYellow: data!.campusYellow!, oidoYellow: data!.oidoYellow!))
+            SubwayRealtimeData.shared.transferUp.onNext(self.processUpDirection(oidoBlue: oidoBlue, oidoYellow: oidoYellow))
+            SubwayRealtimeData.shared.transferDown.onNext(self.processDownDirection(campusBlue: campusBlue, campusYellow: campusYellow, oidoYellow: oidoYellow))
         }).disposed(by: disposeBag)
         SubwayRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
             if (isLoading) {
@@ -202,11 +203,11 @@ class SubwayRealtimeVC: UIViewController {
     }
     
     private func findTransferTrain(compare: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry], entry: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry, target: SubwayTransferItem?) -> SubwayRealtimePageQuery.Data.Subway.Arrival.Entry? {
-        return compare.first(where: {
-            if (target == nil) {
-                return $0.minutes > entry.minutes + 20
+        return compare.first(where: { transfer in
+            if let target {
+                return transfer.minutes > entry.minutes + 20 && transfer.minutes < target.take.minutes + 20
             } else {
-                return $0.minutes > entry.minutes + 20 && $0.minutes < target!.take.minutes + 20
+                return transfer.minutes > entry.minutes + 20
             }
         })
     }
@@ -248,21 +249,22 @@ class SubwayRealtimeVC: UIViewController {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: departureTime)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        let second = calendar.component(.second, from: departureTime!)
+        guard let departureTime = dateFormatter.date(from: departureTime) else { return false }
+        let hour = calendar.component(.hour, from: departureTime)
+        let minute = calendar.component(.minute, from: departureTime)
+        let second = calendar.component(.second, from: departureTime)
         let remainingTime = (hour * 3600 + minute * 60 + second) - (calendar.component(.hour, from: Date.now) * 3600 + calendar.component(.minute, from: Date.now) * 60 + calendar.component(.second, from: Date.now)) // in seconds
         return remainingTime > Int(maxValue * 60)
     }
     
     private func calculateRemainingTime(current: Foundation.Date, departureTime: String) -> Int {
         let splitTime = departureTime.split(separator: ":")
-        var hour = Int(splitTime[0])!
+        guard splitTime.count >= 2,
+              var hour = Int(splitTime[0]),
+              let minute = Int(splitTime[1]) else { return Int.max }
         if hour < 4 {
             hour += 24
         }
-        let minute = Int(splitTime[1])!
         let timeDelta = 60 * (hour - Calendar.current.component(.hour, from: current)) + (minute - Calendar.current.component(.minute, from: current))
         return timeDelta
     }
