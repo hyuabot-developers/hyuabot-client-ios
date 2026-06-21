@@ -21,10 +21,11 @@ class ShuttleRealtimeTabVC: UIViewController {
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
     private lazy var shuttleRealtimeTableView: UITableView = {
-        let tableView = UITableView().then{
+        let tableView = UITableView(frame: .zero, style: .grouped).then{
             $0.delegate = self
             $0.dataSource = self
             $0.sectionHeaderTopPadding = 0
+            $0.backgroundColor = .systemBackground
             $0.refreshControl = refreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
             $0.tableFooterView = self.tableFooterView1
@@ -38,10 +39,11 @@ class ShuttleRealtimeTabVC: UIViewController {
         return tableView
     }()
     private lazy var shuttleRealtimeTableTimeView: UITableView = {
-        let tableView = UITableView().then{
+        let tableView = UITableView(frame: .zero, style: .grouped).then{
             $0.delegate = self.timetableDelegate
             $0.dataSource = self.timetableDelegate
             $0.sectionHeaderTopPadding = 0
+            $0.backgroundColor = .systemBackground
             $0.tableFooterView = self.tableFooterView2
             $0.refreshControl = refreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
