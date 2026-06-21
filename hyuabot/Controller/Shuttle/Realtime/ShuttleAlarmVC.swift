@@ -186,8 +186,29 @@ class ShuttleAlarmVC: UIViewController {
 
     @objc private func shareButtonTapped() {
         guard context.destinationStops.indices.contains(selectedDestinationIndex) else { return }
+        shareButton.isHidden = true
         let destination = context.destinationStops[selectedDestinationIndex]
-        shareJourney?(String(format: String(localized: "shuttle.share.journey.format"), context.boardingStop.name, timeText(context.departureTime), destination.name, timeText(destination.time), "hyuabot://shuttle"))
+        let text = String(
+            format: String(localized: "shuttle.share.journey.format"),
+            context.boardingStop.name,
+            timeText(context.departureTime),
+            destination.name,
+            timeText(destination.time),
+            shareURL(destination: destination)
+        )
+        shareJourney?(text)
+    }
+
+    private func shareURL(destination: ShuttleAlarmStop) -> String {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "hyuabot.app"
+        components.path = "/shuttle"
+        components.queryItems = [
+            URLQueryItem(name: "stop", value: context.boardingStop.id),
+            URLQueryItem(name: "to", value: destination.id)
+        ]
+        return components.url?.absoluteString ?? "hyuabot://shuttle?stop=\(context.boardingStop.id)"
     }
 
     private func requestNotificationAuthorization(completion: @escaping (Bool) -> Void) {

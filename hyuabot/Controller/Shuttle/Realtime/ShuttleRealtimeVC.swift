@@ -581,9 +581,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func openShuttleAlarmVC(_ stop: ShuttleStopEnum, _ context: ShuttleAlarmContext) {
         let vc = ShuttleAlarmVC(context: context)
-        vc.shareJourney = { [weak self] text in
-            let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
-            self?.present(activityVC, animated: true)
+        vc.shareJourney = { [weak self, weak vc] text in
+            self?.presentJourneyShare(text, dismissing: vc)
         }
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom(resolver: { resolverContext in
@@ -592,6 +591,34 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
+    }
+
+    private func presentJourneyShare(_ text: String, dismissing vc: UIViewController?) {
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        activityVC.modalPresentationStyle = .pageSheet
+        activityVC.popoverPresentationController?.sourceView = view
+        activityVC.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX,
+            y: view.bounds.maxY,
+            width: 1,
+            height: 1
+        )
+
+        let presentShare: () -> Void = { [weak self] in
+            guard let self else { return }
+            self.present(activityVC, animated: true)
+        }
+
+        guard let vc, vc.presentingViewController != nil else {
+            presentShare()
+            return
+        }
+
+        vc.dismiss(animated: false) {
+            DispatchQueue.main.async {
+                presentShare()
+            }
+        }
     }
     
     private func openShuttleStopVC(_ stop: ShuttleStopEnum) {

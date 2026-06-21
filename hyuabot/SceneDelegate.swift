@@ -33,6 +33,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         if let urlContext = connectionOptions.urlContexts.first {
             handleDeepLink(urlContext.url)
+        } else if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
+                  let url = userActivity.webpageURL {
+            handleDeepLink(url)
         }
     }
 
@@ -42,12 +45,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL else { return }
+        handleDeepLink(url)
+    }
+
     private func handleDeepLink(_ url: URL) {
-        guard url.scheme == "hyuabot",
-              let rootVC = window?.rootViewController as? RootVC else { return }
+        guard let rootVC = window?.rootViewController as? RootVC,
+              let route = routePath(for: url) else { return }
         let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
 
-        switch url.host {
+        switch route {
         case "cafeteria":
             rootVC.selectedIndex = 3
             let tab = params?.first(where: { $0.name == "tab" })?.value
@@ -81,6 +90,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         default:
             break
         }
+    }
+
+    private func routePath(for url: URL) -> String? {
+        if url.scheme == "hyuabot" {
+            return url.host
+        }
+
+        guard url.scheme == "https",
+              url.host == "hyuabot.app" else { return nil }
+        return url.pathComponents.dropFirst().first
     }
 
     private func showLanguageSuggestionIfNeeded() {
@@ -118,4 +137,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-
