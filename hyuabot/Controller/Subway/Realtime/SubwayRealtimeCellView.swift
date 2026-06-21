@@ -41,25 +41,7 @@ class SubwayRealtimeCellView: UITableViewCell {
         else if tabType == .lineSuin { self.destinationLabel.textColor = .subwayYellow }
         if (item.isRealtime) {
             self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.terminal.stationID))")
-            if (item.isLast!) {
-                self.setRealtimeAttributedText(String(
-                    localized: getRealtimeLabelText(
-                        item.minutes,
-                        item.location!,
-                        item.status!,
-                        item.isLast!
-                    )
-                ))
-            } else {
-                self.setRealtimeAttributedText(String(
-                    localized: getRealtimeLabelText(
-                        item.minutes,
-                        item.location!,
-                        item.status!,
-                        item.isLast!
-                    )
-                ))
-            }
+            self.setRealtimeAttributedText(String(localized: getRealtimeLabelText(item)))
         } else {
             self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.terminal.stationID))")
             self.subwayTimeLabel.text = String(localized: getTimetableLabelText(item.minutes))
@@ -86,6 +68,14 @@ class SubwayRealtimeCellView: UITableViewCell {
             default: return String(localized: "subway.station.\(stationID)")
         }
         return stationName
+    }
+
+    private func getRealtimeLabelText(_ item: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) -> String.LocalizationValue {
+        guard let location = item.location,
+              let status = item.status else {
+            return getTimetableLabelText(item.minutes)
+        }
+        return getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false)
     }
     
     private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String.LocalizationValue {
