@@ -236,30 +236,40 @@ class ShuttleTimetableVC: UIViewController {
             ShuttleTimetableData.shared.isLoading.onNext(true)
             Task {
                 let response = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: date)))
-                if let data = response?.data {
-                    let period = data.shuttle.period!.type
-                    let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, destination: destinations))
-                    if let timetableData = timetableResponse?.data {
-                        ShuttleTimetableData.shared.timetable.onNext(timetableData.shuttle.stops.first?.timetable.order ?? [])
-                    }
+                guard let period = response?.data?.shuttle.period?.type else {
+                    publishTimetable([])
+                    return
                 }
+                let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, destination: destinations))
+                publishTimetable(timetableResponse?.data?.shuttle.stops.first?.timetable.order ?? [])
             }
         } else {
-            var period = ""
-            if options.period == "shuttle.period.semester" {
-                period = "semester"
-            } else if options.period == "shuttle.period.vacation" {
-                period = "vacation"
-            } else if options.period == "shuttle.period.vacation_session" {
-                period = "vacation_session"
+            guard let period = resolvedPeriod(options.period) else {
+                ShuttleTimetableData.shared.timetable.onNext([])
+                return
             }
             ShuttleTimetableData.shared.isLoading.onNext(true)
             Task {
                 let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, destination: destinations))
-                if let timetableData = timetableResponse?.data {
-                    ShuttleTimetableData.shared.timetable.onNext(timetableData.shuttle.stops.first?.timetable.order ?? [])
-                }
+                publishTimetable(timetableResponse?.data?.shuttle.stops.first?.timetable.order ?? [])
             }
+        }
+    }
+
+    private func resolvedPeriod(_ period: String.LocalizationValue?) -> String? {
+        if period == "shuttle.period.semester" {
+            return "semester"
+        } else if period == "shuttle.period.vacation" {
+            return "vacation"
+        } else if period == "shuttle.period.vacation_session" {
+            return "vacation_session"
+        }
+        return nil
+    }
+
+    private func publishTimetable(_ timetable: [ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order]) {
+        DispatchQueue.main.async {
+            ShuttleTimetableData.shared.timetable.onNext(timetable)
         }
     }
     
