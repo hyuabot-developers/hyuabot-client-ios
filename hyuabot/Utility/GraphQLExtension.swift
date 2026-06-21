@@ -15,15 +15,20 @@ extension String {
     }
     
     func toLocalTime() -> Foundation.Date {
+        guard let time = toLocalTimeOrNil() else {
+            fatalError("Invalid time string: \(self)")
+        }
+        return time
+    }
+
+    func toLocalTimeOrNil() -> Foundation.Date? {
         let formatter = DateFormatter().then {
             $0.calendar = Calendar(identifier: .iso8601)
             $0.locale = Locale(identifier: "en_US_POSIX")
             $0.timeZone = TimeZone(identifier: "Asia/Seoul")
             $0.dateFormat = "HH:mm:ss"
         }
-        guard let time = formatter.date(from: self) else {
-            fatalError("Invalid time string: \(self)")
-        }
+        guard let time = formatter.date(from: self) else { return nil }
         let calendar = Calendar.current
         let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
         let todayComponents = calendar.dateComponents([.year, .month, .day], from: Date.now)
@@ -33,11 +38,7 @@ extension String {
         merged.day = todayComponents.day
         merged.hour = timeComponents.hour
         merged.minute = timeComponents.minute
-        if let mergedDate = calendar.date(from: merged) {
-            return mergedDate
-        } else {
-            fatalError("Failed to merge date and time components")
-        }
+        return calendar.date(from: merged)
     }
     
     func toZonedDateTime() -> Foundation.Date {

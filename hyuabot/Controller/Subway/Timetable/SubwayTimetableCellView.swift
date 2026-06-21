@@ -68,24 +68,39 @@ class SubwayTimetableCellView: UITableViewCell {
         _ currentTime: String,
         _ item: SubwayTimetablePageQuery.Data.Subway.Timetable,
     ) {
-        let component = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
-        if convertDepartureTime(currentTime) > convertDepartureTime(item.time) {
+        guard let timetableTime = item.time.toLocalTimeOrNil(),
+              let currentDepartureTime = convertDepartureTime(currentTime),
+              let timetableDepartureTime = convertDepartureTime(item.time) else {
+            self.departureTimeLabel.textColor = .label
+            self.departureTimeLabel.text = item.time
+            return
+        }
+
+        let component = Calendar.current.dateComponents([.hour, .minute], from: timetableTime)
+        if currentDepartureTime > timetableDepartureTime {
             self.departureTimeLabel.textColor = .gray
         } else {
             self.departureTimeLabel.textColor = .label
         }
-        var hour = component.hour!
+        guard var hour = component.hour,
+              let minute = component.minute else {
+            self.departureTimeLabel.text = item.time
+            return
+        }
         if hour < 4 {
             hour += 24
         }
-        self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(component.minute!)")
+        self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(minute)")
     }
     
-    private func convertDepartureTime(_ time: String) -> String {
-        let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
-        if (components.hour! < 4) {
-            return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
+    private func convertDepartureTime(_ time: String) -> String? {
+        guard let date = time.toLocalTimeOrNil() else { return nil }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        guard let hour = components.hour,
+              let minute = components.minute else { return nil }
+        if hour < 4 {
+            return String(format: "%02d:%02d", hour + 24, minute)
         }
-        return String(format: "%02d:%02d", components.hour!, components.minute!)
+        return String(format: "%02d:%02d", hour, minute)
     }
 }
