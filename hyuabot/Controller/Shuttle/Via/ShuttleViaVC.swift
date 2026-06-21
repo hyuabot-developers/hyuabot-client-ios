@@ -101,12 +101,12 @@ extension ShuttleViaVC: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ShuttleViaCellView.reuseIdentifier) as? ShuttleViaCellView ?? ShuttleViaCellView()
-        if self.itemByOrder != nil {
-            cell.setupUI(startStop: self.itemByOrder!, item: self.itemByOrder!.stops[indexPath.row])
-        } else if self.itemByDestination != nil {
-            cell.setupUI(startStop: self.itemByDestination!, item: self.itemByDestination!.stops[indexPath.row])
-        } else if self.timetableItem != nil {
-            cell.setupUI(startStop: self.timetableItem!, item: self.timetableItem!.stops[indexPath.row])
+        if let itemByOrder, itemByOrder.stops.indices.contains(indexPath.row) {
+            cell.setupUI(startStop: itemByOrder, item: itemByOrder.stops[indexPath.row])
+        } else if let itemByDestination, itemByDestination.stops.indices.contains(indexPath.row) {
+            cell.setupUI(startStop: itemByDestination, item: itemByDestination.stops[indexPath.row])
+        } else if let timetableItem, timetableItem.stops.indices.contains(indexPath.row) {
+            cell.setupUI(startStop: timetableItem, item: timetableItem.stops[indexPath.row])
         }
         return cell
     }
