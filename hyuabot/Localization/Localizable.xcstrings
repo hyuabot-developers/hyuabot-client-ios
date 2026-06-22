@@ -6134,7 +6134,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ stop is %2$@ ahead"
+            "value" : "%1$@ stop is about %2$@ ahead"
           }
         },
         "ja" : {
@@ -6152,7 +6152,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@站在%2$@前方"
+            "value" : "距%1$@站约%2$@"
           }
         }
       }
@@ -6190,7 +6190,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "About %@ to stop"
+            "value" : "About %@ to the stop"
           }
         },
         "ja" : {
@@ -6208,7 +6208,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "距站约%@"
+            "value" : "距站点约%@"
           }
         }
       }
@@ -6652,7 +6652,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 탑승 알림"
+            "value" : "%@ 승차 알림"
           }
         },
         "zh-Hans" : {
