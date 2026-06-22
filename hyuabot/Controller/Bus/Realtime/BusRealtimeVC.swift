@@ -294,10 +294,13 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         }
         Task {
             let response = try? await Network.shared.client.fetch(query: BusRealtimePageQuery(language: noticeLanguage), cachePolicy: .networkOnly)
-            if let data = response?.data {
-                BusRealtimeData.shared.isLoading.onNext(false)
-                BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
-                BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
+            await MainActor.run {
+                if let data = response?.data {
+                    BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
+                    BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
+                } else {
+                    BusRealtimeData.shared.isLoading.onNext(false)
+                }
             }
         }
     }
