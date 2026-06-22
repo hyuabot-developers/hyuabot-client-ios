@@ -6,6 +6,7 @@ class ShuttleRealtimeTimeTableDelegate: NSObject {
     let showAlarmVC: ((_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void)
     let stopID: ShuttleStopEnum
     var activeBoardingAlarmKeys: Set<String> = []
+    var showsInitialSkeleton = true
     
     required init(
         showViaVC: @escaping (_: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
@@ -24,6 +25,9 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsInitialSkeleton {
+            return 6
+        }
         if (self.stopID == .dormiotryOut) {
             guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryData.value() else { return 0 }
             return max(min(data.count, 8), 1)
@@ -47,6 +51,9 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if showsInitialSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         if (self.stopID == .dormiotryOut) {
             guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryData.value() else { return UITableViewCell() }
             if !data.isEmpty {

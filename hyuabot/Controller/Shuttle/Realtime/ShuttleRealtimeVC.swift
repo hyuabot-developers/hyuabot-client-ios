@@ -192,6 +192,7 @@ class ShuttleRealtimeVC: UIViewController {
     @MainActor
     private func markInitialShuttlePageDataLoaded() {
         hasLoadedInitialShuttlePageData = true
+        ShuttleRealtimeData.shared.isLoading.onNext(false)
         scheduleCoachMarksIfNeeded()
     }
 

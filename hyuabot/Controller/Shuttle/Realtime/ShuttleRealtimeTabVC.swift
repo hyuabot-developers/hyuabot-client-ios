@@ -23,6 +23,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     private var busAlternativeLastNonEmptyAt: [String: Foundation.Date] = [:]
     private let busAlternativeEmptyGraceInterval: TimeInterval = 60
     private var activeBoardingAlarmKeys: Set<String> = []
+    private var showsInitialSkeleton = true
     var forceShowBusAlternative = false
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal, showEntireTimetable: showEntireTimetable)
@@ -40,6 +41,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
             $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
             $0.register(ShuttleRealtimeEmptyCellView.self, forCellReuseIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier)
+            $0.register(ShuttleRealtimeSkeletonCellView.self, forCellReuseIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier)
             $0.register(ShuttleRealtimeCellView.self, forCellReuseIdentifier: ShuttleRealtimeCellView.reuseIdentifier)
         }
         return tableView
@@ -58,6 +60,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
             $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
             $0.register(ShuttleRealtimeEmptyCellView.self, forCellReuseIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier)
+            $0.register(ShuttleRealtimeSkeletonCellView.self, forCellReuseIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier)
             $0.register(ShuttleRealtimeCellView.self, forCellReuseIdentifier: ShuttleRealtimeCellView.reuseIdentifier)
         }
         return tableView
@@ -203,6 +206,18 @@ class ShuttleRealtimeTabVC: UIViewController {
             self?.shuttleRealtimeTableView.isHidden = showArrivalByTime
             self?.shuttleRealtimeTableTimeView.isHidden = !showArrivalByTime
         }).disposed(by: self.disposeBag)
+
+        ShuttleRealtimeData.shared.isLoading
+            .distinctUntilChanged()
+            .subscribe(onNext: { [weak self] isLoading in
+                guard let self else { return }
+                self.showsInitialSkeleton = isLoading
+                self.timetableDelegate.showsInitialSkeleton = isLoading
+                UIView.performWithoutAnimation {
+                    self.shuttleRealtimeTableView.reloadData()
+                    self.shuttleRealtimeTableTimeView.reloadData()
+                }
+            }).disposed(by: self.disposeBag)
 
         ShuttleRealtimeData.shared.busAlternatives
             .subscribe(onNext: { [weak self] alternatives in
@@ -618,6 +633,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsInitialSkeleton {
+            return skeletonRowCount(section: section)
+        }
         if (self.stopID == .dormiotryOut) {
             if section == 0 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return 0 }
@@ -666,6 +684,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard self.shuttleRealtimeSection.indices.contains(indexPath.section) else { return UITableViewCell() }
+        if showsInitialSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         if (self.stopID == .dormiotryOut) {
             if indexPath.section == 0 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return UITableViewCell() }
@@ -825,6 +846,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        if showsInitialSkeleton {
+            return CGFloat.leastNormalMagnitude
+        }
         let alternativesCount = busAlternatives[busAlternativeKey(section: section)]?.count ?? 0
         if alternativesCount > 0 {
             return CGFloat(50 + 50 * alternativesCount)
@@ -871,6 +895,15 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             return "jungang_dormitory"
         default:
             return ""
+        }
+    }
+
+    private func skeletonRowCount(section: Int) -> Int {
+        switch stopID {
+        case .terminal, .jungangStation, .shuttlecockIn:
+            return 4
+        default:
+            return section == 0 ? 3 : 2
         }
     }
 

@@ -48,6 +48,7 @@ struct ShuttleAlarmContext: Equatable {
 class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
     private init() {}
+    let isLoading = BehaviorSubject<Bool>(value: true)
     // Realtime Query
     let arrival = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop]>(value: [])
     let notices = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Notice.Notice]>(value: [])
