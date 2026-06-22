@@ -9,6 +9,21 @@ class BusRealtimeCellView: UITableViewCell {
     private let busRouteLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
+    private let lowFloorBadgeLabel = UILabel().then {
+        $0.text = String(localized: "bus.realtime.low.floor")
+        $0.font = .godo(size: 11, weight: .bold)
+        $0.textColor = .white
+        $0.textAlignment = .center
+        $0.backgroundColor = .hanyangGreen
+        $0.layer.cornerRadius = 4
+        $0.clipsToBounds = true
+        $0.isHidden = true
+    }
+    private lazy var routeStackView = UIStackView(arrangedSubviews: [busRouteLabel, lowFloorBadgeLabel]).then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 6
+    }
     private let busTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
@@ -23,13 +38,18 @@ class BusRealtimeCellView: UITableViewCell {
     }
     
     func setupUI() {
-        self.contentView.addSubview(self.busRouteLabel)
+        self.contentView.addSubview(self.routeStackView)
         self.contentView.addSubview(self.busTimeLabel)
         self.selectionStyle = .none
-        self.busRouteLabel.snp.makeConstraints { make in
+        self.routeStackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
+            make.trailing.lessThanOrEqualTo(self.busTimeLabel.snp.leading).offset(-10)
+        }
+        self.lowFloorBadgeLabel.snp.makeConstraints { make in
+            make.width.greaterThanOrEqualTo(32)
+            make.height.equalTo(20)
         }
         self.busTimeLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
@@ -39,6 +59,7 @@ class BusRealtimeCellView: UITableViewCell {
     
     func setupUI(item: BusArrivalItem) {
         self.busRouteLabel.text = item.route
+        self.lowFloorBadgeLabel.isHidden = item.item.lowFloor != true
         self.setRouteColor(routeName: item.route)
         self.setUITimeLabel(item: item)
     }
@@ -52,6 +73,8 @@ class BusRealtimeCellView: UITableViewCell {
     }
     
     func setUITimeLabel(item: BusArrivalItem) {
+        self.busTimeLabel.attributedText = nil
+        self.busTimeLabel.textColor = .label
         if (item.item.isRealtime) {
             if (item.item.seats! < 0) {
                 if (item.item.stops! <= 1) {

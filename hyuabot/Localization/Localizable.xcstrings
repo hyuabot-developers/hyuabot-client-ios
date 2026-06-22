@@ -545,6 +545,34 @@
         }
       }
     },
+    "bus.realtime.low.floor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low-floor"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低床"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저상"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低地板"
+          }
+        }
+      }
+    },
     "bus.realtime.no.seat.%lld.%lld" : {
       "localizations" : {
         "en" : {
