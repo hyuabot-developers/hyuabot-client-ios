@@ -245,6 +245,7 @@ class CoachMarkView: UIView {
 // MARK: - UIViewController extension
 
 extension UIViewController {
+    @discardableResult
     func presentCoachMarks(
         pageId: String,
         items: [CoachMarkItem],
@@ -252,15 +253,15 @@ extension UIViewController {
         shouldMarkAsShown: Bool = true,
         onSkip: (() -> Void)? = nil,
         onComplete: (() -> Void)? = nil
-    ) {
-        guard CoachMarkManager.shared.shouldShowPage(pageId, version: version) else { return }
+    ) -> Bool {
+        guard CoachMarkManager.shared.shouldShowPage(pageId, version: version) else { return false }
         let validItems = items.filter { item in
-            guard let view = item.targetView else { return true }
+            guard let view = item.targetView else { return false }
             return view.window != nil && !view.isHidden
         }
-        guard !validItems.isEmpty else { return }
+        guard !validItems.isEmpty else { return false }
         guard let window = view.window,
-              !window.subviews.contains(where: { $0 is CoachMarkView }) else { return }
+              !window.subviews.contains(where: { $0 is CoachMarkView }) else { return false }
 
         let overlay = CoachMarkView()
         overlay.frame = window.bounds
@@ -278,5 +279,6 @@ extension UIViewController {
             onSkip?()
         }
         overlay.present(items: validItems)
+        return true
     }
 }

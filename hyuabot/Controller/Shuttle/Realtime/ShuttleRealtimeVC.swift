@@ -132,6 +132,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private var isShowingCoachMarks = false
+    private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
     private let widgetCoachMarkAnchor = UIView().then { $0.isUserInteractionEnabled = false }
     private var subscription: Disposable?
@@ -161,11 +162,36 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.shuttleRealtime)
-        self.showCoachMarksIfNeeded()
+        self.scheduleCoachMarksIfNeeded()
     }
 
-    private func showCoachMarksIfNeeded() {
+    func retryCoachMarksIfNeeded() {
+        scheduleCoachMarksIfNeeded()
+    }
+
+    private func scheduleCoachMarksIfNeeded(attempt: Int = 0) {
         guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return }
+        coachMarkRetryWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            guard self.coachMarkOverlayIsAbsent else { return }
+            if !self.showCoachMarksIfNeeded(), attempt < 4 {
+                self.scheduleCoachMarksIfNeeded(attempt: attempt + 1)
+            }
+        }
+        coachMarkRetryWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + (attempt == 0 ? 0.1 : 0.25), execute: workItem)
+    }
+
+    private var coachMarkOverlayIsAbsent: Bool {
+        !(view.window?.subviews.contains(where: { $0 is CoachMarkView }) ?? true)
+    }
+
+    @discardableResult
+    private func showCoachMarksIfNeeded() -> Bool {
+        guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return false }
+        guard view.window != nil else { return false }
+        view.layoutIfNeeded()
 
         isShowingCoachMarks = true
         dormitoryOutTabVC.forceShowBusAlternative = true
@@ -242,13 +268,19 @@ class ShuttleRealtimeVC: UIViewController {
             ))
         }
 
-        presentCoachMarks(
+        let didPresent = presentCoachMarks(
             pageId: "shuttle.realtime",
             items: items,
             shouldMarkAsShown: false,
             onSkip: { [weak self] in self?.finishCoachMarks() },
             onComplete: { [weak self] in self?.showFooterCoachMarksWhenReady() }
         )
+        if !didPresent {
+            isShowingCoachMarks = false
+            dormitoryOutTabVC.forceShowBusAlternative = false
+            dormitoryOutTabVC.reloadSection0()
+        }
+        return didPresent
     }
 
     private func showFooterCoachMarksWhenReady() {
@@ -358,9 +390,7 @@ class ShuttleRealtimeVC: UIViewController {
     @objc private func coachMarksDidReset() {
         guard view.window != nil else { return }
         isShowingCoachMarks = false
-        DispatchQueue.main.async { [weak self] in
-            self?.showCoachMarksIfNeeded()
-        }
+        scheduleCoachMarksIfNeeded()
     }
     
     private func setupUI() {

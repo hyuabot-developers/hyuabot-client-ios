@@ -38,6 +38,14 @@ class RootVC: UITabBarController {
         }
     }
 
+    private func retryShuttleCoachMarksIfNeeded() {
+        guard selectedViewController === shuttleNC,
+              let shuttleVC = shuttleNC.viewControllers.first as? ShuttleRealtimeVC else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shuttleVC.retryCoachMarksIfNeeded()
+        }
+    }
+
     func showMoreCoachMarkIfNeeded() {
         presentCoachMarks(pageId: "root.more", items: [
             CoachMarkItem(
@@ -103,6 +111,9 @@ extension RootVC: UITabBarControllerDelegate {
         if let item = analyticsItem(for: viewController) {
             AnalyticsManager.logSelect(item, type: .tab)
         }
+        if viewController === shuttleNC {
+            retryShuttleCoachMarksIfNeeded()
+        }
     }
 }
 
@@ -116,6 +127,7 @@ extension RootVC: UITableViewDelegate {
         switch cell?.textLabel?.text {
         case String(localized: "tabbar.shuttle"):
             self.selectedViewController = shuttleNC
+            retryShuttleCoachMarksIfNeeded()
         case String(localized: "tabbar.bus"):
             self.selectedViewController = busNC
         case String(localized: "tabbar.subway"):
