@@ -19,6 +19,12 @@ class ShuttleViaCellView: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.shuttleStopLabel.textColor = .label
+        self.shuttleTimeLabel.textColor = .label
+    }
     
     func setupUI() {
         self.contentView.addSubview(self.shuttleStopLabel)
@@ -51,8 +57,7 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(components.hour!).\(components.minute!)")
+        self.shuttleTimeLabel.text = self.formatTime(item.time)
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray
@@ -75,8 +80,7 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(components.hour!).\(components.minute!)")
+        self.shuttleTimeLabel.text = self.formatTime(item.time)
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray
@@ -99,11 +103,22 @@ class ShuttleViaCellView: UITableViewCell {
         } else {
             self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
-        self.shuttleTimeLabel.text = String(localized: "shuttle.shorten.time.\(components.hour!).\(components.minute!)")
+        self.shuttleTimeLabel.text = self.formatTime(item.time)
         if (startStop.time > item.time) {
             self.shuttleStopLabel.textColor = .gray
             self.shuttleTimeLabel.textColor = .gray
         }
+    }
+
+    private func formatTime(_ time: String) -> String {
+        guard let date = time.toLocalTimeOrNil() else {
+            return time.substring(from: 0, to: 4)
+        }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        guard let hour = components.hour,
+              let minute = components.minute else {
+            return time.substring(from: 0, to: 4)
+        }
+        return String(format: String(localized: "shuttle.shorten.time.%lld.%lld"), hour, minute)
     }
 }

@@ -2,6 +2,8 @@ import WidgetKit
 import SwiftUI
 import AppIntents
 import CoreLocation
+import Apollo
+import Api
 
 // MARK: - Shared Transfer Badge (used by ShuttleWidget too)
 
@@ -64,57 +66,6 @@ struct TransferEntry: TimelineEntry {
     let errorState: ShuttleErrorState
 }
 
-// MARK: - Response Types
-
-private struct SubwayTransferResponse: Decodable {
-    let subway: [Station]
-    struct Station: Decodable {
-        let stationID: String
-        let arrival: [ArrivalGroup]
-        struct ArrivalGroup: Decodable {
-            let direction: String
-            let entries: [Entry]
-            struct Entry: Decodable {
-                let minutes: Int
-                let terminal: Terminal
-                struct Terminal: Decodable { let stationID: String; let name: String }
-            }
-        }
-    }
-}
-
-private struct BusTransferResponse: Decodable {
-    let bus: [BusRoute]
-    struct BusRoute: Decodable {
-        let route: Route
-        let arrival: [Arrival]
-        struct Route: Decodable { let seq: Int; let name: String }
-        struct Arrival: Decodable {
-            let minutes: Int?
-            let stops: Int?
-        }
-    }
-}
-
-// MARK: - Queries
-
-private let dormitorySubwayQuery = """
-query($weekday: String!) {
-    subway(input: { keys: [
-        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 },
-        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 }
-    ]}) { stationID arrival { direction entries { minutes terminal { stationID name } } } }
-}
-"""
-
-private let dormitoryBusQuery = """
-query { bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { route { seq name } arrival { minutes stops } } }
-"""
-
-private let terminalBusQuery = """
-query { bus(input: [{ route: 216000075, stop: 216000117, limit: 2 }]) { route { seq name } arrival { minutes stops } } }
-"""
-
 private func boundLabel(stationID: String, fallback: String) -> String {
     let nameKey = "subway.station." + stationID.lowercased()
     let localizedName = String(localized: LocalizedStringResource(stringLiteral: nameKey))
@@ -174,11 +125,18 @@ struct TransferProvider: TimelineProvider {
         let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
 
         do {
-            let shuttleResp: ShuttleWidgetResponse = try await widgetGraphQL(
-                query: shuttleQuery,
-                variables: ["after": currentTimeStr]
+            let response = try await WidgetNetwork.shared.fetch(
+                query: ShuttleTransferWidgetQuery(
+                    after: GraphQLNullable(stringLiteral: currentTimeStr),
+                    weekday: widgetWeekday()
+                )
             )
-            let stops = shuttleResp.shuttle.stops
+
+            guard let data = response.data else {
+                return TransferEntry(date: .now, stopDisplayName: "", stopID: "", shuttleGroups: [], transitArrivals: [], errorState: .noData)
+            }
+
+            let stops = data.shuttle.stops
             guard !stops.isEmpty else {
                 return TransferEntry(date: .now, stopDisplayName: "", stopID: "", shuttleGroups: [], transitArrivals: [], errorState: .noData)
             }
@@ -188,7 +146,7 @@ struct TransferProvider: TimelineProvider {
                 < CLLocation(latitude: $1.latitude, longitude: $1.longitude).distance(from: location)
             }!
 
-            func makeShuttleGroups(_ timetable: ShuttleWidgetResponse.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
+            func makeShuttleGroups(_ timetable: ShuttleTransferWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
                 timetable.destination.compactMap { g in
                     let times = g.entries.prefix(4).map { formatTime($0.time) }
                     guard !times.isEmpty else { return nil }
@@ -209,8 +167,7 @@ struct TransferProvider: TimelineProvider {
                 stopID = nearestStop.name
             }
 
-            let weekday = widgetWeekday()
-            let transitArrivals = await fetchTransit(for: stopID, weekday: weekday)
+            let transitArrivals = buildTransit(for: stopID, data: data)
 
             return TransferEntry(
                 date: .now,
@@ -225,15 +182,12 @@ struct TransferProvider: TimelineProvider {
         }
     }
 
-    private func fetchTransit(for stopID: String, weekday: String) async -> [TransitArrival] {
+    private func buildTransit(for stopID: String, data: ShuttleTransferWidgetQuery.Data) -> [TransitArrival] {
         switch stopID {
         case "dormitory_o", "shuttlecock_o", "shuttlecock_i":
-            async let subwayTask = fetchSubway(weekday: weekday)
-            async let busTask = fetchDormBus()
-            let (subway, bus) = await (subwayTask, busTask)
-            return subway + bus
+            return buildSubway(data.subway) + buildBus(data.transferBus, stopSeq: 216000759, label: String(localized: "bus.to.kwangmyeong"))
         case "terminal":
-            return await fetchTerminalBus()
+            return buildBus(data.transferBus, stopSeq: 216000117, label: String(localized: "bus.to.ansan"))
         case "station", "jungang_stn":
             return []  // 미 표출
         default:
@@ -241,12 +195,8 @@ struct TransferProvider: TimelineProvider {
         }
     }
 
-    private func fetchSubway(weekday: String) async -> [TransitArrival] {
-        guard let data: SubwayTransferResponse = try? await widgetGraphQL(
-            query: dormitorySubwayQuery, variables: ["weekday": weekday]
-        ) else { return [] }
-
-        return data.subway.compactMap { station -> TransitArrival? in
+    private func buildSubway(_ subway: [ShuttleTransferWidgetQuery.Data.Subway]) -> [TransitArrival] {
+        subway.compactMap { station -> TransitArrival? in
             let info = subwayLineMap[station.stationID] ?? ("subway.line4", "line4")
             let name = String(localized: LocalizedStringResource(stringLiteral: info.nameKey))
             let up = station.arrival.first(where: { $0.direction == "up" })?.entries.prefix(1)
@@ -258,11 +208,8 @@ struct TransferProvider: TimelineProvider {
         }
     }
 
-    private func fetchDormBus() async -> [TransitArrival] {
-        guard let data: BusTransferResponse = try? await widgetGraphQL(
-            query: dormitoryBusQuery, variables: [:]
-        ) else { return [] }
-        let entries = data.bus.flatMap { $0.arrival }.prefix(2).compactMap { arrival -> TransitEntry? in
+    private func buildBus(_ buses: [ShuttleTransferWidgetQuery.Data.TransferBus], stopSeq: Int, label: String) -> [TransitArrival] {
+        let entries = buses.filter { $0.stop.seq == stopSeq }.flatMap { $0.arrival }.prefix(2).compactMap { arrival -> TransitEntry? in
             guard let m = arrival.minutes else { return nil }
             let stopsStr = (arrival.stops ?? 0) > 0
                 ? String(format: String(localized: "transit.stops.format"), arrival.stops!)
@@ -270,45 +217,7 @@ struct TransferProvider: TimelineProvider {
             return TransitEntry(terminal: stopsStr, minutes: m)
         }
         guard !entries.isEmpty else { return [] }
-        return [TransitArrival(name: String(localized: "bus.to.kwangmyeong"), colorKey: "bus", upEntries: Array(entries), downEntries: [])]
-    }
-
-    private func fetchTerminalBus() async -> [TransitArrival] {
-        guard let data: BusTransferResponse = try? await widgetGraphQL(
-            query: terminalBusQuery, variables: [:]
-        ) else { return [] }
-        let entries = data.bus.flatMap { $0.arrival }.prefix(2).compactMap { arrival -> TransitEntry? in
-            guard let m = arrival.minutes else { return nil }
-            let stopsStr = (arrival.stops ?? 0) > 0
-                ? String(format: String(localized: "transit.stops.format"), arrival.stops!)
-                : ""
-            return TransitEntry(terminal: stopsStr, minutes: m)
-        }
-        guard !entries.isEmpty else { return [] }
-        return [TransitArrival(name: String(localized: "bus.to.ansan"), colorKey: "bus", upEntries: Array(entries), downEntries: [])]
-    }
-}
-
-// MARK: - Response type reuse from ShuttleWidget
-
-private struct ShuttleWidgetResponse: Decodable {
-    let shuttle: Shuttle
-    struct Shuttle: Decodable {
-        let stops: [Stop]
-        struct Stop: Decodable {
-            let latitude: Double
-            let longitude: Double
-            let name: String
-            let timetable: Timetable
-            struct Timetable: Decodable {
-                let destination: [DestGroup]
-                struct DestGroup: Decodable {
-                    let destination: String
-                    let entries: [Entry]
-                    struct Entry: Decodable { let time: String }
-                }
-            }
-        }
+        return [TransitArrival(name: label, colorKey: "bus", upEntries: Array(entries), downEntries: [])]
     }
 }
 

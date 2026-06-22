@@ -9,6 +9,7 @@ class SubwayRealtimeTabVC: UIViewController {
     private let refreshMethod: () -> ()
     private let subwayRealtimeSection: [String.LocalizationValue]
     private let showEntireTimetable: (String.LocalizationValue, SubwayHeadingEnum) -> ()
+    private var showsSkeleton = true
     private lazy var subwayRealtimeTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -24,6 +25,9 @@ class SubwayRealtimeTabVC: UIViewController {
             $0.register(SubwayRealtimeEmptyCellView.self, forCellReuseIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier)
             $0.register(SubwayRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: SubwayRealtimeHeaderView.reuseIdentifier)
             $0.register(SubwayRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: SubwayRealtimeFooterView.reuseIdentifier)
+            $0.register(SubwayRealtimeSkeletonCellView.self, forCellReuseIdentifier: SubwayRealtimeSkeletonCellView.reuseIdentifier)
+            $0.register(SubwayRealtimeSkeletonHeaderView.self, forHeaderFooterViewReuseIdentifier: SubwayRealtimeSkeletonHeaderView.reuseIdentifier)
+            $0.register(SubwayRealtimeSkeletonFooterView.self, forHeaderFooterViewReuseIdentifier: SubwayRealtimeSkeletonFooterView.reuseIdentifier)
         }
         return tableView
     }()
@@ -59,6 +63,7 @@ class SubwayRealtimeTabVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.observeSubjects()
     }
     
     private func setupUI() {
@@ -71,6 +76,17 @@ class SubwayRealtimeTabVC: UIViewController {
     func reload() {
         self.subwayRealtimeTableView.reloadData()
         self.refreshControl.endRefreshing()
+    }
+
+    private func observeSubjects() {
+        SubwayRealtimeData.shared.isLoading
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isLoading in
+                self?.showsSkeleton = isLoading
+                self?.reload()
+            })
+            .disposed(by: disposeBag)
     }
     
     @objc func refreshTableView(_ sender: UIRefreshControl) {
@@ -85,13 +101,21 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        if showsSkeleton {
+            return tableView.dequeueReusableHeaderFooterView(withIdentifier: SubwayRealtimeSkeletonHeaderView.reuseIdentifier)
+        }
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: SubwayRealtimeHeaderView.reuseIdentifier) as? SubwayRealtimeHeaderView else { return UIView() }
+        guard self.subwayRealtimeSection.indices.contains(section) else { return UIView() }
         headerView.setupUI(title: String(localized: self.subwayRealtimeSection[section]))
         return headerView
     }
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        if showsSkeleton {
+            return tableView.dequeueReusableHeaderFooterView(withIdentifier: SubwayRealtimeSkeletonFooterView.reuseIdentifier)
+        }
         guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: SubwayRealtimeFooterView.reuseIdentifier) as? SubwayRealtimeFooterView else { return UIView() }
+        guard self.subwayRealtimeSection.indices.contains(section) else { return UIView() }
         footerView.setupUI(
             tabType: self.tabType,
             showEntireTimetable: {
@@ -105,6 +129,9 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsSkeleton {
+            return section == 0 ? 3 : 2
+        }
         guard let data = try? SubwayRealtimeData.shared.combinedRealtimeData.value() else { return 1 }
         guard let campusBlue = data.campusBlue, let campusYellow = data.campusYellow else { return 1 }
         if (self.tabType == .line4) {
@@ -136,56 +163,42 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard self.subwayRealtimeSection.indices.contains(indexPath.section) else { return UITableViewCell() }
+        if showsSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeCellView.reuseIdentifier) as? SubwayRealtimeCellView else { return UITableViewCell() }
         guard let data = try? SubwayRealtimeData.shared.combinedRealtimeData.value() else { return UITableViewCell() }
         guard let campusBlue = data.campusBlue, let campusYellow = data.campusYellow else { return UITableViewCell() }
         if (self.tabType == .line4) {
             if (indexPath.section == 0) {
-                let arrivals = campusBlue.arrival.first(where: {$0.direction == "up"})?.entries
-                if (arrivals == nil || arrivals!.isEmpty) {
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
-                    return cell
-                }
-                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
+                let arrivals = campusBlue.arrival.first(where: {$0.direction == "up"})?.entries ?? []
+                guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
+                cell.setupUI(tabType: self.tabType, item: arrivals[indexPath.row])
             } else if (indexPath.section == 1) {
-                let arrivals = campusBlue.arrival.first(where: {$0.direction == "down"})?.entries
-                if (arrivals == nil || arrivals!.isEmpty) {
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
-                    return cell
-                }
-                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
+                let arrivals = campusBlue.arrival.first(where: {$0.direction == "down"})?.entries ?? []
+                guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
+                cell.setupUI(tabType: self.tabType, item: arrivals[indexPath.row])
             }
         } else if (self.tabType == .lineSuin) {
             if (indexPath.section == 0) {
-                let arrivals = campusYellow.arrival.first(where: {$0.direction == "up"})?.entries
-                if (arrivals == nil || arrivals!.isEmpty) {
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
-                    return cell
-                }
-                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
+                let arrivals = campusYellow.arrival.first(where: {$0.direction == "up"})?.entries ?? []
+                guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
+                cell.setupUI(tabType: self.tabType, item: arrivals[indexPath.row])
             } else if (indexPath.section == 1) {
-                let arrivals = campusYellow.arrival.first(where: {$0.direction == "down"})?.entries
-                if (arrivals == nil || arrivals!.isEmpty) {
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
-                    return cell
-                }
-                cell.setupUI(tabType: self.tabType, item: arrivals![indexPath.row])
+                let arrivals = campusYellow.arrival.first(where: {$0.direction == "down"})?.entries ?? []
+                guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
+                cell.setupUI(tabType: self.tabType, item: arrivals[indexPath.row])
             }
         } else if (self.tabType == .transfer) {
             guard let transferCell = tableView.dequeueReusableCell(withIdentifier: SubwayTransferCellView.reuseIdentifier) as? SubwayTransferCellView else { return UITableViewCell() }
             if (indexPath.section == 0) {
                 guard let items = try? SubwayRealtimeData.shared.transferUp.value() else { return UITableViewCell() }
-                if (items.isEmpty) {
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
-                    return cell
-                }
+                guard items.indices.contains(indexPath.row), indexPath.row < 6 else { return emptyCell(tableView) }
                 transferCell.setupUI(item: items[indexPath.row], direction: "up")
             } else if (indexPath.section == 1) {
                 guard let items = try? SubwayRealtimeData.shared.transferDown.value() else { return UITableViewCell() }
-                if (items.isEmpty) {
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView else { return UITableViewCell() }
-                    return cell
-                }
+                guard items.indices.contains(indexPath.row), indexPath.row < 6 else { return emptyCell(tableView) }
                 transferCell.setupUI(item: items[indexPath.row], direction: "down")
             }
             return transferCell
@@ -199,5 +212,9 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 50
+    }
+
+    private func emptyCell(_ tableView: UITableView) -> UITableViewCell {
+        return tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeEmptyCellView.reuseIdentifier) as? SubwayRealtimeEmptyCellView ?? UITableViewCell()
     }
 }

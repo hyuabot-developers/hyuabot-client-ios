@@ -1,280 +1,574 @@
 import UIKit
 import SnapKit
-
-// MARK: - Line Colors
+import Api
 
 private extension UIColor {
-    static let line4Color = UIColor(red: 0, green: 160/255, blue: 233/255, alpha: 1)
-    static let suinColor  = UIColor(red: 250/255, green: 190/255, blue: 0, alpha: 1)
-    static let busColor   = UIColor(named: "busGreen") ?? .systemGreen
+    static let line4Color = UIColor(red: 0, green: 160 / 255, blue: 233 / 255, alpha: 1)
+    static let suinColor = UIColor(red: 250 / 255, green: 190 / 255, blue: 0, alpha: 1)
+    static let transferBusColor = UIColor(named: "busGreen") ?? .systemGreen
 }
 
-// MARK: - Data Models
+private enum TransferVehicleType {
+    case subway
+    case bus
+}
 
-private struct SubwayTransferData: Decodable {
-    let subway: [Station]
-    struct Station: Decodable {
-        let stationID: String
-        let arrival: [ArrivalGroup]
-        struct ArrivalGroup: Decodable {
-            let direction: String
-            let entries: [Entry]
-            struct Entry: Decodable {
-                let minutes: Int
-                let isRealtime: Bool
-                let terminal: Terminal
-                struct Terminal: Decodable { let stationID: String; let name: String }
+private func localizedTransferMinuteText(_ minutes: Int) -> String {
+    let language = Locale.current.language.languageCode?.identifier ?? "ko"
+    guard !language.hasPrefix("ko") else {
+        return String(format: String(localized: "transfer.bus.time.format"), minutes)
+    }
+    return "\(minutes)m"
+}
+
+private struct TransferTimelineEntry: Equatable {
+    let destination: String
+    let minutes: Int?
+    let stops: Int?
+    let locationLabel: String?
+    let direction: Int
+}
+
+private struct TransferRow: Equatable {
+    let name: String
+    let targetName: String
+    let color: UIColor
+    let vehicleType: TransferVehicleType
+    let timeline: [TransferTimelineEntry]
+
+    var preferredHeight: CGFloat {
+        switch vehicleType {
+        case .subway:
+            return 100
+        case .bus:
+            return 84
+        }
+    }
+
+    static func == (lhs: TransferRow, rhs: TransferRow) -> Bool {
+        lhs.name == rhs.name &&
+            lhs.targetName == rhs.targetName &&
+            lhs.vehicleType == rhs.vehicleType &&
+            lhs.timeline == rhs.timeline
+    }
+}
+
+private final class TransferTimelineView: UIView {
+    private let sideStations = 3
+    private let visibleBusStops = 7
+    private let compressedNearBusStop = 4
+    private let bubbleWidth: CGFloat = 72
+    private let bubbleHeight: CGFloat = 30
+    private let targetTrackGap: CGFloat = 16
+    private var row: TransferRow?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        isOpaque = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setup(row: TransferRow) {
+        self.row = row
+        setNeedsDisplay()
+    }
+
+    override func draw(_ rect: CGRect) {
+        guard let row, !row.timeline.isEmpty, let context = UIGraphicsGetCurrentContext() else { return }
+
+        let left = bounds.minX + 28
+        let right = bounds.maxX - 28
+        let centerY = bounds.midY
+        let targetX = row.vehicleType == .subway ? (left + right) / 2 : right
+        let color = row.color
+        let entriesByDirection = Dictionary(grouping: row.timeline.prefix(4), by: { $0.direction })
+
+        context.setLineCap(.round)
+        context.setStrokeColor(color.cgColor)
+        context.setLineWidth(2)
+
+        if row.vehicleType == .subway {
+            drawSubwayTrack(context: context, entriesByDirection: entriesByDirection, targetX: targetX, centerY: centerY, left: left, right: right, color: color)
+        }
+
+        for (direction, entries) in entriesByDirection {
+            drawEntries(context: context, type: row.vehicleType, entries: Array(entries.prefix(2)), targetX: targetX, centerY: centerY, direction: direction, left: left, right: right, color: color)
+        }
+
+        drawTarget(context: context, type: row.vehicleType, targetX: targetX, centerY: centerY, color: color)
+    }
+
+    private func drawSubwayTrack(
+        context: CGContext,
+        entriesByDirection: [Int: [TransferTimelineEntry]],
+        targetX: CGFloat,
+        centerY: CGFloat,
+        left: CGFloat,
+        right: CGFloat,
+        color: UIColor
+    ) {
+        let targetClearance = targetHalfWidth() + targetTrackGap
+        let availableLength = min(targetX - left, right - targetX)
+        let step = trackStep(availableLength: availableLength, clearance: targetClearance, stopCount: sideStations)
+        for direction in [-1, 1] {
+            let directionEntries = entriesByDirection[direction] ?? []
+            let allFar = !directionEntries.isEmpty && directionEntries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
+            let edgeX = trackX(targetX: targetX, direction: direction, index: sideStations, clearance: targetClearance, step: step, left: left, right: right)
+            if allFar {
+                let solidEndX = trackX(targetX: targetX, direction: direction, index: sideStations - 1, clearance: targetClearance, step: step, left: left, right: right)
+                drawLine(context: context, from: targetX, to: solidEndX, y: centerY)
+                drawLine(context: context, from: solidEndX, to: edgeX, y: centerY, dashed: true)
+            } else {
+                drawLine(context: context, from: targetX, to: edgeX, y: centerY)
             }
+            drawDots(context: context, targetX: targetX, step: step, count: sideStations, direction: direction, centerY: centerY, color: color, left: left, right: right, clearance: targetClearance)
         }
+    }
+
+    private func drawEntries(
+        context: CGContext,
+        type: TransferVehicleType,
+        entries: [TransferTimelineEntry],
+        targetX: CGFloat,
+        centerY: CGFloat,
+        direction: Int,
+        left: CGFloat,
+        right: CGFloat,
+        color: UIColor
+    ) {
+        let targetClearance = targetHalfWidth() + targetTrackGap
+        let availableLength = type == .subway ? min(targetX - left, right - targetX) : targetX - left
+        let stopCount = type == .subway ? sideStations : visibleBusStops
+        let step = trackStep(availableLength: availableLength, clearance: targetClearance, stopCount: stopCount)
+
+        if type == .bus {
+            let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
+            let edgeX = trackX(targetX: targetX, direction: direction, index: visibleBusStops, clearance: targetClearance, step: step, left: left, right: right)
+            if allFar {
+                let solidEndX = trackX(targetX: targetX, direction: direction, index: compressedNearBusStop, clearance: targetClearance, step: step, left: left, right: right)
+                drawLine(context: context, from: targetX, to: solidEndX, y: centerY)
+                drawLine(context: context, from: solidEndX, to: edgeX, y: centerY, dashed: true)
+            } else {
+                drawLine(context: context, from: targetX, to: edgeX, y: centerY)
+            }
+            drawDots(context: context, targetX: targetX, step: step, count: visibleBusStops, direction: direction, centerY: centerY, color: color, left: left, right: right, clearance: targetClearance)
+        }
+
+        for (index, entry) in entries.enumerated() {
+            let stops = max(entry.stops ?? 1, 1)
+            let vehicleX: CGFloat
+            if type == .subway {
+                let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
+                let visibleStops = allFar ? index + 2 : min(stops, sideStations)
+                vehicleX = trackX(targetX: targetX, direction: direction, index: visibleStops, clearance: targetClearance, step: step, left: left, right: right)
+            } else {
+                let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
+                let visibleStops = allFar ? (index == 0 ? compressedNearBusStop : visibleBusStops) : min(stops, visibleBusStops)
+                vehicleX = trackX(targetX: targetX, direction: direction, index: visibleStops, clearance: targetClearance, step: step, left: left, right: right)
+            }
+            let clampedX = clamp(vehicleX, left, right)
+            drawVehicle(context: context, type: type, x: clampedX, y: centerY, color: color)
+            drawBubble(entry: entry, type: type, x: clampedX, y: centerY, index: index, total: entries.count)
+        }
+    }
+
+    private func drawLine(context: CGContext, from: CGFloat, to: CGFloat, y: CGFloat, dashed: Bool = false) {
+        context.saveGState()
+        context.setLineDash(phase: 0, lengths: dashed ? [4, 4] : [])
+        context.move(to: CGPoint(x: from, y: y))
+        context.addLine(to: CGPoint(x: to, y: y))
+        context.strokePath()
+        context.restoreGState()
+    }
+
+    private func drawDots(context: CGContext, targetX: CGFloat, step: CGFloat, count: Int, direction: Int, centerY: CGFloat, color: UIColor, left: CGFloat, right: CGFloat, clearance: CGFloat) {
+        for index in 1...count {
+            let x = trackX(targetX: targetX, direction: direction, index: index, clearance: clearance, step: step, left: left, right: right)
+            guard x >= left && x <= right else { continue }
+            context.setFillColor(color.cgColor)
+            context.fillEllipse(in: CGRect(x: x - 4, y: centerY - 4, width: 8, height: 8))
+            context.setFillColor(UIColor.systemBackground.cgColor)
+            context.fillEllipse(in: CGRect(x: x - 2, y: centerY - 2, width: 4, height: 4))
+        }
+    }
+
+    private func drawVehicle(context: CGContext, type: TransferVehicleType, x: CGFloat, y: CGFloat, color: UIColor) {
+        let rect = CGRect(x: x - 10, y: y - 10, width: 20, height: 20)
+        context.setFillColor(color.cgColor)
+        context.fillEllipse(in: rect)
+        let text = type == .subway ? "M" : "B"
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 10, weight: .bold),
+            .foregroundColor: UIColor.white
+        ]
+        let size = text.size(withAttributes: attributes)
+        text.draw(at: CGPoint(x: rect.midX - size.width / 2, y: rect.midY - size.height / 2), withAttributes: attributes)
+    }
+
+    private func drawBubble(entry: TransferTimelineEntry, type: TransferVehicleType, x: CGFloat, y: CGFloat, index: Int, total: Int) {
+        let primary: String
+        if type == .bus {
+            let minuteText = entry.minutes.map { localizedTransferMinuteText($0) } ?? entry.destination
+            let stopsText = entry.stops.map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) }
+            primary = [minuteText, stopsText].compactMap { $0 }.joined(separator: " ")
+        } else {
+            primary = String(format: String(localized: "subway.terminal.%@"), entry.destination)
+        }
+        let secondary: String? = {
+            guard type != .bus else { return nil }
+            if let minutes = entry.minutes, let stops = entry.stops {
+                return localizedTransferMinuteText(minutes) +
+                    String(format: String(localized: "transfer.bus.stops.suffix"), stops)
+            }
+            if let minutes = entry.minutes {
+                return localizedTransferMinuteText(minutes)
+            }
+            if let stops = entry.stops {
+                return String(format: String(localized: "transfer.bus.stops.suffix"), stops)
+            }
+            return nil
+        }()
+
+        let lines = [primary, secondary].compactMap { $0 }.prefix(2)
+        guard !lines.isEmpty else { return }
+
+        let width = bubbleWidth(for: Array(lines), type: type)
+        let height: CGFloat = lines.count == 1 ? 20 : bubbleHeight
+        let above: Bool
+        if type == .subway {
+            above = entry.direction < 0
+        } else {
+            above = total == 1 || index == 0
+        }
+        let bubbleTrackGap: CGFloat = 16
+        let top = above ? y - bubbleTrackGap - height : y + bubbleTrackGap
+        let left = clamp(x - width / 2, bounds.minX + 4, bounds.maxX - width - 4)
+        let rect = CGRect(x: left, y: top, width: width, height: height)
+        let path = UIBezierPath(roundedRect: rect, cornerRadius: 6)
+        UIColor.systemBackground.setFill()
+        path.fill()
+        UIColor.separator.setStroke()
+        path.stroke()
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        for (lineIndex, line) in lines.enumerated() {
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: lineIndex == 0 ? 10 : 8, weight: lineIndex == 0 ? .semibold : .regular),
+                .foregroundColor: lineIndex == 0 ? UIColor.label : UIColor.secondaryLabel,
+                .paragraphStyle: paragraph
+            ]
+            let lineRect = CGRect(x: rect.minX + 4, y: rect.minY + 3 + CGFloat(lineIndex * 12), width: rect.width - 8, height: 12)
+            String(line.prefix(16)).draw(in: lineRect, withAttributes: attributes)
+        }
+    }
+
+    private func bubbleWidth(for lines: [String], type: TransferVehicleType) -> CGFloat {
+        let maxTextWidth = lines.enumerated().map { index, line in
+            let font = UIFont.systemFont(ofSize: index == 0 ? 10 : 8, weight: index == 0 ? .semibold : .regular)
+            return String(line.prefix(16)).size(withAttributes: [.font: font]).width
+        }.max() ?? 0
+        let minimumWidth: CGFloat = type == .bus ? 84 : 64
+        let maximumWidth = max(min(bounds.width * 0.36, 96), minimumWidth)
+        return clamp(max(minimumWidth, ceil(maxTextWidth + 16)), minimumWidth, maximumWidth)
+    }
+
+    private func drawTarget(context: CGContext, type: TransferVehicleType, targetX: CGFloat, centerY: CGFloat, color: UIColor) {
+        guard let targetName = row?.targetName, !targetName.isEmpty else {
+            context.setFillColor(UIColor.systemBackground.cgColor)
+            context.fillEllipse(in: CGRect(x: targetX - 7, y: centerY - 7, width: 14, height: 14))
+            context.setStrokeColor(color.cgColor)
+            context.setLineWidth(3)
+            context.strokeEllipse(in: CGRect(x: targetX - 7, y: centerY - 7, width: 14, height: 14))
+            return
+        }
+
+        let font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        let text = String(targetName.prefix(8))
+        let width = targetWidth(text: text, font: font)
+        let left = clamp(targetX - width / 2, bounds.minX + 4, bounds.maxX - width - 4)
+        let rect = CGRect(x: left, y: centerY - 12, width: width, height: 24)
+        let path = UIBezierPath(roundedRect: rect, cornerRadius: 12)
+        UIColor.systemBackground.setFill()
+        path.fill()
+        color.setStroke()
+        path.lineWidth = 3
+        path.stroke()
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        text.draw(
+            in: rect.insetBy(dx: 4, dy: 5),
+            withAttributes: [
+                .font: font,
+                .foregroundColor: UIColor.label,
+                .paragraphStyle: paragraph
+            ]
+        )
+    }
+
+    private func clamp(_ value: CGFloat, _ minValue: CGFloat, _ maxValue: CGFloat) -> CGFloat {
+        min(max(value, minValue), maxValue)
+    }
+
+    private func targetHalfWidth() -> CGFloat {
+        guard let targetName = row?.targetName, !targetName.isEmpty else { return 7 }
+        let font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        return targetWidth(text: String(targetName.prefix(8)), font: font) / 2
+    }
+
+    private func targetWidth(text: String, font: UIFont) -> CGFloat {
+        let textSize = text.size(withAttributes: [.font: font])
+        return min(max(44, ceil(textSize.width + 16)), 84)
+    }
+
+    private func trackStep(availableLength: CGFloat, clearance: CGFloat, stopCount: Int) -> CGFloat {
+        guard stopCount > 1 else { return max(availableLength, 1) }
+        return max((availableLength - clearance) / CGFloat(stopCount - 1), 1)
+    }
+
+    private func trackX(targetX: CGFloat, direction: Int, index: Int, clearance: CGFloat, step: CGFloat, left: CGFloat, right: CGFloat) -> CGFloat {
+        let distance = clearance + CGFloat(max(index - 1, 0)) * step
+        return clamp(targetX + CGFloat(direction) * distance, left, right)
     }
 }
 
-private struct BusTransferData: Decodable {
-    let bus: [BusRoute]
-    struct BusRoute: Decodable {
-        let route: Route
-        let arrival: [Arrival]
-        struct Route: Decodable { let seq: Int; let name: String }
-        struct Arrival: Decodable {
-            let minutes: Int?
-            let stops: Int?
-            let isRealtime: Bool
-            let time: String?
-        }
-    }
-}
-
-// MARK: - Transfer Row View
-
-private class TransferRowView: UIView {
+private final class TransferRowView: UIView {
     private let nameLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 13, weight: .bold)
-        $0.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        $0.font = .systemFont(ofSize: 12, weight: .bold)
+        $0.textColor = .white
+        $0.textAlignment = .center
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.7
+        $0.layer.cornerRadius = 8
+        $0.clipsToBounds = true
     }
-    private let timesLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 13)
-        $0.textColor = .secondaryLabel
-        $0.textAlignment = .right
-    }
+    private let timelineView = TransferTimelineView()
 
-    init(name: String, times: String, nameColor: UIColor = .label) {
+    init(row: TransferRow) {
         super.init(frame: .zero)
-        nameLabel.text = name
-        nameLabel.textColor = nameColor
-        timesLabel.text = times
+        nameLabel.text = row.name
+        nameLabel.backgroundColor = row.color
+        timelineView.setup(row: row)
         addSubview(nameLabel)
-        addSubview(timesLabel)
-        nameLabel.snp.makeConstraints { $0.leading.centerY.equalToSuperview() }
-        timesLabel.snp.makeConstraints {
-            $0.trailing.centerY.equalToSuperview()
-            $0.leading.greaterThanOrEqualTo(nameLabel.snp.trailing).offset(8)
+        addSubview(timelineView)
+        nameLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(12)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(104)
+            make.height.equalTo(28)
+        }
+        timelineView.snp.makeConstraints { make in
+            make.leading.equalTo(nameLabel.snp.trailing).offset(8)
+            make.trailing.equalToSuperview().inset(8)
+            make.top.bottom.equalToSuperview()
         }
     }
-    required init?(coder: NSCoder) { fatalError() }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
 
-// MARK: - Transfer Info View
+final class ShuttleTransferInfoView: UIView {
+    var onHeightChange: (() -> Void)?
 
-class ShuttleTransferInfoView: UIView {
+    private let emptyRowsGraceInterval: TimeInterval = 60
     private let stopID: ShuttleStopEnum
+    private var rows: [TransferRow] = []
+    private var emptyRowsSince: Foundation.Date?
 
-    private let separatorLine = UIView().then { $0.backgroundColor = .separator }
-    private let iconImageView = UIImageView().then {
-        $0.contentMode = .scaleAspectFit
-        $0.tintColor = .secondaryLabel
-    }
     private let titleLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 13, weight: .semibold)
-        $0.textColor = .secondaryLabel
-    }
-    private let staticInfoLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 11)
-        $0.textColor = .tertiaryLabel
-        $0.numberOfLines = 2
+        $0.text = String(localized: "shuttle.transfer.section.title")
+        $0.textColor = .white
+        $0.textAlignment = .center
+        $0.font = .godo(size: 16, weight: .bold)
+        $0.backgroundColor = .hanyangBlue
     }
     private let rowStackView = UIStackView().then {
         $0.axis = .vertical
-        $0.spacing = 6
-        $0.setContentHuggingPriority(.required, for: .vertical)
-        $0.setContentCompressionResistancePriority(.required, for: .vertical)
+        $0.spacing = 0
+        $0.alignment = .fill
+        $0.backgroundColor = .systemBackground
     }
-    private let loadingIndicator = UIActivityIndicatorView(style: .medium).then {
-        $0.hidesWhenStopped = true
+
+    var preferredHeight: CGFloat {
+        guard !rows.isEmpty else { return 0 }
+        return 40 + rows.reduce(CGFloat(0)) { $0 + $1.preferredHeight } + 4
     }
 
     init(stopID: ShuttleStopEnum) {
         self.stopID = stopID
         super.init(frame: .zero)
         setupUI()
-        configure()
-        Task { await loadData() }
     }
-    required init?(coder: NSCoder) { fatalError() }
 
-    private func configure() {
-        switch stopID {
-        case .dormiotryOut, .shuttlecockOut:
-            iconImageView.image = UIImage(systemName: "arrow.triangle.swap")
-            titleLabel.text = String(localized: "shuttle.transfer.section.title")
-            staticInfoLabel.text = String(localized: "shuttle.transfer.dormitory.info")
-        case .terminal:
-            iconImageView.image = UIImage(systemName: "bus.doubledecker.fill")
-            titleLabel.text = String(localized: "shuttle.transfer.bus50.title")
-            staticInfoLabel.text = String(localized: "shuttle.transfer.terminal.info")
-        default:
-            break
-        }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     private func setupUI() {
         backgroundColor = .systemBackground
-        addSubview(separatorLine)
-        addSubview(iconImageView)
         addSubview(titleLabel)
         addSubview(rowStackView)
-        addSubview(staticInfoLabel)
-        addSubview(loadingIndicator)
-
-        separatorLine.snp.makeConstraints {
-            $0.top.leading.trailing.equalToSuperview()
-            $0.height.equalTo(0.5)
+        titleLabel.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(40)
         }
-        iconImageView.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(16)
-            $0.top.equalTo(separatorLine.snp.bottom).offset(10)
-            $0.width.height.equalTo(14)
+        rowStackView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(2)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(2)
         }
-        titleLabel.snp.makeConstraints {
-            $0.leading.equalTo(iconImageView.snp.trailing).offset(6)
-            $0.centerY.equalTo(iconImageView)
-        }
-        rowStackView.snp.makeConstraints {
-            $0.top.equalTo(iconImageView.snp.bottom).offset(8)
-            $0.leading.trailing.equalToSuperview().inset(16)
-        }
-        staticInfoLabel.snp.makeConstraints {
-            $0.top.equalTo(rowStackView.snp.bottom).offset(6)
-            $0.leading.trailing.equalToSuperview().inset(16)
-            $0.bottom.equalToSuperview().inset(10)
-        }
-        loadingIndicator.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.centerY.equalTo(rowStackView).offset(-10)
-        }
-        loadingIndicator.startAnimating()
     }
 
-    private func loadData() async {
-        do {
-            switch stopID {
-            case .dormiotryOut, .shuttlecockOut:
-                async let subwayTask: SubwayTransferData = fetchTransferData(
-                    query: subwayQuery(stationIDs: ["K449", "K251"]),
-                    variables: ["weekday": currentWeekdayString()]
-                )
-                async let busTask: BusTransferData = fetchTransferData(query: kwangmyeongBusQuery)
-                let (subwayData, busData) = try await (subwayTask, busTask)
-                await MainActor.run {
-                    renderSubwayByLine(data: subwayData.subway)
-                    renderBus(data: busData.bus, label: String(localized: "shuttle.transfer.bus50.to.kwangmyeong"), color: .busColor)
-                }
-            case .terminal:
-                let data: BusTransferData = try await fetchTransferData(query: ansanBusQuery)
-                await MainActor.run { renderBus(data: data.bus, label: String(localized: "shuttle.transfer.bus50.to.ansan"), color: .busColor) }
-            default:
-                await MainActor.run { loadingIndicator.stopAnimating() }
+    func setup(data: ShuttleRealtimePageQuery.Data?) {
+        guard let data else {
+            handleEmptyRows()
+            return
+        }
+        let rows: [TransferRow]
+        switch stopID {
+        case .dormiotryOut, .shuttlecockOut:
+            rows = buildSubwayRows(data: data.subway) + buildBusRows(
+                data: data.transferBus,
+                stopSeq: 216000759,
+                label: String(localized: "shuttle.transfer.bus50.to.kwangmyeong")
+            )
+        case .terminal:
+            rows = buildBusRows(
+                data: data.transferBus,
+                stopSeq: 216000117,
+                label: String(localized: "shuttle.transfer.bus50.to.ansan")
+            )
+        default:
+            rows = []
+        }
+
+        guard !rows.isEmpty else {
+            handleEmptyRows()
+            return
+        }
+
+        emptyRowsSince = nil
+        render(rows: rows)
+    }
+
+    private func handleEmptyRows(now: Foundation.Date = Foundation.Date()) {
+        guard !rows.isEmpty else {
+            emptyRowsSince = nil
+            render(rows: [])
+            return
+        }
+
+        if let emptyRowsSince {
+            guard now.timeIntervalSince(emptyRowsSince) >= emptyRowsGraceInterval else { return }
+            self.emptyRowsSince = nil
+            render(rows: [])
+        } else {
+            emptyRowsSince = now
+        }
+    }
+
+    private func render(rows: [TransferRow]) {
+        guard rows != self.rows else { return }
+        self.rows = rows
+        rowStackView.arrangedSubviews.forEach {
+            rowStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        rows.forEach { row in
+            let rowView = TransferRowView(row: row)
+            rowStackView.addArrangedSubview(rowView)
+            rowView.snp.makeConstraints { make in
+                make.height.equalTo(row.preferredHeight)
             }
-        } catch {
-            await MainActor.run { loadingIndicator.stopAnimating() }
         }
+        isHidden = rows.isEmpty
+        onHeightChange?()
     }
 
-    @MainActor
-    private func renderSubwayByLine(data: [SubwayTransferData.Station]) {
-        loadingIndicator.stopAnimating()
-        let lineMap: [String: (name: String, color: UIColor)] = [
-            "K449": (String(localized: "subway.line4"), .line4Color),
-            "K251": (String(localized: "subway.suin"), .suinColor)
+    private func buildSubwayRows(data: [ShuttleRealtimePageQuery.Data.Subway]) -> [TransferRow] {
+        let lineInfo: [(stationID: String, name: String, color: UIColor)] = [
+            ("K449", String(localized: "subway.line4"), .line4Color),
+            ("K251", String(localized: "subway.suin"), .suinColor)
         ]
-        let fmt = String(localized: "transfer.subway.time.format")
-        for stationID in ["K449", "K251"] {
-            guard let station = data.first(where: { $0.stationID == stationID }) else { continue }
-            guard let info = lineMap[stationID] else { continue }
-            var parts: [String] = []
-            if let upEntry = station.arrival.first(where: { $0.direction == "up" })?.entries.first(where: { $0.isRealtime }) {
-                let name = localizedStationName(stationID: upEntry.terminal.stationID, fallback: upEntry.terminal.name)
-                parts.append(String(format: fmt, upEntry.minutes, name))
+        return lineInfo.compactMap { info in
+            guard let station = data.first(where: { $0.stationID == info.stationID }) else { return nil }
+            let timeline = station.arrival.flatMap { group in
+                group.entries
+                    .filter { $0.isRealtime }
+                    .prefix(1)
+                    .map {
+                        TransferTimelineEntry(
+                            destination: localizedStationName(stationID: $0.terminal.stationID, fallback: $0.terminal.name),
+                            minutes: $0.minutes,
+                            stops: $0.stops,
+                            locationLabel: nil,
+                            direction: subwayDirection(group.direction)
+                        )
+                    }
             }
-            if let downEntry = station.arrival.first(where: { $0.direction == "down" })?.entries.first(where: { $0.isRealtime }) {
-                let name = localizedStationName(stationID: downEntry.terminal.stationID, fallback: downEntry.terminal.name)
-                parts.append(String(format: fmt, downEntry.minutes, name))
-            }
-            guard !parts.isEmpty else { continue }
-            let row = TransferRowView(name: info.name, times: parts.joined(separator: "  "), nameColor: info.color)
-            rowStackView.addArrangedSubview(row)
-            row.snp.makeConstraints { $0.height.equalTo(20) }
+            guard !timeline.isEmpty else { return nil }
+            return TransferRow(
+                name: info.name,
+                targetName: String(localized: "shuttle.transfer.target.station"),
+                color: info.color,
+                vehicleType: .subway,
+                timeline: timeline
+            )
         }
+    }
+
+    private func buildBusRows(data: [ShuttleRealtimePageQuery.Data.TransferBus], stopSeq: Int, label: String) -> [TransferRow] {
+        let displayLabel = transferBusDisplayLabel(koreanLabel: label)
+        let timeline = data
+            .filter { $0.stop.seq == stopSeq }
+            .flatMap { $0.arrival }
+            .filter { $0.minutes != nil }
+            .prefix(2)
+            .map {
+                TransferTimelineEntry(
+                    destination: displayLabel,
+                    minutes: $0.minutes,
+                    stops: $0.stops,
+                    locationLabel: $0.stops.map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) },
+                    direction: -1
+                )
+            }
+        guard !timeline.isEmpty else { return [] }
+        return [
+            TransferRow(
+                name: displayLabel,
+                targetName: String(localized: "shuttle.transfer.target.terminal"),
+                color: .transferBusColor,
+                vehicleType: .bus,
+                timeline: Array(timeline)
+            )
+        ]
+    }
+
+    private func transferBusDisplayLabel(koreanLabel: String) -> String {
+        let language = Locale.current.language.languageCode?.identifier ?? "ko"
+        return language.hasPrefix("ko") ? koreanLabel : "50"
     }
 
     private func localizedStationName(stationID: String, fallback: String) -> String {
         let nameKey = "subway.station.\(stationID.lowercased())"
         let localized = String(localized: String.LocalizationValue(stringLiteral: nameKey))
-        return (localized == nameKey) ? fallback : localized
+        return localized == nameKey ? fallback : localized
     }
 
-    @MainActor
-    private func renderBus(data: [BusTransferData.BusRoute], label: String, color: UIColor) {
-        loadingIndicator.stopAnimating()
-        let timeFmt = String(localized: "transfer.bus.time.format")
-        let stopsFmt = String(localized: "transfer.bus.stops.suffix")
-        let timeStrings = data.flatMap { $0.arrival }.filter { $0.isRealtime }.prefix(2).compactMap { arrival -> String? in
-            guard let m = arrival.minutes else { return nil }
-            var result = String(format: timeFmt, m)
-            if let s = arrival.stops, s > 0 {
-                result += String(format: stopsFmt, s)
-            }
-            return result
-        }
-        guard !timeStrings.isEmpty else { return }
-        let row = TransferRowView(name: label, times: timeStrings.joined(separator: "  "), nameColor: color)
-        rowStackView.addArrangedSubview(row)
-        row.snp.makeConstraints { $0.height.equalTo(20) }
-    }
-}
-
-// MARK: - Queries
-
-private func subwayQuery(stationIDs: [String]) -> String {
-    let keys = stationIDs.map {
-        "{ stationID: \"\($0)\", direction: [\"up\", \"down\"], weekdays: [$weekday], limit: 1 }"
-    }.joined(separator: ", ")
-    return """
-    query($weekday: String!) {
-        subway(input: { keys: [\(keys)] }) {
-            stationID
-            arrival {
-                direction
-                entries { minutes isRealtime terminal { stationID name } }
-            }
+    private func subwayDirection(_ direction: String) -> Int {
+        switch direction {
+        case "down", "1":
+            return 1
+        default:
+            return -1
         }
     }
-    """
 }
-
-private let kwangmyeongBusQuery = """
-query {
-    bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) {
-        route { seq name }
-        arrival { minutes stops isRealtime time }
-    }
-}
-"""
-
-private let ansanBusQuery = """
-query {
-    bus(input: [{ route: 216000075, stop: 216000117, limit: 2 }]) {
-        route { seq name }
-        arrival { minutes stops isRealtime time }
-    }
-}
-"""

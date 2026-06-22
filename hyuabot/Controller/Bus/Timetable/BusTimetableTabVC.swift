@@ -1,7 +1,10 @@
 import UIKit
+import RxSwift
 
 class BusTimetableTabVC: UIViewController {
     let timetableEnum: BusTimetableEnum
+    private let disposeBag = DisposeBag()
+    private var showsSkeleton = true
     private lazy var busTimetableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -10,6 +13,7 @@ class BusTimetableTabVC: UIViewController {
             $0.showsVerticalScrollIndicator = false
             $0.register(BusTimetableCellView.self, forCellReuseIdentifier: BusTimetableCellView.reuseIdentifier)
             $0.register(BusTimetableEmptyCellView.self, forCellReuseIdentifier: BusTimetableEmptyCellView.reuseIdentifier)
+            $0.register(BusTimetableSkeletonCellView.self, forCellReuseIdentifier: BusTimetableSkeletonCellView.reuseIdentifier)
         }
         return tableView
     }()
@@ -26,6 +30,7 @@ class BusTimetableTabVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.observeSubjects()
     }
     
     private func setupUI() {
@@ -38,6 +43,17 @@ class BusTimetableTabVC: UIViewController {
     func reload() {
         self.busTimetableView.reloadData()
     }
+
+    private func observeSubjects() {
+        BusTimetableData.shared.isLoading
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isLoading in
+                self?.showsSkeleton = isLoading
+                self?.reload()
+            })
+            .disposed(by: disposeBag)
+    }
 }
 
 extension BusTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
@@ -46,6 +62,9 @@ extension BusTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsSkeleton {
+            return 8
+        }
         if (self.timetableEnum == .weekdays) {
             guard let items = try? BusTimetableData.shared.weekdays.value() else { return 0 }
             return items.isEmpty ? 1 : items.count
@@ -60,6 +79,9 @@ extension BusTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if showsSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: BusTimetableSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         if (self.timetableEnum == .weekdays) {
             guard let items = try? BusTimetableData.shared.weekdays.value() else { return BusTimetableEmptyCellView() }
             if (!items.isEmpty) {

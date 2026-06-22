@@ -23,17 +23,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else {
             window.overrideUserInterfaceStyle = .dark
         }
+        CoachMarkManager.shared.initialize()
         let vc = RootVC()
         window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
-        CoachMarkManager.shared.initialize()
         ReviewRequestManager.shared.trackLaunch()
         self.showLanguageSuggestionIfNeeded()
 
         if let urlContext = connectionOptions.urlContexts.first {
             handleDeepLink(urlContext.url)
+        } else if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
+                  let url = userActivity.webpageURL {
+            handleDeepLink(url)
+        } else if let shortcutItem = connectionOptions.shortcutItem {
+            handleShortcut(shortcutItem)
         }
+    }
+
+    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        completionHandler(handleShortcut(shortcutItem))
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -42,12 +51,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL else { return }
+        handleDeepLink(url)
+    }
+
     private func handleDeepLink(_ url: URL) {
-        guard url.scheme == "hyuabot",
-              let rootVC = window?.rootViewController as? RootVC else { return }
+        guard let rootVC = window?.rootViewController as? RootVC,
+              let route = routePath(for: url) else { return }
         let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
 
-        switch url.host {
+        switch route {
         case "cafeteria":
             rootVC.selectedIndex = 3
             let tab = params?.first(where: { $0.name == "tab" })?.value
@@ -78,9 +93,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 }
             }
 
+        case "reading-room":
+            rootVC.selectedIndex = 5
+
+        case "map":
+            rootVC.selectedIndex = 4
+
         default:
             break
         }
+    }
+
+    @discardableResult
+    private func handleShortcut(_ shortcutItem: UIApplicationShortcutItem) -> Bool {
+        guard let urlString = shortcutItem.userInfo?["url"] as? String,
+              let url = URL(string: urlString) else { return false }
+        handleDeepLink(url)
+        return true
+    }
+
+    private func routePath(for url: URL) -> String? {
+        if url.scheme == "hyuabot" {
+            return url.host
+        }
+
+        guard url.scheme == "https",
+              url.host == "hyuabot.app" else { return nil }
+        return url.pathComponents.dropFirst().first
     }
 
     private func showLanguageSuggestionIfNeeded() {
@@ -118,4 +157,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-

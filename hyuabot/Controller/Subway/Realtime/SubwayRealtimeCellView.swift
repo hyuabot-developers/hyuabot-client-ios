@@ -39,34 +39,18 @@ class SubwayRealtimeCellView: UITableViewCell {
         // Set destination label color
         if tabType == .line4 { self.destinationLabel.textColor = .subwaySkyblue }
         else if tabType == .lineSuin { self.destinationLabel.textColor = .subwayYellow }
+        let destination = getDestinationLabelText(item.terminal.stationID, fallback: item.terminal.name)
         if (item.isRealtime) {
-            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.terminal.stationID))")
-            if (item.isLast!) {
-                self.setRealtimeAttributedText(String(
-                    localized: getRealtimeLabelText(
-                        item.minutes,
-                        item.location!,
-                        item.status!,
-                        item.isLast!
-                    )
-                ))
-            } else {
-                self.setRealtimeAttributedText(String(
-                    localized: getRealtimeLabelText(
-                        item.minutes,
-                        item.location!,
-                        item.status!,
-                        item.isLast!
-                    )
-                ))
-            }
+            self.destinationLabel.text = String(format: String(localized: "subway.terminal.%@"), destination)
+            self.setRealtimeAttributedText(getRealtimeLabelText(item))
         } else {
-            self.destinationLabel.text = String(localized: "subway.terminal.\(getDestinationLabelText(item.terminal.stationID))")
-            self.subwayTimeLabel.text = String(localized: getTimetableLabelText(item.minutes))
+            self.destinationLabel.text = String(format: String(localized: "subway.terminal.%@"), destination)
+            self.subwayTimeLabel.attributedText = nil
+            self.subwayTimeLabel.text = getTimetableLabelText(item.minutes)
         }
     }
     
-    func getDestinationLabelText(_ stationID: String) -> String {
+    func getDestinationLabelText(_ stationID: String, fallback: String) -> String {
         var stationName = ""
         switch stationID {
             case "K209" : stationName = String(localized: "subway.station.k209")
@@ -83,43 +67,73 @@ class SubwayRealtimeCellView: UITableViewCell {
             case "K444" : stationName = String(localized: "subway.station.k444")
             case "K453" : stationName = String(localized: "subway.station.k453")
             case "K456" : stationName = String(localized: "subway.station.k456")
-            default: return String(localized: "subway.station.\(stationID)")
+            default:
+                let key = "subway.station.\(stationID.lowercased())"
+                let localized = String(localized: String.LocalizationValue(stringLiteral: key))
+                return localized == key ? fallback : localized
         }
         return stationName
     }
+
+    private func getRealtimeLabelText(_ item: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) -> String {
+        guard isKoreanAppLanguage else {
+            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops, compact: true)
+        }
+        guard let location = item.location,
+              let status = item.status else {
+            return getTimetableLabelText(item.minutes)
+        }
+        return getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false)
+    }
     
-    private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String.LocalizationValue {
+    private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String {
         if (time < 2) {
-            return "subway.realtime.now"
+            return String(localized: "subway.realtime.now")
         }
         if (last) {
             if (status == 0) {
-                return "subway.realtime.last.entering.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.last.entering.%lld.%@"), time, location)
             } else if (status == 1) {
-                return "subway.realtime.last.arrived.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.last.arrived.%lld.%@"), time, location)
             } else if (status == 2) {
-                return "subway.realtime.last.departed.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.last.departed.%lld.%@"), time, location)
             } else if (status == 3) {
-                return "subway.realtime.last.almost.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.last.almost.%lld.%@"), time, location)
             }
         } else {
             if (status == 0) {
-                return "subway.realtime.entering.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.entering.%lld.%@"), time, location)
             } else if (status == 1) {
-                return "subway.realtime.arrived.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.arrived.%lld.%@"), time, location)
             } else if (status == 2) {
-                return "subway.realtime.departed.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.departed.%lld.%@"), time, location)
             } else if (status == 3) {
-                return "subway.realtime.almost.\(Int(time)).\(location)"
+                return String(format: String(localized: "subway.realtime.almost.%lld.%@"), time, location)
             }
         }
-        return "subway.realtime.\(time).\(location)"
+        return String(format: String(localized: "subway.realtime.%lld.%@"), time, location)
     }
     
-    private func getTimetableLabelText(_ minutes: Int) -> String.LocalizationValue {
-        return "subway.time.\(minutes)"
+    private func getTimetableLabelText(_ minutes: Int) -> String {
+        return String(format: String(localized: "subway.time.%lld"), minutes)
     }
-    
+
+    private var isKoreanAppLanguage: Bool {
+        (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
+    }
+
+    private func appendStopsText(_ text: String, stops: Int?, compact: Bool = false) -> String {
+        guard let stops, stops > 0 else { return text }
+        let stopsText = stopCountText(stops, compact: compact)
+        return "\(text) \(stopsText)"
+    }
+
+    private func stopCountText(_ stops: Int, compact: Bool) -> String {
+        let text = String(format: String(localized: "subway.realtime.stops.suffix.%lld"), stops)
+        guard compact else { return text }
+        return text.trimmingCharacters(in: CharacterSet(charactersIn: "()"))
+    }
+
     private func setRealtimeAttributedText(_ text: String) {
         let attributeString = NSMutableAttributedString(string: text)
         if text.contains("(") && !text.contains("(s)") {

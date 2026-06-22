@@ -1,9 +1,12 @@
 import UIKit
 import Api
+import RxSwift
 
 class ShuttleTimetableTabVC: UIViewController {
     private let isWeekdays: Bool
     private let showViaVC: (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> ()
+    private let disposeBag = DisposeBag()
+    private var showsSkeleton = false
     private lazy var shuttleTimetableTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -12,6 +15,7 @@ class ShuttleTimetableTabVC: UIViewController {
             $0.showsVerticalScrollIndicator = false
             $0.register(ShuttleTimetableCellView.self, forCellReuseIdentifier: ShuttleTimetableCellView.reuseIdentifier)
             $0.register(ShuttleTimetableEmptyCellView.self, forCellReuseIdentifier: ShuttleTimetableEmptyCellView.reuseIdentifier)
+            $0.register(ShuttleTimetableSkeletonCellView.self, forCellReuseIdentifier: ShuttleTimetableSkeletonCellView.reuseIdentifier)
         }
         return tableView
     }()
@@ -29,6 +33,7 @@ class ShuttleTimetableTabVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.observeSubjects()
     }
     
     private func setupUI() {
@@ -44,6 +49,7 @@ class ShuttleTimetableTabVC: UIViewController {
 
     func reload() {
         self.shuttleTimetableTableView.reloadData()
+        guard !showsSkeleton else { return }
         if (self.isWeekdays) {
             guard let items = try? ShuttleTimetableData.shared.weekdays.value() else { return }
             let scrollIndex = items.firstIndex { item in
@@ -68,12 +74,26 @@ class ShuttleTimetableTabVC: UIViewController {
             self.shuttleTimetableTableView.scrollToRow(at: IndexPath(row: scrollIndex, section: 0), at: .middle, animated: false)
         }
     }
+
+    private func observeSubjects() {
+        ShuttleTimetableData.shared.isLoading
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isLoading in
+                self?.showsSkeleton = isLoading
+                self?.reload()
+            })
+            .disposed(by: disposeBag)
+    }
 }
 
 extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int { 1 }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsSkeleton {
+            return 8
+        }
         if (self.isWeekdays) {
             guard let items = try? ShuttleTimetableData.shared.weekdays.value() else { return 0 }
             return items.isEmpty ? 1 : items.count
@@ -84,6 +104,9 @@ extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if showsSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: ShuttleTimetableSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         guard let options = try? ShuttleTimetableData.shared.options.value() else { return UITableViewCell() }
         if (self.isWeekdays) {
             guard let items = try? ShuttleTimetableData.shared.weekdays.value() else { return UITableViewCell() }
@@ -110,4 +133,3 @@ extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
         self.showViaVC(item)
     }
 }
-

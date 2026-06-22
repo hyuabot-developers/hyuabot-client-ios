@@ -107,6 +107,7 @@ class CoachMarkView: UIView {
     private let tooltip = CoachMarkTooltipView()
     private var items: [CoachMarkItem] = []
     private var currentIndex = 0
+    private var didShowItem = false
     private var skippedByUser = false
 
     init() {
@@ -138,6 +139,7 @@ class CoachMarkView: UIView {
 
     func present(items: [CoachMarkItem]) {
         self.items = items
+        didShowItem = false
         alpha = 0
         UIView.animate(withDuration: 0.25) { self.alpha = 1 }
         show(at: 0)
@@ -153,7 +155,9 @@ class CoachMarkView: UIView {
         guard let targetView = item.targetView else { show(at: index + 1); return }
         guard let superview = targetView.superview else { show(at: index + 1); return }
         let targetFrame = superview.convert(targetView.frame, to: self)
+        guard targetFrame.width > 0, targetFrame.height > 0 else { show(at: index + 1); return }
         let holeRect = targetFrame.insetBy(dx: -10, dy: -8)
+        didShowItem = true
 
         let path = UIBezierPath(rect: bounds)
         path.append(UIBezierPath(roundedRect: holeRect, cornerRadius: 10))
@@ -228,6 +232,7 @@ class CoachMarkView: UIView {
             self.alpha = 0
         }) { _ in
             self.removeFromSuperview()
+            guard self.didShowItem else { return }
             if self.skippedByUser, let skipHandler = self.onSkip {
                 skipHandler()
             } else {
@@ -245,6 +250,7 @@ class CoachMarkView: UIView {
 // MARK: - UIViewController extension
 
 extension UIViewController {
+    @discardableResult
     func presentCoachMarks(
         pageId: String,
         items: [CoachMarkItem],
@@ -252,15 +258,15 @@ extension UIViewController {
         shouldMarkAsShown: Bool = true,
         onSkip: (() -> Void)? = nil,
         onComplete: (() -> Void)? = nil
-    ) {
-        guard CoachMarkManager.shared.shouldShowPage(pageId, version: version) else { return }
+    ) -> Bool {
+        guard CoachMarkManager.shared.shouldShowPage(pageId, version: version) else { return false }
         let validItems = items.filter { item in
-            guard let view = item.targetView else { return true }
+            guard let view = item.targetView else { return false }
             return view.window != nil && !view.isHidden
         }
-        guard !validItems.isEmpty else { return }
+        guard !validItems.isEmpty else { return false }
         guard let window = view.window,
-              !window.subviews.contains(where: { $0 is CoachMarkView }) else { return }
+              !window.subviews.contains(where: { $0 is CoachMarkView }) else { return false }
 
         let overlay = CoachMarkView()
         overlay.frame = window.bounds
@@ -278,5 +284,6 @@ extension UIViewController {
             onSkip?()
         }
         overlay.present(items: validItems)
+        return true
     }
 }

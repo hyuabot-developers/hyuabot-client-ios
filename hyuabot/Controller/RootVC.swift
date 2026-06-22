@@ -15,17 +15,14 @@ class RootVC: UITabBarController {
     let settingNC = SettingNC()
     let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
     let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
+    private var isWaitingForShuttleCoachMarksAfterReset = false
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(onCoachMarkPageShown(_:)),
-            name: .coachMarkPageShown,
-            object: nil
-        )
+        retryShuttleCoachMarksIfNeeded()
         // Shuttle marks already shown on a previous launch — show immediately
-        if !CoachMarkManager.shared.shouldShowPage("shuttle.realtime") {
+        if !isWaitingForShuttleCoachMarksAfterReset,
+           !CoachMarkManager.shared.shouldShowPage("shuttle.realtime") {
             showMoreCoachMarkIfNeeded()
         }
     }
@@ -33,8 +30,21 @@ class RootVC: UITabBarController {
     @objc private func onCoachMarkPageShown(_ notification: Notification) {
         guard let pageId = notification.userInfo?["pageId"] as? String,
               pageId == "shuttle.realtime" else { return }
+        isWaitingForShuttleCoachMarksAfterReset = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
             self?.showMoreCoachMarkIfNeeded()
+        }
+    }
+
+    @objc private func onCoachMarkReset() {
+        isWaitingForShuttleCoachMarksAfterReset = true
+    }
+
+    private func retryShuttleCoachMarksIfNeeded() {
+        guard selectedViewController === shuttleNC,
+              let shuttleVC = shuttleNC.viewControllers.first as? ShuttleRealtimeVC else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shuttleVC.retryCoachMarksIfNeeded()
         }
     }
 
@@ -58,6 +68,18 @@ class RootVC: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onCoachMarkPageShown(_:)),
+            name: .coachMarkPageShown,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onCoachMarkReset),
+            name: .coachMarkReset,
+            object: nil
+        )
         // TabBar
         shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus.fill"), tag: 0)
         busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker.fill"), tag: 1)
@@ -103,6 +125,9 @@ extension RootVC: UITabBarControllerDelegate {
         if let item = analyticsItem(for: viewController) {
             AnalyticsManager.logSelect(item, type: .tab)
         }
+        if viewController === shuttleNC {
+            retryShuttleCoachMarksIfNeeded()
+        }
     }
 }
 
@@ -116,6 +141,7 @@ extension RootVC: UITableViewDelegate {
         switch cell?.textLabel?.text {
         case String(localized: "tabbar.shuttle"):
             self.selectedViewController = shuttleNC
+            retryShuttleCoachMarksIfNeeded()
         case String(localized: "tabbar.bus"):
             self.selectedViewController = busNC
         case String(localized: "tabbar.subway"):

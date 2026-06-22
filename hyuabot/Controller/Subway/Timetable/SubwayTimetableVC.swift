@@ -17,30 +17,6 @@ class SubwayTimetableVC: UIViewController {
         viewPager.contentView.pages = [weekdaysVC.view, weekendsVC.view]
         return viewPager
     }()
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "subway.timetable.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
     
     init(timetableTitle: String.LocalizationValue, heading: SubwayHeadingEnum) {
         self.timetableTitle = timetableTitle
@@ -75,15 +51,23 @@ class SubwayTimetableVC: UIViewController {
             if (self.timetableTitle == "subway.realtime.section.4.up") {
                 Task {
                     let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(station: "K449", direction: ["up"]))
-                    if let timetable = response?.data?.subway.first?.timetable {
-                        SubwayTimetableData.shared.timetable.onNext(timetable)
+                    await MainActor.run {
+                        if let timetable = response?.data?.subway.first?.timetable {
+                            SubwayTimetableData.shared.timetable.onNext(timetable)
+                        } else {
+                            SubwayTimetableData.shared.isLoading.onNext(false)
+                        }
                     }
                 }
             } else if (self.timetableTitle == "subway.realtime.section.suin.up") {
                 Task {
                     let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(station: "K251", direction: ["up"]))
-                    if let timetable = response?.data?.subway.first?.timetable {
-                        SubwayTimetableData.shared.timetable.onNext(timetable)
+                    await MainActor.run {
+                        if let timetable = response?.data?.subway.first?.timetable {
+                            SubwayTimetableData.shared.timetable.onNext(timetable)
+                        } else {
+                            SubwayTimetableData.shared.isLoading.onNext(false)
+                        }
                     }
                 }
             }
@@ -91,15 +75,23 @@ class SubwayTimetableVC: UIViewController {
             if (self.timetableTitle == "subway.realtime.section.4.down") {
                 Task {
                     let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(station: "K449", direction: ["down"]))
-                    if let timetable = response?.data?.subway.first?.timetable {
-                        SubwayTimetableData.shared.timetable.onNext(timetable)
+                    await MainActor.run {
+                        if let timetable = response?.data?.subway.first?.timetable {
+                            SubwayTimetableData.shared.timetable.onNext(timetable)
+                        } else {
+                            SubwayTimetableData.shared.isLoading.onNext(false)
+                        }
                     }
                 }
             } else if (self.timetableTitle == "subway.realtime.section.suin.down") {
                 Task {
                     let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(station: "K251", direction: ["down"]))
-                    if let timetable = response?.data?.subway.first?.timetable {
-                        SubwayTimetableData.shared.timetable.onNext(timetable)
+                    await MainActor.run {
+                        if let timetable = response?.data?.subway.first?.timetable {
+                            SubwayTimetableData.shared.timetable.onNext(timetable)
+                        } else {
+                            SubwayTimetableData.shared.isLoading.onNext(false)
+                        }
                     }
                 }
             }
@@ -109,43 +101,37 @@ class SubwayTimetableVC: UIViewController {
     private func setupUI() {
         self.view.backgroundColor = .hanyangBlue
         self.view.addSubview(viewPager)
-        self.view.addSubview(loadingView)
         self.navigationItem.title = String(localized: timetableTitle)
         self.viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(viewPager)
-        }
     }
     
     private func observeSubjects() {
         SubwayTimetableData.shared.timetable.subscribe(onNext: { [weak self] timetable in
             guard let self = self else { return }
+            let isLoading = (try? SubwayTimetableData.shared.isLoading.value()) ?? false
+            if isLoading && timetable.isEmpty {
+                return
+            }
+            SubwayTimetableData.shared.timetableWeekdays.onNext(timetable.filter { $0.weekday == "weekdays" }.sorted(by: { self.sortableDepartureTime($0.time) < self.sortableDepartureTime($1.time) }))
+            SubwayTimetableData.shared.timetableWeekends.onNext(timetable.filter { $0.weekday == "weekends" }.sorted(by: { self.sortableDepartureTime($0.time) < self.sortableDepartureTime($1.time) }))
             SubwayTimetableData.shared.isLoading.onNext(false)
-            SubwayTimetableData.shared.timetableWeekdays.onNext(timetable.filter { $0.weekday == "weekdays" }.sorted(by: { self.convertDepartureTime($0.time) < self.convertDepartureTime($1.time) }))
-            SubwayTimetableData.shared.timetableWeekends.onNext(timetable.filter { $0.weekday == "weekends" }.sorted(by: { self.convertDepartureTime($0.time) < self.convertDepartureTime($1.time) }))
             self.weekdaysVC.reload()
             self.weekendsVC.reload()
         }).disposed(by: disposeBag)
-        SubwayTimetableData.shared.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
-                self.loadingView.isHidden = false
-                self.loadingSpinner.startAnimating()
-            } else {
-                self.loadingView.isHidden = true
-                self.loadingSpinner.stopAnimating()
-            }
-        }).disposed(by: disposeBag)
     }
     
-    private func convertDepartureTime(_ time: LocalTime) -> String {
-        let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
-        if (components.hour! < 4) {
-            return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
+    private func sortableDepartureTime(_ time: LocalTime) -> String {
+        guard let date = time.toLocalTimeOrNil() else { return "99:99" }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        guard let hour = components.hour,
+              let minute = components.minute else { return "99:99" }
+        if hour < 4 {
+            return String(format: "%02d:%02d", hour + 24, minute)
         }
-        return String(format: "%02d:%02d", components.hour!, components.minute!)
+        return String(format: "%02d:%02d", hour, minute)
     }
 }

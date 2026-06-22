@@ -27,6 +27,11 @@ class SettingCellView: UITableViewCell {
         $0.textAlignment = .right
         $0.isHidden = true
     }
+    private lazy var analyticsSwitch = UISwitch().then {
+        $0.isHidden = true
+        $0.addTarget(self, action: #selector(analyticsSwitchChanged), for: .valueChanged)
+    }
+    private var onAnalyticsConsentChanged: ((Bool) -> Void)?
     private lazy var campusButton: UIButton = UIButton().then {
         var conf = UIButton.Configuration.bordered()
         var title = AttributedString.init(String(localized: "setting.campus"))
@@ -87,6 +92,7 @@ class SettingCellView: UITableViewCell {
         self.contentView.addSubview(self.themeButton)
         self.contentView.addSubview(self.arrowImageView)
         self.contentView.addSubview(self.contentLabel)
+        self.contentView.addSubview(self.analyticsSwitch)
         self.iconImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
@@ -112,11 +118,22 @@ class SettingCellView: UITableViewCell {
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
+        self.analyticsSwitch.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-20)
+            make.centerY.equalToSuperview()
+        }
     }
 
-    func setupUI(imageName: String, title: String.LocalizationValue) {
+    func setupUI(imageName: String, title: String.LocalizationValue, onAnalyticsConsentChanged: ((Bool) -> Void)? = nil) {
         self.iconImageView.image = UIImage(systemName: imageName)
         self.titleLabel.text = String(localized: title)
+        self.onAnalyticsConsentChanged = nil
+        self.campusButton.isHidden = true
+        self.themeButton.isHidden = true
+        self.arrowImageView.isHidden = true
+        self.contentLabel.isHidden = true
+        self.contentLabel.text = nil
+        self.analyticsSwitch.isHidden = true
         if title == "setting.campus" {
             self.campusButton.do {
                 $0.isHidden = false
@@ -141,6 +158,10 @@ class SettingCellView: UITableViewCell {
             }
         } else if title == "setting.language" {
             self.arrowImageView.isHidden = false
+        } else if title == "setting.analytics" {
+            self.analyticsSwitch.isHidden = false
+            self.analyticsSwitch.isOn = AnalyticsManager.isCollectionEnabled
+            self.onAnalyticsConsentChanged = onAnalyticsConsentChanged
         } else if title == "setting.developer" {
             self.contentLabel.isHidden = false
             self.contentLabel.text = String(localized: "setting.developer.info")
@@ -148,6 +169,10 @@ class SettingCellView: UITableViewCell {
             self.contentLabel.isHidden = false
             self.contentLabel.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         }
+    }
+
+    @objc private func analyticsSwitchChanged() {
+        self.onAnalyticsConsentChanged?(self.analyticsSwitch.isOn)
     }
 
     private func selectCampus(_ campus: String.LocalizationValue) {

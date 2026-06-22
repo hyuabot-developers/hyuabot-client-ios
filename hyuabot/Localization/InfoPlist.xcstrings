@@ -59,31 +59,118 @@
         }
       }
     },
+    "LocalizedLocationAlwaysAndWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow background location access to notify you when you are near your shuttle drop-off stop."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルバスの降車停留所に近づいたときに通知するため、バックグラウンドでの位置情報使用を許可してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하차 정류장 근처에 도착했을 때 알림을 보내기 위해 백그라운드 위치 권한이 필요합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请允许后台位置访问，以便在接近校车下车站点时通知你。"
+          }
+        }
+      }
+    },
+    "LocalizedLocationWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow location access to find nearby shuttle stops and show shuttle alert distance."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くのシャトルバス停留所を探し、通知距離を表示するために位置情報の使用を許可してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가까운 셔틀 정류장과 승차 알림 거리를 표시하기 위해 위치 권한이 필요합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请允许使用位置权限，以查找附近的校车站点并显示提醒距离。"
+          }
+        }
+      }
+    },
+    "NSLocationAlwaysAndWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow background location access to notify you when you are near your shuttle drop-off stop."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルバスの降車停留所に近づいたときに通知するため、バックグラウンドでの位置情報使用を許可してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하차 정류장 근처에 도착했을 때 알림을 보내기 위해 백그라운드 위치 권한이 필요합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请允许后台位置访问，以便在接近校车下车站点时通知你。"
+          }
+        }
+      }
+    },
     "NSLocationWhenInUseUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Request location permission to find nearby shuttle stop."
+            "value" : "Allow location access to find nearby shuttle stops and show shuttle alert distance."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "近くのシャトルバス停留所を探すために位置情報の使用を許可してください。"
+            "value" : "近くのシャトルバス停留所を探し、通知距離を表示するために位置情報の使用を許可してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "주변 셔틀 정류장을 찾기 위해 위치 권한을 요청합니다."
+            "value" : "가까운 셔틀 정류장과 승차 알림 거리를 표시하기 위해 위치 권한이 필요합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请允许使用位置权限以查找附近的校车站点。"
+            "value" : "请允许使用位置权限，以查找附近的校车站点并显示提醒距离。"
           }
         }
       }

@@ -27,15 +27,24 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.isHidden = true
         $0.addSubview(self.shuttleAlertLabel)
     }
-    private let infoImageView = UIImageView(image: UIImage(systemName: "info.circle")).then {
+    private let alarmButton = UIButton(type: .system).then {
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+        $0.setImage(UIImage(systemName: "bell", withConfiguration: symbolConfiguration), for: .normal)
         if UITraitCollection.current.userInterfaceStyle == .light {
             $0.tintColor = .hanyangBlue
         } else {
             $0.tintColor = .white
         }
+        $0.accessibilityLabel = String(localized: "shuttle.alarm.button.description")
     }
     var itemByOrder: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order?
     var itemByDestination: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
+    private var showAlarm: (() -> Void)?
+    private var isBoardingAlarmActive = false {
+        didSet {
+            updateAlarmButtonAppearance()
+        }
+    }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -52,8 +61,9 @@ class ShuttleRealtimeCellView: UITableViewCell {
         self.contentView.addSubview(self.shuttleTimeLabel)
         self.contentView.addSubview(self.shuttleAlertView)
         self.contentView.addSubview(self.shuttleRemainingTimeLabel)
-        self.contentView.addSubview(self.infoImageView)
+        self.contentView.addSubview(self.alarmButton)
         self.selectionStyle = .none
+        self.alarmButton.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)
         self.shuttleAlertLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(4)
         }
@@ -67,33 +77,41 @@ class ShuttleRealtimeCellView: UITableViewCell {
             make.centerY.equalToSuperview()
         }
         self.shuttleTimeLabel.snp.makeConstraints { make in
-            make.trailing.equalTo(self.infoImageView.snp.leading).offset(-8)
+            make.trailing.equalTo(self.alarmButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
         }
         self.shuttleRemainingTimeLabel.snp.makeConstraints { make in
-            make.trailing.equalTo(self.infoImageView.snp.leading).offset(-8)
+            make.trailing.equalTo(self.alarmButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
         }
-        self.infoImageView.snp.makeConstraints { make in
+        self.alarmButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
+            make.width.height.equalTo(20)
         }
         if (UITraitCollection.current.userInterfaceStyle == .dark) {
-            self.infoImageView.tintColor = .white
+            self.alarmButton.tintColor = .white
         } else {
-            self.infoImageView.tintColor = .hanyangBlue
+            self.alarmButton.tintColor = .hanyangBlue
         }
+        self.updateAlarmButtonAppearance()
     }
     
-    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order, isBoardingAlarmActive: Bool = false, showAlarm: @escaping () -> Void) {
         self.shuttleAlertView.isHidden = true
+        self.itemByDestination = nil
+        self.showAlarm = showAlarm
+        self.isBoardingAlarmActive = isBoardingAlarmActive
         self.setTypeText(stopID: stopID, item: item)
         self.itemByOrder = item
         self.setUITimeLabel(time: item.time)
     }
     
-    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+    func setupUI(stopID: ShuttleStopEnum, indexPath: IndexPath, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry, isBoardingAlarmActive: Bool = false, showAlarm: @escaping () -> Void) {
         self.shuttleAlertView.isHidden = true
+        self.itemByOrder = nil
+        self.showAlarm = showAlarm
+        self.isBoardingAlarmActive = isBoardingAlarmActive
         if (stopID == .dormiotryOut || stopID == .shuttlecockOut) {
             if indexPath.section == 0 {
                 if item.route.tag == "DH" || item.route.tag == "DJ" {
@@ -177,10 +195,21 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
     
     func setUITimeLabel(time: LocalTime) {
-        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: time.toLocalTime())
-        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(components.hour!).\(components.minute!)")
-        let remainingTime = Int(time.toLocalTime().timeIntervalSince(Foundation.Date.now))
-        self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.\(remainingTime / 60)")
+        guard let date = time.toLocalTimeOrNil() else {
+            self.shuttleTimeLabel.text = time.substring(from: 0, to: 4)
+            self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
+            return
+        }
+        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
+        guard let hour = components.hour,
+              let minute = components.minute else {
+            self.shuttleTimeLabel.text = time.substring(from: 0, to: 4)
+            self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
+            return
+        }
+        self.shuttleTimeLabel.text = String(format: String(localized: "shuttle.time.%lld.%lld"), hour, minute)
+        let remainingTime = Int(date.timeIntervalSince(Foundation.Date.now))
+        self.shuttleRemainingTimeLabel.text = String(format: String(localized: "shuttle.time.remaining.%lld"), remainingTime / 60)
     }
     
     private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
@@ -244,5 +273,16 @@ class ShuttleRealtimeCellView: UITableViewCell {
             self?.shuttleTimeLabel.isHidden = !showRemainingTime
             self?.shuttleRemainingTimeLabel.isHidden = showRemainingTime
         }).disposed(by: self.disposeBag)
+    }
+
+    @objc private func alarmButtonTapped() {
+        self.showAlarm?()
+    }
+
+    private func updateAlarmButtonAppearance() {
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+        let imageName = isBoardingAlarmActive ? "bell.fill" : "bell"
+        self.alarmButton.setImage(UIImage(systemName: imageName, withConfiguration: symbolConfiguration), for: .normal)
+        self.alarmButton.accessibilityValue = isBoardingAlarmActive ? String(localized: "shuttle.alarm.cancel") : nil
     }
 }

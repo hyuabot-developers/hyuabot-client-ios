@@ -61,12 +61,29 @@
     },
     "NSLocationWhenInUseUsageDescription" : {
       "comment" : "Privacy - Location When In Use Usage Description",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow location access to automatically find the nearest shuttle bus stop in the widget."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウィジェットで最寄りのシャトルバス停留所を自動的に探すため、位置情報の使用を許可してください。"
+          }
+        },
         "ko" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "LocalizedLocationWhenInUseUsageDescription"
+            "state" : "translated",
+            "value" : "셔틀버스 위젯에서 가장 가까운 정류장을 자동으로 찾기 위해 위치 권한이 필요합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请允许使用位置权限，以便在小组件中自动查找最近的校车站点。"
           }
         }
       }

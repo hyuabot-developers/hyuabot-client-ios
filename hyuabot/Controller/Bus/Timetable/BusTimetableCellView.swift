@@ -38,7 +38,11 @@ class BusTimetableCellView: UITableViewCell {
         self.busRouteLabel.text = item.route
         self.setRouteColor(routeName: item.route)
         let components = Calendar.current.dateComponents([.hour, .minute], from: item.time)
-        self.busTimeLabel.text = String(localized: "bus.timetable.time.\(components.hour!).\(components.minute!)")
+        self.busTimeLabel.text = String(
+            format: String(localized: "bus.timetable.time.%lld.%lld"),
+            components.hour!,
+            components.minute!
+        )
     }
     
     func setRouteColor(routeName: String) {

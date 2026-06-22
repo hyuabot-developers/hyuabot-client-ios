@@ -4,6 +4,9 @@ import RxSwift
 import Api
 
 class ShuttleStopInfoVC: UIViewController {
+    private typealias StopTimetableDestination = ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination
+    private typealias StopTimetableEntry = ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+
     private let stop: ShuttleStopEnum
     private let stopInfo: BehaviorSubject<ShuttleStopDialogQuery.Data.Shuttle.Stop?> = BehaviorSubject(value: nil)
     private let timetable: BehaviorSubject<[ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]> = BehaviorSubject(value: [])
@@ -354,14 +357,23 @@ class ShuttleStopInfoVC: UIViewController {
         ShuttleTimetableData.shared.isLoading.onNext(true)
         Task {
             let response = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: Foundation.Date.now)))
-            if let data = response?.data {
-                let period = data.shuttle.period!.type
-                let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(stopID: stopID, period: [period]))
-                if let stopData = stopResponse?.data {
-                    self.stopInfo.onNext(stopData.shuttle.stops.first)
-                    self.timetable.onNext(stopData.shuttle.stops.first?.timetable.destination ?? [])
-                }
+            guard let period = response?.data?.shuttle.period?.type else {
+                publishStopInfo(nil, timetable: [])
+                return
             }
+            let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(stopID: stopID, period: [period]))
+            let stop = stopResponse?.data?.shuttle.stops.first
+            publishStopInfo(stop, timetable: stop?.timetable.destination ?? [])
+        }
+    }
+
+    private func publishStopInfo(
+        _ stop: ShuttleStopDialogQuery.Data.Shuttle.Stop?,
+        timetable: [ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            self?.stopInfo.onNext(stop)
+            self?.timetable.onNext(timetable)
         }
     }
     
@@ -384,83 +396,68 @@ class ShuttleStopInfoVC: UIViewController {
         }).disposed(by: self.disposeBag)
         self.timetable.subscribe(onNext: { timetableItems in
             if (self.stop == .dormiotryOut || self.stop == .shuttlecockOut) {
-                let stationWeekdayItems = timetableItems.first(where: { $0.destination == "STATION"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let stationWeekendItems = timetableItems.first(where: { $0.destination == "STATION"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let terminalWeekdayItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let terminalWeekendItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let jungangStationWeekdayItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let jungangStationWeekendItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                if (!stationWeekdayItems.isEmpty) {
-                    self.stationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(stationWeekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.stationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(stationWeekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!stationWeekendItems.isEmpty) {
-                    self.stationWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(stationWeekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.stationWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(stationWeekendItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!terminalWeekdayItems.isEmpty) {
-                    self.terminalWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.terminalWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!terminalWeekendItems.isEmpty) {
-                    self.terminalWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.terminalWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!jungangStationWeekdayItems.isEmpty) {
-                    self.jungangStationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.jungangStationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!jungangStationWeekendItems.isEmpty) {
-                    self.jungangStationWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.jungangStationWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.last!.time.substring(from: 0, to: 4))")
-                }
+                self.updateFirstLastTime(timetableItems, destination: "STATION", isWeekday: true, firstLabel: self.stationWeekdaysFirstTimeLabel, lastLabel: self.stationWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "STATION", isWeekday: false, firstLabel: self.stationWeekendsFirstTimeLabel, lastLabel: self.stationWeekendsLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: true, firstLabel: self.terminalWeekdaysFirstTimeLabel, lastLabel: self.terminalWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: false, firstLabel: self.terminalWeekendsFirstTimeLabel, lastLabel: self.terminalWeekendsLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: true, firstLabel: self.jungangStationWeekdaysFirstTimeLabel, lastLabel: self.jungangStationWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: false, firstLabel: self.jungangStationWeekendsFirstTimeLabel, lastLabel: self.jungangStationWeekendsLastTimeLabel)
             }
             else if (self.stop == .station) {
-                let campusWeekdayItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let campusWeekendItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let terminalWeekdayItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let terminalWeekendItems = timetableItems.first(where: { $0.destination == "TERMINAL"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let jungangStationWeekdayItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let jungangStationWeekendItems = timetableItems.first(where: { $0.destination == "JUNGANG"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                if (!campusWeekdayItems.isEmpty) {
-                    self.campusWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(campusWeekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.campusWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(campusWeekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!campusWeekendItems.isEmpty) {
-                    self.campusWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(campusWeekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.campusWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(campusWeekendItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!terminalWeekdayItems.isEmpty) {
-                    self.terminalWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.terminalWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(terminalWeekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!terminalWeekendItems.isEmpty) {
-                    self.terminalWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.terminalWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(terminalWeekendItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!jungangStationWeekdayItems.isEmpty) {
-                    self.jungangStationWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.jungangStationWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(jungangStationWeekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!jungangStationWeekendItems.isEmpty) {
-                    self.jungangStationWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.jungangStationWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(jungangStationWeekendItems.last!.time.substring(from: 0, to: 4))")
-                }
+                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: true, firstLabel: self.campusWeekdaysFirstTimeLabel, lastLabel: self.campusWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: false, firstLabel: self.campusWeekendsFirstTimeLabel, lastLabel: self.campusWeekendsLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: true, firstLabel: self.terminalWeekdaysFirstTimeLabel, lastLabel: self.terminalWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: false, firstLabel: self.terminalWeekendsFirstTimeLabel, lastLabel: self.terminalWeekendsLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: true, firstLabel: self.jungangStationWeekdaysFirstTimeLabel, lastLabel: self.jungangStationWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: false, firstLabel: self.jungangStationWeekendsFirstTimeLabel, lastLabel: self.jungangStationWeekendsLastTimeLabel)
             }
             else {
-                let weekdayItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ $0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                let weekendItems = timetableItems.first(where: { $0.destination == "CAMPUS"})?.entries.filter({ !$0.weekday }).sorted(by: { $0.time < $1.time }) ?? []
-                if (!weekdayItems.isEmpty) {
-                    self.campusWeekdaysFirstTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(weekdayItems.first!.time.substring(from: 0, to: 4))")
-                    self.campusWeekdaysLastTimeLabel.text = String(localized: "shuttle.first.last.weekdays.format.\(weekdayItems.last!.time.substring(from: 0, to: 4))")
-                }
-                if (!weekendItems.isEmpty) {
-                    self.campusWeekendsFirstTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(weekendItems.first!.time.substring(from: 0, to: 4))")
-                    self.campusWeekendsLastTimeLabel.text = String(localized: "shuttle.first.last.weekends.format.\(weekendItems.last!.time.substring(from: 0, to: 4))")
-                }
+                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: true, firstLabel: self.campusWeekdaysFirstTimeLabel, lastLabel: self.campusWeekdaysLastTimeLabel)
+                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: false, firstLabel: self.campusWeekendsFirstTimeLabel, lastLabel: self.campusWeekendsLastTimeLabel)
             }
                 
         }).disposed(by: self.disposeBag)
+    }
+
+    private func updateFirstLastTime(
+        _ timetableItems: [StopTimetableDestination],
+        destination: String,
+        isWeekday: Bool,
+        firstLabel: UILabel,
+        lastLabel: UILabel
+    ) {
+        let entries = timetableItems
+            .first(where: { $0.destination == destination })?
+            .entries
+            .filter { $0.weekday == isWeekday }
+            .sorted(by: { $0.time < $1.time }) ?? []
+
+        guard let first = entries.first,
+              let last = entries.last else {
+            setFirstLastTimeLabels(firstLabel: firstLabel, lastLabel: lastLabel, first: nil, last: nil, isWeekday: isWeekday)
+            return
+        }
+        setFirstLastTimeLabels(firstLabel: firstLabel, lastLabel: lastLabel, first: first, last: last, isWeekday: isWeekday)
+    }
+
+    private func setFirstLastTimeLabels(
+        firstLabel: UILabel,
+        lastLabel: UILabel,
+        first: StopTimetableEntry?,
+        last: StopTimetableEntry?,
+        isWeekday: Bool
+    ) {
+        firstLabel.text = firstLastTimeText(first?.time, isWeekday: isWeekday)
+        lastLabel.text = firstLastTimeText(last?.time, isWeekday: isWeekday)
+    }
+
+    private func firstLastTimeText(_ time: String?, isWeekday: Bool) -> String {
+        let unavailableKey = isWeekday ? "shuttle.first.last.weekdays.na" : "shuttle.first.last.weekends.na"
+        guard let time else { return String(localized: String.LocalizationValue(unavailableKey)) }
+        let shortened = time.substring(from: 0, to: 4)
+        guard !shortened.isEmpty else { return String(localized: String.LocalizationValue(unavailableKey)) }
+        let formatKey = isWeekday ? "shuttle.first.last.weekdays.format.%@" : "shuttle.first.last.weekends.format.%@"
+        return String(format: String(localized: String.LocalizationValue(formatKey)), shortened)
     }
 }
 

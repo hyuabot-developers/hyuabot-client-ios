@@ -1,14 +1,13 @@
 import SwiftUI
 import RxSwift
 import Api
-import RxSwift
 
 struct DepartureListView: View {
-    let stop: String
+    let stop: WatchShuttleStop
     let disposeBag = DisposeBag()
     @ObservedObject var viewModel: DepartureListViewModel
     
-    init(stop: String) {
+    init(stop: WatchShuttleStop) {
         self.stop = stop
         self.viewModel = DepartureListViewModel(stop: stop)
     }
@@ -19,7 +18,7 @@ struct DepartureListView: View {
                 ProgressView()
             } else {
                 if (viewModel.items.isEmpty) {
-                    Text("도착 예정인 셔틀이 없습니다.")
+                    Text(WatchLocalization.text("no.scheduled.shuttle"))
                         .foregroundColor(.gray)
                         .font(.godo(size: 16, weight: .bold))
                         .padding()
@@ -63,25 +62,25 @@ struct DepartureListView: View {
         let dataDelegate = ShuttleRealtimeData.shared
         Task {
             let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageWatchQuery(
-                stops: getStops().map({ ShuttleStopInput(name: $0, limit: ShuttleLimitInput(destination: 1)) }),
+                stops: stop.queryStops.map({ ShuttleStopInput(name: $0, limit: ShuttleLimitInput(destination: 1)) }),
                 after: GraphQLNullable.some(timeFormatter.string(from: now)),
             ))
             if let data = response?.data {
                 if data.shuttle.stops.isEmpty { return }
-                if (self.stop == "기숙사") {
+                if (self.stop.id == "dormitory") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "dormitory_o" })
                     dataDelegate.result.onNext(stop?.timetable.order)
-                } else if (self.stop == "셔틀콕") {
+                } else if (self.stop.id == "shuttlecock") {
                     let stop1 = data.shuttle.stops.first(where: { $0.name == "shuttlecock_o" })
                     let stop2 = data.shuttle.stops.first(where: { $0.name == "shuttlecock_i" })
                     dataDelegate.result.onNext((stop1?.timetable.order ?? []) + (stop2?.timetable.order ?? []))
-                } else if (self.stop == "한대앞") {
+                } else if (self.stop.id == "station") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "station" })
                     dataDelegate.result.onNext(stop?.timetable.order)
-                } else if (self.stop == "예술인") {
+                } else if (self.stop.id == "terminal") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "terminal" })
                     dataDelegate.result.onNext(stop?.timetable.order)
-                } else if (self.stop == "중앙역") {
+                } else if (self.stop.id == "jungang") {
                     let stop = data.shuttle.stops.first(where: { $0.name == "jungang_stn" })
                     dataDelegate.result.onNext(stop?.timetable.order)
                 }
@@ -91,20 +90,17 @@ struct DepartureListView: View {
     }
     
     func setRouteName(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order) -> String {
-        if (self.stop == "기숙사" || self.stop == "셔틀콕") {
-            if (item.route.tag == "DH") { return "한대앞" }
-            else if (item.route.tag == "DY") { return "예술인" }
-            else if (item.route.tag == "DJ") { return "중앙역" }
-            else if (item.route.tag == "C") { return "순환" }
-        } else if (self.stop == "한대앞") {
-            if (item.route.tag == "C") { return "순환" }
-            else if (item.route.tag == "DH") { return "직행" }
-            else if (item.route.tag == "DJ") { return "중앙역" }
-        } else if (self.stop == "예술인" || self.stop == "중앙역") {
-            return "직행"
-        } else if (self.stop == "셔틀콕 건너편") {
-            if (item.route.name.hasSuffix("D")) { return "기숙사" }
-            else if (item.route.name.hasSuffix("S")) { return "셔틀콕" }
+        if (self.stop.id == "dormitory" || self.stop.id == "shuttlecock") {
+            if (item.route.tag == "DH") { return WatchLocalization.text("stop.station") }
+            else if (item.route.tag == "DY") { return WatchLocalization.text("stop.terminal") }
+            else if (item.route.tag == "DJ") { return WatchLocalization.text("stop.jungang") }
+            else if (item.route.tag == "C") { return WatchLocalization.text("route.circular") }
+        } else if (self.stop.id == "station") {
+            if (item.route.tag == "C") { return WatchLocalization.text("route.circular") }
+            else if (item.route.tag == "DH") { return WatchLocalization.text("route.direct") }
+            else if (item.route.tag == "DJ") { return WatchLocalization.text("stop.jungang") }
+        } else if (self.stop.id == "terminal" || self.stop.id == "jungang") {
+            return WatchLocalization.text("route.direct")
         }
         return ""
     }
@@ -117,30 +113,10 @@ struct DepartureListView: View {
         return nowString < item.time
     }
     
-    private func getStops() -> [String] {
-        switch self.stop {
-            case "기숙사":
-                return ["dormitory_o"]
-            case "셔틀콕":
-                return ["shuttlecock_o", "shuttlecock_i"]
-            case "한대앞":
-                return ["station"]
-            case "예술인":
-                return ["terminal"]
-            case "중앙역":
-                return ["jungang_stn"]
-            default:
-                return []
-        }
-    }
-    
     private func setUITimeLabel(item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order) -> String {
-        let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
-        let departureTime = dateFormatter.date(from: item.time)
-        let hour = calendar.component(.hour, from: departureTime!)
-        let minute = calendar.component(.minute, from: departureTime!)
-        return String(format: "%02d시 %02d분", hour, minute)
+        guard let departureTime = dateFormatter.date(from: item.time) else { return item.time }
+        return departureTime.formatted(date: .omitted, time: .shortened)
     }
 }

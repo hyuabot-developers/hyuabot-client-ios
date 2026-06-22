@@ -40,6 +40,7 @@ class ContentView: UIView {
     }
     
     func moveToPage(index: Int) {
+        guard self.pages.indices.contains(index) else { return }
         self.collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
     }
 }
@@ -51,6 +52,7 @@ extension ContentView: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ContentViewCell", for: indexPath) as! ContentViewCell
+        guard self.pages.indices.contains(indexPath.item) else { return cell }
         cell.content = self.pages[indexPath.item]
         return cell
     }
@@ -58,7 +60,9 @@ extension ContentView: UICollectionViewDataSource {
 
 extension ContentView: UICollectionViewDelegateFlowLayout {
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        guard scrollView.frame.width > 0 else { return }
         let index = Int(scrollView.contentOffset.x / scrollView.frame.width)
+        guard self.pages.indices.contains(index) else { return }
         self.delegate?.didMoveToPage(index: index)
     }
     

@@ -7,6 +7,7 @@ class ReadingRoomVC: UIViewController {
     private let disposeBag = DisposeBag()
     private var subscription: Disposable?
     private let isLoading = BehaviorSubject<Bool>(value: false)
+    private var showsSkeleton = false
     private let refreshControl = UIRefreshControl()
     private let roomSubject = BehaviorSubject<[ReadingRoomPageQuery.Data.ReadingRoom]>(value: [])
     // Extend alarm UI
@@ -49,32 +50,9 @@ class ReadingRoomVC: UIViewController {
         $0.delegate = self
         $0.dataSource = self
         $0.register(ReadingRoomCellView.self, forCellReuseIdentifier: ReadingRoomCellView.reuseIdentifier)
+        $0.register(ReadingRoomSkeletonCellView.self, forCellReuseIdentifier: ReadingRoomSkeletonCellView.reuseIdentifier)
         $0.refreshControl = refreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
-    }
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "contact.database.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -239,7 +217,6 @@ class ReadingRoomVC: UIViewController {
         alarmContainerStack.isLayoutMarginsRelativeArrangement = true
         self.view.addSubview(alarmContainerStack)
         self.view.addSubview(self.readingRoomView)
-        self.view.addSubview(self.loadingView)
         alarmContainerStack.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.leading.trailing.equalToSuperview()
@@ -248,13 +225,11 @@ class ReadingRoomVC: UIViewController {
             make.top.equalTo(alarmContainerStack.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(self.readingRoomView)
-        }
     }
     
     private func startPolling() {
-        self.isLoading.onNext(true)
+        let hasRooms = (try? self.roomSubject.value().isEmpty == false) ?? false
+        self.isLoading.onNext(!hasRooms)
         self.fetchReadingRoomData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
             .subscribe(onNext: { _ in
@@ -286,13 +261,8 @@ class ReadingRoomVC: UIViewController {
     
     private func observeSubjects() {
         self.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
-                self.loadingView.isHidden = false
-                self.loadingSpinner.startAnimating()
-            } else {
-                self.loadingView.isHidden = true
-                self.loadingSpinner.stopAnimating()
-            }
+            self.showsSkeleton = isLoading
+            self.readingRoomView.reloadData()
         }).disposed(by: disposeBag)
         self.roomSubject.subscribe(onNext: { [weak self] items in
             self?.readingRoomView.reloadData()
@@ -311,11 +281,17 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsSkeleton {
+            return 6
+        }
         guard let items = try? self.roomSubject.value() else { return 0 }
         return items.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if showsSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: ReadingRoomSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         guard let items = try? self.roomSubject.value() else { return UITableViewCell() }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ReadingRoomCellView.reuseIdentifier) as? ReadingRoomCellView else { return ReadingRoomCellView() }
         cell.setupUI(
@@ -323,12 +299,12 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
             showSubscribeToastMessage: {
                 message in self.showToastMessage(
                     image: UIImage(systemName: "checkmark.circle.fill"),
-                    message: String(localized: "toast.readingroom.notification.subscribed.\(message)")
+                    message: String(format: String(localized: "toast.readingroom.notification.subscribed.%@"), message)
                 )},
             showUnsubscribeToastMessage: {
                 message in self.showToastMessage(
                     image: UIImage(systemName: "checkmark.circle.fill"),
-                    message: String(localized: "toast.readingroom.notification.unsubscribed.\(message)")
+                    message: String(format: String(localized: "toast.readingroom.notification.unsubscribed.%@"), message)
                 )}
             )
         return cell

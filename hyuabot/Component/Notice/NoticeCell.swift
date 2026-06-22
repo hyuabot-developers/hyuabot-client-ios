@@ -30,7 +30,7 @@ class NoticeCell: UICollectionViewCell {
         if (notice.title.hasPrefix("[")) {
             self.titleLabel.text = notice.title
         } else {
-            self.titleLabel.text = String(localized: "notice.title.\(notice.title)")
+            self.titleLabel.text = String(format: String(localized: "notice.title.%@"), notice.title)
         }
         self.contentView.isUserInteractionEnabled = notice.url != nil
     }

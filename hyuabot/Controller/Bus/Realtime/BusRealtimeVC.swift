@@ -7,6 +7,7 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
     private var didSelectBusStop = false
+    private var hasLoadedInitialNotices = false
     private lazy var cityBusTabVC = BusRealtimeTabVC(
         tabType: .city,
         refreshMethod: fetchBusRealtimeData,
@@ -77,30 +78,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         ]
         return viewPager
     }()
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "bus.realtime.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.busRealtime)
@@ -196,7 +173,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     
     private func setupUI() {
         self.view.addSubview(viewPager)
-        self.view.addSubview(loadingView)
         self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -206,9 +182,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             make.trailing.equalToSuperview().inset(20)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
-        }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(viewPager)
         }
     }
     
@@ -256,6 +229,10 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
             guard let self = self else { return }
+            let isLoading = (try? BusRealtimeData.shared.isLoading.value()) ?? false
+            if isLoading && result.isEmpty {
+                return
+            }
             let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
             // City bus (10-1) — always update regardless of Seoul bus availability
             let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216000068 })
@@ -296,17 +273,11 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.onNext(false)
         }).disposed(by: self.disposeBag)
-        BusRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
-                self.loadingView.isHidden = false
-                self.loadingSpinner.startAnimating()
-            } else {
-                self.loadingView.isHidden = true
-                self.loadingSpinner.stopAnimating()
-            }
-        }).disposed(by: disposeBag)
         BusRealtimeData.shared.notices.subscribe(onNext: { notices in
-            if notices.isEmpty {
+            if !self.hasLoadedInitialNotices && notices.isEmpty {
+                self.noticeView.isHidden = false
+                self.noticeView.setLoading(true)
+            } else if notices.isEmpty {
                 self.noticeView.isHidden = true
                 self.noticeView.stopAutoScroll()
             } else {
@@ -331,10 +302,17 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         }
         Task {
             let response = try? await Network.shared.client.fetch(query: BusRealtimePageQuery(language: noticeLanguage), cachePolicy: .networkOnly)
-            if let data = response?.data {
-                BusRealtimeData.shared.isLoading.onNext(false)
-                BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
-                BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
+            await MainActor.run {
+                if let data = response?.data {
+                    BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
+                    self.hasLoadedInitialNotices = true
+                    BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
+                    if data.bus.isEmpty {
+                        BusRealtimeData.shared.isLoading.onNext(false)
+                    }
+                } else {
+                    BusRealtimeData.shared.isLoading.onNext(false)
+                }
             }
         }
     }

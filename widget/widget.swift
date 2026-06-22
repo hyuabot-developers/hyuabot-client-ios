@@ -1,42 +1,10 @@
 import WidgetKit
 import SwiftUI
 import AppIntents
+import Apollo
+import Api
 
 private let appGroupID = "group.net.jaram.hyuabot"
-
-private let cafeteriaQuery = """
-query CafeteriaPageQuery($date: Date!, $campusID: Int!) {
-    cafeteria(input: { date: $date, campus: $campusID }) {
-        seq
-        runningTime { breakfast lunch dinner }
-        menus { type food price }
-    }
-}
-"""
-
-// MARK: - Response Types
-
-private struct CafeteriaResponse: Decodable {
-    let cafeteria: [CafeteriaData]
-
-    struct CafeteriaData: Decodable {
-        let seq: Int
-        let runningTime: RunningTime
-        let menus: [Menu]
-
-        struct RunningTime: Decodable {
-            let breakfast: String?
-            let lunch: String?
-            let dinner: String?
-        }
-
-        struct Menu: Decodable {
-            let type: String
-            let food: String
-            let price: String
-        }
-    }
-}
 
 // MARK: - Models
 
@@ -205,10 +173,11 @@ struct CafeteriaProvider: TimelineProvider {
         let dateString = dateFormatter.string(from: date)
 
         do {
-            let response: CafeteriaResponse = try await widgetGraphQL(
-                query: cafeteriaQuery,
-                variables: ["date": dateString, "campusID": campusID]
-            )
+            let response = try await WidgetNetwork.shared.fetch(query: CafeteriaPageQuery(date: dateString, campusID: Int32(campusID)))
+
+            guard let cafeteria = response.data?.cafeteria else {
+                return CafeteriaEntry(date: date, mealType: mealType, items: [])
+            }
 
             let typeStr = mealType.typeString
             let isKorean = (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
@@ -223,7 +192,7 @@ struct CafeteriaProvider: TimelineProvider {
                 let result = filtered.joined(separator: " ")
                 return result.isEmpty ? cleaned : result
             }
-            let items: [CafeteriaMenuItem] = response.cafeteria
+            let items: [CafeteriaMenuItem] = cafeteria
                 .filter { $0.menus.contains(where: { $0.type.contains(typeStr) }) }
                 .sorted { $0.seq < $1.seq }
                 .compactMap { cafe in

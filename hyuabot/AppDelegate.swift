@@ -16,15 +16,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Initialize Firebase SDK
         FirebaseApp.configure()
+        AnalyticsManager.applyCollectionSettings()
         // Initialize Firebase Cloud Messaging
         Messaging.messaging().delegate = self
+        configureApplicationShortcuts(application)
         UNUserNotificationCenter.current().delegate = self
-        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: authOptions,
-            completionHandler: {_, _ in })
         application.registerForRemoteNotifications()
-        UIApplication.shared.registerForRemoteNotifications()
         // Global tab bar appearance
         let tabBarAppearance = UITabBarItem.appearance()
         tabBarAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 10, weight: .regular)], for: .normal)
@@ -52,6 +49,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         UIBarButtonItem.appearance().tintColor = .white
         return true
+    }
+
+    private func configureApplicationShortcuts(_ application: UIApplication) {
+        application.shortcutItems = [
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.shuttle",
+                localizedTitle: String(localized: "tabbar.shuttle"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "bus.fill"),
+                userInfo: ["url": "hyuabot://shuttle" as NSSecureCoding]
+            ),
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.cafeteria",
+                localizedTitle: String(localized: "tabbar.cafeteria"),
+                localizedSubtitle: String(localized: "cafeteria.lunch"),
+                icon: UIApplicationShortcutIcon(systemImageName: "fork.knife"),
+                userInfo: ["url": "hyuabot://cafeteria?tab=lunch" as NSSecureCoding]
+            ),
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.readingroom",
+                localizedTitle: String(localized: "tabbar.readingroom"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "book.fill"),
+                userInfo: ["url": "hyuabot://reading-room" as NSSecureCoding]
+            ),
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.map",
+                localizedTitle: String(localized: "tabbar.map"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "map.fill"),
+                userInfo: ["url": "hyuabot://map" as NSSecureCoding]
+            )
+        ]
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -103,8 +133,11 @@ extension AppDelegate: MessagingDelegate {
             default: readingRoomName = "Unknown"
         }
         let notificationContent = UNMutableNotificationContent().then {
-            $0.title = String(localized: "readingroom.notification.title.\(String(localized: readingRoomName))")
-            $0.body = String(localized: "readingroom.notification.body.\(available)")
+            $0.title = String(
+                format: String(localized: "readingroom.notification.title.%@"),
+                String(localized: readingRoomName)
+            )
+            $0.body = String(format: String(localized: "readingroom.notification.body.%@"), available)
         }
         let notificationRequest = UNNotificationRequest(identifier: "reading_room_\(itemKey)", content: notificationContent, trigger: nil)
         UNUserNotificationCenter.current().add(notificationRequest) { error in
@@ -138,7 +171,10 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
       let userInfo = response.notification.request.content.userInfo
       Messaging.messaging().appDidReceiveMessage(userInfo)
+      if let urlString = userInfo["url"] as? String,
+         let url = URL(string: urlString) {
+          UIApplication.shared.open(url)
+      }
       completionHandler()
     }
 }
-

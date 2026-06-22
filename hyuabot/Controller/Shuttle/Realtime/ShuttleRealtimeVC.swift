@@ -67,7 +67,9 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
@@ -75,7 +77,9 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
@@ -83,7 +87,9 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
@@ -91,7 +97,9 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
@@ -99,7 +107,9 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
@@ -107,7 +117,9 @@ class ShuttleRealtimeVC: UIViewController {
         showEntireTimetable: moveToEntireTimetable,
         showViaVCByOrder: openShuttleViaVCByOrder,
         showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC
+        showStopVC: openShuttleStopVC,
+        showBusAlternativeStop: openBusAlternativeStopVC,
+        showAlarmVC: openShuttleAlarmVC
     )
     private lazy var helpButton = UIButton().then {
         var config = UIButton.Configuration.filled()
@@ -120,8 +132,11 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private var isShowingCoachMarks = false
+    private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
-    private let widgetCoachMarkAnchor = UIView().then { $0.isUserInteractionEnabled = false }
+    private var hasLoadedInitialShuttlePageData = false
+    private var hasLoadedInitialBusAlternativeData = false
+    private var hasLoadedInitialNotices = false
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView, noticeView: self.noticeView)
@@ -149,11 +164,55 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.shuttleRealtime)
-        self.showCoachMarksIfNeeded()
+        self.scheduleCoachMarksIfNeeded()
     }
 
-    private func showCoachMarksIfNeeded() {
+    func retryCoachMarksIfNeeded() {
+        scheduleCoachMarksIfNeeded()
+    }
+
+    private func scheduleCoachMarksIfNeeded(attempt: Int = 0) {
+        guard hasLoadedInitialCoachMarkData else { return }
         guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return }
+        coachMarkRetryWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            guard self.coachMarkOverlayIsAbsent else { return }
+            if !self.showCoachMarksIfNeeded(), attempt < 8 {
+                self.scheduleCoachMarksIfNeeded(attempt: attempt + 1)
+            }
+        }
+        coachMarkRetryWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + (attempt == 0 ? 0.1 : 0.25), execute: workItem)
+    }
+
+    private var hasLoadedInitialCoachMarkData: Bool {
+        hasLoadedInitialShuttlePageData && hasLoadedInitialBusAlternativeData
+    }
+
+    @MainActor
+    private func markInitialShuttlePageDataLoaded() {
+        hasLoadedInitialShuttlePageData = true
+        ShuttleRealtimeData.shared.isLoading.onNext(false)
+        scheduleCoachMarksIfNeeded()
+    }
+
+    @MainActor
+    private func markInitialBusAlternativeDataLoaded() {
+        hasLoadedInitialBusAlternativeData = true
+        scheduleCoachMarksIfNeeded()
+    }
+
+    private var coachMarkOverlayIsAbsent: Bool {
+        guard let window = view.window else { return true }
+        return !window.subviews.contains(where: { $0 is CoachMarkView })
+    }
+
+    @discardableResult
+    private func showCoachMarksIfNeeded() -> Bool {
+        guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return false }
+        guard view.window != nil else { return false }
+        view.layoutIfNeeded()
 
         isShowingCoachMarks = true
         dormitoryOutTabVC.forceShowBusAlternative = true
@@ -205,22 +264,6 @@ class ShuttleRealtimeVC: UIViewController {
             ),
         ]
 
-        if let transferView = dormitoryOutTabVC.transferInfoView {
-            items.append(CoachMarkItem(
-                id: "shuttle.transfer",
-                targetView: transferView,
-                title: String(localized: "coach.shuttle.transfer.title"),
-                message: String(localized: "coach.shuttle.transfer.message")
-            ))
-        }
-
-        items.append(CoachMarkItem(
-            id: "shuttle.widget",
-            targetView: widgetCoachMarkAnchor,
-            title: String(localized: "coach.shuttle.widget.title"),
-            message: String(localized: "coach.shuttle.widget.message")
-        ))
-
         if !noticeView.isHidden {
             items.append(CoachMarkItem(
                 id: "shuttle.notice",
@@ -230,13 +273,19 @@ class ShuttleRealtimeVC: UIViewController {
             ))
         }
 
-        presentCoachMarks(
+        let didPresent = presentCoachMarks(
             pageId: "shuttle.realtime",
             items: items,
             shouldMarkAsShown: false,
             onSkip: { [weak self] in self?.finishCoachMarks() },
             onComplete: { [weak self] in self?.showFooterCoachMarksWhenReady() }
         )
+        if !didPresent {
+            isShowingCoachMarks = false
+            dormitoryOutTabVC.forceShowBusAlternative = false
+            dormitoryOutTabVC.reloadSection0()
+        }
+        return didPresent
     }
 
     private func showFooterCoachMarksWhenReady() {
@@ -265,7 +314,16 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func presentFooterCoachMarks() {
-        let items: [CoachMarkItem] = [
+        var items: [CoachMarkItem] = []
+        if let transferView = dormitoryOutTabVC.transferInfoView {
+            items.append(CoachMarkItem(
+                id: "shuttle.transfer",
+                targetView: transferView,
+                title: String(localized: "coach.shuttle.transfer.title"),
+                message: String(localized: "coach.shuttle.transfer.message")
+            ))
+        }
+        items.append(contentsOf: [
             CoachMarkItem(
                 id: "shuttle.footer.timetable",
                 targetViewProvider: { [weak self] in self?.dormitoryOutTabVC.lastSectionFooterTimetableButton },
@@ -278,15 +336,14 @@ class ShuttleRealtimeVC: UIViewController {
                 title: String(localized: "coach.shuttle.footer.title"),
                 message: String(localized: "coach.shuttle.footer.message")
             ),
-        ]
+        ])
         let validItems = items.filter { item in
-            guard let v = item.targetView else { return true }
+            guard let v = item.targetView else { return false }
             return v.window != nil && !v.isHidden
         }
         guard !validItems.isEmpty,
               let window = view.window,
               !window.subviews.contains(where: { $0 is CoachMarkView }) else {
-            finishCoachMarks()
             return
         }
         let overlay = CoachMarkView()
@@ -307,9 +364,13 @@ class ShuttleRealtimeVC: UIViewController {
             viewPager.contentView.moveToPage(index: pendingIndex)
             showToastMessage(
                 image: UIImage(systemName: "checkmark.circle.fill"),
-                message: String(localized: "toast.success.shuttle.realtime.location.\(viewPager.tabView.tabs[pendingIndex].title)")
+                message: String(
+                    format: String(localized: "toast.success.shuttle.realtime.location.%@"),
+                    viewPager.tabView.tabs[pendingIndex].title
+                )
             )
         }
+        checkUserDeviceLocationServiceAuthorization()
     }
 
     override func viewDidLoad() {
@@ -317,7 +378,6 @@ class ShuttleRealtimeVC: UIViewController {
         self.setupUI()
         self.observeSubjects()
         self.checkBirthdayDialog()
-        self.checkUserDeviceLocationServiceAuthorization()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -328,6 +388,7 @@ class ShuttleRealtimeVC: UIViewController {
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(coachMarksDidReset), name: .coachMarkReset, object: nil)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -339,6 +400,11 @@ class ShuttleRealtimeVC: UIViewController {
     
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
+    @objc private func coachMarksDidReset() {
+        guard view.window != nil else { return }
+        isShowingCoachMarks = false
+        scheduleCoachMarksIfNeeded()
+    }
     
     private func setupUI() {
         self.shuttleOptionView.addSubview(self.shuttleShowByDestinationLabel)
@@ -367,10 +433,6 @@ class ShuttleRealtimeVC: UIViewController {
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-        }
-        self.view.addSubview(widgetCoachMarkAnchor)
-        widgetCoachMarkAnchor.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
         }
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -418,7 +480,10 @@ class ShuttleRealtimeVC: UIViewController {
             self.shuttlecockInTabVC.reload()
         }).disposed(by: self.disposeBag)
         ShuttleRealtimeData.shared.notices.subscribe(onNext: { notices in
-            if notices.isEmpty {
+            if !self.hasLoadedInitialNotices && notices.isEmpty {
+                self.noticeView.isHidden = false
+                self.noticeView.setLoading(true)
+            } else if notices.isEmpty {
                 self.noticeView.isHidden = true
                 self.noticeView.stopAutoScroll()
             } else {
@@ -457,20 +522,102 @@ class ShuttleRealtimeVC: UIViewController {
             }
         }
         Task {
-            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))), cachePolicy: .networkOnly)
-            if let data = response?.data {
-                dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
-                dataDelegate.arrival.onNext(data.shuttle.stops)
+            let response = try? await Network.shared.client.fetch(
+                query: ShuttleRealtimePageQuery(
+                    language: noticeLanguage,
+                    after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now)),
+                    weekday: currentWeekdayString()
+                ),
+                cachePolicy: .networkOnly
+            )
+            await MainActor.run {
+                if let data = response?.data {
+                    dataDelegate.transferData.onNext(data)
+                    self.hasLoadedInitialNotices = true
+                    dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
+                    dataDelegate.arrival.onNext(data.shuttle.stops)
+                }
+                markInitialShuttlePageDataLoaded()
             }
         }
         Task {
             let busResponse = try? await Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
-            if let busData = busResponse?.data {
-                dataDelegate.busAlternativeDormitory.onNext(busData.bus.first(where: { $0.stop.seq == 216000383 }))
-                dataDelegate.busAlternativeShuttlecock.onNext(busData.bus.first(where: { $0.stop.seq == 216000379 }))
-                dataDelegate.busAlternativeStation.onNext(busData.bus.first(where: { $0.stop.seq == 216000138 }))
+            await MainActor.run {
+                if let busData = busResponse?.data {
+                    dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(busData.bus))
+                }
+                markInitialBusAlternativeDataLoaded()
             }
         }
+    }
+
+    private static func buildBusAlternatives(_ busList: [ShuttleBusAlternativeQuery.Data.Bus]) -> [String: [ShuttleBusAlternativeDisplayData]] {
+        func item(routeSeq: Int, stopSeq: Int) -> ShuttleBusAlternativeQuery.Data.Bus? {
+            busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
+        }
+
+        func display(_ bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor) -> ShuttleBusAlternativeDisplayData? {
+            guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
+            return ShuttleBusAlternativeDisplayData(
+                routeName: routeName,
+                minutes: minutes,
+                color: color,
+                busStopName: bus.stop.name,
+                busStopLatitude: bus.stop.latitude,
+                busStopLongitude: bus.stop.longitude
+            )
+        }
+
+        func bestRoute(_ options: [(bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor)]) -> ShuttleBusAlternativeDisplayData? {
+            options.compactMap { option in
+                display(option.bus, routeName: option.routeName, color: option.color)
+            }.min { lhs, rhs in
+                (lhs.minutes ?? Int.max) < (rhs.minutes ?? Int.max)
+            }
+        }
+
+        let green = UIColor(named: "busGreen") ?? .systemGreen
+        let blue = UIColor(named: "busBlue") ?? .systemBlue
+
+        let route10ToSangnoksu = String(localized: "shuttle.bus.alternative.route")
+        let route10FromSangnoksu = String(localized: "shuttle.bus.alternative.route.campus")
+        let route62Terminal = String(localized: "shuttle.bus.alternative.route.62.terminal")
+        let route62Dormitory = String(localized: "shuttle.bus.alternative.route.62.dormitory")
+        let route80A = String(localized: "shuttle.bus.alternative.route.80a")
+        let routeN80A = String(localized: "shuttle.bus.alternative.route.n80a")
+        let route80B = String(localized: "shuttle.bus.alternative.route.80b")
+        let routeN80B = String(localized: "shuttle.bus.alternative.route.n80b")
+
+        let dormitory10 = display(item(routeSeq: 216000068, stopSeq: 216000383), routeName: route10ToSangnoksu, color: green)
+        let shuttlecock10 = display(item(routeSeq: 216000068, stopSeq: 216000379), routeName: route10ToSangnoksu, color: green)
+        let station10 = display(item(routeSeq: 216000068, stopSeq: 216000138), routeName: route10FromSangnoksu, color: green)
+        let dormitory80 = bestRoute([
+            (item(routeSeq: 216000081, stopSeq: 216000028), route80A, blue),
+            (item(routeSeq: 216000101, stopSeq: 216000028), routeN80A, blue)
+        ])
+        let shuttlecock62 = display(item(routeSeq: 216000016, stopSeq: 216000152), routeName: route62Terminal, color: green)
+        let terminal80 = bestRoute([
+            (item(routeSeq: 216000082, stopSeq: 216000077), route80B, blue),
+            (item(routeSeq: 216000102, stopSeq: 216000077), routeN80B, blue)
+        ])
+        let terminal62 = display(item(routeSeq: 216000016, stopSeq: 216000074), routeName: route62Dormitory, color: green)
+        let jungang80 = bestRoute([
+            (item(routeSeq: 216000082, stopSeq: 217000140), route80B, blue),
+            (item(routeSeq: 216000102, stopSeq: 217000140), routeN80B, blue)
+        ])
+        let jungang62 = display(item(routeSeq: 216000016, stopSeq: 217000264), routeName: route62Dormitory, color: green)
+
+        return [
+            "dormitory_station": [dormitory10].compactMap { $0 },
+            "dormitory_terminal": [dormitory80].compactMap { $0 },
+            "dormitory_jungang": [dormitory80].compactMap { $0 },
+            "shuttlecock_station": [shuttlecock10].compactMap { $0 },
+            "shuttlecock_terminal": [shuttlecock62].compactMap { $0 },
+            "shuttlecock_jungang": [shuttlecock62].compactMap { $0 },
+            "station_dormitory": [station10].compactMap { $0 },
+            "terminal_dormitory": [terminal80, terminal62].compactMap { $0 },
+            "jungang_dormitory": [jungang80, jungang62].compactMap { $0 }
+        ]
     }
     
     private func moveToEntireTimetable(_ stop: ShuttleStopEnum, _ section: Int) {
@@ -499,6 +646,48 @@ class ShuttleRealtimeVC: UIViewController {
         }
         self.present(vc, animated: true, completion: nil)
     }
+
+    private func openShuttleAlarmVC(_ stop: ShuttleStopEnum, _ context: ShuttleAlarmContext) {
+        let vc = ShuttleAlarmVC(context: context)
+        vc.shareJourney = { [weak self, weak vc] text in
+            self?.presentJourneyShare(text, dismissing: vc)
+        }
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom(resolver: { resolverContext in
+                min(vc.sheetHeight, resolverContext.maximumDetentValue)
+            })]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
+
+    private func presentJourneyShare(_ text: String, dismissing vc: UIViewController?) {
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        activityVC.modalPresentationStyle = .pageSheet
+        activityVC.popoverPresentationController?.sourceView = view
+        activityVC.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX,
+            y: view.bounds.maxY,
+            width: 1,
+            height: 1
+        )
+
+        let presentShare: () -> Void = { [weak self] in
+            guard let self else { return }
+            self.present(activityVC, animated: true)
+        }
+
+        guard let vc, vc.presentingViewController != nil else {
+            presentShare()
+            return
+        }
+
+        vc.dismiss(animated: false) {
+            DispatchQueue.main.async {
+                presentShare()
+            }
+        }
+    }
     
     private func openShuttleStopVC(_ stop: ShuttleStopEnum) {
         let vc = ShuttleStopInfoVC(stop: stop)
@@ -507,6 +696,88 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         self.present(vc, animated: true, completion: nil)
+    }
+
+    private func openBusAlternativeStopVC(_ stop: ShuttleStopEnum, _ alternative: ShuttleBusAlternativeDisplayData) {
+        guard let shuttleStop = shuttleStopPoint(stop) else { return }
+        let vc = BusAlternativeStopVC(
+            shuttleStopName: shuttleStop.name,
+            shuttleStopLatitude: shuttleStop.latitude,
+            shuttleStopLongitude: shuttleStop.longitude,
+            busStopName: alternative.busStopName,
+            busStopLatitude: alternative.busStopLatitude,
+            busStopLongitude: alternative.busStopLongitude
+        )
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        self.present(vc, animated: true, completion: nil)
+    }
+
+    private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> (name: String, latitude: Double, longitude: Double)? {
+        let name = String(localized: String.LocalizationValue(shuttleStopLocalizationKey(stop)))
+        if let stops = try? ShuttleRealtimeData.shared.arrival.value(),
+           let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
+            return (name, shuttleStop.latitude, shuttleStop.longitude)
+        }
+
+        guard let fallbackIndex = shuttleStopFallbackIndex(stop), stopLocation.indices.contains(fallbackIndex) else {
+            return nil
+        }
+        let fallback = stopLocation[fallbackIndex]
+        return (name, fallback.coordinate.latitude, fallback.coordinate.longitude)
+    }
+
+    private func shuttleStopAPIName(_ stop: ShuttleStopEnum) -> String {
+        switch stop {
+        case .dormiotryOut:
+            return "dormitory_o"
+        case .shuttlecockOut:
+            return "shuttlecock_o"
+        case .station:
+            return "station"
+        case .terminal:
+            return "terminal"
+        case .jungangStation:
+            return "jungang_stn"
+        case .shuttlecockIn:
+            return "shuttlecock_i"
+        }
+    }
+
+    private func shuttleStopLocalizationKey(_ stop: ShuttleStopEnum) -> String {
+        switch stop {
+        case .dormiotryOut:
+            return "shuttle.stop.dormitory.out"
+        case .shuttlecockOut:
+            return "shuttle.stop.shuttlecock.out"
+        case .station:
+            return "shuttle.stop.station"
+        case .terminal:
+            return "shuttle.stop.terminal"
+        case .jungangStation:
+            return "shuttle.stop.jungang.station"
+        case .shuttlecockIn:
+            return "shuttle.stop.shuttlecock.in"
+        }
+    }
+
+    private func shuttleStopFallbackIndex(_ stop: ShuttleStopEnum) -> Int? {
+        switch stop {
+        case .dormiotryOut:
+            return 0
+        case .shuttlecockOut:
+            return 1
+        case .station:
+            return 2
+        case .terminal:
+            return 3
+        case .jungangStation:
+            return 4
+        case .shuttlecockIn:
+            return 5
+        }
     }
 
     private func isAfterNow(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Bool {
@@ -572,6 +843,19 @@ class ShuttleRealtimeVC: UIViewController {
     }
 }
 
+private func currentWeekdayString() -> String {
+    var calendar = Calendar.current
+    calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? calendar.timeZone
+    switch calendar.component(.weekday, from: Foundation.Date.now) {
+    case 1:
+        return "sunday"
+    case 7:
+        return "saturday"
+    default:
+        return "weekday"
+    }
+}
+
 extension ShuttleRealtimeVC {
     func scrollToStop(_ stopID: String) {
         let index: Int
@@ -604,7 +888,10 @@ extension ShuttleRealtimeVC: CLLocationManagerDelegate {
         }
         self.showToastMessage(
             image: UIImage(systemName: "checkmark.circle.fill"),
-            message: String(localized: "toast.success.shuttle.realtime.location.\(self.viewPager.tabView.tabs[position].title)")
+            message: String(
+                format: String(localized: "toast.success.shuttle.realtime.location.%@"),
+                self.viewPager.tabView.tabs[position].title
+            )
         )
         self.viewPager.tabView.moveToTab(index: position)
         self.viewPager.contentView.moveToPage(index: position)

@@ -4,6 +4,7 @@ import Api
 
 class CafeteriaVC: UIViewController {
     private let disposeBag = DisposeBag()
+    private var selectedMealIndex = 0
     private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var lunchVC = CafeteriaTabVC(cafeteriaType: .lunch, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var dinnerVC = CafeteriaTabVC(cafeteriaType: .dinner, showCafeteriaInfoVC: openCafeteriaInfoVC)
@@ -21,6 +22,10 @@ class CafeteriaVC: UIViewController {
             TabItem(title: String(localized: "cafeteria.tab.lunch")),
             TabItem(title: String(localized: "cafeteria.tab.dinner"))
         ]
+        viewPager.onPageChanged = { [weak self] index in
+            self?.selectedMealIndex = index
+            self?.updateShareButtonVisibility()
+        }
         return viewPager
     }()
     
@@ -48,29 +53,24 @@ class CafeteriaVC: UIViewController {
         $0.tintColor = .plainButtonText
         $0.addTarget(self, action: #selector(nextDateButtonTapped), for: .touchUpInside)
     }
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "cafeteria.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
+    private lazy var shareButton = UIButton(type: .system).then {
+        var configuration = UIButton.Configuration.filled()
+        configuration.baseBackgroundColor = .hanyangGreen
+        configuration.cornerStyle = .medium
+        configuration.image = UIImage(systemName: "square.and.arrow.up")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        configuration.background.strokeColor = .white.withAlphaComponent(0.9)
+        configuration.background.strokeWidth = 1
+        $0.configuration = configuration
+        $0.tintColor = .white
+        $0.accessibilityLabel = String(localized: "cafeteria.share")
+        $0.accessibilityIdentifier = "cafeteria_share_button"
+        $0.isHidden = true
+        $0.layer.shadowColor = UIColor.black.cgColor
+        $0.layer.shadowOpacity = 0.22
+        $0.layer.shadowRadius = 8
+        $0.layer.shadowOffset = CGSize(width: 0, height: 3)
+        $0.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -145,10 +145,10 @@ class CafeteriaVC: UIViewController {
     
     private func setupUI() {
         self.view.addSubview(viewPager)
-        self.view.addSubview(loadingView)
         self.view.addSubview(previousDateButton)
         self.view.addSubview(feedDatePicker)
         self.view.addSubview(nextDateButton)
+        self.view.addSubview(shareButton)
         self.feedDatePicker.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
@@ -162,18 +162,22 @@ class CafeteriaVC: UIViewController {
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalTo(feedDatePicker)
         }
+        self.shareButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.bottom.equalTo(feedDatePicker.snp.top).offset(-20)
+            make.width.height.equalTo(50)
+        }
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(feedDatePicker.snp.top)
-        }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(viewPager)
         }
     }
     
     private func observeSubjects() {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
         CafeteriaData.shared.feedDate.subscribe(onNext: { feedDate in
+            CafeteriaData.shared.isLoading.onNext(true)
+            self.updateShareButtonVisibility()
             let dateForm = DateFormatter().then {
                 $0.dateFormat = "yyyy-MM-dd"
             }
@@ -181,17 +185,38 @@ class CafeteriaVC: UIViewController {
             self.feedDatePicker.date = feedDate
             Task {
                 let response = try? await Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: Int32(campusID)))
-                if let data = response?.data {
-                    CafeteriaData.shared.breakfastItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("조식") }) }).sorted(by: { $0.seq < $1.seq }))
-                    CafeteriaData.shared.lunchItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("중식") }) }).sorted(by: { $0.seq < $1.seq }))
-                    CafeteriaData.shared.dinnerItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("석식") }) }).sorted(by: { $0.seq < $1.seq }))
-                    self.breakfastVC.reload()
-                    self.lunchVC.reload()
-                    self.dinnerVC.reload()
-                    self.loadingView.isHidden = true
+                await MainActor.run {
+                    if let data = response?.data {
+                        CafeteriaData.shared.breakfastItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("조식") }) }).sorted(by: { $0.seq < $1.seq }))
+                        CafeteriaData.shared.lunchItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("중식") }) }).sorted(by: { $0.seq < $1.seq }))
+                        CafeteriaData.shared.dinnerItems.onNext(data.cafeteria.filter({ $0.menus.contains(where: { $0.type.contains("석식") }) }).sorted(by: { $0.seq < $1.seq }))
+                        self.breakfastVC.reload()
+                        self.lunchVC.reload()
+                        self.dinnerVC.reload()
+                    }
+                    CafeteriaData.shared.isLoading.onNext(false)
+                    self.updateShareButtonVisibility()
                 }
             }
         }).disposed(by: disposeBag)
+    }
+
+    private var selectedMealVC: CafeteriaTabVC {
+        switch selectedMealIndex {
+        case 0:
+            return breakfastVC
+        case 1:
+            return lunchVC
+        case 2:
+            return dinnerVC
+        default:
+            return breakfastVC
+        }
+    }
+
+    private func updateShareButtonVisibility() {
+        let isLoading = (try? CafeteriaData.shared.isLoading.value()) ?? false
+        shareButton.isHidden = isLoading || selectedMealVC.shareText() == nil
     }
     
     @objc private func previousDateButtonTapped() {
@@ -208,6 +233,9 @@ class CafeteriaVC: UIViewController {
         let date = Calendar.current.date(byAdding: .day, value: 1, to: feedDatePicker.date)
         CafeteriaData.shared.feedDate.onNext(date!)
     }
+    @objc private func shareButtonTapped() {
+        selectedMealVC.presentShareSheet(sourceView: shareButton)
+    }
     @objc private func openCafeteriaInfoVC(cafeteriaID: Int) {
         let vc = CafeteriaInfoVC(cafeteriaID: cafeteriaID)
         if let sheet = vc.sheetPresentationController {
@@ -218,7 +246,9 @@ class CafeteriaVC: UIViewController {
     }
 
     func scrollToMealTab(_ index: Int) {
+        selectedMealIndex = index
         viewPager.tabView.moveToTab(index: index)
         viewPager.contentView.moveToPage(index: index)
+        updateShareButtonVisibility()
     }
 }

@@ -7,5 +7,8 @@ struct HyuabotWidgetBundle: WidgetBundle {
         CafeteriaWidget()
         ShuttleWidget()
         TransferWidget()
+        if #available(iOSApplicationExtension 16.1, *) {
+            ShuttleBoardingLiveActivity()
+        }
     }
 }

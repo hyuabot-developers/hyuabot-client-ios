@@ -19,7 +19,7 @@ class BirthdayVC: UIViewController {
     }()
     private lazy var dialogMessage: UILabel = {
         let label = UILabel()
-        label.text = String(localized: "birthday.content.\(currentYear - 2017).\(String(currentYear))")
+        label.text = String(format: String(localized: "birthday.content.%lld.%@"), currentYear - 2017, String(currentYear))
         label.font = UIFont.godo(size: 16, weight: .regular)
         label.textAlignment = .left
         label.numberOfLines = 0

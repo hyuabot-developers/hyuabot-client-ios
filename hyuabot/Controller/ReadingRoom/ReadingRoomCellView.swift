@@ -21,6 +21,12 @@ class ReadingRoomCellView: UITableViewCell {
         $0.font = .godo(size: 16, weight: .regular)
         $0.numberOfLines = 1
     }
+    private let occupancyProgressView = UIProgressView(progressViewStyle: .bar).then {
+        $0.trackTintColor = .separator.withAlphaComponent(0.35)
+        $0.progressTintColor = .systemGreen
+        $0.layer.cornerRadius = 2
+        $0.clipsToBounds = true
+    }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -36,17 +42,26 @@ class ReadingRoomCellView: UITableViewCell {
         self.contentView.addSubview(self.nameLabel)
         self.contentView.addSubview(self.alarmButton)
         self.contentView.addSubview(self.seatLabel)
+        self.contentView.addSubview(self.occupancyProgressView)
         self.nameLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
-            make.verticalEdges.equalToSuperview().inset(15)
+            make.top.equalToSuperview().inset(12)
+            make.trailing.lessThanOrEqualTo(self.seatLabel.snp.leading).offset(-10)
         }
         self.alarmButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalTo(self.nameLabel)
+            make.width.height.equalTo(32)
         }
         self.seatLabel.snp.makeConstraints { make in
             make.trailing.equalTo(self.alarmButton.snp.leading).offset(-10)
             make.centerY.equalTo(self.nameLabel)
+        }
+        self.occupancyProgressView.snp.makeConstraints { make in
+            make.top.equalTo(self.nameLabel.snp.bottom).offset(8)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().inset(12)
+            make.height.equalTo(4)
         }
     }
     
@@ -60,6 +75,9 @@ class ReadingRoomCellView: UITableViewCell {
         self.showUnsubscribeToastMessage = showUnsubscribeToastMessage
         self.nameLabel.text = getLocalizedString(readingRoomID: item.seq)
         self.seatLabel.text = "\(item.seats.available) / \(item.seats.active)"
+        let progress = item.seats.active > 0 ? Float(item.seats.occupied) / Float(item.seats.active) : 0
+        self.occupancyProgressView.setProgress(progress, animated: false)
+        self.occupancyProgressView.progressTintColor = occupancyColor(progress: progress)
         let itemKey = "reading_room_\(item.seq)"
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
         if (notifiedRooms.contains(itemKey)) {
@@ -67,6 +85,12 @@ class ReadingRoomCellView: UITableViewCell {
         } else {
             self.alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
         }
+    }
+
+    private func occupancyColor(progress: Float) -> UIColor {
+        if progress >= 0.9 { return .systemRed }
+        if progress >= 0.7 { return .systemOrange }
+        return .systemGreen
     }
     
     private func getLocalizedString(readingRoomID: Int) -> String {

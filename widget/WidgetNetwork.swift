@@ -1,24 +1,16 @@
 import Foundation
+import Apollo
+import ApolloAPI
 
-private let graphqlURL = URL(string: "https://backend.hyuabot.app/graphql")!
+final class WidgetNetwork {
+    static let shared = WidgetNetwork()
+    private(set) lazy var client = ApolloClient(url: URL(string: "https://backend.hyuabot.app/graphql")!)
 
-func widgetGraphQL<T: Decodable>(query: String, variables: [String: Any] = [:]) async throws -> T {
-    var request = URLRequest(url: graphqlURL)
-    request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    var body: [String: Any] = ["query": query]
-    if !variables.isEmpty { body["variables"] = variables }
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
-    let (data, _) = try await URLSession.shared.data(for: request)
-    let response = try JSONDecoder().decode(GraphQLResponse<T>.self, from: data)
-    guard let result = response.data else {
-        throw URLError(.cannotParseResponse)
+    private init() {}
+
+    func fetch<Query: GraphQLQuery>(query: Query) async throws -> GraphQLResponse<Query> where Query.ResponseFormat == SingleResponseFormat {
+        try await client.fetch(query: query, cachePolicy: .networkOnly)
     }
-    return result
-}
-
-struct GraphQLResponse<T: Decodable>: Decodable {
-    let data: T?
 }
 
 func widgetWeekday() -> String {
@@ -30,4 +22,3 @@ func widgetWeekday() -> String {
     default: return "weekday"
     }
 }
-

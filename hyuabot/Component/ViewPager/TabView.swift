@@ -27,6 +27,7 @@ class TabView: UIView {
     var tabs: [TabItem] {
         didSet {
             self.collectionView.reloadData()
+            guard self.tabs.indices.contains(selectedIndex) else { return }
             self.tabs[selectedIndex].onSelected()
         }
     }
@@ -62,10 +63,13 @@ class TabView: UIView {
     var currentIndex: Int { selectedIndex }
 
     func tabCellView(at index: Int) -> UIView? {
-        collectionView.cellForItem(at: IndexPath(item: index, section: 0))
+        guard tabs.indices.contains(index) else { return nil }
+        return collectionView.cellForItem(at: IndexPath(item: index, section: 0))
     }
 
     func moveToTab(index: Int) {
+        guard self.tabs.indices.contains(index),
+              self.tabs.indices.contains(selectedIndex) else { return }
         self.collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
         self.tabs[selectedIndex].onDeselected()
         self.tabs[index].onSelected()
@@ -84,6 +88,7 @@ extension TabView: UICollectionViewDelegateFlowLayout  {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         switch sizeConfiguration {
         case .fillEqually(let height, let spacing):
+            guard !tabs.isEmpty else { return CGSize(width: 0, height: height) }
             let totalWidth = collectionView.frame.width - CGFloat(tabs.count + 1) * spacing
             let width = totalWidth / CGFloat(tabs.count)
             return CGSize(width: width, height: height)
@@ -109,6 +114,7 @@ extension TabView: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TabCell", for: indexPath) as! TabCell
+        guard tabs.indices.contains(indexPath.item) else { return cell }
         cell.tabItem = tabs[indexPath.item]
         return cell
     }
@@ -116,6 +122,7 @@ extension TabView: UICollectionViewDataSource {
 
 extension TabView: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard tabs.indices.contains(indexPath.item) else { return }
         self.moveToTab(index: indexPath.item)
         self.delegate?.didMoveToTab(index: indexPath.item)
     }

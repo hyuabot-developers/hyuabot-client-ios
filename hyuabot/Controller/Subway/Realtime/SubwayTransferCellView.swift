@@ -46,36 +46,38 @@ class SubwayTransferCellView: UITableViewCell {
     }
     
     func setupUI(item: SubwayTransferItem, direction: String) {
-        if (item.transfer != nil) {
+        if let transfer = item.transfer {
             self.arrowLabel.isHidden = false
-            if (direction == "up") {
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.up.\(getDestinationLabelText(item.take.terminal.stationID)).\(item.take.location!)"
-                )
-            } else {
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes, item.take.location!))"
-                )
-            }
+            self.fromLabel.text = takeLabelText(item.take, direction: direction)
             self.toLabel.text = String(
-                localized: "subway.transfer.timetable.\(getDestinationLabelText(item.transfer!.terminal.stationID)).\(getTimetableLabelText(item.transfer!.minutes))"
+                format: String(localized: "subway.transfer.timetable.%@.%@"),
+                getDestinationLabelText(transfer.terminal.stationID, fallback: transfer.terminal.name),
+                getTimetableLabelText(transfer.minutes)
             )
         } else {
             self.arrowLabel.isHidden = true
             self.toLabel.text = ""
-            if (direction == "up") {
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.up.\(getDestinationLabelText(item.take.terminal.stationID)).\(item.take.location!)"
-                )
-            } else {
-                self.fromLabel.text = String(
-                    localized: "subway.transfer.down.\(getDestinationLabelText(item.take.terminal.stationID)).\(getRealtimeLabelText(item.take.minutes, item.take.location!))"
-                )
-            }
+            self.fromLabel.text = takeLabelText(item.take, direction: direction)
         }
     }
+
+    private func takeLabelText(_ entry: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry, direction: String) -> String {
+        let destination = getDestinationLabelText(entry.terminal.stationID, fallback: entry.terminal.name)
+        let arrivalText: String
+        if direction == "up" {
+            arrivalText = entry.location ?? getTimetableLabelText(entry.minutes)
+        } else if let location = entry.location {
+            arrivalText = getRealtimeLabelText(entry.minutes, location)
+        } else {
+            arrivalText = getTimetableLabelText(entry.minutes)
+        }
+        if direction == "up" {
+            return String(format: String(localized: "subway.transfer.up.%@.%@"), destination, arrivalText)
+        }
+        return String(format: String(localized: "subway.transfer.down.%@.%@"), destination, arrivalText)
+    }
     
-    func getDestinationLabelText(_ stationID: String) -> String {
+    func getDestinationLabelText(_ stationID: String, fallback: String) -> String {
         var stationName = ""
         switch stationID {
             case "K209" : stationName = String(localized: "subway.station.k209")
@@ -92,29 +94,32 @@ class SubwayTransferCellView: UITableViewCell {
             case "K444" : stationName = String(localized: "subway.station.k444")
             case "K453" : stationName = String(localized: "subway.station.k453")
             case "K456" : stationName = String(localized: "subway.station.k456")
-            default: return String(localized: "subway.station.\(stationID)")
+            default:
+                let key = "subway.station.\(stationID.lowercased())"
+                let localized = String(localized: String.LocalizationValue(stringLiteral: key))
+                return localized == key ? fallback : localized
         }
         return stationName
     }
     
     private func getRealtimeLabelText(_ time: Int, _ location: String) -> String {
-        return String(localized: "subway.realtime.\(Int(time)).\(location)")
+        return String(format: String(localized: "subway.realtime.%lld.%@"), time, location)
     }
     
     private func getRealtimeLabelTextWithoutTime(_ location: String, _ status: Int? = nil) -> String {
         if (status == 0) {
-            return String(localized: "subway.transfer.entering.\(location)")
+            return String(format: String(localized: "subway.transfer.entering.%@"), location)
         } else if (status == 1) {
-            return String(localized: "subway.transfer.arrived.\(location)")
+            return String(format: String(localized: "subway.transfer.arrived.%@"), location)
         } else if (status == 2) {
-            return String(localized: "subway.transfer.departed.\(location)")
+            return String(format: String(localized: "subway.transfer.departed.%@"), location)
         } else if (status == 3) {
-            return String(localized: "subway.transfer.almost.\(location)")
+            return String(format: String(localized: "subway.transfer.almost.%@"), location)
         }
         return ""
     }
     
     private func getTimetableLabelText(_ minutes: Int) -> String {
-        return String(localized: "subway.time.\(minutes)")
+        return String(format: String(localized: "subway.time.%lld"), minutes)
     }
 }
