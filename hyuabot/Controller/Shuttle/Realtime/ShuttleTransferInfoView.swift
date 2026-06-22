@@ -377,8 +377,10 @@ private final class TransferRowView: UIView {
 final class ShuttleTransferInfoView: UIView {
     var onHeightChange: (() -> Void)?
 
+    private let emptyRowsGraceInterval: TimeInterval = 60
     private let stopID: ShuttleStopEnum
     private var rows: [TransferRow] = []
+    private var emptyRowsSince: Foundation.Date?
 
     private let titleLabel = UILabel().then {
         $0.text = String(localized: "shuttle.transfer.section.title")
@@ -426,8 +428,7 @@ final class ShuttleTransferInfoView: UIView {
 
     func setup(data: ShuttleRealtimePageQuery.Data?) {
         guard let data else {
-            guard rows.isEmpty else { return }
-            render(rows: [])
+            handleEmptyRows()
             return
         }
         let rows: [TransferRow]
@@ -447,8 +448,30 @@ final class ShuttleTransferInfoView: UIView {
         default:
             rows = []
         }
-        guard !rows.isEmpty || self.rows.isEmpty else { return }
+
+        guard !rows.isEmpty else {
+            handleEmptyRows()
+            return
+        }
+
+        emptyRowsSince = nil
         render(rows: rows)
+    }
+
+    private func handleEmptyRows(now: Foundation.Date = Foundation.Date()) {
+        guard !rows.isEmpty else {
+            emptyRowsSince = nil
+            render(rows: [])
+            return
+        }
+
+        if let emptyRowsSince {
+            guard now.timeIntervalSince(emptyRowsSince) >= emptyRowsGraceInterval else { return }
+            self.emptyRowsSince = nil
+            render(rows: [])
+        } else {
+            emptyRowsSince = now
+        }
     }
 
     private func render(rows: [TransferRow]) {
