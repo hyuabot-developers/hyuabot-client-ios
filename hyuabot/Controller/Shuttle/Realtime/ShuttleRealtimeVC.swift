@@ -343,6 +343,7 @@ class ShuttleRealtimeVC: UIViewController {
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(coachMarksDidReset), name: .coachMarkReset, object: nil)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -354,6 +355,13 @@ class ShuttleRealtimeVC: UIViewController {
     
     @objc func appDidEnterBackground() { self.stopPolling() }
     @objc func appWillEnterForeground() { self.startPolling() }
+    @objc private func coachMarksDidReset() {
+        guard view.window != nil else { return }
+        isShowingCoachMarks = false
+        DispatchQueue.main.async { [weak self] in
+            self?.showCoachMarksIfNeeded()
+        }
+    }
     
     private func setupUI() {
         self.shuttleOptionView.addSubview(self.shuttleShowByDestinationLabel)

@@ -56,6 +56,7 @@ final class CoachMarkManager {
         pageIds.forEach {
             UserDefaults.standard.removeObject(forKey: pageKey($0, Self.currentVersion))
         }
+        NotificationCenter.default.post(name: .coachMarkReset, object: nil)
     }
 
     private func pageKey(_ pageId: String, _ version: Int) -> String {
@@ -65,4 +66,5 @@ final class CoachMarkManager {
 
 extension Notification.Name {
     static let coachMarkPageShown = Notification.Name("CoachMarkPageShown")
+    static let coachMarkReset = Notification.Name("CoachMarkReset")
 }

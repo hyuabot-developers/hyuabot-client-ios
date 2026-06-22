@@ -76,11 +76,20 @@ class SubwayRealtimeCellView: UITableViewCell {
     }
 
     private func getRealtimeLabelText(_ item: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) -> String {
+        guard isKoreanAppLanguage else {
+            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops, compact: true)
+        }
         guard let location = item.location,
               let status = item.status else {
-            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops)
+            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops, compact: true)
         }
-        return appendStopsText(getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false), stops: item.stops)
+        let timeText = getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false)
+        guard let stops = item.stops, stops > 0 else { return timeText }
+        return [
+            getTimetableLabelText(item.minutes),
+            stopCountText(stops, compact: true),
+            realtimeStatusText(location, status, item.isLast ?? false)
+        ].joined(separator: " · ")
     }
     
     private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String {
@@ -115,15 +124,50 @@ class SubwayRealtimeCellView: UITableViewCell {
         return String(format: String(localized: "subway.time.%lld"), minutes)
     }
 
-    private func appendStopsText(_ text: String, stops: Int?) -> String {
+    private var isKoreanAppLanguage: Bool {
+        (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
+    }
+
+    private func appendStopsText(_ text: String, stops: Int?, compact: Bool = false) -> String {
         guard let stops, stops > 0 else { return text }
-        let stopsText = String(format: String(localized: "subway.realtime.stops.suffix.%lld"), stops)
+        let stopsText = stopCountText(stops, compact: compact)
         return "\(text) \(stopsText)"
+    }
+
+    private func stopCountText(_ stops: Int, compact: Bool) -> String {
+        let text = String(format: String(localized: "subway.realtime.stops.suffix.%lld"), stops)
+        guard compact else { return text }
+        return text.trimmingCharacters(in: CharacterSet(charactersIn: "()"))
+    }
+
+    private func realtimeStatusText(_ location: String, _ status: Int, _ last: Bool) -> String {
+        let suffix: String
+        switch status {
+        case 0:
+            suffix = "진입"
+        case 1:
+            suffix = "도착"
+        case 2:
+            suffix = "출발"
+        case 3:
+            suffix = "전역 출발"
+        default:
+            suffix = ""
+        }
+        let statusText = suffix.isEmpty ? location : "\(location) \(suffix)"
+        guard last else { return statusText }
+        return "\(statusText) 막차"
     }
     
     private func setRealtimeAttributedText(_ text: String) {
         let attributeString = NSMutableAttributedString(string: text)
-        if text.contains("(") && !text.contains("(s)") {
+        if text.contains(" · ") {
+            attributeString.addAttribute(
+                .foregroundColor,
+                value: UIColor.red,
+                range: NSRange(location: 0, length: text.components(separatedBy: " · ")[0].count)
+            )
+        } else if text.contains("(") && !text.contains("(s)") {
             attributeString.addAttribute(
                 .foregroundColor,
                 value: UIColor.red, range: NSRange(

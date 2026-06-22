@@ -67,13 +67,19 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         self.contentView.addSubview(nameStackView)
         self.contentView.addSubview(infoButton)
         self.contentView.backgroundColor = .hanyangBlue
-        self.runningTimeLabel.text = runningTime.map {
-            String(
-                format: String(localized: "cafeteria.running.time.status.%@.%@"),
-                $0,
-                cafeteriaStatusText(runningTime: $0, hasMenu: hasMenu)
-            )
-        } ?? String(localized: "cafeteria.running.time")
+        if let runningTime {
+            if let status = cafeteriaStatusText(runningTime: runningTime, hasMenu: hasMenu) {
+                self.runningTimeLabel.text = String(
+                    format: String(localized: "cafeteria.running.time.status.%@.%@"),
+                    runningTime,
+                    status
+                )
+            } else {
+                self.runningTimeLabel.text = String(format: String(localized: "cafeteria.running.time.%@"), runningTime)
+            }
+        } else {
+            self.runningTimeLabel.text = String(localized: "cafeteria.running.time")
+        }
         self.nameStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(10)
         }
@@ -89,7 +95,7 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         self.showCafeteriaInfoVC()
     }
 
-    private func cafeteriaStatusText(runningTime: String, hasMenu: Bool) -> String {
+    private func cafeteriaStatusText(runningTime: String, hasMenu: Bool) -> String? {
         if !hasMenu { return String(localized: "cafeteria.status.no.menu") }
         let times = runningTime.matches(of: /\d{1,2}:\d{2}/)
             .prefix(2)
@@ -99,7 +105,7 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
                 return formatter.date(from: String(match.output))
             }
         guard times.count == 2 else {
-            return String(localized: "cafeteria.status.has.menu")
+            return nil
         }
         let calendar = Calendar.current
         let nowComponents = calendar.dateComponents([.hour, .minute], from: Date())

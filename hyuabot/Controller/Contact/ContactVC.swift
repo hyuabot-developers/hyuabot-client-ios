@@ -214,8 +214,12 @@ class ContactVC: UIViewController {
     }
 
     private func callContact(_ contact: Contact) {
-        let url = URL(string: "tel://\(contact.phoneNumber)")
-        if let url, UIApplication.shared.canOpenURL(url) {
+        let phoneNumber = contact.phoneNumber.filter { $0.isNumber || $0 == "+" }
+        let urls = [
+            URL(string: "telprompt://\(phoneNumber)"),
+            URL(string: "tel://\(phoneNumber)")
+        ].compactMap { $0 }
+        if let url = urls.first(where: { UIApplication.shared.canOpenURL($0) }) ?? urls.first {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
