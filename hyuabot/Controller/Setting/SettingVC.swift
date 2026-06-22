@@ -1,9 +1,9 @@
 import UIKit
 
 class SettingVC: UIViewController {
-    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "questionmark.circle", "person.circle", "info.circle.fill"]
-    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.coachmark.reset", "setting.developer", "setting.version"]
-    private let analyticsNames = ["setting.campus", "setting.theme", "setting.language", "setting.coachmark.reset", "setting.developer", "setting.version"]
+    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "chart.bar.fill", "questionmark.circle", "person.circle", "info.circle.fill"]
+    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.analytics", "setting.coachmark.reset", "setting.developer", "setting.version"]
+    private let analyticsNames = ["setting.campus", "setting.theme", "setting.language", "setting.analytics", "setting.coachmark.reset", "setting.developer", "setting.version"]
     private lazy var settingView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -66,6 +66,10 @@ class SettingVC: UIViewController {
             message: String(localized: "toast.coachmark.reset.complete")
         )
     }
+
+    private func setAnalyticsConsent(_ isEnabled: Bool) {
+        AnalyticsManager.setCollectionEnabled(isEnabled)
+    }
 }
 
 extension SettingVC: UITableViewDelegate, UITableViewDataSource {
@@ -79,7 +83,13 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SettingCellView.reuseIdentifier) as? SettingCellView else { return UITableViewCell() }
-        cell.setupUI(imageName: self.imageNames[indexPath.row], title: self.titles[indexPath.row])
+        cell.setupUI(
+            imageName: self.imageNames[indexPath.row],
+            title: self.titles[indexPath.row],
+            onAnalyticsConsentChanged: { [weak self] isEnabled in
+                self?.setAnalyticsConsent(isEnabled)
+            }
+        )
         return cell
     }
     

@@ -17,6 +17,7 @@
 
 import UIKit
 import FirebaseAnalytics
+import FirebaseCrashlytics
 
 // MARK: - Screens (GA4 `screen_view` -> screen_name)
 
@@ -141,8 +142,28 @@ enum AnalyticsItem: String {
 
 /// Thin wrapper over FirebaseAnalytics. The only place that calls `Analytics.logEvent`.
 enum AnalyticsManager {
+    private static let analyticsConsentKey = "analyticsConsent"
+
+    static var isCollectionEnabled: Bool {
+        if UserDefaults.standard.object(forKey: analyticsConsentKey) == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: analyticsConsentKey)
+    }
+
+    static func applyCollectionSettings() {
+        Analytics.setAnalyticsCollectionEnabled(isCollectionEnabled)
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(isCollectionEnabled)
+    }
+
+    static func setCollectionEnabled(_ isEnabled: Bool) {
+        UserDefaults.standard.set(isEnabled, forKey: analyticsConsentKey)
+        applyCollectionSettings()
+    }
+
     /// Logs a GA4 `screen_view` event.
     static func logScreen(_ screen: AnalyticsScreen, class screenClass: AnyObject) {
+        guard isCollectionEnabled else { return }
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
             AnalyticsParameterScreenName: screen.rawValue,
             AnalyticsParameterScreenClass: String(describing: type(of: screenClass))
@@ -158,6 +179,7 @@ enum AnalyticsManager {
     static func logSelect(_ item: AnalyticsItem,
                           type: AnalyticsContentType = .button,
                           name: String? = nil) {
+        guard isCollectionEnabled else { return }
         var params: [String: Any] = [
             AnalyticsParameterContentType: type.rawValue,
             AnalyticsParameterItemID: item.rawValue

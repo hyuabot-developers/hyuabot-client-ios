@@ -6073,6 +6073,34 @@
         }
       }
     },
+    "setting.analytics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Analytics"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ分析データの収集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 분석 데이터 수집"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用分析数据收集"
+          }
+        }
+      }
+    },
     "setting.coachmark.reset" : {
       "localizations" : {
         "en" : {
