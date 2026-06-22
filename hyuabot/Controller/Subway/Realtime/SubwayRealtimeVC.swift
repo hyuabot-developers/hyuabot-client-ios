@@ -34,31 +34,6 @@ class SubwayRealtimeVC: UIViewController {
         ]
         return viewPager
     }()
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "subway.realtime.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.subwayRealtime)
@@ -105,13 +80,9 @@ class SubwayRealtimeVC: UIViewController {
     
     private func setupUI() {
         self.view.addSubview(viewPager)
-        self.view.addSubview(loadingView)
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-        }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(viewPager)
         }
     }
     
@@ -135,15 +106,6 @@ class SubwayRealtimeVC: UIViewController {
             guard let self = self else { return }
             SubwayRealtimeData.shared.transferUp.onNext(self.processUpDirection(oidoBlue: oidoBlue, oidoYellow: oidoYellow))
             SubwayRealtimeData.shared.transferDown.onNext(self.processDownDirection(campusBlue: campusBlue, campusYellow: campusYellow, oidoYellow: oidoYellow))
-        }).disposed(by: disposeBag)
-        SubwayRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
-                self.loadingView.isHidden = false
-                self.loadingSpinner.startAnimating()
-            } else {
-                self.loadingView.isHidden = true
-                self.loadingSpinner.stopAnimating()
-            }
         }).disposed(by: disposeBag)
     }
     
@@ -218,12 +180,16 @@ class SubwayRealtimeVC: UIViewController {
         let weekday = (component == 1 || component == 7) ? "weekends" : "weekdays"
         Task {
             let response = try? await Network.shared.client.fetch(query: SubwayRealtimePageQuery(weekday: weekday), cachePolicy: .networkOnly)
-            if let data = response?.data {
-                SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
-                SubwayRealtimeData.shared.isLoading.onNext(false)
-                self.line4VC.reload()
-                self.lineSuinVC.reload()
-                self.transferVC.reload()
+            await MainActor.run {
+                if let data = response?.data {
+                    SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
+                    SubwayRealtimeData.shared.isLoading.onNext(false)
+                    self.line4VC.reload()
+                    self.lineSuinVC.reload()
+                    self.transferVC.reload()
+                } else {
+                    SubwayRealtimeData.shared.isLoading.onNext(false)
+                }
             }
         }
     }
