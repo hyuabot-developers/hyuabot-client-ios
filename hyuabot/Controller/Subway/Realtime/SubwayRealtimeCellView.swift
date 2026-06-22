@@ -45,6 +45,7 @@ class SubwayRealtimeCellView: UITableViewCell {
             self.setRealtimeAttributedText(getRealtimeLabelText(item))
         } else {
             self.destinationLabel.text = String(format: String(localized: "subway.terminal.%@"), destination)
+            self.subwayTimeLabel.attributedText = nil
             self.subwayTimeLabel.text = getTimetableLabelText(item.minutes)
         }
     }
@@ -77,9 +78,9 @@ class SubwayRealtimeCellView: UITableViewCell {
     private func getRealtimeLabelText(_ item: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) -> String {
         guard let location = item.location,
               let status = item.status else {
-            return getTimetableLabelText(item.minutes)
+            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops)
         }
-        return getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false)
+        return appendStopsText(getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false), stops: item.stops)
     }
     
     private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String {
@@ -112,6 +113,12 @@ class SubwayRealtimeCellView: UITableViewCell {
     
     private func getTimetableLabelText(_ minutes: Int) -> String {
         return String(format: String(localized: "subway.time.%lld"), minutes)
+    }
+
+    private func appendStopsText(_ text: String, stops: Int?) -> String {
+        guard let stops, stops > 0 else { return text }
+        let stopsText = String(format: String(localized: "subway.realtime.stops.suffix.%lld"), stops)
+        return "\(text) \(stopsText)"
     }
     
     private func setRealtimeAttributedText(_ text: String) {

@@ -10172,6 +10172,34 @@
         }
       }
     },
+    "subway.realtime.stops.suffix.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%lld stops)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%lld駅前)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%lld역 전)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(前%lld站)"
+          }
+        }
+      }
+    },
     "subway.station.%@" : {
       "localizations" : {
         "en" : {
