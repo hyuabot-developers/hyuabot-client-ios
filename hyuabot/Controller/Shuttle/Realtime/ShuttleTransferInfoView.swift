@@ -13,6 +13,14 @@ private enum TransferVehicleType {
     case bus
 }
 
+private func localizedTransferMinuteText(_ minutes: Int) -> String {
+    let language = Locale.current.language.languageCode?.identifier ?? "ko"
+    guard !language.hasPrefix("ko") else {
+        return String(format: String(localized: "transfer.bus.time.format"), minutes)
+    }
+    return "\(minutes)m"
+}
+
 private struct TransferTimelineEntry: Equatable {
     let destination: String
     let minutes: Int?
@@ -28,6 +36,15 @@ private struct TransferRow: Equatable {
     let vehicleType: TransferVehicleType
     let timeline: [TransferTimelineEntry]
 
+    var preferredHeight: CGFloat {
+        switch vehicleType {
+        case .subway:
+            return 100
+        case .bus:
+            return 84
+        }
+    }
+
     static func == (lhs: TransferRow, rhs: TransferRow) -> Bool {
         lhs.name == rhs.name &&
             lhs.targetName == rhs.targetName &&
@@ -40,9 +57,8 @@ private final class TransferTimelineView: UIView {
     private let sideStations = 3
     private let visibleBusStops = 7
     private let compressedNearBusStop = 4
-    private let trackCenterY: CGFloat = 56
     private let bubbleWidth: CGFloat = 72
-    private let bubbleHeight: CGFloat = 34
+    private let bubbleHeight: CGFloat = 30
     private let targetTrackGap: CGFloat = 16
     private var row: TransferRow?
 
@@ -66,7 +82,7 @@ private final class TransferTimelineView: UIView {
 
         let left = bounds.minX + 28
         let right = bounds.maxX - 28
-        let centerY = trackCenterY
+        let centerY = bounds.midY
         let targetX = row.vehicleType == .subway ? (left + right) / 2 : right
         let color = row.color
         let entriesByDirection = Dictionary(grouping: row.timeline.prefix(4), by: { $0.direction })
@@ -196,7 +212,7 @@ private final class TransferTimelineView: UIView {
     private func drawBubble(entry: TransferTimelineEntry, type: TransferVehicleType, x: CGFloat, y: CGFloat, index: Int, total: Int) {
         let primary: String
         if type == .bus {
-            let minuteText = entry.minutes.map { transferMinuteText($0) } ?? entry.destination
+            let minuteText = entry.minutes.map { localizedTransferMinuteText($0) } ?? entry.destination
             let stopsText = entry.stops.map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) }
             primary = [minuteText, stopsText].compactMap { $0 }.joined(separator: " ")
         } else {
@@ -205,11 +221,11 @@ private final class TransferTimelineView: UIView {
         let secondary: String? = {
             guard type != .bus else { return nil }
             if let minutes = entry.minutes, let stops = entry.stops {
-                return transferMinuteText(minutes) +
+                return localizedTransferMinuteText(minutes) +
                     String(format: String(localized: "transfer.bus.stops.suffix"), stops)
             }
             if let minutes = entry.minutes {
-                return transferMinuteText(minutes)
+                return localizedTransferMinuteText(minutes)
             }
             if let stops = entry.stops {
                 return String(format: String(localized: "transfer.bus.stops.suffix"), stops)
@@ -221,14 +237,14 @@ private final class TransferTimelineView: UIView {
         guard !lines.isEmpty else { return }
 
         let width = bubbleWidth(for: Array(lines), type: type)
-        let height: CGFloat = lines.count == 1 ? 22 : bubbleHeight
+        let height: CGFloat = lines.count == 1 ? 20 : bubbleHeight
         let above: Bool
         if type == .subway {
             above = entry.direction < 0
         } else {
             above = total == 1 || index == 0
         }
-        let bubbleTrackGap: CGFloat = 18
+        let bubbleTrackGap: CGFloat = 16
         let top = above ? y - bubbleTrackGap - height : y + bubbleTrackGap
         let left = clamp(x - width / 2, bounds.minX + 4, bounds.maxX - width - 4)
         let rect = CGRect(x: left, y: top, width: width, height: height)
@@ -242,18 +258,18 @@ private final class TransferTimelineView: UIView {
         paragraph.alignment = .center
         for (lineIndex, line) in lines.enumerated() {
             let attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: lineIndex == 0 ? 10 : 9, weight: lineIndex == 0 ? .semibold : .regular),
+                .font: UIFont.systemFont(ofSize: lineIndex == 0 ? 10 : 8, weight: lineIndex == 0 ? .semibold : .regular),
                 .foregroundColor: lineIndex == 0 ? UIColor.label : UIColor.secondaryLabel,
                 .paragraphStyle: paragraph
             ]
-            let lineRect = CGRect(x: rect.minX + 4, y: rect.minY + 4 + CGFloat(lineIndex * 14), width: rect.width - 8, height: 13)
+            let lineRect = CGRect(x: rect.minX + 4, y: rect.minY + 3 + CGFloat(lineIndex * 12), width: rect.width - 8, height: 12)
             String(line.prefix(16)).draw(in: lineRect, withAttributes: attributes)
         }
     }
 
     private func bubbleWidth(for lines: [String], type: TransferVehicleType) -> CGFloat {
         let maxTextWidth = lines.enumerated().map { index, line in
-            let font = UIFont.systemFont(ofSize: index == 0 ? 10 : 9, weight: index == 0 ? .semibold : .regular)
+            let font = UIFont.systemFont(ofSize: index == 0 ? 10 : 8, weight: index == 0 ? .semibold : .regular)
             return String(line.prefix(16)).size(withAttributes: [.font: font]).width
         }.max() ?? 0
         let minimumWidth: CGFloat = type == .bus ? 84 : 64
@@ -319,14 +335,6 @@ private final class TransferTimelineView: UIView {
         let distance = clearance + CGFloat(max(index - 1, 0)) * step
         return clamp(targetX + CGFloat(direction) * distance, left, right)
     }
-
-    private func transferMinuteText(_ minutes: Int) -> String {
-        let language = Locale.current.language.languageCode?.identifier ?? "ko"
-        guard !language.hasPrefix("ko") else {
-            return String(format: String(localized: "transfer.bus.time.format"), minutes)
-        }
-        return "\(minutes)m"
-    }
 }
 
 private final class TransferRowView: UIView {
@@ -388,7 +396,7 @@ final class ShuttleTransferInfoView: UIView {
 
     var preferredHeight: CGFloat {
         guard !rows.isEmpty else { return 0 }
-        return 50 + CGFloat(rows.count * 116) + 8
+        return 40 + rows.reduce(CGFloat(0)) { $0 + $1.preferredHeight } + 4
     }
 
     init(stopID: ShuttleStopEnum) {
@@ -407,12 +415,12 @@ final class ShuttleTransferInfoView: UIView {
         addSubview(rowStackView)
         titleLabel.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
+            make.height.equalTo(40)
         }
         rowStackView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.top.equalTo(titleLabel.snp.bottom).offset(2)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalToSuperview().inset(4)
+            make.bottom.equalToSuperview().inset(2)
         }
     }
 
@@ -454,7 +462,7 @@ final class ShuttleTransferInfoView: UIView {
             let rowView = TransferRowView(row: row)
             rowStackView.addArrangedSubview(rowView)
             rowView.snp.makeConstraints { make in
-                make.height.equalTo(116)
+                make.height.equalTo(row.preferredHeight)
             }
         }
         isHidden = rows.isEmpty
