@@ -3,7 +3,7 @@ import RxSwift
 import Api
 
 class DepartureListViewModel: ObservableObject {
-    init(stop: String) {
+    init(stop: WatchShuttleStop) {
         self.stop = stop
         ShuttleRealtimeData.shared.isLoading
             .subscribe(onNext: { [weak self] loading in
@@ -19,7 +19,7 @@ class DepartureListViewModel: ObservableObject {
             }).disposed(by: disposeBag)
     }
     
-    private let stop: String
+    private let stop: WatchShuttleStop
     private let disposeBag = DisposeBag()
     @Published var items: [ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order] = []
     @Published var isLoading: Bool = false
