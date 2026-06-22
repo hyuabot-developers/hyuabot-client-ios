@@ -1,8 +1,11 @@
 import UIKit
+import RxSwift
 
 class SubwayTimetableTabVC: UIViewController {
     let heading: SubwayHeadingEnum
     let isWeekdays: Bool
+    private let disposeBag = DisposeBag()
+    private var showsSkeleton = false
     private lazy var subwayTimetableTableView: UITableView = {
         let tableView = UITableView().then {
             $0.delegate = self
@@ -10,6 +13,7 @@ class SubwayTimetableTabVC: UIViewController {
             $0.sectionHeaderTopPadding = 0
             $0.showsVerticalScrollIndicator = false
             $0.register(SubwayTimetableCellView.self, forCellReuseIdentifier: SubwayTimetableCellView.reuseIdentifier)
+            $0.register(SubwayTimetableSkeletonCellView.self, forCellReuseIdentifier: SubwayTimetableSkeletonCellView.reuseIdentifier)
         }
         return tableView
     }()
@@ -27,6 +31,7 @@ class SubwayTimetableTabVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.observeSubjects()
     }
     
     private func setupUI() {
@@ -37,6 +42,17 @@ class SubwayTimetableTabVC: UIViewController {
     }
     
     func reload() { self.subwayTimetableTableView.reloadData() }
+
+    private func observeSubjects() {
+        SubwayTimetableData.shared.isLoading
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isLoading in
+                self?.showsSkeleton = isLoading
+                self?.reload()
+            })
+            .disposed(by: disposeBag)
+    }
 }
 
 
@@ -46,6 +62,9 @@ extension SubwayTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsSkeleton {
+            return 8
+        }
         if (self.isWeekdays) {
             guard let items = try? SubwayTimetableData.shared.timetableWeekdays.value() else { return 0 }
             return items.count
@@ -56,6 +75,9 @@ extension SubwayTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if showsSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: SubwayTimetableSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayTimetableCellView.reuseIdentifier) as? SubwayTimetableCellView else { return SubwayTimetableCellView() }
         if (self.isWeekdays) {
             guard let items = try? SubwayTimetableData.shared.timetableWeekdays.value() else { return cell }
