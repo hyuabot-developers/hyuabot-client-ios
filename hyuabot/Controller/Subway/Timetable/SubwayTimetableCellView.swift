@@ -38,11 +38,11 @@ class SubwayTimetableCellView: UITableViewCell {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
         
-        self.destinationLabel.text = getDestinationLabelText(item.terminal.stationID)
+        self.destinationLabel.text = getDestinationLabelText(item.terminal.stationID, fallback: item.terminal.name)
         self.setUITimeLabel(dateFormatter.string(from: Date.now), item)
     }
     
-    func getDestinationLabelText(_ stationID: String) -> String {
+    func getDestinationLabelText(_ stationID: String, fallback: String) -> String {
         var stationName = ""
         switch stationID {
             case "K209" : stationName = String(localized: "subway.station.k209")
@@ -59,7 +59,10 @@ class SubwayTimetableCellView: UITableViewCell {
             case "K444" : stationName = String(localized: "subway.station.k444")
             case "K453" : stationName = String(localized: "subway.station.k453")
             case "K456" : stationName = String(localized: "subway.station.k456")
-            default: return String(localized: "subway.station.\(stationID)")
+            default:
+                let key = "subway.station.\(stationID.lowercased())"
+                let localized = String(localized: String.LocalizationValue(stringLiteral: key))
+                return localized == key ? fallback : localized
         }
         return stationName
     }
@@ -90,7 +93,7 @@ class SubwayTimetableCellView: UITableViewCell {
         if hour < 4 {
             hour += 24
         }
-        self.departureTimeLabel.text = String(localized: "subway.time.\(hour).\(minute)")
+        self.departureTimeLabel.text = String(format: String(localized: "subway.time.%lld.%lld"), hour, minute)
     }
     
     private func convertDepartureTime(_ time: String) -> String? {

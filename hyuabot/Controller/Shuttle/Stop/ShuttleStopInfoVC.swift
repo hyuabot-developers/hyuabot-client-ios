@@ -456,8 +456,8 @@ class ShuttleStopInfoVC: UIViewController {
         guard let time else { return String(localized: String.LocalizationValue(unavailableKey)) }
         let shortened = time.substring(from: 0, to: 4)
         guard !shortened.isEmpty else { return String(localized: String.LocalizationValue(unavailableKey)) }
-        let formatKey = isWeekday ? "shuttle.first.last.weekdays.format" : "shuttle.first.last.weekends.format"
-        return String(localized: String.LocalizationValue("\(formatKey).\(shortened)"))
+        let formatKey = isWeekday ? "shuttle.first.last.weekdays.format.%@" : "shuttle.first.last.weekends.format.%@"
+        return String(format: String(localized: String.LocalizationValue(formatKey)), shortened)
     }
 }
 

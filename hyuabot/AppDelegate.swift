@@ -103,8 +103,11 @@ extension AppDelegate: MessagingDelegate {
             default: readingRoomName = "Unknown"
         }
         let notificationContent = UNMutableNotificationContent().then {
-            $0.title = String(localized: "readingroom.notification.title.\(String(localized: readingRoomName))")
-            $0.body = String(localized: "readingroom.notification.body.\(available)")
+            $0.title = String(
+                format: String(localized: "readingroom.notification.title.%@"),
+                String(localized: readingRoomName)
+            )
+            $0.body = String(format: String(localized: "readingroom.notification.body.%@"), available)
         }
         let notificationRequest = UNNotificationRequest(identifier: "reading_room_\(itemKey)", content: notificationContent, trigger: nil)
         UNUserNotificationCenter.current().add(notificationRequest) { error in

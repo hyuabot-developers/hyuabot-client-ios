@@ -110,7 +110,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             $0.font = .godo(size: 16, weight: .medium)
             $0.textAlignment = .right
             if let minutes = alternative.minutes {
-                $0.text = String(localized: "shuttle.bus.alternative.time.\(minutes)")
+                $0.text = String(format: String(localized: "shuttle.bus.alternative.time.%lld"), minutes)
             } else {
                 $0.text = String(localized: "shuttle.bus.alternative.no.data")
             }

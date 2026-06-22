@@ -207,9 +207,9 @@ class ShuttleRealtimeCellView: UITableViewCell {
             self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
             return
         }
-        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(hour).\(minute)")
+        self.shuttleTimeLabel.text = String(format: String(localized: "shuttle.time.%lld.%lld"), hour, minute)
         let remainingTime = Int(date.timeIntervalSince(Foundation.Date.now))
-        self.shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.\(remainingTime / 60)")
+        self.shuttleRemainingTimeLabel.text = String(format: String(localized: "shuttle.time.remaining.%lld"), remainingTime / 60)
     }
     
     private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {

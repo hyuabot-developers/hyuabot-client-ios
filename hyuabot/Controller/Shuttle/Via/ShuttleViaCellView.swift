@@ -119,6 +119,6 @@ class ShuttleViaCellView: UITableViewCell {
               let minute = components.minute else {
             return time.substring(from: 0, to: 4)
         }
-        return String(localized: "shuttle.shorten.time.\(hour).\(minute)")
+        return String(format: String(localized: "shuttle.shorten.time.%lld.%lld"), hour, minute)
     }
 }

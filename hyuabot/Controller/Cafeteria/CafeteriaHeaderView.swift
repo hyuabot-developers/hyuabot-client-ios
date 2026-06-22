@@ -67,7 +67,9 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         self.contentView.addSubview(nameStackView)
         self.contentView.addSubview(infoButton)
         self.contentView.backgroundColor = .hanyangBlue
-        self.runningTimeLabel.text = String(localized: "cafeteria.running.time.\(runningTime ?? "")")
+        self.runningTimeLabel.text = runningTime.map {
+            String(format: String(localized: "cafeteria.running.time.%@"), $0)
+        } ?? String(localized: "cafeteria.running.time")
         self.nameStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(10)
         }

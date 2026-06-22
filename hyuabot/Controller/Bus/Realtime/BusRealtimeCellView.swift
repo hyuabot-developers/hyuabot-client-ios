@@ -55,15 +55,15 @@ class BusRealtimeCellView: UITableViewCell {
         if (item.item.isRealtime) {
             if (item.item.seats! < 0) {
                 if (item.item.stops! <= 1) {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(item.item.stops!)"))
+                    self.setRealtimeAttributedText(String(format: String(localized: "bus.realtime.arriving.%lld"), item.item.stops!))
                 } else {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.no.seat.\(Int(item.item.minutes!)).\(item.item.stops!)"))
+                    self.setRealtimeAttributedText(String(format: String(localized: "bus.realtime.no.seat.%lld.%lld"), Int(item.item.minutes!), item.item.stops!))
                 }
             } else {
                 if (item.item.stops! <= 1) {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.arriving.\(item.item.stops!).\(item.item.seats!)"))
+                    self.setRealtimeAttributedText(String(format: String(localized: "bus.realtime.arriving.%lld.%lld"), item.item.stops!, item.item.seats!))
                 } else {
-                    self.setRealtimeAttributedText(String(localized: "bus.realtime.seat.\(Int(item.item.minutes!)).\(item.item.stops!).\(item.item.seats!)"))
+                    self.setRealtimeAttributedText(String(format: String(localized: "bus.realtime.seat.%lld.%lld.%lld"), Int(item.item.minutes!), item.item.stops!, item.item.seats!))
                 }
             }
         } else if (!item.item.isRealtime) {
@@ -75,7 +75,7 @@ class BusRealtimeCellView: UITableViewCell {
                 return s < 4 * 3600 ? s + 86400 : s
             }
             let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
-            self.busTimeLabel.text = String(localized: "bus.realtime.estimated.\(remainingMinutes)")
+            self.busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes)
             self.busTimeLabel.textColor = .secondaryLabel
         }
     }

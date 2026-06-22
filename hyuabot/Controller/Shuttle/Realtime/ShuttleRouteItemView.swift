@@ -94,7 +94,7 @@ class ShuttleRouteItemView: UIView {
             
             // Label
             if let label = data.labels[data.stops[i]], label > 0 {
-                let text = String(localized: String.LocalizationValue("shuttle.realtime.duration.format.\(label)"))
+                let text = String(format: String(localized: "shuttle.realtime.duration.format.%lld"), label)
                 CATextLayer().do {
                     $0.string = text
                     $0.font = font

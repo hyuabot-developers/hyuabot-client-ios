@@ -104,6 +104,10 @@ class ShuttleTimetableCellView: UITableViewCell {
         }
         self.item = item
         let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
-        self.shuttleTimeLabel.text = String(localized: "shuttle.time.\(components.hour!).\(components.minute!)")
+        self.shuttleTimeLabel.text = String(
+            format: String(localized: "shuttle.time.%lld.%lld"),
+            components.hour!,
+            components.minute!
+        )
     }
 }

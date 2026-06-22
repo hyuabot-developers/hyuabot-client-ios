@@ -65,7 +65,17 @@ class BusFirstLastCellView: UITableViewCell {
         let downFirst = item.route.runningTime.down.first.substring(from: 0, to: 4)
         let downLast = item.route.runningTime.down.last.substring(from: 0, to: 4)
         
-        self.busUpTimeLabel.text = String(localized: "bus.first.last.\(item.route.runningTime.up.terminal.name).\(upFirst).\(upLast)")
-        self.busDownTimeLabel.text = String(localized: "bus.first.last.\(item.route.runningTime.down.terminal.name).\(downFirst).\(downLast)")
+        self.busUpTimeLabel.text = String(
+            format: String(localized: "bus.first.last.%@.%@.%@"),
+            item.route.runningTime.up.terminal.name,
+            upFirst,
+            upLast
+        )
+        self.busDownTimeLabel.text = String(
+            format: String(localized: "bus.first.last.%@.%@.%@"),
+            item.route.runningTime.down.terminal.name,
+            downFirst,
+            downLast
+        )
     }
 }

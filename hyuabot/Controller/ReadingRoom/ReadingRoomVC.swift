@@ -323,12 +323,12 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
             showSubscribeToastMessage: {
                 message in self.showToastMessage(
                     image: UIImage(systemName: "checkmark.circle.fill"),
-                    message: String(localized: "toast.readingroom.notification.subscribed.\(message)")
+                    message: String(format: String(localized: "toast.readingroom.notification.subscribed.%@"), message)
                 )},
             showUnsubscribeToastMessage: {
                 message in self.showToastMessage(
                     image: UIImage(systemName: "checkmark.circle.fill"),
-                    message: String(localized: "toast.readingroom.notification.unsubscribed.\(message)")
+                    message: String(format: String(localized: "toast.readingroom.notification.unsubscribed.%@"), message)
                 )}
             )
         return cell

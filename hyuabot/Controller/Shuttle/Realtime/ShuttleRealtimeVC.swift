@@ -319,7 +319,10 @@ class ShuttleRealtimeVC: UIViewController {
             viewPager.contentView.moveToPage(index: pendingIndex)
             showToastMessage(
                 image: UIImage(systemName: "checkmark.circle.fill"),
-                message: String(localized: "toast.success.shuttle.realtime.location.\(viewPager.tabView.tabs[pendingIndex].title)")
+                message: String(
+                    format: String(localized: "toast.success.shuttle.realtime.location.%@"),
+                    viewPager.tabView.tabs[pendingIndex].title
+                )
             )
         }
     }
@@ -807,7 +810,10 @@ extension ShuttleRealtimeVC: CLLocationManagerDelegate {
         }
         self.showToastMessage(
             image: UIImage(systemName: "checkmark.circle.fill"),
-            message: String(localized: "toast.success.shuttle.realtime.location.\(self.viewPager.tabView.tabs[position].title)")
+            message: String(
+                format: String(localized: "toast.success.shuttle.realtime.location.%@"),
+                self.viewPager.tabView.tabs[position].title
+            )
         )
         self.viewPager.tabView.moveToTab(index: position)
         self.viewPager.contentView.moveToPage(index: position)
