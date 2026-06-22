@@ -21,12 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Messaging.messaging().delegate = self
         configureApplicationShortcuts(application)
         UNUserNotificationCenter.current().delegate = self
-        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: authOptions,
-            completionHandler: {_, _ in })
         application.registerForRemoteNotifications()
-        UIApplication.shared.registerForRemoteNotifications()
         // Global tab bar appearance
         let tabBarAppearance = UITabBarItem.appearance()
         tabBarAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 10, weight: .regular)], for: .normal)

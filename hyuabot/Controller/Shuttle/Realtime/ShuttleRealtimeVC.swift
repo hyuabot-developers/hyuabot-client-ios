@@ -134,7 +134,8 @@ class ShuttleRealtimeVC: UIViewController {
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
-    private let widgetCoachMarkAnchor = UIView().then { $0.isUserInteractionEnabled = false }
+    private var hasLoadedInitialShuttlePageData = false
+    private var hasLoadedInitialBusAlternativeData = false
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView, noticeView: self.noticeView)
@@ -170,12 +171,13 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func scheduleCoachMarksIfNeeded(attempt: Int = 0) {
+        guard hasLoadedInitialCoachMarkData else { return }
         guard CoachMarkManager.shared.shouldShowPage("shuttle.realtime") else { return }
         coachMarkRetryWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in
             guard let self else { return }
             guard self.coachMarkOverlayIsAbsent else { return }
-            if !self.showCoachMarksIfNeeded(), attempt < 4 {
+            if !self.showCoachMarksIfNeeded(), attempt < 8 {
                 self.scheduleCoachMarksIfNeeded(attempt: attempt + 1)
             }
         }
@@ -183,8 +185,25 @@ class ShuttleRealtimeVC: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + (attempt == 0 ? 0.1 : 0.25), execute: workItem)
     }
 
+    private var hasLoadedInitialCoachMarkData: Bool {
+        hasLoadedInitialShuttlePageData && hasLoadedInitialBusAlternativeData
+    }
+
+    @MainActor
+    private func markInitialShuttlePageDataLoaded() {
+        hasLoadedInitialShuttlePageData = true
+        scheduleCoachMarksIfNeeded()
+    }
+
+    @MainActor
+    private func markInitialBusAlternativeDataLoaded() {
+        hasLoadedInitialBusAlternativeData = true
+        scheduleCoachMarksIfNeeded()
+    }
+
     private var coachMarkOverlayIsAbsent: Bool {
-        !(view.window?.subviews.contains(where: { $0 is CoachMarkView }) ?? true)
+        guard let window = view.window else { return true }
+        return !window.subviews.contains(where: { $0 is CoachMarkView })
     }
 
     @discardableResult
@@ -243,22 +262,6 @@ class ShuttleRealtimeVC: UIViewController {
             ),
         ]
 
-        if let transferView = dormitoryOutTabVC.transferInfoView {
-            items.append(CoachMarkItem(
-                id: "shuttle.transfer",
-                targetView: transferView,
-                title: String(localized: "coach.shuttle.transfer.title"),
-                message: String(localized: "coach.shuttle.transfer.message")
-            ))
-        }
-
-        items.append(CoachMarkItem(
-            id: "shuttle.widget",
-            targetView: widgetCoachMarkAnchor,
-            title: String(localized: "coach.shuttle.widget.title"),
-            message: String(localized: "coach.shuttle.widget.message")
-        ))
-
         if !noticeView.isHidden {
             items.append(CoachMarkItem(
                 id: "shuttle.notice",
@@ -309,7 +312,16 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func presentFooterCoachMarks() {
-        let items: [CoachMarkItem] = [
+        var items: [CoachMarkItem] = []
+        if let transferView = dormitoryOutTabVC.transferInfoView {
+            items.append(CoachMarkItem(
+                id: "shuttle.transfer",
+                targetView: transferView,
+                title: String(localized: "coach.shuttle.transfer.title"),
+                message: String(localized: "coach.shuttle.transfer.message")
+            ))
+        }
+        items.append(contentsOf: [
             CoachMarkItem(
                 id: "shuttle.footer.timetable",
                 targetViewProvider: { [weak self] in self?.dormitoryOutTabVC.lastSectionFooterTimetableButton },
@@ -322,7 +334,7 @@ class ShuttleRealtimeVC: UIViewController {
                 title: String(localized: "coach.shuttle.footer.title"),
                 message: String(localized: "coach.shuttle.footer.message")
             ),
-        ]
+        ])
         let validItems = items.filter { item in
             guard let v = item.targetView else { return false }
             return v.window != nil && !v.isHidden
@@ -356,6 +368,7 @@ class ShuttleRealtimeVC: UIViewController {
                 )
             )
         }
+        checkUserDeviceLocationServiceAuthorization()
     }
 
     override func viewDidLoad() {
@@ -363,7 +376,6 @@ class ShuttleRealtimeVC: UIViewController {
         self.setupUI()
         self.observeSubjects()
         self.checkBirthdayDialog()
-        self.checkUserDeviceLocationServiceAuthorization()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -419,10 +431,6 @@ class ShuttleRealtimeVC: UIViewController {
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-        }
-        self.view.addSubview(widgetCoachMarkAnchor)
-        widgetCoachMarkAnchor.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
         }
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -517,16 +525,22 @@ class ShuttleRealtimeVC: UIViewController {
                 ),
                 cachePolicy: .networkOnly
             )
-            if let data = response?.data {
-                dataDelegate.transferData.onNext(data)
-                dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
-                dataDelegate.arrival.onNext(data.shuttle.stops)
+            await MainActor.run {
+                if let data = response?.data {
+                    dataDelegate.transferData.onNext(data)
+                    dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
+                    dataDelegate.arrival.onNext(data.shuttle.stops)
+                }
+                markInitialShuttlePageDataLoaded()
             }
         }
         Task {
             let busResponse = try? await Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
-            if let busData = busResponse?.data {
-                dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(busData.bus))
+            await MainActor.run {
+                if let busData = busResponse?.data {
+                    dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(busData.bus))
+                }
+                markInitialBusAlternativeDataLoaded()
             }
         }
     }

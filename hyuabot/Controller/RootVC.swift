@@ -19,6 +19,7 @@ class RootVC: UITabBarController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        retryShuttleCoachMarksIfNeeded()
         // Shuttle marks already shown on a previous launch — show immediately
         if !isWaitingForShuttleCoachMarksAfterReset,
            !CoachMarkManager.shared.shouldShowPage("shuttle.realtime") {

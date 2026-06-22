@@ -23,11 +23,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else {
             window.overrideUserInterfaceStyle = .dark
         }
+        CoachMarkManager.shared.initialize()
         let vc = RootVC()
         window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
-        CoachMarkManager.shared.initialize()
         ReviewRequestManager.shared.trackLaunch()
         self.showLanguageSuggestionIfNeeded()
 
