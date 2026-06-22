@@ -81,15 +81,9 @@ class SubwayRealtimeCellView: UITableViewCell {
         }
         guard let location = item.location,
               let status = item.status else {
-            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops, compact: true)
+            return getTimetableLabelText(item.minutes)
         }
-        let timeText = getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false)
-        guard let stops = item.stops, stops > 0 else { return timeText }
-        return [
-            getTimetableLabelText(item.minutes),
-            stopCountText(stops, compact: true),
-            realtimeStatusText(location, status, item.isLast ?? false)
-        ].joined(separator: " · ")
+        return getRealtimeLabelText(item.minutes, location, status, item.isLast ?? false)
     }
     
     private func getRealtimeLabelText(_ time: Int, _ location: String, _ status: Int, _ last: Bool) -> String {
@@ -140,34 +134,9 @@ class SubwayRealtimeCellView: UITableViewCell {
         return text.trimmingCharacters(in: CharacterSet(charactersIn: "()"))
     }
 
-    private func realtimeStatusText(_ location: String, _ status: Int, _ last: Bool) -> String {
-        let suffix: String
-        switch status {
-        case 0:
-            suffix = "진입"
-        case 1:
-            suffix = "도착"
-        case 2:
-            suffix = "출발"
-        case 3:
-            suffix = "전역 출발"
-        default:
-            suffix = ""
-        }
-        let statusText = suffix.isEmpty ? location : "\(location) \(suffix)"
-        guard last else { return statusText }
-        return "\(statusText) 막차"
-    }
-    
     private func setRealtimeAttributedText(_ text: String) {
         let attributeString = NSMutableAttributedString(string: text)
-        if text.contains(" · ") {
-            attributeString.addAttribute(
-                .foregroundColor,
-                value: UIColor.red,
-                range: NSRange(location: 0, length: text.components(separatedBy: " · ")[0].count)
-            )
-        } else if text.contains("(") && !text.contains("(s)") {
+        if text.contains("(") && !text.contains("(s)") {
             attributeString.addAttribute(
                 .foregroundColor,
                 value: UIColor.red, range: NSRange(
