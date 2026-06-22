@@ -7,6 +7,7 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
     private var didSelectBusStop = false
+    private var hasLoadedInitialNotices = false
     private lazy var cityBusTabVC = BusRealtimeTabVC(
         tabType: .city,
         refreshMethod: fetchBusRealtimeData,
@@ -273,7 +274,10 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             BusRealtimeData.shared.isLoading.onNext(false)
         }).disposed(by: self.disposeBag)
         BusRealtimeData.shared.notices.subscribe(onNext: { notices in
-            if notices.isEmpty {
+            if !self.hasLoadedInitialNotices && notices.isEmpty {
+                self.noticeView.isHidden = false
+                self.noticeView.setLoading(true)
+            } else if notices.isEmpty {
                 self.noticeView.isHidden = true
                 self.noticeView.stopAutoScroll()
             } else {
@@ -301,6 +305,7 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             await MainActor.run {
                 if let data = response?.data {
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
+                    self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
                     if data.bus.isEmpty {
                         BusRealtimeData.shared.isLoading.onNext(false)

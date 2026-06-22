@@ -6,6 +6,11 @@ class NoticeCarouselView: UIView {
     private var timer: Timer?
     private var manuallyScrolled: Bool = false
     var onNoticeTapped: ((String) -> Void)?
+    private let skeletonBar = UIView().then {
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.36)
+        $0.layer.cornerRadius = 4
+        $0.layer.masksToBounds = true
+    }
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -27,9 +32,16 @@ class NoticeCarouselView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.addSubview(collectionView)
+        self.addSubview(skeletonBar)
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        skeletonBar.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(12)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(14)
+        }
+        setLoading(true)
     }
     
     required init?(coder: NSCoder) {
@@ -38,8 +50,33 @@ class NoticeCarouselView: UIView {
     
     func setupUI(with notices: [Notice]) {
         self.notices = notices
+        self.setLoading(false)
         self.collectionView.reloadData()
         startAutoScroll()
+    }
+
+    func setLoading(_ isLoading: Bool) {
+        skeletonBar.isHidden = !isLoading
+        collectionView.isHidden = isLoading
+
+        if isLoading {
+            stopAutoScroll()
+            startSkeletonAnimation()
+        } else {
+            skeletonBar.layer.removeAnimation(forKey: "noticeSkeletonOpacity")
+        }
+    }
+
+    private func startSkeletonAnimation() {
+        let animation = CABasicAnimation(keyPath: "opacity")
+        animation.fromValue = 0.45
+        animation.toValue = 1.0
+        animation.duration = 0.9
+        animation.autoreverses = true
+        animation.repeatCount = .infinity
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        skeletonBar.layer.removeAnimation(forKey: "noticeSkeletonOpacity")
+        skeletonBar.layer.add(animation, forKey: "noticeSkeletonOpacity")
     }
     
     func startAutoScroll() {

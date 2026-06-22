@@ -136,6 +136,7 @@ class ShuttleRealtimeVC: UIViewController {
     private var pendingGPSTabIndex: Int?
     private var hasLoadedInitialShuttlePageData = false
     private var hasLoadedInitialBusAlternativeData = false
+    private var hasLoadedInitialNotices = false
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: self.shuttleOptionView, noticeView: self.noticeView)
@@ -479,7 +480,10 @@ class ShuttleRealtimeVC: UIViewController {
             self.shuttlecockInTabVC.reload()
         }).disposed(by: self.disposeBag)
         ShuttleRealtimeData.shared.notices.subscribe(onNext: { notices in
-            if notices.isEmpty {
+            if !self.hasLoadedInitialNotices && notices.isEmpty {
+                self.noticeView.isHidden = false
+                self.noticeView.setLoading(true)
+            } else if notices.isEmpty {
                 self.noticeView.isHidden = true
                 self.noticeView.stopAutoScroll()
             } else {
@@ -529,6 +533,7 @@ class ShuttleRealtimeVC: UIViewController {
             await MainActor.run {
                 if let data = response?.data {
                     dataDelegate.transferData.onNext(data)
+                    self.hasLoadedInitialNotices = true
                     dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
                     dataDelegate.arrival.onNext(data.shuttle.stops)
                 }
