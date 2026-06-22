@@ -26,32 +26,6 @@ class ShuttleTimetableVC: UIViewController {
         $0.configuration = config
         $0.addTarget(self, action: #selector(openFilterVC), for: .touchUpInside)
     }
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "shuttle.timetable.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
-    
-    
     init(stopID: String.LocalizationValue, destination: String.LocalizationValue) {
         self.stopID = stopID
         self.destination = destination
@@ -138,7 +112,6 @@ class ShuttleTimetableVC: UIViewController {
         self.view.backgroundColor = .hanyangBlue
         self.view.addSubview(viewPager)
         self.view.addSubview(filterButton)
-        self.view.addSubview(loadingView)
         self.viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
@@ -148,9 +121,6 @@ class ShuttleTimetableVC: UIViewController {
             make.trailing.equalToSuperview().inset(20)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
-        }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(viewPager)
         }
     }
     
@@ -172,15 +142,6 @@ class ShuttleTimetableVC: UIViewController {
         }).disposed(by: disposeBag)
         ShuttleTimetableData.shared.weekends.subscribe(onNext: { weekends in
             self.weekendsVC.reload()
-        }).disposed(by: disposeBag)
-        ShuttleTimetableData.shared.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
-                self.loadingView.isHidden = false
-                self.loadingSpinner.startAnimating()
-            } else {
-                self.loadingView.isHidden = true
-                self.loadingSpinner.stopAnimating()
-            }
         }).disposed(by: disposeBag)
     }
     
@@ -245,7 +206,7 @@ class ShuttleTimetableVC: UIViewController {
             }
         } else {
             guard let period = resolvedPeriod(options.period) else {
-                ShuttleTimetableData.shared.timetable.onNext([])
+                publishTimetable([])
                 return
             }
             ShuttleTimetableData.shared.isLoading.onNext(true)
