@@ -206,6 +206,35 @@ class ContactVC: UIViewController {
             }
         }
     }
+
+    private func contact(at indexPath: IndexPath) -> Contact? {
+        guard let items = try? self.searchResultSubject.value() else { return nil }
+        guard items.indices.contains(indexPath.row) else { return nil }
+        return items[indexPath.row]
+    }
+
+    private func callContact(_ contact: Contact) {
+        let url = URL(string: "tel://\(contact.phoneNumber)")
+        if let url, UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+    }
+
+    private func copyContactPhone(_ contact: Contact) {
+        UIPasteboard.general.string = contact.phoneNumber
+        showToastMessage(
+            image: UIImage(systemName: "doc.on.doc.fill"),
+            message: String(format: String(localized: "toast.contact.phone.copied.%@"), contact.phoneNumber)
+        )
+    }
+
+    private func shareContact(_ contact: Contact, sourceView: UIView?) {
+        let text = String(format: String(localized: "contact.share.format.%@.%@"), contact.name, contact.phoneNumber)
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        activityVC.popoverPresentationController?.sourceView = sourceView ?? view
+        activityVC.popoverPresentationController?.sourceRect = sourceView?.bounds ?? view.bounds
+        present(activityVC, animated: true)
+    }
 }
 
 extension ContactVC: UISearchResultsUpdating {
@@ -236,14 +265,34 @@ extension ContactVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let items = try? self.searchResultSubject.value() else { return }
-        guard !items.isEmpty else { return }
-        let contact = items[indexPath.row]
+        guard let contact = contact(at: indexPath) else { return }
         AnalyticsManager.logSelect(.contactSelectRow, type: .listItem, name: contact.name)
-        let url = URL(string: "tel://\(contact.phoneNumber)")
-        if UIApplication.shared.canOpenURL(url!) {
-            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-        }
+        callContact(contact)
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let contact = contact(at: indexPath) else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, weak tableView] _ in
+            let callAction = UIAction(
+                title: String(localized: "contact.action.call"),
+                image: UIImage(systemName: "phone.fill")
+            ) { _ in
+                self?.callContact(contact)
+            }
+            let copyAction = UIAction(
+                title: String(localized: "contact.action.copy"),
+                image: UIImage(systemName: "doc.on.doc")
+            ) { _ in
+                self?.copyContactPhone(contact)
+            }
+            let shareAction = UIAction(
+                title: String(localized: "contact.action.share"),
+                image: UIImage(systemName: "square.and.arrow.up")
+            ) { _ in
+                self?.shareContact(contact, sourceView: tableView?.cellForRow(at: indexPath))
+            }
+            return UIMenu(children: [callAction, copyAction, shareAction])
+        }
     }
 }
