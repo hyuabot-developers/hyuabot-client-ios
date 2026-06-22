@@ -36,7 +36,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
                   let url = userActivity.webpageURL {
             handleDeepLink(url)
+        } else if let shortcutItem = connectionOptions.shortcutItem {
+            handleShortcut(shortcutItem)
         }
+    }
+
+    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        completionHandler(handleShortcut(shortcutItem))
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -87,9 +93,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 }
             }
 
+        case "reading-room":
+            rootVC.selectedIndex = 5
+
+        case "map":
+            rootVC.selectedIndex = 4
+
         default:
             break
         }
+    }
+
+    @discardableResult
+    private func handleShortcut(_ shortcutItem: UIApplicationShortcutItem) -> Bool {
+        guard let urlString = shortcutItem.userInfo?["url"] as? String,
+              let url = URL(string: urlString) else { return false }
+        handleDeepLink(url)
+        return true
     }
 
     private func routePath(for url: URL) -> String? {

@@ -19,6 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AnalyticsManager.applyCollectionSettings()
         // Initialize Firebase Cloud Messaging
         Messaging.messaging().delegate = self
+        configureApplicationShortcuts(application)
         UNUserNotificationCenter.current().delegate = self
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
         UNUserNotificationCenter.current().requestAuthorization(
@@ -53,6 +54,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         UIBarButtonItem.appearance().tintColor = .white
         return true
+    }
+
+    private func configureApplicationShortcuts(_ application: UIApplication) {
+        application.shortcutItems = [
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.shuttle",
+                localizedTitle: String(localized: "tabbar.shuttle"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "bus.fill"),
+                userInfo: ["url": "hyuabot://shuttle" as NSSecureCoding]
+            ),
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.cafeteria",
+                localizedTitle: String(localized: "tabbar.cafeteria"),
+                localizedSubtitle: String(localized: "cafeteria.lunch"),
+                icon: UIApplicationShortcutIcon(systemImageName: "fork.knife"),
+                userInfo: ["url": "hyuabot://cafeteria?tab=lunch" as NSSecureCoding]
+            ),
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.readingroom",
+                localizedTitle: String(localized: "tabbar.readingroom"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "book.fill"),
+                userInfo: ["url": "hyuabot://reading-room" as NSSecureCoding]
+            ),
+            UIApplicationShortcutItem(
+                type: "net.jaram.hyuabot.shortcut.map",
+                localizedTitle: String(localized: "tabbar.map"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "map.fill"),
+                userInfo: ["url": "hyuabot://map" as NSSecureCoding]
+            )
+        ]
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
