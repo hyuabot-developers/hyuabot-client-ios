@@ -115,6 +115,7 @@ enum AnalyticsItem: String {
     case cafeteriaNextDate          = "cafeteria_next_date"
     case cafeteriaDateChanged       = "cafeteria_date_changed"
     case cafeteriaInfoButton        = "cafeteria_info_button"
+    case cafeteriaShareButton       = "cafeteria_share_button"
 
     // Reading room
     case readingRoomRefresh         = "reading_room_refresh"

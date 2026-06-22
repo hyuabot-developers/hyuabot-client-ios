@@ -6,6 +6,7 @@ class ViewPager: UIView {
     let contentView: ContentView = ContentView()
     let optionView: UIView?
     let noticeView: UIView?
+    var onPageChanged: ((Int) -> Void)?
     lazy var tabView: TabView = TabView(sizeConfiguration: self.sizeConfiguration)
     
     init(sizeConfiguration: TabView.TabSizeConfiguration, optionView: UIView? = nil, noticeView: UIView? = nil, navigationBarEnabled: Bool = false) {
@@ -99,11 +100,13 @@ class ViewPager: UIView {
 extension ViewPager: TabViewDelegate {
     func didMoveToTab(index: Int) {
         self.contentView.moveToPage(index: index)
+        self.onPageChanged?(index)
     }
 }
 
 extension ViewPager: ContentViewDelegate {
     func didMoveToPage(index: Int) {
         self.tabView.moveToTab(index: index)
+        self.onPageChanged?(index)
     }
 }
