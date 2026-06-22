@@ -2,64 +2,8 @@ import WidgetKit
 import SwiftUI
 import AppIntents
 import CoreLocation
-
-let shuttleQuery = """
-query ShuttleWidgetQuery($after: LocalTime) {
-    shuttle(input: {
-        stops: [
-            { name: "dormitory_o", limit: { order: 0, destination: 8 } },
-            { name: "shuttlecock_o", limit: { order: 0, destination: 8 } },
-            { name: "station", limit: { order: 0, destination: 8 } },
-            { name: "terminal", limit: { order: 0, destination: 8 } },
-            { name: "jungang_stn", limit: { order: 0, destination: 8 } },
-            { name: "shuttlecock_i", limit: { order: 0, destination: 8 } }
-        ],
-        after: $after
-    }) {
-        stops {
-            latitude
-            longitude
-            name
-            timetable {
-                destination {
-                    destination
-                    entries { time }
-                }
-            }
-        }
-    }
-}
-"""
-
-// MARK: - Response Types
-
-private struct ShuttleResponse: Decodable {
-    let shuttle: ShuttleData
-
-    struct ShuttleData: Decodable {
-        let stops: [Stop]
-
-        struct Stop: Decodable {
-            let latitude: Double
-            let longitude: Double
-            let name: String
-            let timetable: Timetable
-
-            struct Timetable: Decodable {
-                let destination: [DestinationGroup]
-
-                struct DestinationGroup: Decodable {
-                    let destination: String
-                    let entries: [Entry]
-
-                    struct Entry: Decodable {
-                        let time: String
-                    }
-                }
-            }
-        }
-    }
-}
+import Apollo
+import Api
 
 // MARK: - Models
 
@@ -226,13 +170,9 @@ struct ShuttleProvider: TimelineProvider {
         let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
 
         do {
-            let response: ShuttleResponse = try await widgetGraphQL(
-                query: shuttleQuery,
-                variables: ["after": currentTimeStr]
-            )
+            let response = try await WidgetNetwork.shared.fetch(query: ShuttleWidgetQuery(after: GraphQLNullable(stringLiteral: currentTimeStr)))
 
-            let stops = response.shuttle.stops
-            guard !stops.isEmpty else {
+            guard let stops = response.data?.shuttle.stops, !stops.isEmpty else {
                 return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
             }
 
@@ -245,7 +185,7 @@ struct ShuttleProvider: TimelineProvider {
                 return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
             }
 
-            func makeGroups(from timetable: ShuttleResponse.ShuttleData.Stop.Timetable) -> [ShuttleDestinationGroup] {
+            func makeGroups(from timetable: ShuttleWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
                 timetable.destination.compactMap { group in
                     let times = group.entries.prefix(6).map { formatTime($0.time) }
                     guard !times.isEmpty else { return nil }
