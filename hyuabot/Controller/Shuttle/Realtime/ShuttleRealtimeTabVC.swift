@@ -20,6 +20,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     private(set) var transferInfoView: ShuttleTransferInfoView?
     private var transferInfoTimeView: ShuttleTransferInfoView?
     private var busAlternatives: [String: [ShuttleBusAlternativeDisplayData]] = [:]
+    private var busAlternativeLastNonEmptyAt: [String: Foundation.Date] = [:]
+    private let busAlternativeEmptyGraceInterval: TimeInterval = 60
     private var activeBoardingAlarmKeys: Set<String> = []
     var forceShowBusAlternative = false
     lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
@@ -166,6 +168,9 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     private func updateTableFooter(tableView: UITableView, transferView: ShuttleTransferInfoView, actionFooter: UIView) {
         let width = max(tableView.bounds.width, view.bounds.width)
+        if let stopFooter = actionFooter as? ShuttleRealtimeTableFooterView {
+            stopFooter.setCompactLayout(transferView.preferredHeight > 0)
+        }
         let actionHeight = actionFooter.frame.height
         let transferHeight = transferView.preferredHeight
         let desiredSize = CGSize(width: width, height: transferHeight + actionHeight)
@@ -256,11 +261,75 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     private func updateBusAlternatives(_ alternatives: [String: [ShuttleBusAlternativeDisplayData]]) {
-        guard busAlternatives != alternatives else { return }
-        busAlternatives = alternatives
+        let mergedAlternatives = mergeBusAlternatives(alternatives)
+        guard busAlternatives != mergedAlternatives else { return }
+        let oldFooterCounts = footerAlternativeCounts(busAlternatives)
+        let newFooterCounts = footerAlternativeCounts(mergedAlternatives)
+        busAlternatives = mergedAlternatives
+
+        if oldFooterCounts == newFooterCounts {
+            updateVisibleBusAlternativeFooters()
+        } else {
+            UIView.performWithoutAnimation {
+                let sections = IndexSet(integersIn: 0..<self.shuttleRealtimeSection.count)
+                self.shuttleRealtimeTableView.reloadSections(sections, with: .none)
+            }
+        }
+    }
+
+    private func mergeBusAlternatives(_ incoming: [String: [ShuttleBusAlternativeDisplayData]]) -> [String: [ShuttleBusAlternativeDisplayData]] {
+        var merged = busAlternatives
+        let now = Foundation.Date()
+        let knownKeys = Set(busAlternatives.keys).union(incoming.keys)
+
+        guard !incoming.isEmpty else {
+            knownKeys.forEach { key in
+                guard let previous = merged[key], !previous.isEmpty else { return }
+                let lastNonEmptyAt = busAlternativeLastNonEmptyAt[key] ?? .distantPast
+                if now.timeIntervalSince(lastNonEmptyAt) >= busAlternativeEmptyGraceInterval {
+                    merged[key] = []
+                }
+            }
+            return merged
+        }
+
+        incoming.forEach { key, value in
+            if value.isEmpty, let previous = merged[key], !previous.isEmpty {
+                let lastNonEmptyAt = busAlternativeLastNonEmptyAt[key] ?? .distantPast
+                if now.timeIntervalSince(lastNonEmptyAt) >= busAlternativeEmptyGraceInterval {
+                    merged[key] = []
+                }
+                return
+            }
+            merged[key] = value
+            if !value.isEmpty {
+                busAlternativeLastNonEmptyAt[key] = now
+            }
+        }
+        return merged
+    }
+
+    private func footerAlternativeCounts(_ alternatives: [String: [ShuttleBusAlternativeDisplayData]]) -> [Int] {
+        shuttleRealtimeSection.indices.map { section in
+            let count = alternatives[busAlternativeKey(section: section)]?.count ?? 0
+            if section == 0, forceShowBusAlternative, count == 0 {
+                return 1
+            }
+            return count
+        }
+    }
+
+    private func updateVisibleBusAlternativeFooters() {
         UIView.performWithoutAnimation {
-            let sections = IndexSet(integersIn: 0..<self.shuttleRealtimeSection.count)
-            self.shuttleRealtimeTableView.reloadSections(sections, with: .none)
+            for section in self.shuttleRealtimeSection.indices {
+                guard let footerView = self.shuttleRealtimeTableView.footerView(forSection: section) as? ShuttleRealtimeFooterView else { continue }
+                let alternatives = self.busAlternatives[self.busAlternativeKey(section: section)] ?? []
+                let forceShow = section == 0 && self.forceShowBusAlternative
+                footerView.setupUI(stopID: self.stopID, section: section, busAlternatives: alternatives, forceShow: forceShow, showEntireTimetable: self.showEntireTimetable) { [weak self] alternative in
+                    guard let self else { return }
+                    self.showBusAlternativeStop(self.stopID, alternative)
+                }
+            }
         }
     }
 

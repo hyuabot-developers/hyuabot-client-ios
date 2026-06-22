@@ -3,6 +3,7 @@ import UIKit
 class ShuttleRealtimeTableFooterView: UIView {
     private let showStopModal: ((_ stop: ShuttleStopEnum) -> Void)
     private let stopID: ShuttleStopEnum
+    private var bottomInset: CGFloat = 40
     let showStopModalButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
         var title = AttributedString.init(String(localized: "shuttle.show.stop.modal"))
@@ -26,9 +27,19 @@ class ShuttleRealtimeTableFooterView: UIView {
     func setupUI() {
         self.addSubview(showStopModalButton)
         self.showStopModalButton.addTarget(self, action: #selector(showStopModalButtonTapped), for: .touchUpInside)
-        self.showStopModalButton.snp.makeConstraints { make in
+        updateButtonConstraints()
+    }
+
+    func setCompactLayout(_ compact: Bool) {
+        bottomInset = compact ? 0 : 40
+        frame.size.height = compact ? 50 : 90
+        updateButtonConstraints()
+    }
+
+    private func updateButtonConstraints() {
+        self.showStopModalButton.snp.remakeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalToSuperview().inset(40)
+            make.bottom.equalToSuperview().inset(bottomInset)
         }
     }
     

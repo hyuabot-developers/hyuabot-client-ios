@@ -62,11 +62,6 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         self.showEntireTimetable = showEntireTimetable
         self.showBusAlternativeStop = showBusAlternativeStop
 
-        busAlternativeStackView.arrangedSubviews.forEach {
-            busAlternativeStackView.removeArrangedSubview($0)
-            $0.removeFromSuperview()
-        }
-
         let alternatives = forceShow && busAlternatives.isEmpty
             ? [ShuttleBusAlternativeDisplayData(
                 routeName: String(localized: String.LocalizationValue(stopID == .station ? "shuttle.bus.alternative.route.campus" : "shuttle.bus.alternative.route")),
@@ -77,6 +72,18 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
                 busStopLongitude: 0
             )]
             : busAlternatives
+        if self.stopID == stopID,
+           self.section == section,
+           self.alternatives == alternatives,
+           busAlternativeContainer.isHidden == alternatives.isEmpty {
+            return
+        }
+
+        busAlternativeStackView.arrangedSubviews.forEach {
+            busAlternativeStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
         self.alternatives = alternatives
 
         guard !alternatives.isEmpty else {
