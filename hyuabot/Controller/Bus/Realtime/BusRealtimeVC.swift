@@ -228,6 +228,10 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
             guard let self = self else { return }
+            let isLoading = (try? BusRealtimeData.shared.isLoading.value()) ?? false
+            if isLoading && result.isEmpty {
+                return
+            }
             let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
             // City bus (10-1) — always update regardless of Seoul bus availability
             let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216000068 })
@@ -298,6 +302,9 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
                 if let data = response?.data {
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
+                    if data.bus.isEmpty {
+                        BusRealtimeData.shared.isLoading.onNext(false)
+                    }
                 } else {
                     BusRealtimeData.shared.isLoading.onNext(false)
                 }
