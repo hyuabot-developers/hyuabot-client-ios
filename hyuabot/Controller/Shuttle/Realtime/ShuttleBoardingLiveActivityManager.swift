@@ -233,7 +233,7 @@ final class ShuttleBoardingLiveActivityManager: NSObject, CLLocationManagerDeleg
             guard let self else { return }
             while !Task.isCancelled {
                 let now = Date.now
-                if now >= destination.time.addingTimeInterval(self.alightingGraceInterval) || now >= destination.time {
+                if now >= destination.time.addingTimeInterval(self.alightingGraceInterval) {
                     await self.endActivity(activity)
                     await MainActor.run {
                         self.updateTasks[context.key] = nil
