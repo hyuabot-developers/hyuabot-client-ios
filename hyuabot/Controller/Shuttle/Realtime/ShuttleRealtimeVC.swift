@@ -324,13 +324,12 @@ class ShuttleRealtimeVC: UIViewController {
             ),
         ]
         let validItems = items.filter { item in
-            guard let v = item.targetView else { return true }
+            guard let v = item.targetView else { return false }
             return v.window != nil && !v.isHidden
         }
         guard !validItems.isEmpty,
               let window = view.window,
               !window.subviews.contains(where: { $0 is CoachMarkView }) else {
-            finishCoachMarks()
             return
         }
         let overlay = CoachMarkView()
