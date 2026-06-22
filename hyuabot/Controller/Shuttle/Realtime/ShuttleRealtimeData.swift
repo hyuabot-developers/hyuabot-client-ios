@@ -69,6 +69,7 @@ class ShuttleRealtimeData {
     let shuttleJungangStationToCampusData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleShuttlecockInData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
     let shuttleShuttlecockInToDormitoryData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let transferData = BehaviorSubject<ShuttleRealtimePageQuery.Data?>(value: nil)
     // Bus alternative data
     let busAlternatives = BehaviorSubject<[String: [ShuttleBusAlternativeDisplayData]]>(value: [:])
     // Show Remaining Time

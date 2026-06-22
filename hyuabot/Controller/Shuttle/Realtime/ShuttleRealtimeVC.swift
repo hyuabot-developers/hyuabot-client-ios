@@ -472,8 +472,16 @@ class ShuttleRealtimeVC: UIViewController {
             }
         }
         Task {
-            let response = try? await Network.shared.client.fetch(query: ShuttleRealtimePageQuery(language: noticeLanguage, after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now))), cachePolicy: .networkOnly)
+            let response = try? await Network.shared.client.fetch(
+                query: ShuttleRealtimePageQuery(
+                    language: noticeLanguage,
+                    after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now)),
+                    weekday: currentWeekdayString()
+                ),
+                cachePolicy: .networkOnly
+            )
             if let data = response?.data {
+                dataDelegate.transferData.onNext(data)
                 dataDelegate.notices.onNext(data.notices.flatMap { $0.notices })
                 dataDelegate.arrival.onNext(data.shuttle.stops)
             }
@@ -775,6 +783,19 @@ class ShuttleRealtimeVC: UIViewController {
         AnalyticsManager.logSelect(.shuttleArrivalByTimeSwitch, type: .toggle)
         ShuttleRealtimeData.shared.showArrivalByTime.onNext(sender.isOn)
         UserDefaults.standard.set(sender.isOn, forKey: "showArrivalByTime")
+    }
+}
+
+private func currentWeekdayString() -> String {
+    var calendar = Calendar.current
+    calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? calendar.timeZone
+    switch calendar.component(.weekday, from: Foundation.Date.now) {
+    case 1:
+        return "sunday"
+    case 7:
+        return "saturday"
+    default:
+        return "weekday"
     }
 }
 

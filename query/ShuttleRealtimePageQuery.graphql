@@ -1,4 +1,4 @@
-query ShuttleRealtimePageQuery($language: String!, $after: LocalTime) {
+query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: String!) {
     notices(input: {language: $language, category: "셔틀,날씨"}) {
         notices {
             title
@@ -48,6 +48,42 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime) {
                     }
                 }
             }
+        }
+    }
+    subway(input: { keys: [
+        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 2 },
+        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 2 },
+    ]}) {
+        stationID
+        arrival {
+            direction
+            entries {
+                minutes
+                isRealtime
+                location
+                stops
+                terminal {
+                    stationID
+                    name
+                }
+            }
+        }
+    }
+    transferBus: bus(input: [
+        { route: 216000075, stop: 216000759, limit: 2 },
+        { route: 216000075, stop: 216000117, limit: 2 },
+    ]) {
+        route {
+            seq
+            name
+        }
+        stop {
+            seq
+        }
+        arrival {
+            minutes
+            stops
+            isRealtime
         }
     }
 }
