@@ -1,8 +1,9 @@
 import UIKit
 
 class SettingVC: UIViewController {
-    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "person.circle", "info.circle.fill"]
-    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.developer", "setting.version"]
+    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "questionmark.circle", "person.circle", "info.circle.fill"]
+    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.coachmark.reset", "setting.developer", "setting.version"]
+    private let analyticsNames = ["setting.campus", "setting.theme", "setting.language", "setting.coachmark.reset", "setting.developer", "setting.version"]
     private lazy var settingView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -57,6 +58,14 @@ class SettingVC: UIViewController {
     private func openAppSetting() {
         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
     }
+
+    private func resetCoachMarks() {
+        CoachMarkManager.shared.resetAll()
+        showToastMessage(
+            image: UIImage(systemName: "checkmark.circle.fill"),
+            message: String(localized: "toast.coachmark.reset.complete")
+        )
+    }
 }
 
 extension SettingVC: UITableViewDelegate, UITableViewDataSource {
@@ -65,7 +74,7 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        5
+        titles.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -75,12 +84,14 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let titleKeys = ["setting.campus", "setting.theme", "setting.language", "setting.developer", "setting.version"]
-        if indexPath.row < titleKeys.count {
-            AnalyticsManager.logSelect(.settingSelectRow, type: .listItem, name: titleKeys[indexPath.row])
+        if indexPath.row < analyticsNames.count {
+            AnalyticsManager.logSelect(.settingSelectRow, type: .listItem, name: analyticsNames[indexPath.row])
         }
         if self.titles[indexPath.row] == "setting.language" {
             self.openAppSetting()
+        } else if self.titles[indexPath.row] == "setting.coachmark.reset" {
+            self.resetCoachMarks()
         }
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }

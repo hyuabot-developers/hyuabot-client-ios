@@ -6073,6 +6073,34 @@
         }
       }
     },
+    "setting.coachmark.reset" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Feature Guide Again"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "機能ガイドを再表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기능 안내 다시 보기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再次查看功能引导"
+          }
+        }
+      }
+    },
     "setting.developer" : {
       "localizations" : {
         "en" : {
@@ -11821,6 +11849,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已复制%@。"
+          }
+        }
+      }
+    },
+    "toast.coachmark.reset.complete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feature guides will be shown again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "機能ガイドをもう一度表示できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기능 안내를 다시 볼 수 있어요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可再次查看功能引导。"
           }
         }
       }

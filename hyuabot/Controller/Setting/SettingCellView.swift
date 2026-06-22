@@ -117,6 +117,11 @@ class SettingCellView: UITableViewCell {
     func setupUI(imageName: String, title: String.LocalizationValue) {
         self.iconImageView.image = UIImage(systemName: imageName)
         self.titleLabel.text = String(localized: title)
+        self.campusButton.isHidden = true
+        self.themeButton.isHidden = true
+        self.arrowImageView.isHidden = true
+        self.contentLabel.isHidden = true
+        self.contentLabel.text = nil
         if title == "setting.campus" {
             self.campusButton.do {
                 $0.isHidden = false

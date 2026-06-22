@@ -9,6 +9,19 @@ final class CoachMarkManager {
     private let initializedKey = "coachMarkInitialized"
     private let skipVersionKey = "coachMarkSkipVersion"
     private let appLaunchedKey = "appHasLaunched"
+    private let pageIds = [
+        "bus.realtime",
+        "cafeteria",
+        "calendar",
+        "contact",
+        "map",
+        "readingroom",
+        "root.more",
+        "setting",
+        "shuttle.realtime",
+        "shuttle.timetable",
+        "subway.realtime"
+    ]
 
     // Call before appHasLaunched is written to UserDefaults
     func initialize() {
@@ -35,6 +48,14 @@ final class CoachMarkManager {
     func markPageShown(_ pageId: String, version: Int = 1) {
         UserDefaults.standard.set(true, forKey: pageKey(pageId, version))
         NotificationCenter.default.post(name: .coachMarkPageShown, object: nil, userInfo: ["pageId": pageId])
+    }
+
+    func resetAll() {
+        UserDefaults.standard.set(0, forKey: skipVersionKey)
+        UserDefaults.standard.set(true, forKey: initializedKey)
+        pageIds.forEach {
+            UserDefaults.standard.removeObject(forKey: pageKey($0, Self.currentVersion))
+        }
     }
 
     private func pageKey(_ pageId: String, _ version: Int) -> String {
