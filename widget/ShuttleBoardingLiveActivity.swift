@@ -6,22 +6,27 @@ import WidgetKit
 struct ShuttleBoardingLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: ShuttleBoardingActivityAttributes.self) { context in
-            VStack(alignment: .leading, spacing: 8) {
-                Text(verbatim: context.state.titleText)
-                    .font(.headline)
-                Text(verbatim: context.state.statusText)
-                    .font(.subheadline)
-                ShuttleBoardingSegmentedProgress(
-                    progress: context.state.progress,
-                    segments: context.state.progressSegments
-                )
-                ShuttleBoardingStopLabels(
-                    names: context.state.checkpointStopNames,
-                    segments: context.state.progressSegments
-                )
-                ShuttleBoardingCountdownText(departureTime: context.attributes.departureTime)
-                    .font(.title2.weight(.bold))
-                    .monospacedDigit()
+            TimelineView(ShuttleCheckpointTimelineSchedule(dates: context.attributes.checkpointTimes)) { timeline in
+                let checkpointStatus = liveCheckpointStatus(attributes: context.attributes, now: timeline.date)
+                let statusText = joinedStatusText(context.state.statusText, checkpointStatus)
+                let progress = liveProgress(attributes: context.attributes, fallback: context.state.progress, now: timeline.date)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(verbatim: context.state.titleText)
+                        .font(.headline)
+                    Text(verbatim: statusText)
+                        .font(.subheadline)
+                    ShuttleBoardingSegmentedProgress(
+                        progress: progress,
+                        segments: context.state.progressSegments
+                    )
+                    ShuttleBoardingStopLabels(
+                        names: context.attributes.checkpointStopNames,
+                        segments: context.state.progressSegments
+                    )
+                    ShuttleBoardingCountdownText(departureTime: context.attributes.departureTime)
+                        .font(.title2.weight(.bold))
+                        .monospacedDigit()
+                }
             }
             .padding()
             .activityBackgroundTint(Color(.systemBackground))
@@ -34,7 +39,7 @@ struct ShuttleBoardingLiveActivity: Widget {
                             .font(.caption2)
                             .foregroundStyle(Color.white.opacity(0.78))
                             .lineLimit(1)
-                        Text(context.attributes.boardingStopName)
+                        Text(context.attributes.alarmKind == "alighting" ? (context.attributes.targetStopName ?? context.attributes.boardingStopName) : context.attributes.boardingStopName)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.white)
                             .lineLimit(1)
@@ -52,26 +57,31 @@ struct ShuttleBoardingLiveActivity: Widget {
                         .padding(.trailing, -2)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack(spacing: 6) {
-                            Text(verbatim: context.attributes.routeDisplayName)
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(Color.white)
-                                .lineLimit(1)
-                            Text(verbatim: context.state.dynamicIslandStatusText)
-                                .font(.caption2)
-                                .foregroundStyle(Color.white.opacity(0.78))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.75)
+                    TimelineView(ShuttleCheckpointTimelineSchedule(dates: context.attributes.checkpointTimes)) { timeline in
+                        let checkpointStatus = liveCheckpointStatus(attributes: context.attributes, now: timeline.date)
+                        let statusText = joinedStatusText(context.state.dynamicIslandStatusText, checkpointStatus)
+                        let progress = liveProgress(attributes: context.attributes, fallback: context.state.progress, now: timeline.date)
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack(spacing: 6) {
+                                Text(verbatim: context.attributes.routeDisplayName)
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(Color.white)
+                                    .lineLimit(1)
+                                Text(verbatim: statusText)
+                                    .font(.caption2)
+                                    .foregroundStyle(Color.white.opacity(0.78))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.75)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            ShuttleBoardingDynamicIslandProgress(
+                                progress: progress,
+                                segments: context.state.progressSegments
+                            )
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        ShuttleBoardingDynamicIslandProgress(
-                            progress: context.state.progress,
-                            segments: context.state.progressSegments
-                        )
+                        .padding(.leading, 10)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 10)
                 }
             } compactLeading: {
                 Image(systemName: "bus.fill")
@@ -92,6 +102,65 @@ struct ShuttleBoardingLiveActivity: Widget {
     }
 }
 
+private func joinedStatusText(_ base: String, _ checkpointStatus: String) -> String {
+    [base, checkpointStatus].filter { !$0.isEmpty }.joined(separator: " · ")
+}
+
+private struct ShuttleCheckpointTimelineSchedule: TimelineSchedule {
+    let dates: [Date]
+
+    func entries(from startDate: Date, mode: TimelineScheduleMode) -> [Date] {
+        let endDate = dates.last ?? startDate.addingTimeInterval(60 * 30)
+        let interval: TimeInterval = mode == .lowFrequency ? 60 : 15
+        let periodicDates = stride(
+            from: startDate,
+            through: endDate.addingTimeInterval(60),
+            by: interval
+        ).map { $0 }
+        let checkpointDates = dates
+            .flatMap { [$0.addingTimeInterval(-60), $0, $0.addingTimeInterval(1)] }
+            .filter { $0 >= startDate }
+        let entries = Set([startDate] + periodicDates + checkpointDates).sorted()
+        return Array(entries.prefix(mode == .lowFrequency ? 32 : 96))
+    }
+}
+
+private func liveCheckpointStatus(attributes: ShuttleBoardingActivityAttributes, now: Date) -> String {
+    let names = attributes.checkpointStopNames
+    let times = attributes.checkpointTimes
+    guard !names.isEmpty, names.count == times.count else { return "" }
+    guard names.count >= 2 else {
+        return String(format: attributes.checkpointWaitingFormat, names[0])
+    }
+
+    if now < times[0] {
+        return String(format: attributes.checkpointWaitingFormat, names[0])
+    }
+
+    for index in 1..<times.count where now < times[index] && times[index].timeIntervalSince(now) <= 60 {
+        return String(format: attributes.checkpointApproachingFormat, names[index])
+    }
+
+    for index in stride(from: times.count - 2, through: 0, by: -1) where times[index] <= now {
+        return String(format: attributes.checkpointDepartedFormat, names[index])
+    }
+
+    return String(format: attributes.checkpointWaitingFormat, names[0])
+}
+
+private func liveProgress(attributes: ShuttleBoardingActivityAttributes, fallback: Int, now: Date) -> Int {
+    let times = attributes.checkpointTimes
+    guard times.count >= 2,
+          let start = times.first,
+          let end = times.last else {
+        return fallback
+    }
+    let totalDuration = end.timeIntervalSince(start)
+    guard totalDuration > 0 else { return fallback }
+    let elapsed = now.timeIntervalSince(start).clamped(to: 0...totalDuration)
+    return Int((elapsed * 100) / totalDuration).clamped(to: 0...100)
+}
+
 private struct ShuttleBoardingCountdownText: View {
     let departureTime: Date
 
@@ -101,6 +170,12 @@ private struct ShuttleBoardingCountdownText: View {
         } else {
             Text(verbatim: "0:00")
         }
+    }
+}
+
+private extension Comparable {
+    func clamped(to limits: ClosedRange<Self>) -> Self {
+        min(max(self, limits.lowerBound), limits.upperBound)
     }
 }
 
