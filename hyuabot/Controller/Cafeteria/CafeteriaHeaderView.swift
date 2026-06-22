@@ -34,7 +34,7 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupUI(id: Int, runningTime: String?, showCafeteriaInfoVC: @escaping () -> ()) {
+    func setupUI(id: Int, runningTime: String?, hasMenu: Bool = true, showCafeteriaInfoVC: @escaping () -> ()) {
         var title = ""
         switch id {
         case 1:
@@ -68,7 +68,11 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
         self.contentView.addSubview(infoButton)
         self.contentView.backgroundColor = .hanyangBlue
         self.runningTimeLabel.text = runningTime.map {
-            String(format: String(localized: "cafeteria.running.time.%@"), $0)
+            String(
+                format: String(localized: "cafeteria.running.time.status.%@.%@"),
+                $0,
+                cafeteriaStatusText(runningTime: $0, hasMenu: hasMenu)
+            )
         } ?? String(localized: "cafeteria.running.time")
         self.nameStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(10)
@@ -83,5 +87,29 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
     @objc private func infoButtonTapped() {
         AnalyticsManager.logSelect(.cafeteriaInfoButton)
         self.showCafeteriaInfoVC()
+    }
+
+    private func cafeteriaStatusText(runningTime: String, hasMenu: Bool) -> String {
+        if !hasMenu { return String(localized: "cafeteria.status.no.menu") }
+        let times = runningTime.matches(of: /\d{1,2}:\d{2}/)
+            .prefix(2)
+            .compactMap { match -> Date? in
+                let formatter = DateFormatter()
+                formatter.dateFormat = "HH:mm"
+                return formatter.date(from: String(match.output))
+            }
+        guard times.count == 2 else {
+            return String(localized: "cafeteria.status.has.menu")
+        }
+        let calendar = Calendar.current
+        let nowComponents = calendar.dateComponents([.hour, .minute], from: Date())
+        let startComponents = calendar.dateComponents([.hour, .minute], from: times[0])
+        let endComponents = calendar.dateComponents([.hour, .minute], from: times[1])
+        let nowMinutes = (nowComponents.hour ?? 0) * 60 + (nowComponents.minute ?? 0)
+        let startMinutes = (startComponents.hour ?? 0) * 60 + (startComponents.minute ?? 0)
+        let endMinutes = (endComponents.hour ?? 0) * 60 + (endComponents.minute ?? 0)
+        if nowMinutes < startMinutes { return String(localized: "cafeteria.status.soon") }
+        if nowMinutes > endMinutes { return String(localized: "cafeteria.status.closed") }
+        return String(localized: "cafeteria.status.open")
     }
 }
