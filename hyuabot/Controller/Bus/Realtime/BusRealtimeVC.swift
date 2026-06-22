@@ -77,30 +77,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         ]
         return viewPager
     }()
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large
-        $0.color = .label
-    }
-    private let loadingLabel = UILabel().then {
-        $0.text = String(localized: "bus.realtime.loading")
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .label
-    }
-    private lazy var loadingStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        stackView.alignment = .center
-        stackView.backgroundColor = .systemBackground
-        return stackView
-    }()
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.logScreenView(.busRealtime)
@@ -196,7 +172,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     
     private func setupUI() {
         self.view.addSubview(viewPager)
-        self.view.addSubview(loadingView)
         self.view.addSubview(helpButton)
         self.viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -206,9 +181,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             make.trailing.equalToSuperview().inset(20)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
-        }
-        self.loadingView.snp.makeConstraints { make in
-            make.edges.equalTo(viewPager)
         }
     }
     
@@ -296,15 +268,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.onNext(false)
         }).disposed(by: self.disposeBag)
-        BusRealtimeData.shared.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
-                self.loadingView.isHidden = false
-                self.loadingSpinner.startAnimating()
-            } else {
-                self.loadingView.isHidden = true
-                self.loadingSpinner.stopAnimating()
-            }
-        }).disposed(by: disposeBag)
         BusRealtimeData.shared.notices.subscribe(onNext: { notices in
             if notices.isEmpty {
                 self.noticeView.isHidden = true
