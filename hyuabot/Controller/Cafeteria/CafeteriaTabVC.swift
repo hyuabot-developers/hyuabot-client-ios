@@ -3,8 +3,10 @@ import RxSwift
 import Api
 
 class CafeteriaTabVC: UIViewController {
+    private let disposeBag = DisposeBag()
     private let cafeteriaType: CafeteriaType
     private let showCafeteriaInfoVC: (Int) -> Void
+    private var showsSkeleton = true
     private let noDataLabel = UILabel().then {
         $0.text = String(localized: "cafeteria.no.data")
         $0.font = .godo(size: 18, weight: .regular)
@@ -21,7 +23,9 @@ class CafeteriaTabVC: UIViewController {
             $0.verticalScrollIndicatorInsets.bottom = 88
             // Register Cell
             $0.register(CafeteriaHeaderView.self, forHeaderFooterViewReuseIdentifier: CafeteriaHeaderView.reuseIdentifier)
+            $0.register(CafeteriaSkeletonHeaderView.self, forHeaderFooterViewReuseIdentifier: CafeteriaSkeletonHeaderView.reuseIdentifier)
             $0.register(CafeteriaMenuCellView.self, forCellReuseIdentifier: CafeteriaMenuCellView.reuseIdentifier)
+            $0.register(CafeteriaSkeletonCellView.self, forCellReuseIdentifier: CafeteriaSkeletonCellView.reuseIdentifier)
         }
         return tableView
     }()
@@ -39,6 +43,7 @@ class CafeteriaTabVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupUI()
+        self.observeSubjects()
     }
     
     private func setupUI() {
@@ -54,6 +59,17 @@ class CafeteriaTabVC: UIViewController {
     
     private func showCafeteriaInfoVC(cafeteriaID: Int) {
         self.showCafeteriaInfoVC(cafeteriaID)
+    }
+
+    private func observeSubjects() {
+        CafeteriaData.shared.isLoading
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] isLoading in
+                self?.showsSkeleton = isLoading
+                self?.reload()
+            })
+            .disposed(by: disposeBag)
     }
     
     private func languageFilteredMenus(
@@ -206,7 +222,10 @@ class CafeteriaTabVC: UIViewController {
 
     func reload() {
         self.cafeteriaTableView.reloadData()
-        if (self.cafeteriaTableView.numberOfSections == 0) {
+        if showsSkeleton {
+            self.cafeteriaTableView.isHidden = false
+            self.noDataLabel.isHidden = true
+        } else if (self.cafeteriaTableView.numberOfSections == 0) {
             self.cafeteriaTableView.isHidden = true
             self.noDataLabel.isHidden = false
         } else {
@@ -231,6 +250,9 @@ class CafeteriaTabVC: UIViewController {
 
 extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
+        if showsSkeleton {
+            return 3
+        }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
             return cafeteriaItems.count
@@ -245,6 +267,9 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        if showsSkeleton {
+            return tableView.dequeueReusableHeaderFooterView(withIdentifier: CafeteriaSkeletonHeaderView.reuseIdentifier)
+        }
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: CafeteriaHeaderView.reuseIdentifier) as? CafeteriaHeaderView else { return UIView() }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UIView() }
@@ -269,6 +294,9 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showsSkeleton {
+            return section == 0 ? 3 : 2
+        }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
             return languageFilteredMenus(cafeteriaItems[section].menus, type: "조식").count
@@ -283,6 +311,9 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if showsSkeleton {
+            return tableView.dequeueReusableCell(withIdentifier: CafeteriaSkeletonCellView.reuseIdentifier, for: indexPath)
+        }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CafeteriaMenuCellView.reuseIdentifier) as? CafeteriaMenuCellView else { return UITableViewCell() }
         if (self.cafeteriaType == .breakfast) {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UITableViewCell() }
