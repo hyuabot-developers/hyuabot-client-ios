@@ -1,5 +1,15 @@
 import UIKit
 
+private final class ExtendedHitAreaButton: UIButton {
+    var minimumHitArea = CGSize(width: 44, height: 44)
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let widthInset = min(0, bounds.width - minimumHitArea.width) / 2
+        let heightInset = min(0, bounds.height - minimumHitArea.height) / 2
+        return bounds.insetBy(dx: widthInset, dy: heightInset).contains(point)
+    }
+}
+
 class BusRealtimeHeaderView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "BusRealtimeHeaderView"
     private let titleLabel = UILabel().then {
@@ -8,7 +18,7 @@ class BusRealtimeHeaderView: UITableViewHeaderFooterView {
         $0.textAlignment = .center
     }
     private var showStopVC: () -> () = {}
-    lazy var locationButton = UIButton().then {
+    lazy var locationButton: UIButton = ExtendedHitAreaButton().then {
         $0.setImage(UIImage(systemName: "location.magnifyingglass"), for: .normal)
         $0.addTarget(self, action: #selector(stopButtonTapped), for: .touchUpInside)
         $0.tintColor = .white
