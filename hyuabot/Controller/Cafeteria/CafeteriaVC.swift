@@ -157,10 +157,12 @@ class CafeteriaVC: UIViewController {
         self.previousDateButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalTo(feedDatePicker)
+            make.width.height.equalTo(44)
         }
         self.nextDateButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalTo(feedDatePicker)
+            make.width.height.equalTo(44)
         }
         self.shareButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
