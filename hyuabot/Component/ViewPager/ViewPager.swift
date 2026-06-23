@@ -106,6 +106,7 @@ extension ViewPager: TabViewDelegate {
 
 extension ViewPager: ContentViewDelegate {
     func didMoveToPage(index: Int) {
+        guard self.tabView.currentIndex != index else { return }
         self.tabView.moveToTab(index: index)
         self.onPageChanged?(index)
     }

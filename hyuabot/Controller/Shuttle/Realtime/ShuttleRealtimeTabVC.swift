@@ -6,7 +6,8 @@ import Api
 class ShuttleRealtimeTabVC: UIViewController {
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
-    private let refreshControl = UIRefreshControl()
+    private let destinationRefreshControl = UIRefreshControl()
+    private let timetableRefreshControl = UIRefreshControl()
     private let shuttleRealtimeSection: [String.LocalizationValue]
     private let refreshMethod: () -> Void
     private let showEntireTimetable: (ShuttleStopEnum, Int) -> Void
@@ -33,7 +34,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.dataSource = self
             $0.sectionHeaderTopPadding = 0
             $0.backgroundColor = .systemBackground
-            $0.refreshControl = refreshControl
+            $0.refreshControl = destinationRefreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
             $0.tableFooterView = self.tableFooterView1
             $0.showsVerticalScrollIndicator = false
@@ -53,7 +54,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             $0.sectionHeaderTopPadding = 0
             $0.backgroundColor = .systemBackground
             $0.tableFooterView = self.tableFooterView2
-            $0.refreshControl = refreshControl
+            $0.refreshControl = timetableRefreshControl
             $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
             $0.showsVerticalScrollIndicator = false
             // Register the view
@@ -359,7 +360,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     func reload() {
         self.shuttleRealtimeTableView.reloadData()
         self.shuttleRealtimeTableTimeView.reloadData()
-        self.refreshControl.endRefreshing()
+        self.destinationRefreshControl.endRefreshing()
+        self.timetableRefreshControl.endRefreshing()
     }
 
     func scrollToFooter() {
@@ -443,6 +445,14 @@ class ShuttleRealtimeTabVC: UIViewController {
         )
         var normalizedStops = routeStops
         normalizedStops[boardingRouteStopIndex] = boardingStop
+        if let fallbackDestination = fallbackDestinationStop(
+            stopID: stopID,
+            routeName: routeName,
+            departureDate: departureDate
+        ),
+           normalizedStops.dropFirst(boardingRouteStopIndex + 1).isEmpty {
+            normalizedStops.append(fallbackDestination)
+        }
         let orderedStops = normalizedStops
         let key = ["shuttle", boardingStopID, routeName, departureTime.replacingOccurrences(of: ":", with: "")].joined(separator: "_")
         let minutes = max(Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60)), 0)
@@ -456,6 +466,23 @@ class ShuttleRealtimeTabVC: UIViewController {
             departureTime: departureDate,
             minutesUntilDeparture: minutes,
             createdAt: Foundation.Date.now
+        )
+    }
+
+    private static func fallbackDestinationStop(
+        stopID: ShuttleStopEnum,
+        routeName: String,
+        departureDate: Foundation.Date
+    ) -> ShuttleAlarmStop? {
+        guard stopID == .shuttlecockIn, routeName.hasSuffix("D") else { return nil }
+        let stopID = "dormitory_i"
+        let location = shuttleAlarmLocation(for: stopID)
+        return ShuttleAlarmStop(
+            id: stopID,
+            name: shuttleAlarmStopName(stopID),
+            time: departureDate.addingTimeInterval(5 * 60),
+            latitude: location?.latitude,
+            longitude: location?.longitude
         )
     }
 
@@ -571,8 +598,10 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     private static func shuttleAlarmStopName(_ stopID: String) -> String {
         switch stopID {
-        case "dormitory_o", "dormitory_i":
+        case "dormitory_o":
             return String(localized: "shuttle.stop.dormitory.out")
+        case "dormitory_i":
+            return String(localized: "shuttle.stop.dormitory.in")
         case "shuttlecock_o":
             return String(localized: "shuttle.stop.shuttlecock.out")
         case "station":
@@ -588,9 +617,31 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
     }
 
-    private static func shuttleAlarmLocation(for stopID: String) -> ShuttleRealtimePageQuery.Data.Shuttle.Stop? {
+    private static func shuttleAlarmLocation(for stopID: String) -> (latitude: Double, longitude: Double)? {
         let locationStopID = stopID == "dormitory_i" ? "dormitory_o" : stopID
-        return (try? ShuttleRealtimeData.shared.arrival.value())?.first(where: { $0.name == locationStopID })
+        if let stop = (try? ShuttleRealtimeData.shared.arrival.value())?.first(where: { $0.name == locationStopID }) {
+            return (stop.latitude, stop.longitude)
+        }
+        return shuttleAlarmFallbackLocation(for: locationStopID)
+    }
+
+    private static func shuttleAlarmFallbackLocation(for stopID: String) -> (latitude: Double, longitude: Double)? {
+        switch stopID {
+        case "dormitory_o":
+            return (37.29339607529377, 126.83630604103446)
+        case "shuttlecock_o":
+            return (37.29875417910844, 126.83784054072336)
+        case "station":
+            return (37.309700971618255, 126.85207173389148)
+        case "terminal":
+            return (37.319338173415936, 126.8455263115596)
+        case "jungang_stn":
+            return (37.31487247528457, 126.83963540399434)
+        case "shuttlecock_i":
+            return (37.29869328231496, 126.8377767466817)
+        default:
+            return nil
+        }
     }
 
     @objc private func refreshTableView(_ sender: UIRefreshControl) {

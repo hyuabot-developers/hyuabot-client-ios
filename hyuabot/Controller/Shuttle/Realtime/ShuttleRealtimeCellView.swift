@@ -2,6 +2,16 @@ import UIKit
 import Api
 import RxSwift
 
+private final class ExtendedHitAreaButton: UIButton {
+    var minimumHitArea = CGSize(width: 44, height: 44)
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let widthInset = min(0, bounds.width - minimumHitArea.width) / 2
+        let heightInset = min(0, bounds.height - minimumHitArea.height) / 2
+        return bounds.insetBy(dx: widthInset, dy: heightInset).contains(point)
+    }
+}
+
 class ShuttleRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleRealtimeCellView"
     private let disposeBag = DisposeBag()
@@ -27,7 +37,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.isHidden = true
         $0.addSubview(self.shuttleAlertLabel)
     }
-    private let alarmButton = UIButton(type: .system).then {
+    private let alarmButton = ExtendedHitAreaButton(type: .system).then {
         let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         $0.setImage(UIImage(systemName: "bell", withConfiguration: symbolConfiguration), for: .normal)
         if UITraitCollection.current.userInterfaceStyle == .light {
