@@ -60,26 +60,34 @@ class CafeteriaVC: UIViewController {
     }
 
     private lazy var shareButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.filled()
-        configuration.baseBackgroundColor = .hanyangGreen
+        var configuration = UIButton.Configuration.tinted()
+        configuration.baseForegroundColor = .hanyangBlue
         configuration.cornerStyle = .medium
         configuration.image = UIImage(systemName: "square.and.arrow.up")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 20,
-            weight: .regular
+            pointSize: 16,
+            weight: .semibold
         ))
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
-        configuration.background.strokeColor = .white.withAlphaComponent(0.9)
-        configuration.background.strokeWidth = 1
+        configuration.attributedTitle = AttributedString(String(localized: "common.share"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 14, weight: .bold)
+        ]))
+        configuration.imagePadding = 6
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
         $0.configuration = configuration
-        $0.tintColor = .white
         $0.accessibilityLabel = String(localized: "cafeteria.share")
         $0.accessibilityIdentifier = "cafeteria_share_button"
-        $0.isHidden = true
-        $0.layer.shadowColor = UIColor.black.cgColor
-        $0.layer.shadowOpacity = 0.22
-        $0.layer.shadowRadius = 8
-        $0.layer.shadowOffset = CGSize(width: 0, height: 3)
         $0.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
+    }
+
+    private lazy var shareBar = UIView().then {
+        $0.backgroundColor = .systemBackground
+        $0.layer.borderWidth = 1 / UIScreen.main.scale
+        $0.layer.borderColor = UIColor.separator.cgColor
+    }
+
+    private lazy var shareBarLabel = UILabel().then {
+        $0.text = String(localized: "cafeteria.action_bar.title")
+        $0.textColor = .secondaryLabel
+        $0.font = .godo(size: 13, weight: .bold)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -157,7 +165,9 @@ class CafeteriaVC: UIViewController {
         view.addSubview(previousDateButton)
         view.addSubview(feedDatePicker)
         view.addSubview(nextDateButton)
-        view.addSubview(shareButton)
+        view.addSubview(shareBar)
+        shareBar.addSubview(shareBarLabel)
+        shareBar.addSubview(shareButton)
         feedDatePicker.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
@@ -173,14 +183,23 @@ class CafeteriaVC: UIViewController {
             make.centerY.equalTo(feedDatePicker)
             make.width.height.equalTo(44)
         }
-        shareButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(feedDatePicker.snp.top).offset(-20)
-            make.width.height.equalTo(50)
-        }
         viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(shareBar.snp.top)
+        }
+        shareBar.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(feedDatePicker.snp.top)
+            make.height.equalTo(54)
+        }
+        shareBarLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+        }
+        shareButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
     }
 
@@ -233,7 +252,7 @@ class CafeteriaVC: UIViewController {
 
     private func updateShareButtonVisibility() {
         let isLoading = (try? CafeteriaData.shared.isLoading.value()) ?? false
-        shareButton.isHidden = isLoading || selectedMealVC.shareText() == nil
+        shareButton.isEnabled = !isLoading && selectedMealVC.shareText() != nil
     }
 
     @objc private func previousDateButtonTapped() {

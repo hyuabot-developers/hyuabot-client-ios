@@ -38,18 +38,34 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     )
     private var subscription: Disposable?
     private lazy var helpButton = UIButton().then {
-        var config = UIButton.Configuration.filled()
-        config.baseBackgroundColor = .hanyangGreen
+        var config = UIButton.Configuration.tinted()
+        config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "questionmark.circle")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 20,
-            weight: .regular
+            pointSize: 16,
+            weight: .semibold
         ))
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        config.attributedTitle = AttributedString(String(localized: "common.help"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 14, weight: .bold)
+        ]))
+        config.imagePadding = 6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
         $0.configuration = config
         $0.accessibilityLabel = String(localized: "bus.help")
         $0.accessibilityIdentifier = "bus.open_help"
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
+    }
+
+    private lazy var helpBar = UIView().then {
+        $0.backgroundColor = .systemBackground
+        $0.layer.borderWidth = 1 / UIScreen.main.scale
+        $0.layer.borderColor = UIColor.separator.cgColor
+    }
+
+    private lazy var helpBarLabel = UILabel().then {
+        $0.text = String(localized: "bus.action_bar.title")
+        $0.textColor = .secondaryLabel
+        $0.font = .godo(size: 13, weight: .bold)
     }
 
     private lazy var noticeView = NoticeCarouselView().then {
@@ -195,15 +211,26 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
 
     private func setupUI() {
         view.addSubview(viewPager)
-        view.addSubview(helpButton)
+        view.addSubview(helpBar)
+        helpBar.addSubview(helpBarLabel)
+        helpBar.addSubview(helpButton)
         viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+            make.bottom.equalTo(self.helpBar.snp.top)
+        }
+        helpBar.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(16)
+            make.height.equalTo(54)
+        }
+        helpBarLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
         }
         helpButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
-            make.width.height.equalTo(50)
+            make.trailing.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
     }
 
