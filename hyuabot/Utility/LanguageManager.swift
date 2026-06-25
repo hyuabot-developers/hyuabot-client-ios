@@ -22,7 +22,7 @@ final class LanguageManager {
         return Locale.preferredLanguages.contains { $0.hasPrefix("ja") || $0.hasPrefix("zh") }
     }
 
-    // Languages from device preferences that are newly supported
+    /// Languages from device preferences that are newly supported
     var suggestedLanguages: [String] {
         var langs: [String] = []
         for lang in Locale.preferredLanguages {

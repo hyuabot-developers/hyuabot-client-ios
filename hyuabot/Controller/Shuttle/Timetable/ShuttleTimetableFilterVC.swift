@@ -1,5 +1,5 @@
-import UIKit
 import RxSwift
+import UIKit
 
 class ShuttleTimetableFilterVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -18,9 +18,10 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.timetable.filter")
     }
-    private lazy var startStopButton: UIButton = UIButton().then {
+
+    private lazy var startStopButton: UIButton = .init().then {
         var conf = UIButton.Configuration.bordered()
-        var title = AttributedString.init(String(localized: "shuttle.show.stop.modal"))
+        var title = AttributedString(String(localized: "shuttle.show.stop.modal"))
         title.font = .godo(size: 16, weight: .medium)
         title.foregroundColor = .label
         conf.attributedTitle = title
@@ -35,15 +36,17 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.menu = menu
         $0.showsMenuAsPrimaryAction = true
     }
-    private let endStopButton: UIButton = UIButton().then {
+
+    private let endStopButton: UIButton = .init().then {
         var conf = UIButton.Configuration.bordered()
-        var title = AttributedString.init(String(localized: "shuttle.show.stop.modal"))
+        var title = AttributedString(String(localized: "shuttle.show.stop.modal"))
         title.font = .godo(size: 16, weight: .medium)
         title.foregroundColor = .label
         conf.attributedTitle = title
         $0.configuration = conf
     }
-    private lazy var routeSearchStackView: UIStackView = UIStackView().then {
+
+    private lazy var routeSearchStackView: UIStackView = .init().then {
         let arrowView = UILabel().then {
             $0.font = .godo(size: 16, weight: .medium)
             $0.text = "→"
@@ -56,9 +59,10 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.addArrangedSubview(arrowView)
         $0.addArrangedSubview(endStopButton)
     }
-    private lazy var periodButton: UIButton = UIButton().then {
+
+    private lazy var periodButton: UIButton = .init().then {
         var conf = UIButton.Configuration.bordered()
-        var title = AttributedString.init(String(localized: "shuttle.period.semester"))
+        var title = AttributedString(String(localized: "shuttle.period.semester"))
         title.font = .godo(size: 16, weight: .medium)
         title.foregroundColor = .label
         conf.attributedTitle = title
@@ -79,12 +83,14 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.menu = menu
         $0.showsMenuAsPrimaryAction = true
     }
-    private let datePicker: UIDatePicker = UIDatePicker().then {
+
+    private let datePicker: UIDatePicker = .init().then {
         $0.datePickerMode = .date
         $0.preferredDatePickerStyle = .compact
         $0.locale = Locale(identifier: "ko_KR")
     }
-    private lazy var datePickerStackView: UIStackView = UIStackView().then {
+
+    private lazy var datePickerStackView: UIStackView = .init().then {
         let dateFilterTitle = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
             $0.text = String(localized: "shuttle.timetable.filter.date")
@@ -93,14 +99,16 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.addArrangedSubview(datePicker)
         $0.axis = .horizontal
     }
-    private lazy var okButton: UIButton = UIButton().then {
+
+    private lazy var okButton: UIButton = .init().then {
         var conf = UIButton.Configuration.plain()
-        var title = AttributedString.init(String(localized: "shuttle.timetable.filter.ok"))
+        var title = AttributedString(String(localized: "shuttle.timetable.filter.ok"))
         title.font = .godo(size: 18, weight: .bold)
         conf.attributedTitle = title
         $0.configuration = conf
         $0.addTarget(self, action: #selector(okButtonTapped), for: .touchUpInside)
     }
+
     private lazy var contentView = UIStackView().then {
         let routeFilterTitle = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
@@ -125,39 +133,40 @@ class ShuttleTimetableFilterVC: UIViewController {
         $0.addArrangedSubview(UIView())
         $0.addArrangedSubview(okButton)
     }
-    private var selectedStartStop: String.LocalizationValue? = nil
-    private var selectedEndStop: String.LocalizationValue? = nil
-    private var selectedPeriod: String.LocalizationValue? = nil
+
+    private var selectedStartStop: String.LocalizationValue?
+    private var selectedEndStop: String.LocalizationValue?
+    private var selectedPeriod: String.LocalizationValue?
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.shuttleTimetableFilter)
+        logScreenView(.shuttleTimetableFilter)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     private func setupUI() {
-        self.view.backgroundColor = .hanyangBlue
-        self.view.addSubview(self.titleLabel)
-        self.view.addSubview(self.contentView)
-        self.titleLabel.snp.makeConstraints { make in
+        view.backgroundColor = .hanyangBlue
+        view.addSubview(titleLabel)
+        view.addSubview(contentView)
+        titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
         }
-        self.contentView.snp.makeConstraints { make in
+        contentView.snp.makeConstraints { make in
             make.top.equalTo(self.titleLabel.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview()
         }
     }
-    
+
     private func observeSubjects() {
         ShuttleTimetableData.shared.options.subscribe(onNext: { options in
-            guard let options = options else { return }
+            guard let options else { return }
             // Set the title of the start and end stop buttons
             self.selectStartStop(options.start)
             self.setEndStopTitle(options.end)
@@ -175,41 +184,41 @@ class ShuttleTimetableFilterVC: UIViewController {
             }
         }).disposed(by: disposeBag)
     }
-    
+
     private func setStartStopTitle(_ title: String.LocalizationValue) {
-        var startStopConfig = self.startStopButton.configuration
-        var startStopTitle = AttributedString.init(String(localized: title))
+        var startStopConfig = startStopButton.configuration
+        var startStopTitle = AttributedString(String(localized: title))
         startStopTitle.font = .godo(size: 16, weight: .medium)
         startStopTitle.foregroundColor = .label
         startStopConfig?.attributedTitle = startStopTitle
-        self.startStopButton.configuration = startStopConfig
+        startStopButton.configuration = startStopConfig
     }
-    
+
     private func setEndStopTitle(_ title: String.LocalizationValue) {
-        var endStopConfig = self.endStopButton.configuration
-        var endStopTitle = AttributedString.init(String(localized: title))
+        var endStopConfig = endStopButton.configuration
+        var endStopTitle = AttributedString(String(localized: title))
         endStopTitle.font = .godo(size: 16, weight: .medium)
         endStopTitle.foregroundColor = .label
         endStopConfig?.attributedTitle = endStopTitle
-        self.endStopButton.configuration = endStopConfig
+        endStopButton.configuration = endStopConfig
     }
-    
+
     private func setPeriodTitle(_ title: String.LocalizationValue) {
-        var periodConfig = self.periodButton.configuration
-        var periodTitle = AttributedString.init(String(localized: title))
+        var periodConfig = periodButton.configuration
+        var periodTitle = AttributedString(String(localized: title))
         periodTitle.font = .godo(size: 16, weight: .medium)
         periodTitle.foregroundColor = .label
         periodConfig?.attributedTitle = periodTitle
-        self.periodButton.configuration = periodConfig
+        periodButton.configuration = periodConfig
     }
-    
+
     private func selectStartStop(_ stop: String.LocalizationValue) {
         AnalyticsManager.logSelect(.shuttleFilterSelectStart, type: .menu)
-        self.setStartStopTitle(stop)
-        self.selectedStartStop = stop
+        setStartStopTitle(stop)
+        selectedStartStop = stop
         if stop == "shuttle.stop.dormitory.out" || stop == "shuttle.stop.shuttlecock.out" {
-            self.setEndStopTitle("shuttle.destination.shorten.station")
-            self.selectedEndStop = "shuttle.destination.shorten.station"
+            setEndStopTitle("shuttle.destination.shorten.station")
+            selectedEndStop = "shuttle.destination.shorten.station"
             let availableEndStops: [String.LocalizationValue] = [
                 "shuttle.destination.shorten.station",
                 "shuttle.destination.shorten.terminal",
@@ -223,11 +232,11 @@ class ShuttleTimetableFilterVC: UIViewController {
                 })
             }
             let menu = UIMenu(title: "", children: items)
-            self.endStopButton.menu = menu
-            self.endStopButton.showsMenuAsPrimaryAction = true
+            endStopButton.menu = menu
+            endStopButton.showsMenuAsPrimaryAction = true
         } else if stop == "shuttle.stop.station" {
-            self.setEndStopTitle("shuttle.destination.shorten.campus")
-            self.selectedEndStop = "shuttle.destination.shorten.campus"
+            setEndStopTitle("shuttle.destination.shorten.campus")
+            selectedEndStop = "shuttle.destination.shorten.campus"
             let availableEndStops: [String.LocalizationValue] = [
                 "shuttle.destination.shorten.campus",
                 "shuttle.destination.shorten.terminal",
@@ -241,11 +250,11 @@ class ShuttleTimetableFilterVC: UIViewController {
                 })
             }
             let menu = UIMenu(title: "", children: items)
-            self.endStopButton.menu = menu
-            self.endStopButton.showsMenuAsPrimaryAction = true
+            endStopButton.menu = menu
+            endStopButton.showsMenuAsPrimaryAction = true
         } else {
-            self.setEndStopTitle("shuttle.destination.shorten.campus")
-            self.selectedEndStop = "shuttle.destination.shorten.campus"
+            setEndStopTitle("shuttle.destination.shorten.campus")
+            selectedEndStop = "shuttle.destination.shorten.campus"
             let menu = UIMenu(title: "", children: [
                 UIAction(title: String(localized: "shuttle.destination.shorten.campus"), handler: { _ in
                     AnalyticsManager.logSelect(.shuttleFilterSelectEnd, type: .menu)
@@ -253,27 +262,27 @@ class ShuttleTimetableFilterVC: UIViewController {
                     self.selectedEndStop = "shuttle.destination.shorten.campus"
                 })
             ])
-            self.endStopButton.menu = menu
-            self.endStopButton.showsMenuAsPrimaryAction = true
+            endStopButton.menu = menu
+            endStopButton.showsMenuAsPrimaryAction = true
         }
     }
-    
+
     private func selectPeriod(_ period: String.LocalizationValue) {
         AnalyticsManager.logSelect(.shuttleFilterSelectPeriod, type: .menu)
-        self.setPeriodTitle(period)
-        self.selectedPeriod = period
-        if (period == "shuttle.period.custom") {
-            self.datePicker.isEnabled = true
+        setPeriodTitle(period)
+        selectedPeriod = period
+        if period == "shuttle.period.custom" {
+            datePicker.isEnabled = true
         } else {
-            self.datePicker.isEnabled = false
+            datePicker.isEnabled = false
         }
     }
-    
+
     @objc private func okButtonTapped() {
         AnalyticsManager.logSelect(.shuttleFilterConfirm)
-        guard let selectedStartStop = self.selectedStartStop else { return }
-        guard let selectedEndStop = self.selectedEndStop else { return }
-        if (selectedPeriod == "shuttle.period.custom") {
+        guard let selectedStartStop else { return }
+        guard let selectedEndStop else { return }
+        if selectedPeriod == "shuttle.period.custom" {
             ShuttleTimetableData.shared.options.onNext(
                 ShuttleTimetableOptions(
                     start: selectedStartStop,
@@ -292,6 +301,6 @@ class ShuttleTimetableFilterVC: UIViewController {
                 )
             )
         }
-        self.dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
 }

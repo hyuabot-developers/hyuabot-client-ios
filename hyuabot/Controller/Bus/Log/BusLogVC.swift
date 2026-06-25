@@ -1,6 +1,6 @@
-import UIKit
-import RxSwift
 import Api
+import RxSwift
+import UIKit
 
 class BusLogVC: UIViewController {
     let stopID: Int32
@@ -9,7 +9,7 @@ class BusLogVC: UIViewController {
     private let firstLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
     private let secondLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
     private let thirdLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
-    
+
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 20, weight: .bold)
         $0.textColor = .white
@@ -17,28 +17,25 @@ class BusLogVC: UIViewController {
         $0.textAlignment = .center
         $0.text = String(localized: "bus.log.title")
     }
-    
-    private lazy var firstLogTableView: UITableView = {
-        let tableView = UITableView().then {
-            $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
-            $0.separatorStyle = .none
-            $0.dataSource = self
-            $0.delegate = self
-            $0.rowHeight = 40
-            $0.layer.do {
-                $0.borderColor = UIColor.gray.cgColor
-                $0.borderWidth = 1
-                $0.cornerRadius = 8
-            }
+
+    private lazy var firstLogTableView: UITableView = .init().then {
+        $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
+        $0.separatorStyle = .none
+        $0.dataSource = self
+        $0.delegate = self
+        $0.rowHeight = 40
+        $0.layer.do {
+            $0.borderColor = UIColor.gray.cgColor
+            $0.borderWidth = 1
+            $0.cornerRadius = 8
         }
-        return tableView
-    }()
-    
+    }
+
     private let firstLogTitleLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.textAlignment = .center
     }
-    
+
     private lazy var firstLogView: UIStackView = {
         let view = UIStackView()
         view.axis = .vertical
@@ -49,28 +46,25 @@ class BusLogVC: UIViewController {
         view.addArrangedSubview(firstLogTableView)
         return view
     }()
-    
-    private lazy var secondLogTableView: UITableView = {
-        let tableView = UITableView().then {
-            $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
-            $0.separatorStyle = .none
-            $0.dataSource = self
-            $0.delegate = self
-            $0.rowHeight = 40
-            $0.layer.do {
-                $0.borderColor = UIColor.gray.cgColor
-                $0.borderWidth = 1
-                $0.cornerRadius = 8
-            }
+
+    private lazy var secondLogTableView: UITableView = .init().then {
+        $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
+        $0.separatorStyle = .none
+        $0.dataSource = self
+        $0.delegate = self
+        $0.rowHeight = 40
+        $0.layer.do {
+            $0.borderColor = UIColor.gray.cgColor
+            $0.borderWidth = 1
+            $0.cornerRadius = 8
         }
-        return tableView
-    }()
-    
+    }
+
     private let secondLogTitleLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.textAlignment = .center
     }
-    
+
     private lazy var secondLogView: UIStackView = {
         let view = UIStackView()
         view.axis = .vertical
@@ -81,28 +75,25 @@ class BusLogVC: UIViewController {
         view.addArrangedSubview(secondLogTableView)
         return view
     }()
-    
-    private lazy var thirdLogTableView: UITableView = {
-        let tableView = UITableView().then {
-            $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
-            $0.separatorStyle = .none
-            $0.dataSource = self
-            $0.delegate = self
-            $0.rowHeight = 40
-            $0.layer.do {
-                $0.borderColor = UIColor.gray.cgColor
-                $0.borderWidth = 1
-                $0.cornerRadius = 8
-            }
+
+    private lazy var thirdLogTableView: UITableView = .init().then {
+        $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
+        $0.separatorStyle = .none
+        $0.dataSource = self
+        $0.delegate = self
+        $0.rowHeight = 40
+        $0.layer.do {
+            $0.borderColor = UIColor.gray.cgColor
+            $0.borderWidth = 1
+            $0.cornerRadius = 8
         }
-        return tableView
-    }()
-    
+    }
+
     private let thirdLogTitleLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.textAlignment = .center
     }
-    
+
     private lazy var thirdLogView: UIStackView = {
         let view = UIStackView()
         view.axis = .vertical
@@ -113,7 +104,7 @@ class BusLogVC: UIViewController {
         view.addArrangedSubview(thirdLogTableView)
         return view
     }()
-    
+
     private lazy var logView: UIStackView = {
         let view = UIStackView()
         view.axis = .horizontal
@@ -127,44 +118,45 @@ class BusLogVC: UIViewController {
         view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         return view
     }()
-    
+
     required init(stopID: Int32, routes: [Int32]) {
         self.stopID = stopID
         self.routes = routes
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.busDepartureLog)
+        logScreenView(.busDepartureLog)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.fetchLog()
-        self.observeSubjects()
+        setupUI()
+        fetchLog()
+        observeSubjects()
     }
-    
+
     private func setupUI() {
-        self.view.backgroundColor = .hanyangBlue
-        self.view.addSubview(self.titleLabel)
-        self.view.addSubview(self.logView)
-        self.titleLabel.snp.makeConstraints { make in
+        view.backgroundColor = .hanyangBlue
+        view.addSubview(titleLabel)
+        view.addSubview(logView)
+        titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
         }
-        self.logView.snp.makeConstraints { make in
+        logView.snp.makeConstraints { make in
             make.top.equalTo(self.titleLabel.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-    
+
     private func fetchLog() {
         let now = Date.now
         let firstDate = now.addingTimeInterval(-60 * 60 * 24 * 7)
@@ -172,9 +164,9 @@ class BusLogVC: UIViewController {
         let thirdDate = now.addingTimeInterval(-60 * 60 * 24)
         // Set Labels
         let dateFormatter = DateFormatter().then { $0.dateFormat = "MM/dd" }
-        self.firstLogTitleLabel.text = dateFormatter.string(from: firstDate)
-        self.secondLogTitleLabel.text = dateFormatter.string(from: secondDate)
-        self.thirdLogTitleLabel.text = dateFormatter.string(from: thirdDate)
+        firstLogTitleLabel.text = dateFormatter.string(from: firstDate)
+        secondLogTitleLabel.text = dateFormatter.string(from: secondDate)
+        thirdLogTitleLabel.text = dateFormatter.string(from: thirdDate)
         // Fetch Logs
         let queryDateFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd" }
         Task {
@@ -188,24 +180,27 @@ class BusLogVC: UIViewController {
                 }
             ))
             if let data = response?.data {
-                let logs = data.bus.flatMap { $0.log }
-                self.firstLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: firstDate) }.sorted(by: { $0.time < $1.time }))
-                self.secondLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: secondDate) }.sorted(by: { $0.time < $1.time }))
-                self.thirdLogs.onNext(logs.filter { $0.date == queryDateFormatter.string(from: thirdDate) }.sorted(by: { $0.time < $1.time }))
+                let logs = data.bus.flatMap(\.log)
+                self.firstLogs
+                    .onNext(logs.filter { $0.date == queryDateFormatter.string(from: firstDate) }.sorted(by: { $0.time < $1.time }))
+                self.secondLogs
+                    .onNext(logs.filter { $0.date == queryDateFormatter.string(from: secondDate) }.sorted(by: { $0.time < $1.time }))
+                self.thirdLogs
+                    .onNext(logs.filter { $0.date == queryDateFormatter.string(from: thirdDate) }.sorted(by: { $0.time < $1.time }))
             }
         }
     }
-    
+
     @objc private func observeSubjects() {
-        self.firstLogs.subscribe(onNext: { [weak self] logs in
+        firstLogs.subscribe(onNext: { [weak self] _ in
             self?.firstLogTableView.reloadData()
-        }).disposed(by: self.disposeBag)
-        self.secondLogs.subscribe(onNext: { [weak self] logs in
+        }).disposed(by: disposeBag)
+        secondLogs.subscribe(onNext: { [weak self] _ in
             self?.secondLogTableView.reloadData()
-        }).disposed(by: self.disposeBag)
-        self.thirdLogs.subscribe(onNext: { [weak self] logs in
+        }).disposed(by: disposeBag)
+        thirdLogs.subscribe(onNext: { [weak self] _ in
             self?.thirdLogTableView.reloadData()
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
     }
 }
 
@@ -216,31 +211,31 @@ extension BusLogVC: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch tableView {
-            case self.firstLogTableView:
-                guard let logs = try? self.firstLogs.value() else { return 0 }
-                return logs.count
-            case self.secondLogTableView:
-                guard let logs = try? self.secondLogs.value() else { return 0 }
-                return logs.count
-            case self.thirdLogTableView:
-                guard let logs = try? self.thirdLogs.value() else { return 0 }
-                return logs.count
-            default:
-                return 0
+        case firstLogTableView:
+            guard let logs = try? firstLogs.value() else { return 0 }
+            return logs.count
+        case secondLogTableView:
+            guard let logs = try? secondLogs.value() else { return 0 }
+            return logs.count
+        case thirdLogTableView:
+            guard let logs = try? thirdLogs.value() else { return 0 }
+            return logs.count
+        default:
+            return 0
         }
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: BusLogCell.reuseIdentifier) as? BusLogCell ?? BusLogCell()
         switch tableView {
-        case self.firstLogTableView:
-            guard let logs = try? self.firstLogs.value() else { return UITableViewCell() }
+        case firstLogTableView:
+            guard let logs = try? firstLogs.value() else { return UITableViewCell() }
             cell.setupUI(index: indexPath.row, item: logs[indexPath.row])
-        case self.secondLogTableView:
-            guard let logs = try? self.secondLogs.value() else { return UITableViewCell() }
+        case secondLogTableView:
+            guard let logs = try? secondLogs.value() else { return UITableViewCell() }
             cell.setupUI(index: indexPath.row, item: logs[indexPath.row])
-        case self.thirdLogTableView:
-            guard let logs = try? self.thirdLogs.value() else { return UITableViewCell() }
+        case thirdLogTableView:
+            guard let logs = try? thirdLogs.value() else { return UITableViewCell() }
             cell.setupUI(index: indexPath.row, item: logs[indexPath.row])
         default:
             break

@@ -2,7 +2,7 @@ import Foundation
 
 extension String {
     func toLocalDate() -> Foundation.Date {
-        return toLocalDateOrNil() ?? Date.now
+        toLocalDateOrNil() ?? Date.now
     }
 
     func toLocalDateOrNil() -> Foundation.Date? {
@@ -14,9 +14,9 @@ extension String {
         }
         return formatter.date(from: self)
     }
-    
+
     func toLocalTime() -> Foundation.Date {
-        return toLocalTimeOrNil() ?? Date.now
+        toLocalTimeOrNil() ?? Date.now
     }
 
     func toLocalTimeOrNil() -> Foundation.Date? {
@@ -38,9 +38,9 @@ extension String {
         merged.minute = timeComponents.minute
         return calendar.date(from: merged)
     }
-    
+
     func toZonedDateTime() -> Foundation.Date {
-        return toZonedDateTimeOrNil() ?? Date.now
+        toZonedDateTimeOrNil() ?? Date.now
     }
 
     func toZonedDateTimeOrNil() -> Foundation.Date? {
@@ -61,7 +61,7 @@ extension Foundation.Date {
         }
         return formatter.string(from: self)
     }
-    
+
     func toLocalTimeString() -> String {
         let formatter = DateFormatter().then {
             $0.calendar = Calendar(identifier: .iso8601)
@@ -71,7 +71,7 @@ extension Foundation.Date {
         }
         return formatter.string(from: self)
     }
-    
+
     func toZonedDateTimeString() -> String {
         let formatter = ISO8601DateFormatter().then {
             $0.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

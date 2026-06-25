@@ -10,6 +10,7 @@ final class SubwayRealtimeSkeletonHeaderView: UITableViewHeaderFooterView {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -58,6 +59,7 @@ final class SubwayRealtimeSkeletonFooterView: UITableViewHeaderFooterView {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -106,6 +108,7 @@ final class SubwayRealtimeSkeletonCellView: UITableViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -119,7 +122,7 @@ final class SubwayRealtimeSkeletonCellView: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .systemBackground
 
-        [destinationPlaceholder, timePlaceholder].forEach { view in
+        for view in [destinationPlaceholder, timePlaceholder] {
             view.backgroundColor = .secondarySystemFill
             view.layer.cornerRadius = 4
             view.layer.masksToBounds = true
@@ -152,7 +155,7 @@ final class SubwayRealtimeSkeletonCellView: UITableViewCell {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        [destinationPlaceholder, timePlaceholder].forEach { view in
+        for view in [destinationPlaceholder, timePlaceholder] {
             view.layer.removeAnimation(forKey: "subwayRealtimeSkeletonOpacity")
             view.layer.add(animation, forKey: "subwayRealtimeSkeletonOpacity")
         }

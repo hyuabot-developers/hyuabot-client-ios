@@ -11,6 +11,7 @@ final class SubwayTimetableSkeletonCellView: UITableViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -24,7 +25,7 @@ final class SubwayTimetableSkeletonCellView: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .systemBackground
 
-        [destinationPlaceholder, timePlaceholder].forEach { view in
+        for view in [destinationPlaceholder, timePlaceholder] {
             view.backgroundColor = .secondarySystemFill
             view.layer.cornerRadius = 4
             view.layer.masksToBounds = true
@@ -57,7 +58,7 @@ final class SubwayTimetableSkeletonCellView: UITableViewCell {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        [destinationPlaceholder, timePlaceholder].forEach { view in
+        for view in [destinationPlaceholder, timePlaceholder] {
             view.layer.removeAnimation(forKey: "subwayTimetableSkeletonOpacity")
             view.layer.add(animation, forKey: "subwayTimetableSkeletonOpacity")
         }

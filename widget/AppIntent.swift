@@ -1,5 +1,5 @@
-import WidgetKit
 import AppIntents
+import WidgetKit
 
 struct RefreshCafeteriaIntent: AppIntent {
     static var title: LocalizedStringResource = "Refresh Cafeteria Widget"

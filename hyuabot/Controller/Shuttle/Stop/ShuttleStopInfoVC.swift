@@ -1,7 +1,7 @@
-import UIKit
+import Api
 import MapKit
 import RxSwift
-import Api
+import UIKit
 
 class ShuttleStopInfoVC: UIViewController {
     private typealias StopTimetableDestination = ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination
@@ -17,11 +17,13 @@ class ShuttleStopInfoVC: UIViewController {
         $0.backgroundColor = .hanyangBlue
         $0.textAlignment = .center
     }
+
     private let stopMapView = MKMapView().then {
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
         $0.isPitchEnabled = false
     }
+
     private let firstLastTitleLabel = UILabel().then {
         $0.font = .godo(size: 18, weight: .bold)
         $0.text = String(localized: "shuttle.stop.first.last")
@@ -29,6 +31,7 @@ class ShuttleStopInfoVC: UIViewController {
         $0.textColor = .white
         $0.textAlignment = .center
     }
+
     private lazy var firstLastTimeHeaderStackView: UIStackView = {
         let destinationHeaderLabel = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
@@ -45,34 +48,38 @@ class ShuttleStopInfoVC: UIViewController {
             $0.text = String(localized: "shuttle.last.time")
             $0.textAlignment = .center
         }
-        let stackView = UIStackView(arrangedSubviews: [destinationHeaderLabel, firstTimeHeaderLabel, lastTimeHeaderLabel]).then {
+        return UIStackView(arrangedSubviews: [destinationHeaderLabel, firstTimeHeaderLabel, lastTimeHeaderLabel]).then {
             $0.axis = .horizontal
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 0
         }
-        return stackView
     }()
+
     private let stationWeekdaysFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let stationWeekdaysLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let stationWeekendsFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private let stationWeekendsLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private lazy var stationFirstLastTimeStackView: UIStackView = {
         let destinationLabel = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
@@ -91,34 +98,38 @@ class ShuttleStopInfoVC: UIViewController {
             $0.alignment = .fill
             $0.spacing = 15
         }
-        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+        return UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
             $0.axis = .horizontal
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 0
         }
-        return stackView
     }()
+
     private let campusWeekdaysFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let campusWeekdaysLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let campusWeekendsFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private let campusWeekendsLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private lazy var campusFirstLastTimeStackView: UIStackView = {
         let destinationLabel = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
@@ -137,106 +148,121 @@ class ShuttleStopInfoVC: UIViewController {
             $0.alignment = .fill
             $0.spacing = 15
         }
-        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+        return UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
             $0.axis = .horizontal
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 0
         }
-        return stackView
     }()
+
     private let terminalWeekdaysFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let terminalWeekdaysLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let terminalWeekendsFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private let terminalWeekendsLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private lazy var terminalFirstLastTimeStackView: UIStackView = {
         let destinationLabel = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
             $0.text = String(localized: "shuttle.destination.shorten.terminal")
             $0.textAlignment = .center
         }
-        let firstStackView = UIStackView(arrangedSubviews: [self.terminalWeekdaysFirstTimeLabel, self.terminalWeekendsFirstTimeLabel]).then {
-            $0.axis = .vertical
-            $0.distribution = .fillEqually
-            $0.alignment = .fill
-            $0.spacing = 15
-        }
+        let firstStackView = UIStackView(arrangedSubviews: [self.terminalWeekdaysFirstTimeLabel, self.terminalWeekendsFirstTimeLabel])
+            .then {
+                $0.axis = .vertical
+                $0.distribution = .fillEqually
+                $0.alignment = .fill
+                $0.spacing = 15
+            }
         let lastStackView = UIStackView(arrangedSubviews: [self.terminalWeekdaysLastTimeLabel, self.terminalWeekendsLastTimeLabel]).then {
             $0.axis = .vertical
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 15
         }
-        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+        return UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
             $0.axis = .horizontal
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 0
         }
-        return stackView
     }()
+
     private let jungangStationWeekdaysFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let jungangStationWeekdaysLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekdays.na")
     }
+
     private let jungangStationWeekendsFirstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private let jungangStationWeekendsLastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.first.last.weekends.na")
     }
+
     private lazy var jungangStationFirstLastTimeStackView: UIStackView = {
         let destinationLabel = UILabel().then {
             $0.font = .godo(size: 16, weight: .bold)
             $0.text = String(localized: "shuttle.destination.shorten.jungang_station")
             $0.textAlignment = .center
         }
-        let firstStackView = UIStackView(arrangedSubviews: [self.jungangStationWeekdaysFirstTimeLabel, self.jungangStationWeekendsFirstTimeLabel]).then {
+        let firstStackView = UIStackView(arrangedSubviews: [
+            self.jungangStationWeekdaysFirstTimeLabel,
+            self.jungangStationWeekendsFirstTimeLabel
+        ]).then {
             $0.axis = .vertical
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 15
         }
-        let lastStackView = UIStackView(arrangedSubviews: [self.jungangStationWeekdaysLastTimeLabel, self.jungangStationWeekendsLastTimeLabel]).then {
+        let lastStackView = UIStackView(arrangedSubviews: [
+            self.jungangStationWeekdaysLastTimeLabel,
+            self.jungangStationWeekendsLastTimeLabel
+        ]).then {
             $0.axis = .vertical
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 15
         }
-        let stackView = UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
+        return UIStackView(arrangedSubviews: [destinationLabel, firstStackView, lastStackView]).then {
             $0.axis = .horizontal
             $0.distribution = .fillEqually
             $0.alignment = .fill
             $0.spacing = 0
         }
-        return stackView
     }()
+
     private lazy var firstLastTimeStackView = UIStackView().then {
         $0.addArrangedSubview(self.firstLastTimeHeaderStackView)
         $0.addArrangedSubview(self.stationFirstLastTimeStackView)
@@ -249,104 +275,107 @@ class ShuttleStopInfoVC: UIViewController {
         $0.setCustomSpacing(25, after: self.campusFirstLastTimeStackView)
         $0.setCustomSpacing(25, after: self.terminalFirstLastTimeStackView)
     }
+
     private lazy var firstLastTimeView = UIView().then {
         $0.addSubview(self.firstLastTimeStackView)
         $0.backgroundColor = .systemBackground
     }
+
     init(stop: ShuttleStopEnum) {
         self.stop = stop
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.shuttleStopInfo)
+        logScreenView(.shuttleStopInfo)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.fetchStopInfo()
-        self.observeSubjects()
+        setupUI()
+        fetchStopInfo()
+        observeSubjects()
     }
-    
+
     private func setupUI() {
-        self.view.backgroundColor = .hanyangBlue
-        self.view.addSubview(self.titleLabel)
-        self.view.addSubview(self.stopMapView)
-        self.view.addSubview(self.firstLastTitleLabel)
-        self.view.addSubview(self.firstLastTimeView)
-        self.stopMapView.delegate = self
-        if self.stop == .dormiotryOut {
-            self.titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
-            self.campusFirstLastTimeStackView.isHidden = true
-        } else if self.stop == .shuttlecockOut {
-            self.titleLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
-            self.campusFirstLastTimeStackView.isHidden = true
-        } else if self.stop == .station {
-            self.titleLabel.text = String(localized: "shuttle.stop.station")
-            self.stationFirstLastTimeStackView.isHidden = true
-        } else if self.stop == .terminal {
-            self.titleLabel.text = String(localized: "shuttle.stop.terminal")
-            self.stationFirstLastTimeStackView.isHidden = true
-            self.terminalFirstLastTimeStackView.isHidden = true
-            self.jungangStationFirstLastTimeStackView.isHidden = true
-        } else if self.stop == .jungangStation {
-            self.titleLabel.text = String(localized: "shuttle.stop.jungang.station")
-            self.stationFirstLastTimeStackView.isHidden = true
-            self.terminalFirstLastTimeStackView.isHidden = true
-            self.jungangStationFirstLastTimeStackView.isHidden = true
-        } else if self.stop == .shuttlecockIn {
-            self.titleLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
-            self.stationFirstLastTimeStackView.isHidden = true
-            self.terminalFirstLastTimeStackView.isHidden = true
-            self.jungangStationFirstLastTimeStackView.isHidden = true
+        view.backgroundColor = .hanyangBlue
+        view.addSubview(titleLabel)
+        view.addSubview(stopMapView)
+        view.addSubview(firstLastTitleLabel)
+        view.addSubview(firstLastTimeView)
+        stopMapView.delegate = self
+        if stop == .dormiotryOut {
+            titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            campusFirstLastTimeStackView.isHidden = true
+        } else if stop == .shuttlecockOut {
+            titleLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+            campusFirstLastTimeStackView.isHidden = true
+        } else if stop == .station {
+            titleLabel.text = String(localized: "shuttle.stop.station")
+            stationFirstLastTimeStackView.isHidden = true
+        } else if stop == .terminal {
+            titleLabel.text = String(localized: "shuttle.stop.terminal")
+            stationFirstLastTimeStackView.isHidden = true
+            terminalFirstLastTimeStackView.isHidden = true
+            jungangStationFirstLastTimeStackView.isHidden = true
+        } else if stop == .jungangStation {
+            titleLabel.text = String(localized: "shuttle.stop.jungang.station")
+            stationFirstLastTimeStackView.isHidden = true
+            terminalFirstLastTimeStackView.isHidden = true
+            jungangStationFirstLastTimeStackView.isHidden = true
+        } else if stop == .shuttlecockIn {
+            titleLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+            stationFirstLastTimeStackView.isHidden = true
+            terminalFirstLastTimeStackView.isHidden = true
+            jungangStationFirstLastTimeStackView.isHidden = true
         } else {
-            self.titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.titleLabel.snp.makeConstraints { make in
+        titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
         }
-        self.stopMapView.snp.makeConstraints { make in
+        stopMapView.snp.makeConstraints { make in
             make.height.equalTo(300)
             make.top.equalTo(self.titleLabel.snp.bottom)
             make.leading.trailing.equalToSuperview()
         }
-        self.firstLastTitleLabel.snp.makeConstraints { make in
+        firstLastTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(self.stopMapView.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
         }
-        self.firstLastTimeStackView.snp.makeConstraints { make in
+        firstLastTimeStackView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
         }
-        self.firstLastTimeHeaderStackView.snp.makeConstraints { make in
+        firstLastTimeHeaderStackView.snp.makeConstraints { make in
             make.height.equalTo(40)
         }
-        self.firstLastTimeView.snp.makeConstraints { make in
+        firstLastTimeView.snp.makeConstraints { make in
             make.top.equalTo(self.firstLastTitleLabel.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-    
+
     private func fetchStopInfo() {
-        let stopID = if self.stop == .dormiotryOut {
+        let stopID = if stop == .dormiotryOut {
             "dormitory_o"
-        } else if self.stop == .shuttlecockOut {
+        } else if stop == .shuttlecockOut {
             "shuttlecock_o"
-        } else if self.stop == .station {
+        } else if stop == .station {
             "station"
-        } else if self.stop == .terminal {
+        } else if stop == .terminal {
             "terminal"
-        } else if self.stop == .jungangStation {
+        } else if stop == .jungangStation {
             "jungang_stn"
-        } else if self.stop == .shuttlecockIn {
+        } else if stop == .shuttlecockIn {
             "shuttlecock_i"
         } else {
             "dormitory_o"
@@ -356,7 +385,8 @@ class ShuttleStopInfoVC: UIViewController {
         }
         ShuttleTimetableData.shared.isLoading.onNext(true)
         Task {
-            let response = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: Foundation.Date.now)))
+            let response = try? await Network.shared.client
+                .fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: Foundation.Date.now)))
             guard let period = response?.data?.shuttle.period?.type else {
                 publishStopInfo(nil, timetable: [])
                 return
@@ -376,10 +406,10 @@ class ShuttleStopInfoVC: UIViewController {
             self?.timetable.onNext(timetable)
         }
     }
-    
+
     private func observeSubjects() {
-        self.stopInfo.subscribe(onNext: { stop in
-            guard let stop = stop else { return }
+        stopInfo.subscribe(onNext: { stop in
+            guard let stop else { return }
             self.stopMapView.do {
                 $0.removeAnnotations($0.annotations)
                 $0.addAnnotation(MKPointAnnotation().with {
@@ -393,30 +423,112 @@ class ShuttleStopInfoVC: UIViewController {
                     heading: 0
                 )
             }
-        }).disposed(by: self.disposeBag)
-        self.timetable.subscribe(onNext: { timetableItems in
-            if (self.stop == .dormiotryOut || self.stop == .shuttlecockOut) {
-                self.updateFirstLastTime(timetableItems, destination: "STATION", isWeekday: true, firstLabel: self.stationWeekdaysFirstTimeLabel, lastLabel: self.stationWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "STATION", isWeekday: false, firstLabel: self.stationWeekendsFirstTimeLabel, lastLabel: self.stationWeekendsLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: true, firstLabel: self.terminalWeekdaysFirstTimeLabel, lastLabel: self.terminalWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: false, firstLabel: self.terminalWeekendsFirstTimeLabel, lastLabel: self.terminalWeekendsLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: true, firstLabel: self.jungangStationWeekdaysFirstTimeLabel, lastLabel: self.jungangStationWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: false, firstLabel: self.jungangStationWeekendsFirstTimeLabel, lastLabel: self.jungangStationWeekendsLastTimeLabel)
+        }).disposed(by: disposeBag)
+        timetable.subscribe(onNext: { timetableItems in
+            if self.stop == .dormiotryOut || self.stop == .shuttlecockOut {
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "STATION",
+                    isWeekday: true,
+                    firstLabel: self.stationWeekdaysFirstTimeLabel,
+                    lastLabel: self.stationWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "STATION",
+                    isWeekday: false,
+                    firstLabel: self.stationWeekendsFirstTimeLabel,
+                    lastLabel: self.stationWeekendsLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "TERMINAL",
+                    isWeekday: true,
+                    firstLabel: self.terminalWeekdaysFirstTimeLabel,
+                    lastLabel: self.terminalWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "TERMINAL",
+                    isWeekday: false,
+                    firstLabel: self.terminalWeekendsFirstTimeLabel,
+                    lastLabel: self.terminalWeekendsLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "JUNGANG",
+                    isWeekday: true,
+                    firstLabel: self.jungangStationWeekdaysFirstTimeLabel,
+                    lastLabel: self.jungangStationWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "JUNGANG",
+                    isWeekday: false,
+                    firstLabel: self.jungangStationWeekendsFirstTimeLabel,
+                    lastLabel: self.jungangStationWeekendsLastTimeLabel
+                )
+            } else if self.stop == .station {
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "CAMPUS",
+                    isWeekday: true,
+                    firstLabel: self.campusWeekdaysFirstTimeLabel,
+                    lastLabel: self.campusWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "CAMPUS",
+                    isWeekday: false,
+                    firstLabel: self.campusWeekendsFirstTimeLabel,
+                    lastLabel: self.campusWeekendsLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "TERMINAL",
+                    isWeekday: true,
+                    firstLabel: self.terminalWeekdaysFirstTimeLabel,
+                    lastLabel: self.terminalWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "TERMINAL",
+                    isWeekday: false,
+                    firstLabel: self.terminalWeekendsFirstTimeLabel,
+                    lastLabel: self.terminalWeekendsLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "JUNGANG",
+                    isWeekday: true,
+                    firstLabel: self.jungangStationWeekdaysFirstTimeLabel,
+                    lastLabel: self.jungangStationWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "JUNGANG",
+                    isWeekday: false,
+                    firstLabel: self.jungangStationWeekendsFirstTimeLabel,
+                    lastLabel: self.jungangStationWeekendsLastTimeLabel
+                )
+            } else {
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "CAMPUS",
+                    isWeekday: true,
+                    firstLabel: self.campusWeekdaysFirstTimeLabel,
+                    lastLabel: self.campusWeekdaysLastTimeLabel
+                )
+                self.updateFirstLastTime(
+                    timetableItems,
+                    destination: "CAMPUS",
+                    isWeekday: false,
+                    firstLabel: self.campusWeekendsFirstTimeLabel,
+                    lastLabel: self.campusWeekendsLastTimeLabel
+                )
             }
-            else if (self.stop == .station) {
-                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: true, firstLabel: self.campusWeekdaysFirstTimeLabel, lastLabel: self.campusWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: false, firstLabel: self.campusWeekendsFirstTimeLabel, lastLabel: self.campusWeekendsLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: true, firstLabel: self.terminalWeekdaysFirstTimeLabel, lastLabel: self.terminalWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "TERMINAL", isWeekday: false, firstLabel: self.terminalWeekendsFirstTimeLabel, lastLabel: self.terminalWeekendsLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: true, firstLabel: self.jungangStationWeekdaysFirstTimeLabel, lastLabel: self.jungangStationWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "JUNGANG", isWeekday: false, firstLabel: self.jungangStationWeekendsFirstTimeLabel, lastLabel: self.jungangStationWeekendsLastTimeLabel)
-            }
-            else {
-                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: true, firstLabel: self.campusWeekdaysFirstTimeLabel, lastLabel: self.campusWeekdaysLastTimeLabel)
-                self.updateFirstLastTime(timetableItems, destination: "CAMPUS", isWeekday: false, firstLabel: self.campusWeekendsFirstTimeLabel, lastLabel: self.campusWeekendsLastTimeLabel)
-            }
-                
-        }).disposed(by: self.disposeBag)
+
+        }).disposed(by: disposeBag)
     }
 
     private func updateFirstLastTime(
@@ -433,7 +545,8 @@ class ShuttleStopInfoVC: UIViewController {
             .sorted(by: { $0.time < $1.time }) ?? []
 
         guard let first = entries.first,
-              let last = entries.last else {
+              let last = entries.last
+        else {
             setFirstLastTimeLabels(firstLabel: firstLabel, lastLabel: lastLabel, first: nil, last: nil, isWeekday: isWeekday)
             return
         }

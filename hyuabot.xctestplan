@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "8A4F9515-8936-40A4-8C8B-0A6B6B740F98",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:hyuabot.xcodeproj",
+      "identifier" : "C7C056EA2D277910007A228B",
+      "name" : "hyuabot"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:hyuabot.xcodeproj",
+        "identifier" : "C7D5B0102FEF100100000010",
+        "name" : "hyuabotTests"
+      }
+    },
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:hyuabot.xcodeproj",
+        "identifier" : "C7D5B0202FEF100100000020",
+        "name" : "hyuabotUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

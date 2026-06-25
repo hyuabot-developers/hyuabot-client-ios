@@ -11,6 +11,7 @@ final class BusTimetableSkeletonCellView: UITableViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -24,7 +25,7 @@ final class BusTimetableSkeletonCellView: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .systemBackground
 
-        [routePlaceholder, timePlaceholder].forEach { view in
+        for view in [routePlaceholder, timePlaceholder] {
             view.backgroundColor = .secondarySystemFill
             view.layer.cornerRadius = 4
             view.layer.masksToBounds = true
@@ -57,7 +58,7 @@ final class BusTimetableSkeletonCellView: UITableViewCell {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        [routePlaceholder, timePlaceholder].forEach { view in
+        for view in [routePlaceholder, timePlaceholder] {
             view.layer.removeAnimation(forKey: "busTimetableSkeletonOpacity")
             view.layer.add(animation, forKey: "busTimetableSkeletonOpacity")
         }

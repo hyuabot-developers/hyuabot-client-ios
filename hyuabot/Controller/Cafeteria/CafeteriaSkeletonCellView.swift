@@ -12,6 +12,7 @@ final class CafeteriaSkeletonHeaderView: UITableViewHeaderFooterView {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -23,7 +24,7 @@ final class CafeteriaSkeletonHeaderView: UITableViewHeaderFooterView {
 
     private func setupUI() {
         contentView.backgroundColor = .hanyangBlue
-        [titlePlaceholder, timePlaceholder, infoPlaceholder].forEach { view in
+        for view in [titlePlaceholder, timePlaceholder, infoPlaceholder] {
             view.backgroundColor = UIColor.white.withAlphaComponent(0.36)
             view.layer.cornerRadius = 4
             view.layer.masksToBounds = true
@@ -60,7 +61,7 @@ final class CafeteriaSkeletonHeaderView: UITableViewHeaderFooterView {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        [titlePlaceholder, timePlaceholder, infoPlaceholder].forEach { view in
+        for view in [titlePlaceholder, timePlaceholder, infoPlaceholder] {
             view.layer.removeAnimation(forKey: "cafeteriaSkeletonOpacity")
             view.layer.add(animation, forKey: "cafeteriaSkeletonOpacity")
         }
@@ -78,6 +79,7 @@ final class CafeteriaSkeletonCellView: UITableViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -91,7 +93,7 @@ final class CafeteriaSkeletonCellView: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .systemBackground
 
-        [menuPlaceholder, pricePlaceholder].forEach { view in
+        for view in [menuPlaceholder, pricePlaceholder] {
             view.backgroundColor = .secondarySystemFill
             view.layer.cornerRadius = 4
             view.layer.masksToBounds = true
@@ -124,7 +126,7 @@ final class CafeteriaSkeletonCellView: UITableViewCell {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        [menuPlaceholder, pricePlaceholder].forEach { view in
+        for view in [menuPlaceholder, pricePlaceholder] {
             view.layer.removeAnimation(forKey: "cafeteriaSkeletonOpacity")
             view.layer.add(animation, forKey: "cafeteriaSkeletonOpacity")
         }

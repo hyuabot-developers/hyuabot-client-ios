@@ -8,9 +8,7 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
     var window: UIWindow?
-
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -29,19 +27,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         ReviewRequestManager.shared.trackLaunch()
-        self.showLanguageSuggestionIfNeeded()
+        showLanguageSuggestionIfNeeded()
 
         if let urlContext = connectionOptions.urlContexts.first {
             handleDeepLink(urlContext.url)
         } else if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
-                  let url = userActivity.webpageURL {
+                  let url = userActivity.webpageURL
+        {
             handleDeepLink(url)
         } else if let shortcutItem = connectionOptions.shortcutItem {
             handleShortcut(shortcutItem)
         }
     }
 
-    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
         completionHandler(handleShortcut(shortcutItem))
     }
 
@@ -67,15 +70,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             rootVC.selectedIndex = 3
             let tab = params?.first(where: { $0.name == "tab" })?.value
             let tabIndex: Int? = switch tab {
-                case "breakfast": 0
-                case "lunch": 1
-                case "dinner": 2
-                default: nil
+            case "breakfast": 0
+            case "lunch": 1
+            case "dinner": 2
+            default: nil
             }
             if let index = tabIndex {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     if let nc = rootVC.viewControllers?[3] as? UINavigationController,
-                       let vc = nc.viewControllers.first as? CafeteriaVC {
+                       let vc = nc.viewControllers.first as? CafeteriaVC
+                    {
                         vc.scrollToMealTab(index)
                     }
                 }
@@ -87,7 +91,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             if let stop {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     if let nc = rootVC.viewControllers?[0] as? UINavigationController,
-                       let vc = nc.viewControllers.first as? ShuttleRealtimeVC {
+                       let vc = nc.viewControllers.first as? ShuttleRealtimeVC
+                    {
                         vc.scrollToStop(stop)
                     }
                 }
@@ -154,6 +159,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             ReviewRequestManager.shared.requestReviewIfAppropriate(in: windowScene)
         }
     }
-
-
 }

@@ -1,5 +1,5 @@
-import UIKit
 import SnapKit
+import UIKit
 
 class CalendarEventCellView: UITableViewCell {
     static let reuseIdentifier = "CalendarEventCellView"
@@ -10,6 +10,7 @@ class CalendarEventCellView: UITableViewCell {
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let statusBadge = UILabel().then {
         $0.font = .godo(size: 11, weight: .bold)
         $0.textColor = .white
@@ -17,10 +18,12 @@ class CalendarEventCellView: UITableViewCell {
         $0.clipsToBounds = true
         $0.textAlignment = .center
     }
+
     private let dateLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .secondaryLabel
     }
+
     private let descLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .tertiaryLabel
@@ -33,12 +36,14 @@ class CalendarEventCellView: UITableViewCell {
         f.timeZone = TimeZone(identifier: "Asia/Seoul")
         return f
     }()
+
     private static let shortFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "MM/dd"
         f.timeZone = TimeZone(identifier: "Asia/Seoul")
         return f
     }()
+
     private static let shortYearFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "yy/MM/dd"
@@ -51,7 +56,10 @@ class CalendarEventCellView: UITableViewCell {
         setupUI()
     }
 
-    required init?(coder: NSCoder) { fatalError() }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
 
     func setupUI() {
         selectionStyle = .none

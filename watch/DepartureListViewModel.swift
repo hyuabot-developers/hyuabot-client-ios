@@ -1,24 +1,24 @@
-import SwiftUI
-import RxSwift
 import Api
+import RxSwift
+import SwiftUI
 
 class DepartureListViewModel: ObservableObject {
     init(stop: WatchShuttleStop) {
         self.stop = stop
         ShuttleRealtimeData.shared.isLoading
             .subscribe(onNext: { [weak self] loading in
-                guard let self = self else { return }
-                self.isLoading = loading
+                guard let self else { return }
+                isLoading = loading
             })
             .disposed(by: disposeBag)
         ShuttleRealtimeData.shared.result
             .subscribe(onNext: { [weak self] result in
-                if let result = result {
+                if let result {
                     self?.items = result
                 }
             }).disposed(by: disposeBag)
     }
-    
+
     private let stop: WatchShuttleStop
     private let disposeBag = DisposeBag()
     @Published var items: [ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order] = []

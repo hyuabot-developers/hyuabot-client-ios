@@ -7,7 +7,7 @@ struct BusTimetableItem {
     let time: Foundation.Date
     var convertedTime: String? {
         let components = Calendar.current.dateComponents([.hour, .minute], from: time)
-        if (components.hour! < 4) {
+        if components.hour! < 4 {
             return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
         }
         return String(format: "%02d:%02d", components.hour!, components.minute!)

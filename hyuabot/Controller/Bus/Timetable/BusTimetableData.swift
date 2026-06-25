@@ -1,5 +1,5 @@
-import RxSwift
 import Api
+import RxSwift
 
 class BusTimetableData {
     static let shared = BusTimetableData()
@@ -8,6 +8,6 @@ class BusTimetableData {
     let weekdays = BehaviorSubject<[BusTimetableItem]>(value: [])
     let saturdays = BehaviorSubject<[BusTimetableItem]>(value: [])
     let sundays = BehaviorSubject<[BusTimetableItem]>(value: [])
-    // Loading State
+    /// Loading State
     let isLoading = BehaviorSubject<Bool>(value: true)
 }

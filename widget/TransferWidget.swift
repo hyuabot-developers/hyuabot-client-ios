@@ -1,9 +1,9 @@
-import WidgetKit
-import SwiftUI
+import Api
+import Apollo
 import AppIntents
 import CoreLocation
-import Apollo
-import Api
+import SwiftUI
+import WidgetKit
 
 // MARK: - Shared Transfer Badge (used by ShuttleWidget too)
 
@@ -26,13 +26,13 @@ struct TransferBadge: View {
     private func transferInfo(for stopID: String) -> (icon: String, label: String)? {
         switch stopID {
         case "dormitory_o", "shuttlecock_o":
-            return ("arrow.triangle.swap", String(localized: "transfer.badge.all"))
+            ("arrow.triangle.swap", String(localized: "transfer.badge.all"))
         case "station", "jungang_stn":
-            return ("tram.fill", String(localized: "transfer.badge.subway"))
+            ("tram.fill", String(localized: "transfer.badge.subway"))
         case "terminal":
-            return ("bus.doubledecker.fill", String(localized: "transfer.badge.bus50"))
+            ("bus.doubledecker.fill", String(localized: "transfer.badge.bus50"))
         default:
-            return nil
+            nil
         }
     }
 }
@@ -52,7 +52,9 @@ struct TransitArrival: Identifiable {
     let upEntries: [TransitEntry]
     let downEntries: [TransitEntry]
 
-    var isSubway: Bool { !downEntries.isEmpty }
+    var isSubway: Bool {
+        !downEntries.isEmpty
+    }
 }
 
 // MARK: - Transfer Entry
@@ -75,7 +77,7 @@ private func boundLabel(stationID: String, fallback: String) -> String {
 
 private let subwayLineMap: [String: (nameKey: String, colorKey: String)] = [
     "K449": ("subway.line4", "line4"),
-    "K251": ("subway.suin",  "suin")
+    "K251": ("subway.suin", "suin")
 ]
 
 // MARK: - Provider
@@ -91,9 +93,24 @@ struct TransferProvider: TimelineProvider {
                 ShuttleDestinationGroup(destination: "예술인", times: ["15:45"])
             ],
             transitArrivals: [
-                TransitArrival(name: "4호선", colorKey: "line4", upEntries: [TransitEntry(terminal: "당고개", minutes: 3)], downEntries: [TransitEntry(terminal: "오이도", minutes: 12)]),
-                TransitArrival(name: "수인선", colorKey: "suin", upEntries: [TransitEntry(terminal: "수원", minutes: 7)], downEntries: [TransitEntry(terminal: "인천", minutes: 22)]),
-                TransitArrival(name: "50번(KTX광명)", colorKey: "bus", upEntries: [TransitEntry(terminal: "", minutes: 8), TransitEntry(terminal: "", minutes: 31)], downEntries: [])
+                TransitArrival(
+                    name: "4호선",
+                    colorKey: "line4",
+                    upEntries: [TransitEntry(terminal: "당고개", minutes: 3)],
+                    downEntries: [TransitEntry(terminal: "오이도", minutes: 12)]
+                ),
+                TransitArrival(
+                    name: "수인선",
+                    colorKey: "suin",
+                    upEntries: [TransitEntry(terminal: "수원", minutes: 7)],
+                    downEntries: [TransitEntry(terminal: "인천", minutes: 22)]
+                ),
+                TransitArrival(
+                    name: "50번(KTX광명)",
+                    colorKey: "bus",
+                    upEntries: [TransitEntry(terminal: "", minutes: 8), TransitEntry(terminal: "", minutes: 31)],
+                    downEntries: []
+                )
             ],
             errorState: .none
         )
@@ -101,7 +118,7 @@ struct TransferProvider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (TransferEntry) -> Void) {
         if context.isPreview { completion(placeholder(in: context)); return }
-        Task { completion(await fetchEntry()) }
+        Task { await completion(fetchEntry()) }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TransferEntry>) -> Void) {
@@ -115,7 +132,14 @@ struct TransferProvider: TimelineProvider {
     private func fetchEntry() async -> TransferEntry {
         let fetcher = WidgetLocationFetcher()
         guard let location = await fetcher.getCurrentLocation() else {
-            return TransferEntry(date: .now, stopDisplayName: "", stopID: "", shuttleGroups: [], transitArrivals: [], errorState: .noLocation)
+            return TransferEntry(
+                date: .now,
+                stopDisplayName: "",
+                stopID: "",
+                shuttleGroups: [],
+                transitArrivals: [],
+                errorState: .noLocation
+            )
         }
 
         let timeFormatter = DateFormatter()
@@ -133,17 +157,31 @@ struct TransferProvider: TimelineProvider {
             )
 
             guard let data = response.data else {
-                return TransferEntry(date: .now, stopDisplayName: "", stopID: "", shuttleGroups: [], transitArrivals: [], errorState: .noData)
+                return TransferEntry(
+                    date: .now,
+                    stopDisplayName: "",
+                    stopID: "",
+                    shuttleGroups: [],
+                    transitArrivals: [],
+                    errorState: .noData
+                )
             }
 
             let stops = data.shuttle.stops
             guard !stops.isEmpty else {
-                return TransferEntry(date: .now, stopDisplayName: "", stopID: "", shuttleGroups: [], transitArrivals: [], errorState: .noData)
+                return TransferEntry(
+                    date: .now,
+                    stopDisplayName: "",
+                    stopID: "",
+                    shuttleGroups: [],
+                    transitArrivals: [],
+                    errorState: .noData
+                )
             }
 
             let nearestStop = stops.min {
                 CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(from: location)
-                < CLLocation(latitude: $1.latitude, longitude: $1.longitude).distance(from: location)
+                    < CLLocation(latitude: $1.latitude, longitude: $1.longitude).distance(from: location)
             }!
 
             func makeShuttleGroups(_ timetable: ShuttleTransferWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
@@ -185,13 +223,13 @@ struct TransferProvider: TimelineProvider {
     private func buildTransit(for stopID: String, data: ShuttleTransferWidgetQuery.Data) -> [TransitArrival] {
         switch stopID {
         case "dormitory_o", "shuttlecock_o", "shuttlecock_i":
-            return buildSubway(data.subway) + buildBus(data.transferBus, stopSeq: 216000759, label: String(localized: "bus.to.kwangmyeong"))
+            buildSubway(data.subway) + buildBus(data.transferBus, stopSeq: 216_000_759, label: String(localized: "bus.to.kwangmyeong"))
         case "terminal":
-            return buildBus(data.transferBus, stopSeq: 216000117, label: String(localized: "bus.to.ansan"))
+            buildBus(data.transferBus, stopSeq: 216_000_117, label: String(localized: "bus.to.ansan"))
         case "station", "jungang_stn":
-            return []  // 미 표출
+            [] // 미 표출
         default:
-            return []
+            []
         }
     }
 
@@ -200,16 +238,22 @@ struct TransferProvider: TimelineProvider {
             let info = subwayLineMap[station.stationID] ?? ("subway.line4", "line4")
             let name = String(localized: LocalizedStringResource(stringLiteral: info.nameKey))
             let up = station.arrival.first(where: { $0.direction == "up" })?.entries.prefix(1)
-                .map { TransitEntry(terminal: boundLabel(stationID: $0.terminal.stationID, fallback: $0.terminal.name), minutes: $0.minutes) } ?? []
+                .map {
+                    TransitEntry(terminal: boundLabel(stationID: $0.terminal.stationID, fallback: $0.terminal.name), minutes: $0.minutes)
+                } ??
+                []
             let down = station.arrival.first(where: { $0.direction == "down" })?.entries.prefix(1)
-                .map { TransitEntry(terminal: boundLabel(stationID: $0.terminal.stationID, fallback: $0.terminal.name), minutes: $0.minutes) } ?? []
+                .map {
+                    TransitEntry(terminal: boundLabel(stationID: $0.terminal.stationID, fallback: $0.terminal.name), minutes: $0.minutes)
+                } ??
+                []
             guard !up.isEmpty || !down.isEmpty else { return nil }
             return TransitArrival(name: name, colorKey: info.colorKey, upEntries: Array(up), downEntries: Array(down))
         }
     }
 
     private func buildBus(_ buses: [ShuttleTransferWidgetQuery.Data.TransferBus], stopSeq: Int, label: String) -> [TransitArrival] {
-        let entries = buses.filter { $0.stop.seq == stopSeq }.flatMap { $0.arrival }.prefix(2).compactMap { arrival -> TransitEntry? in
+        let entries = buses.filter { $0.stop.seq == stopSeq }.flatMap(\.arrival).prefix(2).compactMap { arrival -> TransitEntry? in
             guard let m = arrival.minutes else { return nil }
             let stopsStr = (arrival.stops ?? 0) > 0
                 ? String(format: String(localized: "transit.stops.format"), arrival.stops!)
@@ -220,7 +264,6 @@ struct TransferProvider: TimelineProvider {
         return [TransitArrival(name: label, colorKey: "bus", upEntries: Array(entries), downEntries: [])]
     }
 }
-
 
 // MARK: - Views
 
@@ -306,7 +349,7 @@ struct TransitSectionView: View {
     let stopID: String
 
     var body: some View {
-        let subwayArrivals = arrivals.filter { $0.isSubway }
+        let subwayArrivals = arrivals.filter(\.isSubway)
         let busArrivals = arrivals.filter { !$0.isSubway }
 
         VStack(alignment: .leading, spacing: 4) {
@@ -318,7 +361,7 @@ struct TransitSectionView: View {
                 )
                 TransitArrivalColumn(arrivals: subwayArrivals, maxRows: 4)
             }
-            if !busArrivals.isEmpty && !subwayArrivals.isEmpty {
+            if !busArrivals.isEmpty, !subwayArrivals.isEmpty {
                 Divider().padding(.vertical, 2)
             }
             if !busArrivals.isEmpty {
@@ -431,9 +474,9 @@ struct TransitShuttleColumn: View {
 
 private func transitLineColor(_ colorKey: String) -> Color {
     switch colorKey {
-    case "line4": return Color(red: 0, green: 160/255, blue: 233/255)
-    case "suin":  return Color(red: 250/255, green: 190/255, blue: 0)
-    default:      return Color("busGreen")
+    case "line4": Color(red: 0, green: 160 / 255, blue: 233 / 255)
+    case "suin": Color(red: 250 / 255, green: 190 / 255, blue: 0)
+    default: Color("busGreen")
     }
 }
 
@@ -441,7 +484,9 @@ struct TransitArrivalColumn: View {
     let arrivals: [TransitArrival]
     let maxRows: Int
 
-    private var minSuffix: String { String(localized: "transit.minutes.suffix") }
+    private var minSuffix: String {
+        String(localized: "transit.minutes.suffix")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -532,8 +577,18 @@ private let transferPreviewEntry = TransferEntry(
         ShuttleDestinationGroup(destination: "중앙역", times: ["16:10"])
     ],
     transitArrivals: [
-        TransitArrival(name: "4호선", colorKey: "line4", upEntries: [TransitEntry(terminal: "당고개", minutes: 3)], downEntries: [TransitEntry(terminal: "오이도", minutes: 12)]),
-        TransitArrival(name: "수인선", colorKey: "suin", upEntries: [TransitEntry(terminal: "수원", minutes: 7)], downEntries: [TransitEntry(terminal: "인천", minutes: 22)]),
+        TransitArrival(
+            name: "4호선",
+            colorKey: "line4",
+            upEntries: [TransitEntry(terminal: "당고개", minutes: 3)],
+            downEntries: [TransitEntry(terminal: "오이도", minutes: 12)]
+        ),
+        TransitArrival(
+            name: "수인선",
+            colorKey: "suin",
+            upEntries: [TransitEntry(terminal: "수원", minutes: 7)],
+            downEntries: [TransitEntry(terminal: "인천", minutes: 22)]
+        ),
         TransitArrival(name: "50번(KTX광명)", colorKey: "bus", upEntries: [TransitEntry(terminal: "", minutes: 8)], downEntries: [])
     ],
     errorState: .none

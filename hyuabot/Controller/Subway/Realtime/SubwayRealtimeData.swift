@@ -1,5 +1,5 @@
-import RxSwift
 import Api
+import RxSwift
 
 struct SubwayCombinedRealtimeData {
     let campusBlue: SubwayRealtimePageQuery.Data.Subway?
@@ -15,6 +15,6 @@ class SubwayRealtimeData {
     let combinedRealtimeData = BehaviorSubject<SubwayCombinedRealtimeData?>(value: nil)
     let transferUp = BehaviorSubject<[SubwayTransferItem]>(value: [])
     let transferDown = BehaviorSubject<[SubwayTransferItem]>(value: [])
-    // Loading State
+    /// Loading State
     let isLoading = BehaviorSubject<Bool>(value: true)
 }

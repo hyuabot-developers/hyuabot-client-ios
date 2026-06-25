@@ -1,8 +1,8 @@
-import UIKit
 import RxSwift
+import UIKit
 
 func observeUserDefaultsStringArray(forKey key: String) -> Observable<[String]> {
-    return Observable.create { observer in
+    Observable.create { observer in
         // Initial value emitted
         let initialValue = UserDefaults.standard.stringArray(forKey: key) ?? []
         observer.onNext(initialValue)

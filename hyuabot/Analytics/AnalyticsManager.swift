@@ -15,54 +15,54 @@
 //  the contract.
 //
 
-import UIKit
 import FirebaseAnalytics
 import FirebaseCrashlytics
+import UIKit
 
 // MARK: - Screens (GA4 `screen_view` -> screen_name)
 
 /// Every user-visible screen. rawValue == GA4 `screen_name` (shared with Android).
 enum AnalyticsScreen: String {
     // Shuttle
-    case shuttleRealtime        = "shuttle_realtime"
-    case shuttleTimetable       = "shuttle_timetable"
+    case shuttleRealtime = "shuttle_realtime"
+    case shuttleTimetable = "shuttle_timetable"
     case shuttleTimetableFilter = "shuttle_timetable_filter"
-    case shuttleStopInfo        = "shuttle_stop_info"
-    case shuttleVia             = "shuttle_via"
-    case shuttleHelp            = "shuttle_help"
+    case shuttleStopInfo = "shuttle_stop_info"
+    case shuttleVia = "shuttle_via"
+    case shuttleHelp = "shuttle_help"
     // Bus
-    case busRealtime            = "bus_realtime"
-    case busTimetable           = "bus_timetable"
-    case busStopInfo            = "bus_stop_info"
-    case busDepartureLog        = "bus_departure_log"
-    case busHelp                = "bus_help"
+    case busRealtime = "bus_realtime"
+    case busTimetable = "bus_timetable"
+    case busStopInfo = "bus_stop_info"
+    case busDepartureLog = "bus_departure_log"
+    case busHelp = "bus_help"
     // Subway
-    case subwayRealtime         = "subway_realtime"
-    case subwayTimetable        = "subway_timetable"
+    case subwayRealtime = "subway_realtime"
+    case subwayTimetable = "subway_timetable"
     // Cafeteria
-    case cafeteria              = "cafeteria"
-    case cafeteriaInfo          = "cafeteria_info"
+    case cafeteria
+    case cafeteriaInfo = "cafeteria_info"
     // Map
-    case map                    = "map"
-    case mapBuilding            = "map_building"
+    case map
+    case mapBuilding = "map_building"
     // Others
-    case readingRoom            = "reading_room"
-    case contact                = "contact"
-    case calendar               = "calendar"
-    case setting                = "setting"
-    case webView                = "web_view"
-    case birthday               = "birthday"
+    case readingRoom = "reading_room"
+    case contact
+    case calendar
+    case setting
+    case webView = "web_view"
+    case birthday
 }
 
 // MARK: - Content types (GA4 `select_content` -> content_type)
 
 /// What kind of element was selected. rawValue == GA4 `content_type` (shared with Android).
 enum AnalyticsContentType: String {
-    case button     = "button"
-    case tab        = "tab"
-    case listItem   = "list_item"
-    case toggle     = "toggle"
-    case menu       = "menu"
+    case button
+    case tab
+    case listItem = "list_item"
+    case toggle
+    case menu
     case dateControl = "date_control"
 }
 
@@ -71,71 +71,71 @@ enum AnalyticsContentType: String {
 /// Every tappable element. rawValue == GA4 `item_id` (shared with Android).
 enum AnalyticsItem: String {
     // Tab bar (RootVC)
-    case tabShuttle     = "tab_shuttle"
-    case tabBus         = "tab_bus"
-    case tabSubway      = "tab_subway"
-    case tabCafeteria   = "tab_cafeteria"
-    case tabMap         = "tab_map"
+    case tabShuttle = "tab_shuttle"
+    case tabBus = "tab_bus"
+    case tabSubway = "tab_subway"
+    case tabCafeteria = "tab_cafeteria"
+    case tabMap = "tab_map"
     case tabReadingRoom = "tab_reading_room"
-    case tabContact     = "tab_contact"
-    case tabCalendar    = "tab_calendar"
-    case tabSetting     = "tab_setting"
-    case tabChat        = "tab_chat"
-    case tabDonate      = "tab_donate"
+    case tabContact = "tab_contact"
+    case tabCalendar = "tab_calendar"
+    case tabSetting = "tab_setting"
+    case tabChat = "tab_chat"
+    case tabDonate = "tab_donate"
 
     // Shuttle - realtime
     case shuttleArrivalByTimeSwitch = "shuttle_arrival_by_time_switch"
-    case shuttleDepartureSwitch     = "shuttle_departure_switch"
-    case shuttleOpenHelp            = "shuttle_open_help"
-    case shuttleShowStopModal       = "shuttle_show_stop_modal"
+    case shuttleDepartureSwitch = "shuttle_departure_switch"
+    case shuttleOpenHelp = "shuttle_open_help"
+    case shuttleShowStopModal = "shuttle_show_stop_modal"
     case shuttleShowEntireTimetable = "shuttle_show_entire_timetable"
-    case shuttleRouteToggle         = "shuttle_route_toggle"
-    case shuttleRefresh             = "shuttle_refresh"
-    case shuttleSelectViaRow        = "shuttle_select_via_row"
+    case shuttleRouteToggle = "shuttle_route_toggle"
+    case shuttleRefresh = "shuttle_refresh"
+    case shuttleSelectViaRow = "shuttle_select_via_row"
 
     // Shuttle - timetable
-    case shuttleOpenFilter          = "shuttle_open_filter"
-    case shuttleFilterConfirm       = "shuttle_filter_confirm"
-    case shuttleFilterSelectStart   = "shuttle_filter_select_start"
-    case shuttleFilterSelectEnd     = "shuttle_filter_select_end"
-    case shuttleFilterSelectPeriod  = "shuttle_filter_select_period"
+    case shuttleOpenFilter = "shuttle_open_filter"
+    case shuttleFilterConfirm = "shuttle_filter_confirm"
+    case shuttleFilterSelectStart = "shuttle_filter_select_start"
+    case shuttleFilterSelectEnd = "shuttle_filter_select_end"
+    case shuttleFilterSelectPeriod = "shuttle_filter_select_period"
 
     // Bus
-    case busOpenHelp                = "bus_open_help"
-    case busStopButton              = "bus_stop_button"
-    case busShowEntireTimetable     = "bus_show_entire_timetable"
-    case busShowDepartureLog        = "bus_show_departure_log"
-    case busRefresh                 = "bus_refresh"
+    case busOpenHelp = "bus_open_help"
+    case busStopButton = "bus_stop_button"
+    case busShowEntireTimetable = "bus_show_entire_timetable"
+    case busShowDepartureLog = "bus_show_departure_log"
+    case busRefresh = "bus_refresh"
 
     // Subway
-    case subwayShowEntireTimetable  = "subway_show_entire_timetable"
-    case subwayRefresh              = "subway_refresh"
+    case subwayShowEntireTimetable = "subway_show_entire_timetable"
+    case subwayRefresh = "subway_refresh"
 
     // Cafeteria
-    case cafeteriaPreviousDate      = "cafeteria_previous_date"
-    case cafeteriaNextDate          = "cafeteria_next_date"
-    case cafeteriaDateChanged       = "cafeteria_date_changed"
-    case cafeteriaInfoButton        = "cafeteria_info_button"
-    case cafeteriaShareButton       = "cafeteria_share_button"
+    case cafeteriaPreviousDate = "cafeteria_previous_date"
+    case cafeteriaNextDate = "cafeteria_next_date"
+    case cafeteriaDateChanged = "cafeteria_date_changed"
+    case cafeteriaInfoButton = "cafeteria_info_button"
+    case cafeteriaShareButton = "cafeteria_share_button"
 
     // Reading room
-    case readingRoomRefresh         = "reading_room_refresh"
-    case readingRoomAlarmToggle     = "reading_room_alarm_toggle"
+    case readingRoomRefresh = "reading_room_refresh"
+    case readingRoomAlarmToggle = "reading_room_alarm_toggle"
 
-    // Contact
-    case contactSelectRow           = "contact_select_row"
+    /// Contact
+    case contactSelectRow = "contact_select_row"
 
-    // Map
-    case mapSelectSearchResult      = "map_select_search_result"
+    /// Map
+    case mapSelectSearchResult = "map_select_search_result"
 
     // Setting
-    case settingSelectCampus        = "setting_select_campus"
-    case settingSelectTheme         = "setting_select_theme"
-    case settingSelectRow           = "setting_select_row"
+    case settingSelectCampus = "setting_select_campus"
+    case settingSelectTheme = "setting_select_theme"
+    case settingSelectRow = "setting_select_row"
 
     // Birthday
-    case birthdayDoNotShow          = "birthday_do_not_show"
-    case birthdayDismiss            = "birthday_dismiss"
+    case birthdayDoNotShow = "birthday_do_not_show"
+    case birthdayDismiss = "birthday_dismiss"
 }
 
 // MARK: - Manager
@@ -176,9 +176,11 @@ enum AnalyticsManager {
     ///   - type: the kind of element (becomes `content_type`).
     ///   - name: optional human/contextual label (becomes `item_name`), e.g. the
     ///           selected stop, contact name, or building name.
-    static func logSelect(_ item: AnalyticsItem,
-                          type: AnalyticsContentType = .button,
-                          name: String? = nil) {
+    static func logSelect(
+        _ item: AnalyticsItem,
+        type: AnalyticsContentType = .button,
+        name: String? = nil
+    ) {
         guard isCollectionEnabled else { return }
         var params: [String: Any] = [
             AnalyticsParameterContentType: type.rawValue,

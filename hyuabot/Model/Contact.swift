@@ -1,5 +1,5 @@
-import Foundation
 import Api
+import Foundation
 import RealmSwift
 
 final class Contact: RealmSwift.Object {
@@ -7,9 +7,9 @@ final class Contact: RealmSwift.Object {
     @objc dynamic var campusID: Int = 0
     @objc dynamic var name: String = ""
     @objc dynamic var phoneNumber: String = ""
-    
+
     override class func primaryKey() -> String? {
-        return "id"
+        "id"
     }
 }
 
@@ -24,8 +24,7 @@ extension Contact {
             }
         }
     }
-        
-    
+
     static func replaceAll(with contacts: [Contact]) {
         let realm = Database.shared.database
         try! realm.write {
@@ -33,7 +32,7 @@ extension Contact {
             realm.add(contacts)
         }
     }
-    
+
     static func fetchAll() -> Results<Contact> {
         let realm = Database.shared.database
         return realm.objects(Contact.self)

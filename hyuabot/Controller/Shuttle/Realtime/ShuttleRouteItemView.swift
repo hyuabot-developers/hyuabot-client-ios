@@ -7,7 +7,7 @@ class ShuttleRouteItemView: UIView {
         let currentStopIndex: Int
         let labels: [String: Int]
     }
-    
+
     private let allStops: [String] = [
         "shuttle.stop.dormitory.out",
         "shuttle.stop.shuttlecock.out",
@@ -15,7 +15,7 @@ class ShuttleRouteItemView: UIView {
         "shuttle.stop.terminal",
         "shuttle.stop.jungang.station",
         "shuttle.stop.shuttlecock.in",
-        "shuttle.stop.dormitory.in",
+        "shuttle.stop.dormitory.in"
     ]
     private let lineLayer = CAShapeLayer()
     private let circleContainer = UIView()
@@ -25,29 +25,30 @@ class ShuttleRouteItemView: UIView {
     private var centerY: CGFloat = 26
     private var paddingWidth: CGFloat = 0
     private var stopPositions: [CGFloat] = []
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         layer.addSublayer(lineLayer)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError()
     }
-    
+
     func bind(data: Route) {
-        self.backgroundColor = .clear
-        self.routeData = data
+        backgroundColor = .clear
+        routeData = data
         setNeedsLayout()
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
         guard let data = routeData else { return }
         // Remove previous layer
         layer.sublayers?.filter { $0 !== lineLayer }.forEach { $0.removeFromSuperlayer() }
         subviews.forEach { $0.removeFromSuperview() }
-        /// Get values to draw
+        // Get values to draw
         let colWidth = bounds.width / CGFloat(allStops.count)
         let paddingWidth = colWidth / 2
         let centerY: CGFloat = 26
@@ -56,7 +57,7 @@ class ShuttleRouteItemView: UIView {
             return paddingWidth + CGFloat(index) * colWidth
         }
         // Draw Line
-        for i in 0..<(data.stops.count - 1) {
+        for i in 0 ..< (data.stops.count - 1) {
             let path = UIBezierPath().then {
                 $0.move(to: CGPoint(x: stopPositions[i], y: centerY))
                 $0.addLine(to: CGPoint(x: stopPositions[i + 1], y: centerY))
@@ -70,7 +71,7 @@ class ShuttleRouteItemView: UIView {
         }
         // Draw circle and label
         let font: UIFont = .godo(size: 11, weight: .bold)
-        for i in 0..<data.stops.count {
+        for i in 0 ..< data.stops.count {
             let x = stopPositions[i]
             let isPassed = i < data.currentStopIndex
             let isCurrent = i == data.currentStopIndex
@@ -78,7 +79,13 @@ class ShuttleRouteItemView: UIView {
             // External Ring
             if isCurrent {
                 CAShapeLayer().do {
-                    $0.path = UIBezierPath(arcCenter: CGPoint(x: x, y: centerY), radius: 11, startAngle: 0, endAngle: .pi * 2, clockwise: true).cgPath
+                    $0.path = UIBezierPath(
+                        arcCenter: CGPoint(x: x, y: centerY),
+                        radius: 11,
+                        startAngle: 0,
+                        endAngle: .pi * 2,
+                        clockwise: true
+                    ).cgPath
                     $0.strokeColor = data.color.cgColor
                     $0.fillColor = UIColor.clear.cgColor
                     $0.lineWidth = 3
@@ -87,11 +94,17 @@ class ShuttleRouteItemView: UIView {
             }
             // Draw Circle
             CAShapeLayer().do {
-                $0.path = UIBezierPath(arcCenter: CGPoint(x: x, y: centerY), radius: isCurrent ? 9 : 6, startAngle: 0, endAngle: .pi * 2, clockwise: true).cgPath
+                $0.path = UIBezierPath(
+                    arcCenter: CGPoint(x: x, y: centerY),
+                    radius: isCurrent ? 9 : 6,
+                    startAngle: 0,
+                    endAngle: .pi * 2,
+                    clockwise: true
+                ).cgPath
                 $0.fillColor = color.cgColor
                 layer.addSublayer($0)
             }
-            
+
             // Label
             if let label = data.labels[data.stops[i]], label > 0 {
                 let text = String(format: String(localized: "shuttle.realtime.duration.format.%lld"), label)

@@ -1,5 +1,5 @@
-import RxSwift
 import Api
+import RxSwift
 
 class ShuttleTimetableData {
     static let shared = ShuttleTimetableData()

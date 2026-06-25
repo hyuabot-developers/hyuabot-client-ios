@@ -5,15 +5,17 @@
 //  Created by 이정인 on 1/3/25.
 //
 
-import UIKit
-import UserNotifications
 import Firebase
 import FirebaseMessaging
-
+import UIKit
+import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
         // Initialize Firebase SDK
         FirebaseApp.configure()
         AnalyticsManager.applyCollectionSettings()
@@ -88,18 +90,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Messaging.messaging().apnsToken = deviceToken
     }
 
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
         // Called when a new scene session is being created.
         // Use this method to select a configuration to create the new scene with.
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
         // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
+        // If any sessions were discarded while the application was not running, this will be called shortly after
+        // application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
-    
+
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
         print("Failed to register for remote notifications with error: \(error)")
     }
@@ -109,8 +116,12 @@ extension AppDelegate: MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         print("Firebase registration token: \(fcmToken ?? "")")
     }
-    
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
         Messaging.messaging().appDidReceiveMessage(userInfo)
         let readingRoomID = userInfo["id"] as? String
         let availableSeats = userInfo["available"] as? String
@@ -119,18 +130,17 @@ extension AppDelegate: MessagingDelegate {
             return
         }
         // Create notification
-        var readingRoomName: String.LocalizationValue
-        switch itemKey {
-            case "reading_room_1": readingRoomName = "reading_room_1"
-            case "reading_room_53": readingRoomName = "reading_room_53"
-            case "reading_room_54": readingRoomName = "reading_room_54"
-            case "reading_room_55": readingRoomName = "reading_room_55"
-            case "reading_room_56": readingRoomName = "reading_room_56"
-            case "reading_room_61": readingRoomName = "reading_room_61"
-            case "reading_room_63": readingRoomName = "reading_room_63"
-            case "reading_room_131": readingRoomName = "reading_room_131"
-            case "reading_room_132": readingRoomName = "reading_room_132"
-            default: readingRoomName = "Unknown"
+        let readingRoomName: String.LocalizationValue = switch itemKey {
+        case "reading_room_1": "reading_room_1"
+        case "reading_room_53": "reading_room_53"
+        case "reading_room_54": "reading_room_54"
+        case "reading_room_55": "reading_room_55"
+        case "reading_room_56": "reading_room_56"
+        case "reading_room_61": "reading_room_61"
+        case "reading_room_63": "reading_room_63"
+        case "reading_room_131": "reading_room_131"
+        case "reading_room_132": "reading_room_132"
+        default: "Unknown"
         }
         let notificationContent = UNMutableNotificationContent().then {
             $0.title = String(
@@ -141,16 +151,16 @@ extension AppDelegate: MessagingDelegate {
         }
         let notificationRequest = UNNotificationRequest(identifier: "reading_room_\(itemKey)", content: notificationContent, trigger: nil)
         UNUserNotificationCenter.current().add(notificationRequest) { error in
-            if let error = error {
+            if let error {
                 print("Error adding notification request: \(error)")
             }
         }
         // Unsubscribe from topic
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
-        if (notifiedRooms.contains(itemKey)) {
+        if notifiedRooms.contains(itemKey) {
             UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
-            Messaging.messaging().unsubscribe(fromTopic: itemKey) { error in
-              print("Unsubscribed to \(itemKey) topic")
+            Messaging.messaging().unsubscribe(fromTopic: itemKey) { _ in
+                print("Unsubscribed to \(itemKey) topic")
             }
         }
         completionHandler(UIBackgroundFetchResult.noData)
@@ -160,21 +170,25 @@ extension AppDelegate: MessagingDelegate {
 extension AppDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
         let userInfo = notification.request.content.userInfo
         Messaging.messaging().appDidReceiveMessage(userInfo)
         return [.list, .banner, .badge, .sound]
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-      let userInfo = response.notification.request.content.userInfo
-      Messaging.messaging().appDidReceiveMessage(userInfo)
-      if let urlString = userInfo["url"] as? String,
-         let url = URL(string: urlString) {
-          UIApplication.shared.open(url)
-      }
-      completionHandler()
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        Messaging.messaging().appDidReceiveMessage(userInfo)
+        if let urlString = userInfo["url"] as? String,
+           let url = URL(string: urlString)
+        {
+            UIApplication.shared.open(url)
+        }
+        completionHandler()
     }
 }

@@ -1,9 +1,9 @@
-import Foundation
 import ActivityKit
+import Foundation
 
 @available(iOSApplicationExtension 16.1, *)
 struct ShuttleBoardingActivityAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
+    struct ContentState: Codable, Hashable {
         let titleText: String
         let statusText: String
         let dynamicIslandStatusText: String
