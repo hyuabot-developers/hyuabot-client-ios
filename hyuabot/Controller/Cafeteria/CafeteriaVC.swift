@@ -291,4 +291,10 @@ class CafeteriaVC: UIViewController {
         viewPager.contentView.moveToPage(index: index)
         updateShareButtonVisibility()
     }
+
+    func showMeal(date: Foundation.Date, mealIndex: Int) {
+        loadViewIfNeeded()
+        scrollToMealTab(mealIndex)
+        CafeteriaData.shared.feedDate.onNext(date)
+    }
 }
