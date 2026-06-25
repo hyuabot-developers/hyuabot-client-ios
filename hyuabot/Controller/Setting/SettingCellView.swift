@@ -37,44 +37,34 @@ class SettingCellView: UITableViewCell {
     }
 
     private var onAnalyticsConsentChanged: ((Bool) -> Void)?
-    private lazy var campusButton: UIButton = .init().then {
-        var conf = UIButton.Configuration.bordered()
-        var title = AttributedString(String(localized: "setting.campus"))
-        title.font = .godo(size: 16, weight: .medium)
-        title.foregroundColor = .label
-        conf.attributedTitle = title
-        $0.configuration = conf
-        // Available start stops
-        let items = self.availableCampus.map { campus in
-            UIAction(title: String(localized: campus), handler: { _ in
-                self.selectCampus(campus)
-            })
-        }
-        let menu = UIMenu(title: "", children: items)
-        $0.menu = menu
-        $0.showsMenuAsPrimaryAction = true
+    private lazy var campusControl = UISegmentedControl(items: availableCampus.map { String(localized: $0) }).then {
         $0.isHidden = true
-        $0.accessibilityIdentifier = "setting.campus_button"
+        $0.selectedSegmentTintColor = .hanyangBlue
+        $0.setTitleTextAttributes([
+            .font: UIFont.godo(size: 13, weight: .regular),
+            .foregroundColor: UIColor.label
+        ], for: .normal)
+        $0.setTitleTextAttributes([
+            .font: UIFont.godo(size: 13, weight: .bold),
+            .foregroundColor: UIColor.white
+        ], for: .selected)
+        $0.accessibilityIdentifier = "setting.campus_control"
+        $0.addTarget(self, action: #selector(campusControlChanged), for: .valueChanged)
     }
 
-    private lazy var themeButton: UIButton = .init().then {
-        var conf = UIButton.Configuration.bordered()
-        var title = AttributedString(String(localized: "setting.theme"))
-        title.font = .godo(size: 16, weight: .medium)
-        title.foregroundColor = .label
-        conf.attributedTitle = title
-        $0.configuration = conf
-        // Available start stops
-        let items = self.availableTheme.map { theme in
-            UIAction(title: String(localized: theme), handler: { _ in
-                self.selectTheme(theme)
-            })
-        }
-        let menu = UIMenu(title: "", children: items)
-        $0.menu = menu
-        $0.showsMenuAsPrimaryAction = true
+    private lazy var themeControl = UISegmentedControl(items: availableTheme.map { String(localized: $0) }).then {
         $0.isHidden = true
-        $0.accessibilityIdentifier = "setting.theme_button"
+        $0.selectedSegmentTintColor = .hanyangBlue
+        $0.setTitleTextAttributes([
+            .font: UIFont.godo(size: 13, weight: .regular),
+            .foregroundColor: UIColor.label
+        ], for: .normal)
+        $0.setTitleTextAttributes([
+            .font: UIFont.godo(size: 13, weight: .bold),
+            .foregroundColor: UIColor.white
+        ], for: .selected)
+        $0.accessibilityIdentifier = "setting.theme_control"
+        $0.addTarget(self, action: #selector(themeControlChanged), for: .valueChanged)
     }
 
     private let arrowImageView = UIImageView().then {
@@ -98,8 +88,8 @@ class SettingCellView: UITableViewCell {
         selectionStyle = .none
         contentView.addSubview(iconImageView)
         contentView.addSubview(titleLabel)
-        contentView.addSubview(campusButton)
-        contentView.addSubview(themeButton)
+        contentView.addSubview(campusControl)
+        contentView.addSubview(themeControl)
         contentView.addSubview(arrowImageView)
         contentView.addSubview(contentLabel)
         contentView.addSubview(analyticsSwitch)
@@ -111,14 +101,17 @@ class SettingCellView: UITableViewCell {
         titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(self.iconImageView.snp.trailing).offset(20)
             make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualToSuperview().inset(20)
         }
-        campusButton.snp.makeConstraints { make in
+        campusControl.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
+            make.width.equalTo(124)
         }
-        themeButton.snp.makeConstraints { make in
+        themeControl.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
+            make.width.equalTo(144)
         }
         arrowImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
@@ -138,23 +131,23 @@ class SettingCellView: UITableViewCell {
         iconImageView.image = UIImage(systemName: imageName)
         titleLabel.text = String(localized: title)
         self.onAnalyticsConsentChanged = nil
-        campusButton.isHidden = true
-        themeButton.isHidden = true
+        campusControl.isHidden = true
+        themeControl.isHidden = true
         arrowImageView.isHidden = true
         contentLabel.isHidden = true
         contentLabel.text = nil
         analyticsSwitch.isHidden = true
         if title == "setting.campus" {
-            campusButton.do {
+            campusControl.do {
                 $0.isHidden = false
                 let campusID = UserDefaults.standard.integer(forKey: "campusID")
-                self.setButtonTitle($0, SettingsLogic.campusKey(for: campusID))
+                $0.selectedSegmentIndex = campusID == 1 ? 0 : 1
             }
         } else if title == "setting.theme" {
-            themeButton.do {
+            themeControl.do {
                 $0.isHidden = false
                 let themeID = UserDefaults.standard.integer(forKey: "themeID")
-                self.setButtonTitle($0, SettingsLogic.themeKey(for: themeID))
+                $0.selectedSegmentIndex = min(max(themeID, 0), availableTheme.count - 1)
             }
         } else if title == "setting.language" {
             arrowImageView.isHidden = false
@@ -175,17 +168,21 @@ class SettingCellView: UITableViewCell {
         onAnalyticsConsentChanged?(analyticsSwitch.isOn)
     }
 
+    @objc private func campusControlChanged() {
+        selectCampus(availableCampus[campusControl.selectedSegmentIndex])
+    }
+
+    @objc private func themeControlChanged() {
+        selectTheme(availableTheme[themeControl.selectedSegmentIndex])
+    }
+
     private func selectCampus(_ campus: String.LocalizationValue) {
         let campusID = SettingsLogic.campusID(for: campus)
         AnalyticsManager.logSelect(.settingSelectCampus, type: .menu, name: campusID == 1 ? "seoul" : "erica")
         UserDefaults.standard.set(campusID, forKey: "campusID")
         UserDefaults(suiteName: "group.net.jaram.hyuabot")?.set(campusID, forKey: "campusID")
         WidgetCenter.shared.reloadTimelines(ofKind: "CafeteriaWidget")
-        if campus == "campus.seoul" {
-            setButtonTitle(campusButton, "campus.seoul")
-        } else {
-            setButtonTitle(campusButton, "campus.erica")
-        }
+        campusControl.selectedSegmentIndex = campusID == 1 ? 0 : 1
     }
 
     private func selectTheme(_ theme: String.LocalizationValue) {
@@ -198,24 +195,13 @@ class SettingCellView: UITableViewCell {
         if themeID == 0 {
             UserDefaults.standard.set(themeID, forKey: "themeID")
             window?.overrideUserInterfaceStyle = .unspecified
-            setButtonTitle(themeButton, "theme.system")
         } else if themeID == 1 {
             UserDefaults.standard.set(themeID, forKey: "themeID")
             window?.overrideUserInterfaceStyle = .light
-            setButtonTitle(themeButton, "theme.light")
         } else {
             UserDefaults.standard.set(themeID, forKey: "themeID")
             window?.overrideUserInterfaceStyle = .dark
-            setButtonTitle(themeButton, "theme.dark")
         }
-    }
-
-    private func setButtonTitle(_ button: UIButton, _ title: String.LocalizationValue) {
-        var config = button.configuration
-        var title = AttributedString(String(localized: title))
-        title.font = .godo(size: 16, weight: .medium)
-        title.foregroundColor = .label
-        config?.attributedTitle = title
-        button.configuration = config
+        themeControl.selectedSegmentIndex = min(max(themeID, 0), availableTheme.count - 1)
     }
 }

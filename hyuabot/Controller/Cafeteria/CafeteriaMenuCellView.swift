@@ -5,21 +5,22 @@ import UIKit
 class CafeteriaMenuCellView: UITableViewCell {
     static let reuseIdentifier = "CafeteriaMenuCellView"
     private let menuLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+        $0.font = .godo(size: 15, weight: .regular)
         $0.numberOfLines = 0
         $0.textAlignment = .center
         $0.lineBreakMode = .byCharWrapping
     }
 
     private let pricaLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
+        $0.font = .godo(size: 15, weight: .bold)
         $0.textAlignment = .center
+        $0.textColor = .hanyangBlue
     }
 
     private lazy var cellStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [self.menuLabel, self.pricaLabel])
         stackView.axis = .vertical
-        stackView.spacing = 10
+        stackView.spacing = 8
         return stackView
     }()
 
@@ -37,9 +38,9 @@ class CafeteriaMenuCellView: UITableViewCell {
         contentView.addSubview(cellStackView)
         selectionStyle = .none
         cellStackView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.top.equalToSuperview().inset(15)
-            make.bottom.equalToSuperview().inset(15)
+            make.horizontalEdges.equalToSuperview().inset(24)
+            make.top.equalToSuperview().inset(12)
+            make.bottom.equalToSuperview().inset(12)
         }
     }
 
