@@ -64,6 +64,17 @@ jobs:
       - name: Run lint
         run: scripts/run-swiftlint.sh
 
+      - name: Install Apollo CLI
+        run: |
+          set -euo pipefail
+          rm -f apollo-ios-cli
+          curl -L \
+            https://github.com/apollographql/apollo-ios/releases/download/2.1.0/apollo-ios-cli.tar.gz \
+            -o apollo-ios-cli.tar.gz
+          tar -xzf apollo-ios-cli.tar.gz
+          rm apollo-ios-cli.tar.gz
+          chmod +x apollo-ios-cli
+
       - name: Verify GraphQL generated sources
         run: |
           set -euo pipefail
