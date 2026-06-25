@@ -1,14 +1,154 @@
-name: Run Xcode Build
+name: iOS Quality Gate
 
-on: pull_request
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ios-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT: hyuabot.xcodeproj
+  SCHEME: hyuabot
+  DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro,OS=latest
+  DERIVED_DATA_PATH: .derivedData
+
 jobs:
-  build:
-    runs-on: [self-hosted, macOS]
+  portable-checks:
+    name: Portable Checks
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check workflow syntax
+        run: ruby -e "require 'yaml'; Dir['.github/workflows/*.{yml,yaml}'].each { |path| YAML.load_file(path); puts \"#{path} ok\" }"
+
+      - name: Check localization catalogs
+        run: scripts/check-localizations.rb
+
+  quality:
+    name: Quality Gate
+    runs-on: [self-hosted, macOS]
+    needs: portable-checks
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          brew list swiftformat >/dev/null 2>&1 || brew install swiftformat
+          brew list swiftlint >/dev/null 2>&1 || brew install swiftlint
+          brew list periphery >/dev/null 2>&1 || brew install peripheryapp/periphery/periphery
+
       - name: Create GoogleService-Info.plist
-        run: echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > hyuabot/GoogleService-Info.plist
+        run: |
+          set -euo pipefail
+          echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > hyuabot/GoogleService-Info.plist
         env:
           GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
-      - name: Start Xcode Build
-        run: xcodebuild -project hyuabot.xcodeproj -scheme hyuabot -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -quiet clean build
+
+      - name: Check formatting
+        run: swiftformat --lint .
+
+      - name: Run lint
+        run: scripts/run-swiftlint.sh
+
+      - name: Verify GraphQL generated sources
+        run: |
+          set -euo pipefail
+          ./apollo-ios-cli generate --path apollo-codegen-config.json
+          if ! git diff --quiet -- api query ':(exclude)api/.swiftpm/xcode/xcuserdata'; then
+            echo "::error::GraphQL generated sources are stale. Run Apollo codegen locally and include the result."
+            git diff -- api query ':(exclude)api/.swiftpm/xcode/xcuserdata'
+            exit 1
+          fi
+
+      - name: Build for testing
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -quiet \
+            clean build-for-testing
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -quiet \
+            test-without-building
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-test-results
+          path: ${{ env.DERIVED_DATA_PATH }}/Logs/Test/
+          if-no-files-found: ignore
+
+      - name: Run unused code analysis
+        run: periphery scan --config .periphery.yml
+
+      - name: Build release configuration
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination "$DESTINATION" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -quiet \
+            clean build
+
+  archive:
+    name: Release Archive
+    runs-on: [self-hosted, macOS]
+    needs: quality
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GoogleService-Info.plist
+        run: |
+          set -euo pipefail
+          echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > hyuabot/GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+
+      - name: Create release archive
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/hyuabot.xcarchive" \
+            -quiet \
+            clean archive
+
+      - name: Upload archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyuabot-xcarchive
+          path: build/hyuabot.xcarchive
+          if-no-files-found: error
