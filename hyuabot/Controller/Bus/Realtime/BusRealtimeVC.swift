@@ -220,7 +220,7 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         }
         helpBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(16)
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
         }
         helpBarLabel.snp.makeConstraints { make in
