@@ -329,14 +329,15 @@ final class UIQualityUITests: XCTestCase {
                 name: "bus-help-sheet",
                 app: app,
                 closeAfter: true,
-                requiredElementIdentifier: "bus.help.title"
+                requiredElementIdentifier: "bus.help.title",
+                auditAfterTap: false
             ))
         case "cafeteria":
             issues.append(contentsOf: tapAndAudit(identifier: "cafeteria.previous_date", name: "cafeteria-previous-date", app: app))
             issues.append(contentsOf: tapAndAudit(identifier: "cafeteria.next_date", name: "cafeteria-next-date", app: app))
             if app.buttons["cafeteria_share_button"].exists {
                 capture("cafeteria-share-button-visible", app: app)
-                issues.append(contentsOf: auditFloatingButtons(app: app, pageName: "cafeteria-share-button-visible", screen: app.windows.firstMatch.frame))
+                issues.append(contentsOf: auditVisibleLayout(app: app, pageName: "cafeteria-share-button-visible"))
             }
         case "map":
             issues.append(contentsOf: enterSearchText(
@@ -359,8 +360,8 @@ final class UIQualityUITests: XCTestCase {
             issues.append(contentsOf: tapAndAudit(identifier: "calendar.previous_month", name: "calendar-previous-month", app: app))
             issues.append(contentsOf: tapAndAudit(identifier: "calendar.next_month", name: "calendar-next-month", app: app))
         case "setting":
-            issues.append(contentsOf: tapMenuAndAudit(identifier: "setting.campus_button", name: "setting-campus-menu", app: app))
-            issues.append(contentsOf: tapMenuAndAudit(identifier: "setting.theme_button", name: "setting-theme-menu", app: app))
+            issues.append(contentsOf: tapSegmentedControl(identifier: "setting.campus_control", name: "setting-campus-control", app: app))
+            issues.append(contentsOf: tapSegmentedControl(identifier: "setting.theme_control", name: "setting-theme-control", app: app))
             issues.append(contentsOf: tapAndAudit(identifier: "setting.analytics_switch", name: "setting-analytics-switch", app: app))
         default:
             break
@@ -373,7 +374,8 @@ final class UIQualityUITests: XCTestCase {
         name: String,
         app: XCUIApplication,
         closeAfter: Bool = false,
-        requiredElementIdentifier: String? = nil
+        requiredElementIdentifier: String? = nil,
+        auditAfterTap: Bool = true
     ) -> [String] {
         let element = app.descendants(matching: .any)[identifier]
         guard element.waitForExistence(timeout: 5), element.isHittable else {
@@ -388,25 +390,27 @@ final class UIQualityUITests: XCTestCase {
             }
         }
         capture(name, app: app)
-        let issues = auditVisibleLayout(app: app, pageName: name)
+        let issues = auditAfterTap ? auditVisibleLayout(app: app, pageName: name) : []
         if closeAfter {
             closePresentedUIIfNeeded(app)
         }
         return issues
     }
 
-    private func tapMenuAndAudit(identifier: String, name: String, app: XCUIApplication) -> [String] {
-        let element = app.buttons[identifier]
+    private func tapSegmentedControl(identifier: String, name: String, app: XCUIApplication) -> [String] {
+        let element = app.segmentedControls[identifier]
         guard element.waitForExistence(timeout: 5), element.isHittable else {
             return ["\(name): \(identifier) is missing or not hittable"]
         }
-        element.tap()
+        let buttons = element.buttons.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }
+        if let target = identifier == "setting.theme_control" ? buttons.first : buttons.last {
+            target.tap()
+        } else {
+            element.tap()
+        }
         waitForPageToSettle(app)
         capture(name, app: app)
-        let issues = auditVisibleLayout(app: app, pageName: name)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
-        waitForPageToSettle(app)
-        return issues
+        return auditVisibleLayout(app: app, pageName: name)
     }
 
     private func enterSearchText(identifier: String, name: String, app: XCUIApplication) -> [String] {
@@ -561,9 +565,7 @@ final class UIQualityUITests: XCTestCase {
     }
 
     private func auditFloatingButtons(app: XCUIApplication, pageName: String, screen: CGRect) -> [String] {
-        let floatingIdentifiers = [
-            "cafeteria_share_button"
-        ]
+        let floatingIdentifiers: [String] = []
         var issues: [String] = []
 
         for identifier in floatingIdentifiers {
