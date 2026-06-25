@@ -26,6 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
+        handleUITestInitialRouteIfNeeded()
         ReviewRequestManager.shared.trackLaunch()
         showLanguageSuggestionIfNeeded()
 
@@ -66,6 +67,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
 
         switch route {
+        case "bus":
+            rootVC.selectedViewController = rootVC.busNC
+
+        case "subway":
+            rootVC.selectedViewController = rootVC.subwayNC
+
         case "cafeteria":
             rootVC.selectedIndex = 3
             let tab = params?.first(where: { $0.name == "tab" })?.value
@@ -104,8 +111,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         case "map":
             rootVC.selectedIndex = 4
 
+        case "contact":
+            rootVC.selectedViewController = rootVC.contactNC
+
+        case "calendar":
+            rootVC.selectedViewController = rootVC.calendarNC
+
+        case "setting":
+            rootVC.selectedViewController = rootVC.settingNC
+
         default:
             break
+        }
+    }
+
+    private func handleUITestInitialRouteIfNeeded() {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-UITestInitialRoute"),
+              arguments.indices.contains(index + 1) else { return }
+        let route = arguments[index + 1]
+        let url = URL(string: "hyuabot://\(route)")!
+        DispatchQueue.main.async {
+            self.handleDeepLink(url)
         }
     }
 

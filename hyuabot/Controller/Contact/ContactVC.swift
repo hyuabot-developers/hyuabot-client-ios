@@ -15,6 +15,7 @@ class ContactVC: UIViewController {
             $0.placeholder = String(localized: "contact.search.placeholder")
             $0.directionalLayoutMargins = .init(top: 20, leading: 0, bottom: 0, trailing: 20)
             $0.searchTextField.backgroundColor = .systemBackground
+            $0.searchTextField.accessibilityIdentifier = "contact.search_text_field"
         }
         $0.searchResultsUpdater = self
         $0.hidesNavigationBarDuringPresentation = false

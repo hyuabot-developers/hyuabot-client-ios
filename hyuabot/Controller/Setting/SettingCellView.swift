@@ -32,6 +32,7 @@ class SettingCellView: UITableViewCell {
 
     private lazy var analyticsSwitch = UISwitch().then {
         $0.isHidden = true
+        $0.accessibilityIdentifier = "setting.analytics_switch"
         $0.addTarget(self, action: #selector(analyticsSwitchChanged), for: .valueChanged)
     }
 
@@ -53,6 +54,7 @@ class SettingCellView: UITableViewCell {
         $0.menu = menu
         $0.showsMenuAsPrimaryAction = true
         $0.isHidden = true
+        $0.accessibilityIdentifier = "setting.campus_button"
     }
 
     private lazy var themeButton: UIButton = .init().then {
@@ -72,6 +74,7 @@ class SettingCellView: UITableViewCell {
         $0.menu = menu
         $0.showsMenuAsPrimaryAction = true
         $0.isHidden = true
+        $0.accessibilityIdentifier = "setting.theme_button"
     }
 
     private let arrowImageView = UIImageView().then {

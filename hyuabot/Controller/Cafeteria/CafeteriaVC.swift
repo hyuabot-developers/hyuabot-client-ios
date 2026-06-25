@@ -36,6 +36,7 @@ class CafeteriaVC: UIViewController {
         conf.image = icon
         $0.configuration = conf
         $0.tintColor = .plainButtonText
+        $0.accessibilityIdentifier = "cafeteria.previous_date"
         $0.addTarget(self, action: #selector(previousDateButtonTapped), for: .touchUpInside)
     }
 
@@ -43,6 +44,7 @@ class CafeteriaVC: UIViewController {
         $0.datePickerMode = .date
         $0.preferredDatePickerStyle = .compact
         $0.locale = Locale(identifier: "ko_KR")
+        $0.accessibilityIdentifier = "cafeteria.date_picker"
         $0.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
     }
 
@@ -53,6 +55,7 @@ class CafeteriaVC: UIViewController {
         conf.image = icon
         $0.configuration = conf
         $0.tintColor = .plainButtonText
+        $0.accessibilityIdentifier = "cafeteria.next_date"
         $0.addTarget(self, action: #selector(nextDateButtonTapped), for: .touchUpInside)
     }
 

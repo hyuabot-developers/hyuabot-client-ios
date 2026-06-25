@@ -47,6 +47,8 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         ))
         config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
         $0.configuration = config
+        $0.accessibilityLabel = String(localized: "bus.help")
+        $0.accessibilityIdentifier = "bus.open_help"
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
     }
 

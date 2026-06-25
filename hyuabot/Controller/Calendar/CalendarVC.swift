@@ -72,11 +72,13 @@ class CalendarVC: UIViewController {
     private let prevButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         $0.tintColor = .label
+        $0.accessibilityIdentifier = "calendar.previous_month"
     }
 
     private let nextButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "chevron.right"), for: .normal)
         $0.tintColor = .label
+        $0.accessibilityIdentifier = "calendar.next_month"
     }
 
     private let monthLabel = UILabel().then {
