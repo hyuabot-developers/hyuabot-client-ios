@@ -1,9 +1,9 @@
-import WidgetKit
-import SwiftUI
+import Api
+import Apollo
 import AppIntents
 import CoreLocation
-import Apollo
-import Api
+import SwiftUI
+import WidgetKit
 
 // MARK: - Models
 
@@ -39,23 +39,23 @@ func maxTimesInWidth(_ width: CGFloat) -> Int {
 
 func stopDisplayName(for stopID: String) -> String {
     switch stopID {
-    case "dormitory_o": return String(localized: "stop.dormitory")
-    case "shuttlecock_o": return String(localized: "stop.shuttlecock")
-    case "station": return String(localized: "stop.station")
-    case "terminal": return String(localized: "stop.terminal")
-    case "jungang_stn": return String(localized: "stop.jungang.stn")
-    case "shuttlecock_i": return String(localized: "stop.shuttlecock.in")
-    default: return stopID
+    case "dormitory_o": String(localized: "stop.dormitory")
+    case "shuttlecock_o": String(localized: "stop.shuttlecock")
+    case "station": String(localized: "stop.station")
+    case "terminal": String(localized: "stop.terminal")
+    case "jungang_stn": String(localized: "stop.jungang.stn")
+    case "shuttlecock_i": String(localized: "stop.shuttlecock.in")
+    default: stopID
     }
 }
 
 func destinationDisplayName(for destination: String) -> String {
     switch destination {
-    case "STATION": return String(localized: "destination.station")
-    case "TERMINAL": return String(localized: "destination.terminal")
-    case "CAMPUS": return String(localized: "destination.campus")
-    case "JUNGANG": return String(localized: "destination.jungang")
-    default: return destination
+    case "STATION": String(localized: "destination.station")
+    case "TERMINAL": String(localized: "destination.terminal")
+    case "CAMPUS": String(localized: "destination.campus")
+    case "JUNGANG": String(localized: "destination.jungang")
+    default: destination
     }
 }
 
@@ -72,7 +72,7 @@ final class WidgetLocationFetcher: NSObject, CLLocationManagerDelegate, @uncheck
     private var continuation: CheckedContinuation<CLLocation?, Never>?
 
     func getCurrentLocation() async -> CLLocation? {
-        return await withCheckedContinuation { cont in
+        await withCheckedContinuation { cont in
             DispatchQueue.main.async {
                 self.continuation = cont
                 let mgr = CLLocationManager()
@@ -170,7 +170,8 @@ struct ShuttleProvider: TimelineProvider {
         let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
 
         do {
-            let response = try await WidgetNetwork.shared.fetch(query: ShuttleWidgetQuery(after: GraphQLNullable(stringLiteral: currentTimeStr)))
+            let response = try await WidgetNetwork.shared
+                .fetch(query: ShuttleWidgetQuery(after: GraphQLNullable(stringLiteral: currentTimeStr)))
 
             guard let stops = response.data?.shuttle.stops, !stops.isEmpty else {
                 return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
@@ -178,7 +179,7 @@ struct ShuttleProvider: TimelineProvider {
 
             let nearestStop = stops.min { a, b in
                 CLLocation(latitude: a.latitude, longitude: a.longitude).distance(from: location)
-                < CLLocation(latitude: b.latitude, longitude: b.longitude).distance(from: location)
+                    < CLLocation(latitude: b.latitude, longitude: b.longitude).distance(from: location)
             }
 
             guard let stop = nearestStop else {
@@ -372,30 +373,30 @@ struct ShuttleMediumView: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                GeometryReader { geo in
-                    let count = maxTimesInWidth(geo.size.width)
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(entry.groups) { group in
-                            HStack(spacing: 0) {
-                                Text(group.destination)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: 80, alignment: .leading)
-                                    .lineLimit(1)
-                                Spacer()
-                                HStack(spacing: 6) {
-                                    ForEach(group.times.prefix(count), id: \.self) { time in
-                                        Text(time)
-                                            .font(.caption)
-                                            .fontWeight(.semibold)
-                                            .monospacedDigit()
+                    GeometryReader { geo in
+                        let count = maxTimesInWidth(geo.size.width)
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(entry.groups) { group in
+                                HStack(spacing: 0) {
+                                    Text(group.destination)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: 80, alignment: .leading)
+                                        .lineLimit(1)
+                                    Spacer()
+                                    HStack(spacing: 6) {
+                                        ForEach(group.times.prefix(count), id: \.self) { time in
+                                            Text(time)
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                                .monospacedDigit()
+                                        }
                                     }
                                 }
                             }
                         }
+                        .frame(width: geo.size.width, alignment: .topLeading)
                     }
-                    .frame(width: geo.size.width, alignment: .topLeading)
-                }
                 }
             }
         }
@@ -470,27 +471,27 @@ struct ShuttleLargeView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer()
                 } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(sorted.prefix(8).enumerated()), id: \.offset) { _, item in
-                        HStack {
-                            HStack(spacing: 6) {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .foregroundStyle(Color("hanyangBlue").opacity(0.7))
-                                    .font(.caption)
-                                Text(item.dest)
+                    VStack(spacing: 0) {
+                        ForEach(Array(sorted.prefix(8).enumerated()), id: \.offset) { _, item in
+                            HStack {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "arrow.right.circle.fill")
+                                        .foregroundStyle(Color("hanyangBlue").opacity(0.7))
+                                        .font(.caption)
+                                    Text(item.dest)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                Spacer()
+                                Text(item.time)
                                     .font(.subheadline)
-                                    .fontWeight(.medium)
+                                    .fontWeight(.semibold)
+                                    .monospacedDigit()
                             }
-                            Spacer()
-                            Text(item.time)
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .monospacedDigit()
+                            .padding(.vertical, 6)
+                            Divider()
                         }
-                        .padding(.vertical, 6)
-                        Divider()
                     }
-                }
                 } // else
             }
         }

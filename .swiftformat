@@ -1,0 +1,14 @@
+--swiftversion 5.10
+--indent 4
+--linebreaks lf
+--maxwidth 140
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--self remove
+--commas inline
+--stripunusedargs closure-only
+--trimwhitespace always
+--exclude api
+--exclude .build
+--exclude DerivedData

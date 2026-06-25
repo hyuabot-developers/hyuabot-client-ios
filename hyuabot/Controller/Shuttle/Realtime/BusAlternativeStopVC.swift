@@ -1,7 +1,7 @@
-import UIKit
 import MapKit
 import SnapKit
 import Then
+import UIKit
 
 class BusAlternativeStopVC: UIViewController {
     private static let routeCache = BusAlternativeRouteCache()
@@ -18,6 +18,7 @@ class BusAlternativeStopVC: UIViewController {
         $0.textAlignment = .center
         $0.text = String(localized: "coach.shuttle.footer.title")
     }
+
     private let mapView = MKMapView().then {
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
@@ -36,22 +37,23 @@ class BusAlternativeStopVC: UIViewController {
     ) {
         let shuttleCoordinate = CLLocationCoordinate2D(latitude: shuttleStopLatitude, longitude: shuttleStopLongitude)
         let busCoordinate = CLLocationCoordinate2D(latitude: busStopLatitude, longitude: busStopLongitude)
-        self.shuttleStop = StopPoint(
+        shuttleStop = StopPoint(
             name: shuttleStopName,
             subtitle: String(localized: "shuttle.bus.alternative.shuttle.stop"),
             coordinate: shuttleCoordinate,
             kind: .shuttle
         )
-        self.busStop = StopPoint(
+        busStop = StopPoint(
             name: busStopName,
             subtitle: String(localized: "shuttle.bus.alternative.bus.stop"),
             coordinate: busCoordinate,
             kind: .bus
         )
-        self.routeCacheKey = BusAlternativeRouteCache.Key(source: shuttleCoordinate, destination: busCoordinate)
+        routeCacheKey = BusAlternativeRouteCache.Key(source: shuttleCoordinate, destination: busCoordinate)
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -86,8 +88,8 @@ class BusAlternativeStopVC: UIViewController {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
-            self.mapView.selectAnnotation(self.shuttleStop, animated: true)
-            self.mapView.selectAnnotation(self.busStop, animated: true)
+            mapView.selectAnnotation(shuttleStop, animated: true)
+            mapView.selectAnnotation(busStop, animated: true)
         }
     }
 
@@ -195,7 +197,7 @@ private final class StopPoint: NSObject, MKAnnotation {
     let kind: Kind
 
     init(name: String, subtitle: String, coordinate: CLLocationCoordinate2D, kind: Kind) {
-        self.title = name
+        title = name
         self.subtitle = subtitle
         self.coordinate = coordinate
         self.kind = kind
@@ -210,10 +212,10 @@ private final class BusAlternativeRouteCache {
         let destinationLongitude: Int
 
         init(source: CLLocationCoordinate2D, destination: CLLocationCoordinate2D) {
-            self.sourceLatitude = Self.normalize(source.latitude)
-            self.sourceLongitude = Self.normalize(source.longitude)
-            self.destinationLatitude = Self.normalize(destination.latitude)
-            self.destinationLongitude = Self.normalize(destination.longitude)
+            sourceLatitude = Self.normalize(source.latitude)
+            sourceLongitude = Self.normalize(source.longitude)
+            destinationLatitude = Self.normalize(destination.latitude)
+            destinationLongitude = Self.normalize(destination.longitude)
         }
 
         private static func normalize(_ value: CLLocationDegrees) -> Int {
@@ -230,10 +232,10 @@ private final class BusAlternativeRouteCache {
     private var storage: [String: [CachedCoordinate]]
 
     init() {
-        self.cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+        cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
             .first?
             .appendingPathComponent("bus-alternative-routes.json")
-        self.storage = Self.loadStorage(from: cacheURL)
+        storage = Self.loadStorage(from: cacheURL)
     }
 
     func coordinates(for key: Key) -> [CLLocationCoordinate2D]? {
@@ -271,8 +273,8 @@ private final class BusAlternativeRouteCache {
         let longitude: CLLocationDegrees
 
         init(_ coordinate: CLLocationCoordinate2D) {
-            self.latitude = coordinate.latitude
-            self.longitude = coordinate.longitude
+            latitude = coordinate.latitude
+            longitude = coordinate.longitude
         }
 
         var coordinate: CLLocationCoordinate2D {

@@ -1,6 +1,6 @@
-import UIKit
 import Api
 import RxSwift
+import UIKit
 
 class CafeteriaMenuCellView: UITableViewCell {
     static let reuseIdentifier = "CafeteriaMenuCellView"
@@ -10,36 +10,39 @@ class CafeteriaMenuCellView: UITableViewCell {
         $0.textAlignment = .center
         $0.lineBreakMode = .byCharWrapping
     }
+
     private let pricaLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.textAlignment = .center
     }
+
     private lazy var cellStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [self.menuLabel, self.pricaLabel])
         stackView.axis = .vertical
         stackView.spacing = 10
         return stackView
     }()
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.setupUI()
+        setupUI()
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setupUI() {
-        self.contentView.addSubview(self.cellStackView)
-        self.selectionStyle = .none
-        self.cellStackView.snp.makeConstraints { make in
+        contentView.addSubview(cellStackView)
+        selectionStyle = .none
+        cellStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview().inset(20)
             make.top.equalToSuperview().inset(15)
             make.bottom.equalToSuperview().inset(15)
         }
     }
-    
+
     private static let isKoreanApp: Bool = (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
     private static let hangulRegex = try! NSRegularExpression(pattern: "\\p{Hangul}")
 
@@ -55,8 +58,8 @@ class CafeteriaMenuCellView: UITableViewCell {
     }
 
     func setupUI(item: CafeteriaPageQuery.Data.Cafeterium.Menu) {
-        self.menuLabel.text = Self.localizedFood(item.food)
-        self.pricaLabel.text = String(
+        menuLabel.text = Self.localizedFood(item.food)
+        pricaLabel.text = String(
             format: String(localized: "cafeteria.menu.price.%@"),
             item.price.replacingOccurrences(of: "원", with: "")
         )

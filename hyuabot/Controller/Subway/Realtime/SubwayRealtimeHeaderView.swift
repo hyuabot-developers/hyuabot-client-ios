@@ -7,20 +7,21 @@ class SubwayRealtimeHeaderView: UITableViewHeaderFooterView {
         $0.textColor = .white
         $0.textAlignment = .center
     }
-    
+
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setupUI(title: String) {
-        self.contentView.backgroundColor = .hanyangBlue
-        self.contentView.addSubview(titleLabel)
-        self.titleLabel.text = title
-        self.titleLabel.snp.makeConstraints { make in
+        contentView.backgroundColor = .hanyangBlue
+        contentView.addSubview(titleLabel)
+        titleLabel.text = title
+        titleLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }

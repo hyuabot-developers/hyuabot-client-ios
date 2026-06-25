@@ -9,7 +9,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
     private var title: String.LocalizationValue?
     let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
-        var title = AttributedString.init(String(localized: "bus.show.entire.timetable"))
+        var title = AttributedString(String(localized: "bus.show.entire.timetable"))
         title.font = .godo(size: 16, weight: .medium)
         conf.attributedTitle = title
         conf.titleLineBreakMode = .byTruncatingTail
@@ -18,9 +18,10 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         $0.titleLabel?.adjustsFontSizeToFitWidth = true
         $0.titleLabel?.minimumScaleFactor = 0.6
     }
+
     let showDeparuteLogButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
-        var title = AttributedString.init(String(localized: "bus.show.departure.log"))
+        var title = AttributedString(String(localized: "bus.show.departure.log"))
         title.font = .godo(size: 16, weight: .medium)
         conf.attributedTitle = title
         conf.titleLineBreakMode = .byTruncatingTail
@@ -29,6 +30,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         $0.titleLabel?.adjustsFontSizeToFitWidth = true
         $0.titleLabel?.minimumScaleFactor = 0.6
     }
+
     private lazy var buttonStackView: UIView = {
         let view = UIView()
         let separator = UIView().then {
@@ -37,7 +39,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         view.addSubview(showEntireTimeTableButton)
         view.addSubview(separator)
         view.addSubview(showDeparuteLogButton)
-        
+
         separator.snp.makeConstraints { make in
             make.width.equalTo(1)
             make.height.equalTo(20)
@@ -53,15 +55,16 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         }
         return view
     }()
-    
+
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setupUI(
         stopID: Int32,
         routes: [Int32],
@@ -74,23 +77,23 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         self.title = title
         self.showEntireTimetable = showEntireTimetable
         self.showDepartureLog = showDepartureLog
-        self.contentView.addSubview(buttonStackView)
-        self.showEntireTimeTableButton.addTarget(self, action: #selector(entireTimetableButtonTapped), for: .touchUpInside)
-        self.showDeparuteLogButton.addTarget(self, action: #selector(departureLogButtonTapped), for: .touchUpInside)
-        self.buttonStackView.snp.makeConstraints { make in
+        contentView.addSubview(buttonStackView)
+        showEntireTimeTableButton.addTarget(self, action: #selector(entireTimetableButtonTapped), for: .touchUpInside)
+        showDeparuteLogButton.addTarget(self, action: #selector(departureLogButtonTapped), for: .touchUpInside)
+        buttonStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
-    
+
     @objc func entireTimetableButtonTapped() {
         AnalyticsManager.logSelect(.busShowEntireTimetable)
-        guard let stopID = self.stopID, let title = self.title else { return }
-        self.showEntireTimetable?(stopID, routes, title)
+        guard let stopID, let title else { return }
+        showEntireTimetable?(stopID, routes, title)
     }
-    
+
     @objc func departureLogButtonTapped() {
         AnalyticsManager.logSelect(.busShowDepartureLog)
-        guard let stopID = self.stopID else { return }
-        self.showDepartureLog?(stopID, routes)
+        guard let stopID else { return }
+        showDepartureLog?(stopID, routes)
     }
 }

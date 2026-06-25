@@ -1,7 +1,7 @@
-import Foundation
-import UIKit
 import Api
+import Foundation
 import RealmSwift
+import UIKit
 
 final class Event: RealmSwift.Object {
     @objc dynamic var id: Int = 0
@@ -13,7 +13,7 @@ final class Event: RealmSwift.Object {
     @objc dynamic var categoryName: String = ""
 
     override class func primaryKey() -> String? {
-        return "id"
+        "id"
     }
 }
 
@@ -22,9 +22,9 @@ extension Event {
         $0.dateFormat = "yyyy-MM-dd HH:mm:ss"
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
-        
+
     static func transform(from category: CalendarPageQuery.Data.Calendar.Category) -> [Event] {
-        return category.events.map { event in
+        category.events.map { event in
             Event().then {
                 $0.id = event.seq
                 $0.title = event.title
@@ -36,8 +36,7 @@ extension Event {
             }
         }
     }
-        
-    
+
     static func replaceAll(with contacts: [Event]) {
         let realm = Database.shared.database
         try! realm.write {
@@ -45,7 +44,7 @@ extension Event {
             realm.add(contacts)
         }
     }
-    
+
     static func fetchAll() -> Results<Event> {
         let realm = Database.shared.database
         return realm.objects(Event.self)
@@ -58,10 +57,17 @@ extension Event {
         return f
     }()
 
-    private var startDateOnly: String { String(startDate.prefix(10)) }
-    private var endDateOnly: String { String(endDate.prefix(10)) }
+    private var startDateOnly: String {
+        String(startDate.prefix(10))
+    }
 
-    var isSingleDay: Bool { startDateOnly == endDateOnly }
+    private var endDateOnly: String {
+        String(endDate.prefix(10))
+    }
+
+    var isSingleDay: Bool {
+        startDateOnly == endDateOnly
+    }
 
     var isOngoing: Bool {
         let today = Self.dateOnlyFormatter.string(from: Date())

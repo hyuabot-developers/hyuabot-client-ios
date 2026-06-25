@@ -1,6 +1,6 @@
-import UIKit
-import RxSwift
 import Api
+import RxSwift
+import UIKit
 
 class BusRealtimeTabVC: UIViewController {
     let tabType: BusRealtimeType
@@ -8,35 +8,39 @@ class BusRealtimeTabVC: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let refreshMethod: () -> Void
     private let busRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (Int32, [Int32], String.LocalizationValue) -> ()
-    private let showDepartureLog: (Int32, [Int32]) -> ()
-    private let showStopVC: (Int32, [Int32]) -> ()
+    private let showEntireTimetable: (Int32, [Int32], String.LocalizationValue) -> Void
+    private let showDepartureLog: (Int32, [Int32]) -> Void
+    private let showStopVC: (Int32, [Int32]) -> Void
     private var showsSkeleton = true
-    private lazy var busRealtimeTableView: UITableView = {
-        let tableView = UITableView().then {
-            $0.delegate = self
-            $0.dataSource = self
-            $0.sectionHeaderTopPadding = 0
-            $0.refreshControl = refreshControl
-            $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
-            $0.showsVerticalScrollIndicator = false
-            // Register cells
-            $0.register(BusRealtimeCellView.self, forCellReuseIdentifier: BusRealtimeCellView.reuseIdentifier)
-            $0.register(BusRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: BusRealtimeHeaderView.reuseIdentifier)
-            $0.register(BusRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: BusRealtimeFooterView.reuseIdentifier)
-            $0.register(BusRealtimeEmptyCellView.self, forCellReuseIdentifier: BusRealtimeEmptyCellView.reuseIdentifier)
-            $0.register(BusRealtimeSkeletonCellView.self, forCellReuseIdentifier: BusRealtimeSkeletonCellView.reuseIdentifier)
-            $0.register(BusRealtimeSkeletonHeaderView.self, forHeaderFooterViewReuseIdentifier: BusRealtimeSkeletonHeaderView.reuseIdentifier)
-            $0.register(BusRealtimeSkeletonFooterView.self, forHeaderFooterViewReuseIdentifier: BusRealtimeSkeletonFooterView.reuseIdentifier)
-        }
-        return tableView
-    }()
-    required init (
+    private lazy var busRealtimeTableView: UITableView = .init().then {
+        $0.delegate = self
+        $0.dataSource = self
+        $0.sectionHeaderTopPadding = 0
+        $0.refreshControl = refreshControl
+        $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
+        $0.showsVerticalScrollIndicator = false
+        // Register cells
+        $0.register(BusRealtimeCellView.self, forCellReuseIdentifier: BusRealtimeCellView.reuseIdentifier)
+        $0.register(BusRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: BusRealtimeHeaderView.reuseIdentifier)
+        $0.register(BusRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: BusRealtimeFooterView.reuseIdentifier)
+        $0.register(BusRealtimeEmptyCellView.self, forCellReuseIdentifier: BusRealtimeEmptyCellView.reuseIdentifier)
+        $0.register(BusRealtimeSkeletonCellView.self, forCellReuseIdentifier: BusRealtimeSkeletonCellView.reuseIdentifier)
+        $0.register(
+            BusRealtimeSkeletonHeaderView.self,
+            forHeaderFooterViewReuseIdentifier: BusRealtimeSkeletonHeaderView.reuseIdentifier
+        )
+        $0.register(
+            BusRealtimeSkeletonFooterView.self,
+            forHeaderFooterViewReuseIdentifier: BusRealtimeSkeletonFooterView.reuseIdentifier
+        )
+    }
+
+    required init(
         tabType: BusRealtimeType,
-        refreshMethod: @escaping () -> (),
-        showEntireTimetable: @escaping (Int32, [Int32], String.LocalizationValue) -> (),
-        showDepartureLog: @escaping (Int32, [Int32]) -> (),
-        showStopVC: @escaping (Int32, [Int32]) -> ()
+        refreshMethod: @escaping () -> Void,
+        showEntireTimetable: @escaping (Int32, [Int32], String.LocalizationValue) -> Void,
+        showDepartureLog: @escaping (Int32, [Int32]) -> Void,
+        showStopVC: @escaping (Int32, [Int32]) -> Void
     ) {
         self.tabType = tabType
         self.refreshMethod = refreshMethod
@@ -44,44 +48,45 @@ class BusRealtimeTabVC: UIViewController {
         self.showDepartureLog = showDepartureLog
         self.showStopVC = showStopVC
         switch tabType {
-            case .city: self.busRealtimeSection = [
+        case .city: busRealtimeSection = [
                 "bus.realtime.section.10-1.campus",
                 "bus.realtime.section.10-1.station"
             ]
-            case .seoul: self.busRealtimeSection = [
+        case .seoul: busRealtimeSection = [
                 "bus.realtime.section.3102",
                 "bus.realtime.section.seoul.other"
             ]
-            case .suwon: self.busRealtimeSection = [
+        case .suwon: busRealtimeSection = [
                 "bus.realtime.section.suwon.other"
             ]
-            case .other: self.busRealtimeSection = [
+        case .other: busRealtimeSection = [
                 "bus.realtime.section.50.ansan",
                 "bus.realtime.section.50.station"
             ]
         }
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     private func setupUI() {
-        self.view.addSubview(self.busRealtimeTableView)
-        self.busRealtimeTableView.snp.makeConstraints { make in
+        view.addSubview(busRealtimeTableView)
+        busRealtimeTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
-    
+
     private func showStopModal(_ stopID: Int32, routes: [Int32] = []) {
-        self.showStopVC(stopID, routes)
+        showStopVC(stopID, routes)
     }
 
     private func observeSubjects() {
@@ -94,10 +99,10 @@ class BusRealtimeTabVC: UIViewController {
             })
             .disposed(by: disposeBag)
     }
-    
+
     func reload() {
-        self.busRealtimeTableView.reloadData()
-        self.refreshControl.endRefreshing()
+        busRealtimeTableView.reloadData()
+        refreshControl.endRefreshing()
     }
 
     var firstSectionHeaderLocationButton: UIView? {
@@ -111,128 +116,128 @@ class BusRealtimeTabVC: UIViewController {
     var firstSectionFooterLogButton: UIView? {
         (busRealtimeTableView.footerView(forSection: 0) as? BusRealtimeFooterView)?.showDeparuteLogButton
     }
-    
+
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
         AnalyticsManager.logSelect(.busRefresh)
-        self.refreshMethod()
+        refreshMethod()
     }
 }
 
 extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return self.busRealtimeSection.count
+        busRealtimeSection.count
     }
-    
+
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if showsSkeleton {
             return tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeSkeletonHeaderView.reuseIdentifier)
         }
-        guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeHeaderView.reuseIdentifier) as? BusRealtimeHeaderView else {
+        guard let headerView = tableView
+            .dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeHeaderView.reuseIdentifier) as? BusRealtimeHeaderView
+        else {
             return UIView()
         }
-        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
+        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
+            .integer(forKey: "busStopID"))
         var stopID: Int32 = 0
         var routes: [Int32] = []
-        if self.tabType == .city {
+        if tabType == .city {
             if section == 0 {
                 stopID = selectedStopID
-                routes = [216000068]
+                routes = [216_000_068]
+            } else if section == 1 {
+                stopID = 216_000_138
+                routes = [216_000_068]
             }
-            else if section == 1 {
-                stopID = 216000138
-                routes = [216000068]
-            }
-        } else if self.tabType == .seoul {
+        } else if tabType == .seoul {
             if section == 0 {
                 stopID = selectedStopID
-                routes = [216000061]
+                routes = [216_000_061]
+            } else if section == 1 {
+                stopID = 216_000_719
+                routes = [216_000_026, 216_000_043, 216_000_096]
             }
-            else if section == 1 {
-                stopID = 216000719
-                routes = [216000026, 216000043, 216000096]
-            }
-        } else if self.tabType == .suwon {
+        } else if tabType == .suwon {
             if section == 0 {
-                stopID = 216000070
-                routes = [216000104, 200000015]
+                stopID = 216_000_070
+                routes = [216_000_104, 200_000_015]
             }
-        }  else if self.tabType == .other {
+        } else if tabType == .other {
             if section == 0 {
-                stopID = 216000759
-                routes = [216000075]
-            }
-            else if section == 1 {
-                stopID = 213000487
-                routes = [216000075]
+                stopID = 216_000_759
+                routes = [216_000_075]
+            } else if section == 1 {
+                stopID = 213_000_487
+                routes = [216_000_075]
             }
         }
         headerView.setupUI(
-            title: String(localized: self.busRealtimeSection[section]),
+            title: String(localized: busRealtimeSection[section]),
             showStopVC: { [weak self] in
                 self?.showStopModal(stopID, routes: routes)
             }
         )
         return headerView
     }
-    
+
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         if showsSkeleton {
             return tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeSkeletonFooterView.reuseIdentifier)
         }
-        guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeFooterView.reuseIdentifier) as? BusRealtimeFooterView else {
+        guard let footerView = tableView
+            .dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeFooterView.reuseIdentifier) as? BusRealtimeFooterView
+        else {
             return UIView()
         }
-        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
+        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
+            .integer(forKey: "busStopID"))
         var stopID: Int32 = 0
         var routes: [Int32] = []
-        if self.tabType == .city {
+        if tabType == .city {
             if section == 0 {
                 stopID = selectedStopID
-                routes = [216000068]
+                routes = [216_000_068]
+            } else if section == 1 {
+                stopID = 216_000_138
+                routes = [216_000_068]
             }
-            else if section == 1 {
-                stopID = 216000138
-                routes = [216000068]
-            }
-        } else if self.tabType == .seoul {
+        } else if tabType == .seoul {
             if section == 0 {
                 stopID = selectedStopID
-                routes = [216000061]
+                routes = [216_000_061]
+            } else if section == 1 {
+                stopID = 216_000_719
+                routes = [216_000_026, 216_000_043, 216_000_096]
             }
-            else if section == 1 {
-                stopID = 216000719
-                routes = [216000026, 216000043, 216000096]
-            }
-        } else if self.tabType == .suwon {
+        } else if tabType == .suwon {
             if section == 0 {
-                stopID = 216000070
-                routes = [216000104, 200000015]
+                stopID = 216_000_070
+                routes = [216_000_104, 200_000_015]
             }
-        }  else if self.tabType == .other {
+        } else if tabType == .other {
             if section == 0 {
-                stopID = 216000759
-                routes = [216000075]
-            }
-            else if section == 1 {
-                stopID = 213000487
-                routes = [216000075]
+                stopID = 216_000_759
+                routes = [216_000_075]
+            } else if section == 1 {
+                stopID = 213_000_487
+                routes = [216_000_075]
             }
         }
         footerView.setupUI(
             stopID: stopID,
             routes: routes,
-            title: self.busRealtimeSection[section],
-            showEntireTimetable: self.showEntireTimetable,
-            showDepartureLog: self.showDepartureLog
+            title: busRealtimeSection[section],
+            showEntireTimetable: showEntireTimetable,
+            showDepartureLog: showDepartureLog
         )
         return footerView
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if showsSkeleton {
             return section == 0 ? 3 : 2
         }
-        if self.tabType == .city {
+        if tabType == .city {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromCampus.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 5)
@@ -240,7 +245,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromStation.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 5)
             }
-        } else if self.tabType == .seoul {
+        } else if tabType == .seoul {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSeoulFromCampus.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 5)
@@ -248,12 +253,12 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 guard let items = try? BusRealtimeData.shared.busRealtimeGunpoFromCampus.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 5)
             }
-        } else if self.tabType == .suwon {
+        } else if tabType == .suwon {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSuwonFromCampus.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 10)
             }
-        } else if self.tabType == .other {
+        } else if tabType == .other {
             if section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value() else { return 1 }
                 return items.isEmpty ? 1 : min(items.count, 5)
@@ -264,13 +269,15 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         return 1
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if showsSkeleton {
             return tableView.dequeueReusableCell(withIdentifier: BusRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
         }
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: BusRealtimeCellView.reuseIdentifier, for: indexPath) as? BusRealtimeCellView else { fatalError() }
-        if self.tabType == .city {
+        guard let cell = tableView
+            .dequeueReusableCell(withIdentifier: BusRealtimeCellView.reuseIdentifier, for: indexPath) as? BusRealtimeCellView
+        else { fatalError() }
+        if tabType == .city {
             if indexPath.section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeCityFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
@@ -280,7 +287,7 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }
-        } else if self.tabType == .seoul {
+        } else if tabType == .seoul {
             if indexPath.section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSeoulFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
@@ -290,13 +297,13 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }
-        } else if self.tabType == .suwon {
+        } else if tabType == .suwon {
             if indexPath.section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeSuwonFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
                 cell.setupUI(item: items[indexPath.row])
             }
-        } else if self.tabType == .other {
+        } else if tabType == .other {
             if indexPath.section == 0 {
                 guard let items = try? BusRealtimeData.shared.busRealtimeKTXFromCampus.value() else { return BusRealtimeEmptyCellView() }
                 if items.isEmpty { return BusRealtimeEmptyCellView() }
@@ -309,12 +316,12 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 50
+        50
     }
-    
+
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 50
+        50
     }
 }

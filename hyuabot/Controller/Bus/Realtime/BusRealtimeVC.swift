@@ -1,7 +1,7 @@
-import UIKit
+import Api
 import CoreLocation
 import RxSwift
-import Api
+import UIKit
 
 class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private let disposeBag = DisposeBag()
@@ -41,11 +41,15 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = .hanyangGreen
         config.cornerStyle = .medium
-        config.image = UIImage(systemName: "questionmark.circle")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
+        config.image = UIImage(systemName: "questionmark.circle")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 20,
+            weight: .regular
+        ))
         config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
         $0.configuration = config
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
     }
+
     private lazy var noticeView = NoticeCarouselView().then {
         $0.isHidden = true
         $0.backgroundColor = .systemBackground
@@ -60,8 +64,13 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             self?.present(vc, animated: true, completion: nil)
         }
     }
+
     private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0), optionView: nil, noticeView: self.noticeView)
+        let viewPager = ViewPager(
+            sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0),
+            optionView: nil,
+            noticeView: self.noticeView
+        )
         // Add the content pages to the view pager
         viewPager.contentView.pages = [
             cityBusTabVC.view,
@@ -78,10 +87,11 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         ]
         return viewPager
     }()
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.busRealtime)
-        self.showCoachMarksIfNeeded()
+        logScreenView(.busRealtime)
+        showCoachMarksIfNeeded()
     }
 
     private func showCoachMarksIfNeeded() {
@@ -110,7 +120,7 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
                 targetView: viewPager.tabView,
                 title: String(localized: "coach.bus.tabs.title"),
                 message: String(localized: "coach.bus.tabs.message")
-            ),
+            )
         ]
         if !noticeView.isHidden {
             items.append(CoachMarkItem(
@@ -149,42 +159,52 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.startPolling()
-        self.noticeView.resumeAutoScroll()
-        self.selectNearestBusStop()
-        self.navigationController?.setNavigationBarHidden(true, animated: false)
+        startPolling()
+        noticeView.resumeAutoScroll()
+        selectNearestBusStop()
+        navigationController?.setNavigationBarHidden(true, animated: false)
         // Detect if the app is in the background
-        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
-        self.stopPolling()
-        self.noticeView.stopAutoScroll()
+        stopPolling()
+        noticeView.stopAutoScroll()
     }
-    
+
     private func setupUI() {
-        self.view.addSubview(viewPager)
-        self.view.addSubview(helpButton)
-        self.viewPager.snp.makeConstraints { make in
+        view.addSubview(viewPager)
+        view.addSubview(helpButton)
+        viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
-        self.helpButton.snp.makeConstraints { make in
+        helpButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
         }
     }
-    
+
     private func selectNearestBusStop() {
         guard !didSelectBusStop else { return }
         locationManager.delegate = self
@@ -206,9 +226,9 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last, !didSelectBusStop else { return }
         let stops: [(id: Int, lat: Double, lng: Double)] = [
-            (216000379, 37.2935, 126.8368),
-            (216000381, 37.2953, 126.8382),
-            (216000383, 37.2966, 126.8394)
+            (216_000_379, 37.2935, 126.8368),
+            (216_000_381, 37.2953, 126.8382),
+            (216_000_383, 37.2966, 126.8394)
         ]
         let nearest = stops.min {
             let d1 = pow(location.coordinate.latitude - $0.lat, 2) + pow(location.coordinate.longitude - $0.lng, 2)
@@ -228,53 +248,59 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
 
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
-            guard let self = self else { return }
+            guard let self else { return }
             let isLoading = (try? BusRealtimeData.shared.isLoading.value()) ?? false
-            if isLoading && result.isEmpty {
+            if isLoading, result.isEmpty {
                 return
             }
-            let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216000379 : UserDefaults.standard.integer(forKey: "busStopID"))
+            let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
+                .integer(forKey: "busStopID"))
             // City bus (10-1) — always update regardless of Seoul bus availability
-            let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216000068 })
+            let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216_000_068 })
             BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(
                 cityFromCampus.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
             )
-            let cityFromStation = result.first(where: { $0.stop.seq == 216000138 && $0.route.seq == 216000068 })
+            let cityFromStation = result.first(where: { $0.stop.seq == 216_000_138 && $0.route.seq == 216_000_068 })
             BusRealtimeData.shared.busRealtimeCityFromStation.onNext(
                 cityFromStation.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
             )
             // Seoul bus (3102) — may not serve all stops, set empty if not available
-            let seoulFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216000061 })
+            let seoulFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216_000_061 })
             BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(
                 seoulFromCampus.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
             )
             // Other fixed-stop buses
-            let gunpoFromCampus = result.filter { $0.stop.seq == 216000719 && ($0.route.seq == 216000096 || $0.route.seq == 216000026 || $0.route.seq == 216000043) }
+            let gunpoFromCampus = result
+                .filter {
+                    $0.stop
+                        .seq == 216_000_719 && ($0.route.seq == 216_000_096 || $0.route.seq == 216_000_026 || $0.route.seq == 216_000_043)
+                }
             BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(
                 gunpoFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted()
             )
-            let suwonFromCampus = result.filter { $0.stop.seq == 216000070 && ($0.route.seq == 216000104 || $0.route.seq == 200000015) }
+            let suwonFromCampus = result
+                .filter { $0.stop.seq == 216_000_070 && ($0.route.seq == 216_000_104 || $0.route.seq == 200_000_015) }
             BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(
                 suwonFromCampus.flatMap { route in route.arrival.map { BusArrivalItem(route: route.route.name, item: $0) } }.sorted()
             )
-            let ktxFromCampus = result.first(where: { $0.stop.seq == 216000759 && $0.route.seq == 216000075 })
+            let ktxFromCampus = result.first(where: { $0.stop.seq == 216_000_759 && $0.route.seq == 216_000_075 })
             BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(
                 ktxFromCampus.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
             )
-            let ktxFromStation = result.first(where: { $0.stop.seq == 213000487 && $0.route.seq == 216000075 })
+            let ktxFromStation = result.first(where: { $0.stop.seq == 213_000_487 && $0.route.seq == 216_000_075 })
             BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(
                 ktxFromStation.map { item in item.arrival.map { BusArrivalItem(route: item.route.name, item: $0) }.sorted() } ?? []
             )
             // Reload the table view
-            self.cityBusTabVC.reload()
-            self.seoulBusTabVC.reload()
-            self.suwonBusTabVC.reload()
-            self.otherBusTabVC.reload()
+            cityBusTabVC.reload()
+            seoulBusTabVC.reload()
+            suwonBusTabVC.reload()
+            otherBusTabVC.reload()
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.onNext(false)
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
         BusRealtimeData.shared.notices.subscribe(onNext: { notices in
-            if !self.hasLoadedInitialNotices && notices.isEmpty {
+            if !self.hasLoadedInitialNotices, notices.isEmpty {
                 self.noticeView.isHidden = false
                 self.noticeView.setLoading(true)
             } else if notices.isEmpty {
@@ -284,29 +310,32 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
                 self.noticeView.isHidden = false
                 self.noticeView.setupUI(with: notices.map { Notice(title: $0.title, url: $0.url) })
             }
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
     }
-    
+
     private func fetchBusRealtimeData() {
         var currentLanguage: String {
             Locale.current.language.languageCode?.identifier ?? "ko"
         }
         var noticeLanguage: String {
             if currentLanguage.starts(with: "ko") {
-                return "KOREAN"
+                "KOREAN"
             } else if currentLanguage.starts(with: "en") {
-                return "ENGLISH"
+                "ENGLISH"
             } else {
-                return "KOREAN"
+                "KOREAN"
             }
         }
         Task {
-            let response = try? await Network.shared.client.fetch(query: BusRealtimePageQuery(language: noticeLanguage), cachePolicy: .networkOnly)
+            let response = try? await Network.shared.client.fetch(
+                query: BusRealtimePageQuery(language: noticeLanguage),
+                cachePolicy: .networkOnly
+            )
             await MainActor.run {
                 if let data = response?.data {
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
-                    BusRealtimeData.shared.notices.onNext(data.notices.flatMap { $0.notices })
+                    BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))
                     if data.bus.isEmpty {
                         BusRealtimeData.shared.isLoading.onNext(false)
                     }
@@ -316,44 +345,50 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             }
         }
     }
-    
+
     private func startPolling() {
-        self.fetchBusRealtimeData()
+        fetchBusRealtimeData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 self?.fetchBusRealtimeData()
             })
     }
-    
+
     private func stopPolling() {
         subscription?.dispose()
     }
-    
+
     private func moveToEntireTimetable(_ stopID: Int32, _ routes: [Int32], _ title: String.LocalizationValue) {
-        guard let nc = self.navigationController as? BusNC else { return }
+        guard let nc = navigationController as? BusNC else { return }
         nc.moveToTimetableVC(stopID: stopID, routes: routes, title: title)
     }
-    
+
     private func openDepartureLogSheet(_ stopID: Int32, _ routes: [Int32]) {
         let vc = BusLogVC(stopID: stopID, routes: routes)
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
-    
+
     private func openBusStopVC(_ stopID: Int32, _ routes: [Int32]) {
-        let vc = BusStopInfoVC(input: routes.map { BusRouteStopInput(route: $0, stop: stopID)})
+        let vc = BusStopInfoVC(input: routes.map { BusRouteStopInput(route: $0, stop: stopID) })
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
-    
-    @objc func appDidEnterBackground() { self.stopPolling() }
-    @objc func appWillEnterForeground() { self.startPolling() }
+
+    @objc func appDidEnterBackground() {
+        stopPolling()
+    }
+
+    @objc func appWillEnterForeground() {
+        startPolling()
+    }
+
     @objc func openHelpVC() {
         AnalyticsManager.logSelect(.busOpenHelp)
         let vc = BusHelpVC()
@@ -361,6 +396,6 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
 }

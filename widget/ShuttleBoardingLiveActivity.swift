@@ -39,7 +39,9 @@ struct ShuttleBoardingLiveActivity: Widget {
                             .font(.caption2)
                             .foregroundStyle(Color.white.opacity(0.78))
                             .lineLimit(1)
-                        Text(context.attributes.alarmKind == "alighting" ? (context.attributes.targetStopName ?? context.attributes.boardingStopName) : context.attributes.boardingStopName)
+                        Text(context.attributes
+                            .alarmKind == "alighting" ? (context.attributes.targetStopName ?? context.attributes.boardingStopName) : context
+                            .attributes.boardingStopName)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.white)
                             .lineLimit(1)
@@ -137,7 +139,7 @@ private func liveCheckpointStatus(attributes: ShuttleBoardingActivityAttributes,
         return String(format: attributes.checkpointWaitingFormat, names[0])
     }
 
-    for index in 1..<times.count where now < times[index] && times[index].timeIntervalSince(now) <= 60 {
+    for index in 1 ..< times.count where now < times[index] && times[index].timeIntervalSince(now) <= 60 {
         return String(format: attributes.checkpointApproachingFormat, names[index])
     }
 
@@ -152,13 +154,14 @@ private func liveProgress(attributes: ShuttleBoardingActivityAttributes, fallbac
     let times = attributes.checkpointTimes
     guard times.count >= 2,
           let start = times.first,
-          let end = times.last else {
+          let end = times.last
+    else {
         return fallback
     }
     let totalDuration = end.timeIntervalSince(start)
     guard totalDuration > 0 else { return fallback }
-    let elapsed = now.timeIntervalSince(start).clamped(to: 0...totalDuration)
-    return Int((elapsed * 100) / totalDuration).clamped(to: 0...100)
+    let elapsed = now.timeIntervalSince(start).clamped(to: 0 ... totalDuration)
+    return Int((elapsed * 100) / totalDuration).clamped(to: 0 ... 100)
 }
 
 private struct ShuttleBoardingCountdownText: View {
@@ -166,7 +169,7 @@ private struct ShuttleBoardingCountdownText: View {
 
     var body: some View {
         if departureTime > Date.now {
-            Text(timerInterval: Date.now...departureTime, countsDown: true)
+            Text(timerInterval: Date.now ... departureTime, countsDown: true)
         } else {
             Text(verbatim: "0:00")
         }

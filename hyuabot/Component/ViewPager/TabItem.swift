@@ -11,40 +11,42 @@ class TabItem: UIView, TabItemProtocol {
         $0.minimumScaleFactor = 0.6
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let indicatorView = UIView().then {
         $0.backgroundColor = .white
     }
-    
+
     init(title: String) {
         self.title = title
         super.init(frame: .zero)
-        self.setupUI()
+        setupUI()
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func onSelected() {
-        self.titleLabel.font = .godo(size: 18, weight: .bold)
-        if self.indicatorView.superview == nil {
-            self.addSubview(self.indicatorView)
-            self.indicatorView.snp.makeConstraints {
+        titleLabel.font = .godo(size: 18, weight: .bold)
+        if indicatorView.superview == nil {
+            addSubview(indicatorView)
+            indicatorView.snp.makeConstraints {
                 $0.leading.trailing.bottom.equalToSuperview()
                 $0.height.equalTo(3)
             }
         }
     }
-    
+
     func onDeselected() {
-        self.titleLabel.font = .godo(size: 18, weight: .medium)
-        self.layer.shadowOpacity = 0
-        self.indicatorView.removeFromSuperview()
+        titleLabel.font = .godo(size: 18, weight: .medium)
+        layer.shadowOpacity = 0
+        indicatorView.removeFromSuperview()
     }
-    
+
     func setupUI() {
-        self.addSubview(self.titleLabel)
-        self.titleLabel.snp.makeConstraints {
+        addSubview(titleLabel)
+        titleLabel.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
     }

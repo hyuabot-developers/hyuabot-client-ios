@@ -1,5 +1,5 @@
-import RxSwift
 import Api
+import RxSwift
 
 class SubwayTimetableData {
     static let shared = SubwayTimetableData()
@@ -7,5 +7,4 @@ class SubwayTimetableData {
     let timetable = BehaviorSubject<[SubwayTimetablePageQuery.Data.Subway.Timetable]>(value: [])
     let timetableWeekdays = BehaviorSubject<[SubwayTimetablePageQuery.Data.Subway.Timetable]>(value: [])
     let timetableWeekends = BehaviorSubject<[SubwayTimetablePageQuery.Data.Subway.Timetable]>(value: [])
-    
 }

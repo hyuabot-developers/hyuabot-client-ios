@@ -1,7 +1,7 @@
-import UIKit
-import RxSwift
-import RealmSwift
 import Api
+import RealmSwift
+import RxSwift
+import UIKit
 
 class ContactVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -19,6 +19,7 @@ class ContactVC: UIViewController {
         $0.searchResultsUpdater = self
         $0.hidesNavigationBarDuringPresentation = false
     }
+
     private lazy var searchResultView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -26,15 +27,18 @@ class ContactVC: UIViewController {
         $0.register(ContactSearchEmptyCellView.self, forCellReuseIdentifier: ContactSearchEmptyCellView.reuseIdentifier)
         $0.register(ContactSearchResultCellView.self, forCellReuseIdentifier: ContactSearchResultCellView.reuseIdentifier)
     }
+
     private let loadingSpinner = UIActivityIndicatorView().then {
         $0.style = .large
         $0.color = .label
     }
+
     private let loadingLabel = UILabel().then {
         $0.text = String(localized: "contact.database.loading")
         $0.font = .godo(size: 16, weight: .regular)
         $0.textColor = .label
     }
+
     private lazy var loadingStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel])
         stackView.axis = .vertical
@@ -43,6 +47,7 @@ class ContactVC: UIViewController {
         stackView.backgroundColor = .systemBackground
         return stackView
     }()
+
     private lazy var loadingView = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.addSubview(loadingStackView)
@@ -50,15 +55,15 @@ class ContactVC: UIViewController {
             make.center.equalToSuperview()
         }
     }
-    
+
     deinit {
         notificationToken?.invalidate()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.contact)
-        self.showCoachMarksIfNeeded()
+        logScreenView(.contact)
+        showCoachMarksIfNeeded()
     }
 
     private func showCoachMarksIfNeeded() {
@@ -70,7 +75,7 @@ class ContactVC: UIViewController {
                     targetView: searchController.searchBar,
                     title: String(localized: "coach.contact.search.title"),
                     message: String(localized: "coach.contact.search.message")
-                ),
+                )
             ],
             shouldMarkAsShown: false,
             onComplete: { [weak self] in self?.showContactItemCoachMarkWhenReady() }
@@ -107,7 +112,7 @@ class ContactVC: UIViewController {
                     },
                     title: String(localized: "coach.contact.item.title"),
                     message: String(localized: "coach.contact.item.message")
-                ),
+                )
             ],
             shouldMarkAsShown: false,
             onComplete: { CoachMarkManager.shared.markPageShown("contact") }
@@ -116,38 +121,38 @@ class ContactVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.updateContactVerion()
-        self.observeSubjects()
+        setupUI()
+        updateContactVerion()
+        observeSubjects()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: false)
     }
-    
+
     private func setupUI() {
-        self.view.addSubview(self.searchResultView)
-        self.view.addSubview(loadingView)
-        self.navigationItem.do {
+        view.addSubview(searchResultView)
+        view.addSubview(loadingView)
+        navigationItem.do {
             $0.title = String(localized: "tabbar.contact")
             $0.searchController = self.searchController
             $0.hidesSearchBarWhenScrolling = false
         }
-        self.searchResultView.snp.makeConstraints { make in
+        searchResultView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        self.loadingView.snp.makeConstraints { make in
+        loadingView.snp.makeConstraints { make in
             make.edges.equalTo(searchResultView)
         }
     }
-    
+
     private func observeSubjects() {
         notificationToken = Database.shared.database.objects(Contact.self).observe { [weak self] changes in
             switch changes {
-            case .initial(let results):
+            case let .initial(results):
                 self?.contactSubject.onNext(results.map { $0 })
-            case .update(_, let deletions, let insertions, let modifications):
+            case let .update(_, deletions, insertions, modifications):
                 if deletions.count > 0 || insertions.count > 0 || modifications.count > 0 {
                     self?.contactSubject.onNext(Database.shared.database.objects(Contact.self).map { $0 })
                 }
@@ -155,23 +160,23 @@ class ContactVC: UIViewController {
                 break
             }
         }
-        self.contactSubject.subscribe(onNext: { [weak self] allContacts in
+        contactSubject.subscribe(onNext: { [weak self] allContacts in
             let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
             self?.searchResultSubject.onNext(allContacts.filter { $0.campusID == campusID }.sorted { $0.phoneNumber < $1.phoneNumber })
         }).disposed(by: disposeBag)
-        self.searchResultSubject.subscribe(onNext: { [weak self] contacts in
+        searchResultSubject.subscribe(onNext: { [weak self] _ in
             self?.searchResultView.reloadData()
         }).disposed(by: disposeBag)
-        self.searchKeywordSubject.subscribe(onNext: { [weak self] searchKeyword in
+        searchKeywordSubject.subscribe(onNext: { [weak self] searchKeyword in
             guard let allContacts = try? self?.contactSubject.value() else { return }
             let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
             self?.searchResultSubject.onNext(allContacts.filter {
                 ($0.name.contains(searchKeyword) || $0.phoneNumber.contains(searchKeyword) || searchKeyword.isEmpty) &&
-                $0.campusID == campusID
+                    $0.campusID == campusID
             }.sorted { $0.phoneNumber < $1.phoneNumber })
         }).disposed(by: disposeBag)
-        self.isLoading.subscribe(onNext: { isLoading in
-            if (isLoading) {
+        isLoading.subscribe(onNext: { isLoading in
+            if isLoading {
                 self.loadingView.isHidden = false
                 self.loadingSpinner.startAnimating()
             } else {
@@ -180,10 +185,10 @@ class ContactVC: UIViewController {
             }
         }).disposed(by: disposeBag)
     }
-    
+
     private func updateContactVerion() {
-        self.loadingLabel.text = String(localized: "contact.version.loading")
-        self.isLoading.onNext(true)
+        loadingLabel.text = String(localized: "contact.version.loading")
+        isLoading.onNext(true)
         Task {
             let response = try? await Network.shared.client.fetch(query: ContactPageVersionQuery())
             if let data = response?.data {
@@ -193,11 +198,11 @@ class ContactVC: UIViewController {
                 }
             }
         }
-        self.isLoading.onNext(false)
+        isLoading.onNext(false)
     }
-    
+
     private func updateContact() {
-        self.loadingLabel.text = String(localized: "contact.database.loading")
+        loadingLabel.text = String(localized: "contact.database.loading")
         Task {
             let response = try? await Network.shared.client.fetch(query: ContactPageQuery())
             if let data = response?.data {
@@ -208,7 +213,7 @@ class ContactVC: UIViewController {
     }
 
     private func contact(at indexPath: IndexPath) -> Contact? {
-        guard let items = try? self.searchResultSubject.value() else { return nil }
+        guard let items = try? searchResultSubject.value() else { return nil }
         guard items.indices.contains(indexPath.row) else { return nil }
         return items[indexPath.row]
     }
@@ -244,7 +249,7 @@ class ContactVC: UIViewController {
 extension ContactVC: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchKeyword = searchController.searchBar.text else { return }
-        self.searchKeywordSubject.onNext(searchKeyword)
+        searchKeywordSubject.onNext(searchKeyword)
     }
 }
 
@@ -252,22 +257,25 @@ extension ContactVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         1
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let items = try? self.searchResultSubject.value() else { return 1 }
+        guard let items = try? searchResultSubject.value() else { return 1 }
         return items.isEmpty ? 1 : items.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let items = try? self.searchResultSubject.value() else { return UITableViewCell() }
+        guard let items = try? searchResultSubject.value() else { return UITableViewCell() }
         if items.isEmpty {
             return tableView.dequeueReusableCell(withIdentifier: ContactSearchEmptyCellView.reuseIdentifier, for: indexPath)
         }
-        let cell = tableView.dequeueReusableCell(withIdentifier: ContactSearchResultCellView.reuseIdentifier, for: indexPath) as! ContactSearchResultCellView
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: ContactSearchResultCellView.reuseIdentifier,
+            for: indexPath
+        ) as! ContactSearchResultCellView
         cell.setupUI(item: items[indexPath.row])
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let contact = contact(at: indexPath) else { return }
         AnalyticsManager.logSelect(.contactSelectRow, type: .listItem, name: contact.name)
@@ -275,7 +283,11 @@ extension ContactVC: UITableViewDelegate, UITableViewDataSource {
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
         guard let contact = contact(at: indexPath) else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, weak tableView] _ in
             let callAction = UIAction(

@@ -1,8 +1,8 @@
-import UIKit
-import UserNotifications
 import CoreLocation
 import SnapKit
 import Then
+import UIKit
+import UserNotifications
 
 class ShuttleAlarmVC: UIViewController {
     private let context: ShuttleAlarmContext
@@ -19,6 +19,7 @@ class ShuttleAlarmVC: UIViewController {
         $0.textAlignment = .center
         $0.text = String(localized: "shuttle.alarm.title")
     }
+
     private let stackView = UIStackView().then {
         $0.axis = .vertical
         $0.spacing = 12
@@ -26,6 +27,7 @@ class ShuttleAlarmVC: UIViewController {
         $0.isLayoutMarginsRelativeArrangement = true
         $0.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 16, leading: 18, bottom: 18, trailing: 18)
     }
+
     private lazy var boardingCard = makeCard()
     private lazy var boardingTitleLabel = makeTitleLabel(text: String(localized: "shuttle.alarm.boarding"))
     private let boardingDescriptionLabel = UILabel().then {
@@ -33,6 +35,7 @@ class ShuttleAlarmVC: UIViewController {
         $0.textColor = .secondaryLabel
         $0.numberOfLines = 0
     }
+
     private lazy var boardingButton = makeActionButton()
     private lazy var alightingCard = makeCard()
     private lazy var alightingTitleLabel = makeTitleLabel(text: String(localized: "shuttle.alarm.alighting"))
@@ -46,6 +49,7 @@ class ShuttleAlarmVC: UIViewController {
         $0.configuration = configuration
         $0.contentHorizontalAlignment = .center
     }
+
     private lazy var alightingButton = makeActionButton()
     private let shareButton = UIButton(type: .system).then {
         var configuration = UIButton.Configuration.plain()
@@ -66,6 +70,7 @@ class ShuttleAlarmVC: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -129,9 +134,9 @@ class ShuttleAlarmVC: UIViewController {
     private func reloadAlarmState() {
         ShuttleAlarmNotificationService.shared.activeStates(for: context.key) { [weak self] boarding, alighting in
             guard let self else { return }
-            self.isBoardingAlarmActive = boarding
-            self.isAlightingAlarmActive = alighting
-            self.updateButtons()
+            isBoardingAlarmActive = boarding
+            isAlightingAlarmActive = alighting
+            updateButtons()
         }
     }
 
@@ -168,11 +173,11 @@ class ShuttleAlarmVC: UIViewController {
         requestNotificationAndLocationAuthorization { [weak self] granted in
             guard let self else { return }
             if granted {
-                ShuttleAlarmNotificationService.shared.scheduleBoardingAlarm(context: self.context)
+                ShuttleAlarmNotificationService.shared.scheduleBoardingAlarm(context: context)
                 NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
-                self.dismiss(animated: true)
+                dismiss(animated: true)
             } else {
-                self.presentPermissionAlert()
+                presentPermissionAlert()
             }
         }
     }
@@ -188,10 +193,10 @@ class ShuttleAlarmVC: UIViewController {
         requestNotificationAndLocationAuthorization { [weak self] granted in
             guard let self else { return }
             if granted {
-                ShuttleAlarmNotificationService.shared.scheduleAlightingAlarm(context: self.context, destination: destination)
-                self.dismiss(animated: true)
+                ShuttleAlarmNotificationService.shared.scheduleAlightingAlarm(context: context, destination: destination)
+                dismiss(animated: true)
             } else {
-                self.presentPermissionAlert()
+                presentPermissionAlert()
             }
         }
     }
@@ -230,7 +235,7 @@ class ShuttleAlarmVC: UIViewController {
                 completion(false)
                 return
             }
-            self.locationPermissionRequester.requestIfNeeded {
+            locationPermissionRequester.requestIfNeeded {
                 completion(true)
             }
         }
@@ -361,6 +366,7 @@ private final class ShuttleDestinationSelectionVC: UIViewController {
         $0.textColor = .label
         $0.text = String(localized: "shuttle.alarm.alighting")
     }
+
     private let tableView = UITableView(frame: .zero, style: .plain).then {
         $0.backgroundColor = .clear
         $0.separatorInset = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18)
@@ -379,6 +385,7 @@ private final class ShuttleDestinationSelectionVC: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -440,11 +447,13 @@ private final class ShuttleDestinationSelectionCell: UITableViewCell {
         $0.textColor = .label
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let timeLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .secondaryLabel
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let checkImageView = UIImageView().then {
         $0.image = UIImage(systemName: "checkmark")
         $0.tintColor = .hanyangBlue
@@ -476,6 +485,7 @@ private final class ShuttleDestinationSelectionCell: UITableViewCell {
         }
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -567,7 +577,11 @@ final class ShuttleAlarmNotificationService {
     func scheduleBoardingAlarm(context: ShuttleAlarmContext) {
         let content = UNMutableNotificationContent()
         content.title = String(format: String(localized: "shuttle.alarm.boarding.notification.title"), context.boardingStop.name)
-        content.body = String(format: String(localized: "shuttle.alarm.boarding.notification.body"), context.minutesUntilDeparture, context.boardingStop.name)
+        content.body = String(
+            format: String(localized: "shuttle.alarm.boarding.notification.body"),
+            context.minutesUntilDeparture,
+            context.boardingStop.name
+        )
         content.sound = .default
         content.userInfo = [
             "url": "hyuabot://shuttle",
@@ -680,11 +694,11 @@ final class ShuttleAlarmNotificationService {
     }
 
     private func formatDistance(_ distance: Int) -> String {
-        if distance >= 1_000 {
-            if distance % 1_000 == 0 {
-                return "\(distance / 1_000)km"
+        if distance >= 1000 {
+            if distance % 1000 == 0 {
+                return "\(distance / 1000)km"
             }
-            return String(format: "%.1fkm", locale: Locale(identifier: "en_US_POSIX"), Double(distance) / 1_000)
+            return String(format: "%.1fkm", locale: Locale(identifier: "en_US_POSIX"), Double(distance) / 1000)
         }
         return "\(distance)m"
     }
