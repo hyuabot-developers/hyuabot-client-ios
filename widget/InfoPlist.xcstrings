@@ -10,10 +10,22 @@
             "value" : "HYUabot Widgets"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot ウィジェット"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "HYUabot 위젯"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot 小组件"
           }
         }
       }
@@ -39,10 +51,22 @@
             "value" : "Used to automatically find the nearest shuttle bus stop."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最寄りのシャトルバス停留所を自動的に探すために使用します。"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "셔틀버스 위젯에서 가장 가까운 정류장을 자동으로 찾기 위해 위치 정보가 필요합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用于自动查找最近的校车站点。"
           }
         }
       }

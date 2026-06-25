@@ -23,14 +23,21 @@ final class CoachMarkManager {
         "subway.realtime"
     ]
 
-    // Call before appHasLaunched is written to UserDefaults
+    /// Call before appHasLaunched is written to UserDefaults
     func initialize() {
+        if ProcessInfo.processInfo.arguments.contains("-UITestsDisableCoachMarks") {
+            UserDefaults.standard.set(Self.currentVersion, forKey: skipVersionKey)
+            UserDefaults.standard.set(true, forKey: initializedKey)
+            UserDefaults.standard.set(true, forKey: appLaunchedKey)
+            UserDefaults.standard.synchronize()
+            return
+        }
         if UserDefaults.standard.bool(forKey: initializedKey) {
             if !UserDefaults.standard.bool(forKey: appLaunchedKey) {
                 UserDefaults.standard.set(0, forKey: skipVersionKey)
                 UserDefaults.standard.set(true, forKey: appLaunchedKey)
-                pageIds.forEach {
-                    UserDefaults.standard.removeObject(forKey: pageKey($0, Self.currentVersion))
+                for pageId in pageIds {
+                    UserDefaults.standard.removeObject(forKey: pageKey(pageId, Self.currentVersion))
                 }
             }
             UserDefaults.standard.synchronize()
@@ -65,8 +72,8 @@ final class CoachMarkManager {
         UserDefaults.standard.set(0, forKey: skipVersionKey)
         UserDefaults.standard.set(true, forKey: initializedKey)
         UserDefaults.standard.set(true, forKey: appLaunchedKey)
-        pageIds.forEach {
-            UserDefaults.standard.removeObject(forKey: pageKey($0, Self.currentVersion))
+        for pageId in pageIds {
+            UserDefaults.standard.removeObject(forKey: pageKey(pageId, Self.currentVersion))
         }
         UserDefaults.standard.synchronize()
         NotificationCenter.default.post(name: .coachMarkReset, object: nil)
