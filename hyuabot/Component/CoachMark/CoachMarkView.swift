@@ -1,5 +1,5 @@
-import UIKit
 import SnapKit
+import UIKit
 
 // MARK: - CoachMarkTooltipView
 
@@ -13,26 +13,31 @@ private class CoachMarkTooltipView: UIView {
         $0.textColor = .label
         $0.numberOfLines = 1
     }
+
     private let messageLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .secondaryLabel
         $0.numberOfLines = 0
     }
+
     private lazy var skipButton = UIButton(type: .system).then {
         $0.titleLabel?.font = .godo(size: 13, weight: .regular)
         $0.setTitleColor(.tertiaryLabel, for: .normal)
         $0.setTitle(String(localized: "coach.skip"), for: .normal)
         $0.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
     }
+
     private lazy var prevButton = UIButton(type: .system).then {
         $0.titleLabel?.font = .godo(size: 14, weight: .bold)
         $0.setTitle(String(localized: "coach.prev"), for: .normal)
         $0.addTarget(self, action: #selector(prevTapped), for: .touchUpInside)
     }
+
     private lazy var nextButton = UIButton(type: .system).then {
         $0.titleLabel?.font = .godo(size: 14, weight: .bold)
         $0.addTarget(self, action: #selector(nextTapped), for: .touchUpInside)
     }
+
     private let counterLabel = UILabel().then {
         $0.font = .godo(size: 12, weight: .regular)
         $0.textColor = .tertiaryLabel
@@ -81,7 +86,10 @@ private class CoachMarkTooltipView: UIView {
         }
     }
 
-    required init?(coder: NSCoder) { fatalError() }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
 
     func configure(title: String, message: String, buttonTitle: String, current: Int, total: Int) {
         titleLabel.text = title
@@ -92,9 +100,17 @@ private class CoachMarkTooltipView: UIView {
         skipButton.isHidden = total <= 1 || current == total
     }
 
-    @objc private func nextTapped() { onNext?() }
-    @objc private func prevTapped() { onPrev?() }
-    @objc private func skipTapped() { onSkip?() }
+    @objc private func nextTapped() {
+        onNext?()
+    }
+
+    @objc private func prevTapped() {
+        onPrev?()
+    }
+
+    @objc private func skipTapped() {
+        onSkip?()
+    }
 }
 
 // MARK: - CoachMarkView
@@ -129,7 +145,10 @@ class CoachMarkView: UIView {
         addGestureRecognizer(tap)
     }
 
-    required init?(coder: NSCoder) { fatalError() }
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
 
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -196,13 +215,12 @@ class CoachMarkView: UIView {
         let topEdge = safeAreaInsets.top + 16
         let bottomEdge = bounds.height - safeAreaInsets.bottom - 16
 
-        let tooltipY: CGFloat
-        if belowY + tooltipH < bottomEdge {
-            tooltipY = belowY
+        let tooltipY: CGFloat = if belowY + tooltipH < bottomEdge {
+            belowY
         } else if aboveY >= topEdge {
-            tooltipY = aboveY
+            aboveY
         } else {
-            tooltipY = max(topEdge, bounds.midY - tooltipH / 2)
+            max(topEdge, bounds.midY - tooltipH / 2)
         }
         let tooltipX = max(20, min(bounds.width - maxWidth - 20, holeRect.midX - maxWidth / 2))
 

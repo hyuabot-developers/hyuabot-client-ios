@@ -1,9 +1,33 @@
 import UIKit
 
 class SettingVC: UIViewController {
-    private let imageNames = ["graduationcap.fill", "moonphase.waning.crescent", "globe", "chart.bar.fill", "questionmark.circle", "person.circle", "info.circle.fill"]
-    private let titles: [String.LocalizationValue] = ["setting.campus", "setting.theme", "setting.language", "setting.analytics", "setting.coachmark.reset", "setting.developer", "setting.version"]
-    private let analyticsNames = ["setting.campus", "setting.theme", "setting.language", "setting.analytics", "setting.coachmark.reset", "setting.developer", "setting.version"]
+    private let imageNames = [
+        "graduationcap.fill",
+        "moonphase.waning.crescent",
+        "globe",
+        "chart.bar.fill",
+        "questionmark.circle",
+        "person.circle",
+        "info.circle.fill"
+    ]
+    private let titles: [String.LocalizationValue] = [
+        "setting.campus",
+        "setting.theme",
+        "setting.language",
+        "setting.analytics",
+        "setting.coachmark.reset",
+        "setting.developer",
+        "setting.version"
+    ]
+    private let analyticsNames = [
+        "setting.campus",
+        "setting.theme",
+        "setting.language",
+        "setting.analytics",
+        "setting.coachmark.reset",
+        "setting.developer",
+        "setting.version"
+    ]
     private lazy var settingView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -13,8 +37,8 @@ class SettingVC: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.setting)
-        self.showCoachMarksIfNeeded()
+        logScreenView(.setting)
+        showCoachMarksIfNeeded()
     }
 
     private func showCoachMarksIfNeeded() {
@@ -22,7 +46,7 @@ class SettingVC: UIViewController {
         let rows: [(Int, String, String, String)] = [
             (0, "setting.campus", "coach.setting.campus.title", "coach.setting.campus.message"),
             (1, "setting.theme", "coach.setting.theme.title", "coach.setting.theme.message"),
-            (2, "setting.language", "coach.setting.language.title", "coach.setting.language.message"),
+            (2, "setting.language", "coach.setting.language.title", "coach.setting.language.message")
         ]
         let items: [CoachMarkItem] = rows.compactMap { row, _, titleKey, msgKey in
             guard let cell = settingView.cellForRow(at: IndexPath(row: row, section: 0)) else { return nil }
@@ -38,23 +62,23 @@ class SettingVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
+        setupUI()
     }
-    
+
     private func setupUI() {
         // Set default Value
         if UserDefaults.standard.integer(forKey: "campusID") == 0 {
             UserDefaults.standard.set(2, forKey: "campusID")
             UserDefaults(suiteName: "group.net.jaram.hyuabot")?.set(2, forKey: "campusID")
         }
-            
-        self.navigationItem.title = String(localized: "tabbar.setting")
-        self.view.addSubview(self.settingView)
-        self.settingView.snp.makeConstraints { make in
+
+        navigationItem.title = String(localized: "tabbar.setting")
+        view.addSubview(settingView)
+        settingView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
-    
+
     private func openAppSetting() {
         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
     }
@@ -76,31 +100,32 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         1
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         titles.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: SettingCellView.reuseIdentifier) as? SettingCellView else { return UITableViewCell() }
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: SettingCellView.reuseIdentifier) as? SettingCellView
+        else { return UITableViewCell() }
         cell.setupUI(
-            imageName: self.imageNames[indexPath.row],
-            title: self.titles[indexPath.row],
+            imageName: imageNames[indexPath.row],
+            title: titles[indexPath.row],
             onAnalyticsConsentChanged: { [weak self] isEnabled in
                 self?.setAnalyticsConsent(isEnabled)
             }
         )
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row < analyticsNames.count {
             AnalyticsManager.logSelect(.settingSelectRow, type: .listItem, name: analyticsNames[indexPath.row])
         }
-        if self.titles[indexPath.row] == "setting.language" {
-            self.openAppSetting()
-        } else if self.titles[indexPath.row] == "setting.coachmark.reset" {
-            self.resetCoachMarks()
+        if titles[indexPath.row] == "setting.language" {
+            openAppSetting()
+        } else if titles[indexPath.row] == "setting.coachmark.reset" {
+            resetCoachMarks()
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }

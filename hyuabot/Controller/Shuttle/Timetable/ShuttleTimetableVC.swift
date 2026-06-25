@@ -1,6 +1,6 @@
-import UIKit
-import RxSwift
 import Api
+import RxSwift
+import UIKit
 
 class ShuttleTimetableVC: UIViewController {
     private let stopID: String.LocalizationValue
@@ -17,30 +17,36 @@ class ShuttleTimetableVC: UIViewController {
         viewPager.contentView.pages = [weekdaysVC.view, weekendsVC.view]
         return viewPager
     }()
+
     private lazy var filterButton = UIButton().then {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = .hanyangGreen
         config.cornerStyle = .medium
-        config.image = UIImage(systemName: "line.3.horizontal.decrease")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
+        config.image = UIImage(systemName: "line.3.horizontal.decrease")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 20,
+            weight: .regular
+        ))
         config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
         $0.configuration = config
         $0.addTarget(self, action: #selector(openFilterVC), for: .touchUpInside)
     }
+
     init(stopID: String.LocalizationValue, destination: String.LocalizationValue) {
         self.stopID = stopID
         self.destination = destination
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: false)
         ShuttleTimetableData.shared.options.onNext(ShuttleTimetableOptions(
-            start: self.stopID,
-            end: self.destination,
+            start: stopID,
+            end: destination,
             date: Date.now,
             period: nil
         ))
@@ -48,8 +54,8 @@ class ShuttleTimetableVC: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.shuttleTimetable)
-        self.showCoachMarksIfNeeded()
+        logScreenView(.shuttleTimetable)
+        showCoachMarksIfNeeded()
     }
 
     private func showCoachMarksIfNeeded() {
@@ -90,63 +96,63 @@ class ShuttleTimetableVC: UIViewController {
                 targetView: filterButton,
                 title: String(localized: "coach.shuttle.timetable.filter.title"),
                 message: String(localized: "coach.shuttle.timetable.filter.message")
-            ),
+            )
         ]
         presentCoachMarks(pageId: "shuttle.timetable", items: items)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         ShuttleTimetableData.shared.options.onNext(nil)
         ShuttleTimetableData.shared.timetable.onNext([])
         ShuttleTimetableData.shared.weekdays.onNext([])
         ShuttleTimetableData.shared.weekends.onNext([])
     }
-    
+
     private func setupUI() {
-        self.view.backgroundColor = .hanyangBlue
-        self.view.addSubview(viewPager)
-        self.view.addSubview(filterButton)
-        self.viewPager.snp.makeConstraints { make in
+        view.backgroundColor = .hanyangBlue
+        view.addSubview(viewPager)
+        view.addSubview(filterButton)
+        viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
-        self.filterButton.snp.makeConstraints { make in
+        filterButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
             make.width.height.equalTo(50)
         }
     }
-    
+
     private func observeSubjects() {
         ShuttleTimetableData.shared.options.subscribe(onNext: { options in
-            guard let options = options else { return }
+            guard let options else { return }
             self.navigationItem.title = "\(String(localized: options.start)) → \(String(localized: options.end))"
             // Query the timetable data
             let (stopID, destinations) = self.resolveStopAndDestination(options: options)
             self.fetchTimetable(options: options, stopID: stopID, destinations: destinations)
         }).disposed(by: disposeBag)
         ShuttleTimetableData.shared.timetable.subscribe(onNext: { timetable in
-            ShuttleTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekday })
+            ShuttleTimetableData.shared.weekdays.onNext(timetable.filter(\.weekday))
             ShuttleTimetableData.shared.weekends.onNext(timetable.filter { !$0.weekday })
             ShuttleTimetableData.shared.isLoading.onNext(false)
         }).disposed(by: disposeBag)
-        ShuttleTimetableData.shared.weekdays.subscribe(onNext: { weekdays in
+        ShuttleTimetableData.shared.weekdays.subscribe(onNext: { _ in
             self.weekdaysVC.reload()
         }).disposed(by: disposeBag)
-        ShuttleTimetableData.shared.weekends.subscribe(onNext: { weekends in
+        ShuttleTimetableData.shared.weekends.subscribe(onNext: { _ in
             self.weekendsVC.reload()
         }).disposed(by: disposeBag)
     }
-    
+
     private func resolveStopAndDestination(options: ShuttleTimetableOptions) -> (String, [String]) {
-        var stopID: String = ""
+        var stopID = ""
         var destinations: [String] = []
         if options.start == "shuttle.stop.dormitory.out" {
             stopID = "dormitory_o"
@@ -187,7 +193,7 @@ class ShuttleTimetableVC: UIViewController {
         }
         return (stopID, destinations)
     }
-    
+
     private func fetchTimetable(options: ShuttleTimetableOptions, stopID: String, destinations: [String]) {
         if options.period == nil {
             guard let date = options.date else { return }
@@ -196,12 +202,17 @@ class ShuttleTimetableVC: UIViewController {
             }
             ShuttleTimetableData.shared.isLoading.onNext(true)
             Task {
-                let response = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: date)))
+                let response = try? await Network.shared.client
+                    .fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: date)))
                 guard let period = response?.data?.shuttle.period?.type else {
                     publishTimetable([])
                     return
                 }
-                let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, destination: destinations))
+                let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(
+                    period: [period],
+                    stopID: stopID,
+                    destination: destinations
+                ))
                 publishTimetable(timetableResponse?.data?.shuttle.stops.first?.timetable.order ?? [])
             }
         } else {
@@ -211,7 +222,11 @@ class ShuttleTimetableVC: UIViewController {
             }
             ShuttleTimetableData.shared.isLoading.onNext(true)
             Task {
-                let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(period: [period], stopID: stopID, destination: destinations))
+                let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(
+                    period: [period],
+                    stopID: stopID,
+                    destination: destinations
+                ))
                 publishTimetable(timetableResponse?.data?.shuttle.stops.first?.timetable.order ?? [])
             }
         }
@@ -233,7 +248,7 @@ class ShuttleTimetableVC: UIViewController {
             ShuttleTimetableData.shared.timetable.onNext(timetable)
         }
     }
-    
+
     private func openShuttleViaVC(_ item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         let vc = ShuttleViaVC(item: item)
         if let sheet = vc.sheetPresentationController {
@@ -242,18 +257,18 @@ class ShuttleTimetableVC: UIViewController {
             })]
             sheet.prefersGrabberVisible = true
         }
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
-    
+
     @objc private func openFilterVC() {
         AnalyticsManager.logSelect(.shuttleOpenFilter)
         let vc = ShuttleTimetableFilterVC()
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom(resolver: { _ in
-                return 800
+                800
             })]
             sheet.prefersGrabberVisible = true
         }
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
 }

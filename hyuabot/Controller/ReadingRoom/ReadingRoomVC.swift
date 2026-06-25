@@ -1,7 +1,7 @@
+import Api
+import RxSwift
 import UIKit
 import UserNotifications
-import RxSwift
-import Api
 
 class ReadingRoomVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -10,7 +10,7 @@ class ReadingRoomVC: UIViewController {
     private var showsSkeleton = false
     private let refreshControl = UIRefreshControl()
     private let roomSubject = BehaviorSubject<[ReadingRoomPageQuery.Data.ReadingRoom]>(value: [])
-    // Extend alarm UI
+    /// Extend alarm UI
     private lazy var alarm3HourButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = String(localized: "reading_room.alarm.3hour")
@@ -20,6 +20,7 @@ class ReadingRoomVC: UIViewController {
         btn.addTarget(self, action: #selector(alarm3HourTapped), for: .touchUpInside)
         return btn
     }()
+
     private lazy var alarm4HourButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = String(localized: "reading_room.alarm.4hour")
@@ -29,6 +30,7 @@ class ReadingRoomVC: UIViewController {
         btn.addTarget(self, action: #selector(alarm4HourTapped), for: .touchUpInside)
         return btn
     }()
+
     private lazy var alarmCancelButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = String(localized: "reading_room.alarm.cancel")
@@ -39,12 +41,14 @@ class ReadingRoomVC: UIViewController {
         btn.addTarget(self, action: #selector(alarmCancelTapped), for: .touchUpInside)
         return btn
     }()
+
     private let runningAlarmLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .hanyangBlue
         $0.isHidden = true
         $0.numberOfLines = 1
     }
+
     private lazy var readingRoomView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.delegate = self
@@ -57,15 +61,23 @@ class ReadingRoomVC: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.readingRoom)
-        self.showCoachMarksIfNeeded()
+        logScreenView(.readingRoom)
+        showCoachMarksIfNeeded()
     }
 
     // MARK: - Alarm Actions
 
-    @objc private func alarm3HourTapped() { scheduleLocalAlarm(hours: 3) }
-    @objc private func alarm4HourTapped() { scheduleLocalAlarm(hours: 4) }
-    @objc private func alarmCancelTapped() { cancelLocalAlarm() }
+    @objc private func alarm3HourTapped() {
+        scheduleLocalAlarm(hours: 3)
+    }
+
+    @objc private func alarm4HourTapped() {
+        scheduleLocalAlarm(hours: 4)
+    }
+
+    @objc private func alarmCancelTapped() {
+        cancelLocalAlarm()
+    }
 
     private func scheduleLocalAlarm(hours: Int) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { [weak self] granted, _ in
@@ -164,7 +176,7 @@ class ReadingRoomVC: UIViewController {
                     targetView: alarm3HourButton,
                     title: String(localized: "coach.readingroom.extend_alarm.title"),
                     message: String(localized: "coach.readingroom.extend_alarm.message")
-                ),
+                )
             ],
             shouldMarkAsShown: true,
             onComplete: { CoachMarkManager.shared.markPageShown("readingroom") }
@@ -173,34 +185,50 @@ class ReadingRoomVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.startPolling()
-        self.restoreAlarmUI()
+        startPolling()
+        restoreAlarmUI()
         // Detect if the app is in the background
-        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
-        self.stopPolling()
+        stopPolling()
     }
-    
-    @objc func appDidEnterBackground() { self.stopPolling() }
-    @objc func appWillEnterForeground() { self.startPolling() }
+
+    @objc func appDidEnterBackground() {
+        stopPolling()
+    }
+
+    @objc func appWillEnterForeground() {
+        startPolling()
+    }
+
     @objc private func refreshTableView(_ sender: UIRefreshControl) {
         AnalyticsManager.logSelect(.readingRoomRefresh)
-        self.fetchReadingRoomData()
+        fetchReadingRoomData()
     }
-    
+
     private func setupUI() {
-        self.navigationItem.title = String(localized: "tabbar.readingroom")
+        navigationItem.title = String(localized: "tabbar.readingroom")
         // Alarm button stack
         let buttonStack = UIStackView(arrangedSubviews: [alarm3HourButton, alarm4HourButton])
         buttonStack.axis = .horizontal
@@ -215,32 +243,32 @@ class ReadingRoomVC: UIViewController {
         alarmContainerStack.spacing = 6
         alarmContainerStack.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         alarmContainerStack.isLayoutMarginsRelativeArrangement = true
-        self.view.addSubview(alarmContainerStack)
-        self.view.addSubview(self.readingRoomView)
+        view.addSubview(alarmContainerStack)
+        view.addSubview(readingRoomView)
         alarmContainerStack.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.leading.trailing.equalToSuperview()
         }
-        self.readingRoomView.snp.makeConstraints { make in
+        readingRoomView.snp.makeConstraints { make in
             make.top.equalTo(alarmContainerStack.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-    
+
     private func startPolling() {
-        let hasRooms = (try? self.roomSubject.value().isEmpty == false) ?? false
-        self.isLoading.onNext(!hasRooms)
-        self.fetchReadingRoomData()
+        let hasRooms = (try? roomSubject.value().isEmpty == false) ?? false
+        isLoading.onNext(!hasRooms)
+        fetchReadingRoomData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
             .subscribe(onNext: { _ in
                 self.fetchReadingRoomData()
             })
     }
-    
+
     private func stopPolling() {
         subscription?.dispose()
     }
-    
+
     private func fetchReadingRoomData() {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
         Task {
@@ -258,17 +286,17 @@ class ReadingRoomVC: UIViewController {
             }
         }
     }
-    
+
     private func observeSubjects() {
-        self.isLoading.subscribe(onNext: { isLoading in
+        isLoading.subscribe(onNext: { isLoading in
             self.showsSkeleton = isLoading
             self.readingRoomView.reloadData()
         }).disposed(by: disposeBag)
-        self.roomSubject.subscribe(onNext: { [weak self] items in
+        roomSubject.subscribe(onNext: { [weak self] _ in
             self?.readingRoomView.reloadData()
         }).disposed(by: disposeBag)
         observeUserDefaultsStringArray(forKey: "readingRoomNotificationArray")
-            .subscribe(onNext: { updatedArray in
+            .subscribe(onNext: { _ in
                 self.readingRoomView.reloadData()
             })
             .disposed(by: disposeBag)
@@ -279,34 +307,37 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         1
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if showsSkeleton {
             return 6
         }
-        guard let items = try? self.roomSubject.value() else { return 0 }
+        guard let items = try? roomSubject.value() else { return 0 }
         return items.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if showsSkeleton {
             return tableView.dequeueReusableCell(withIdentifier: ReadingRoomSkeletonCellView.reuseIdentifier, for: indexPath)
         }
-        guard let items = try? self.roomSubject.value() else { return UITableViewCell() }
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: ReadingRoomCellView.reuseIdentifier) as? ReadingRoomCellView else { return ReadingRoomCellView() }
+        guard let items = try? roomSubject.value() else { return UITableViewCell() }
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ReadingRoomCellView.reuseIdentifier) as? ReadingRoomCellView
+        else { return ReadingRoomCellView() }
         cell.setupUI(
             item: items[indexPath.row],
             showSubscribeToastMessage: {
                 message in self.showToastMessage(
                     image: UIImage(systemName: "checkmark.circle.fill"),
                     message: String(format: String(localized: "toast.readingroom.notification.subscribed.%@"), message)
-                )},
+                )
+            },
             showUnsubscribeToastMessage: {
                 message in self.showToastMessage(
                     image: UIImage(systemName: "checkmark.circle.fill"),
                     message: String(format: String(localized: "toast.readingroom.notification.unsubscribed.%@"), message)
-                )}
-            )
+                )
+            }
+        )
         return cell
     }
 }

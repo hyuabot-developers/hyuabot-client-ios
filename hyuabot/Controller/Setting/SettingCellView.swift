@@ -16,25 +16,29 @@ class SettingCellView: UITableViewCell {
         $0.contentMode = .scaleAspectFit
         $0.tintColor = .plainButtonText
     }
+
     private let titleLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.numberOfLines = 1
         $0.textAlignment = .left
     }
+
     private let contentLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.numberOfLines = 1
         $0.textAlignment = .right
         $0.isHidden = true
     }
+
     private lazy var analyticsSwitch = UISwitch().then {
         $0.isHidden = true
         $0.addTarget(self, action: #selector(analyticsSwitchChanged), for: .valueChanged)
     }
+
     private var onAnalyticsConsentChanged: ((Bool) -> Void)?
-    private lazy var campusButton: UIButton = UIButton().then {
+    private lazy var campusButton: UIButton = .init().then {
         var conf = UIButton.Configuration.bordered()
-        var title = AttributedString.init(String(localized: "setting.campus"))
+        var title = AttributedString(String(localized: "setting.campus"))
         title.font = .godo(size: 16, weight: .medium)
         title.foregroundColor = .label
         conf.attributedTitle = title
@@ -50,9 +54,10 @@ class SettingCellView: UITableViewCell {
         $0.showsMenuAsPrimaryAction = true
         $0.isHidden = true
     }
-    private lazy var themeButton: UIButton = UIButton().then {
+
+    private lazy var themeButton: UIButton = .init().then {
         var conf = UIButton.Configuration.bordered()
-        var title = AttributedString.init(String(localized: "setting.theme"))
+        var title = AttributedString(String(localized: "setting.theme"))
         title.font = .godo(size: 16, weight: .medium)
         title.foregroundColor = .label
         conf.attributedTitle = title
@@ -68,6 +73,7 @@ class SettingCellView: UITableViewCell {
         $0.showsMenuAsPrimaryAction = true
         $0.isHidden = true
     }
+
     private let arrowImageView = UIImageView().then {
         $0.image = UIImage(systemName: "chevron.right")
         $0.tintColor = .plainButtonText
@@ -77,141 +83,133 @@ class SettingCellView: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.setupUI()
+        setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     private func setupUI() {
-        self.selectionStyle = .none
-        self.contentView.addSubview(self.iconImageView)
-        self.contentView.addSubview(self.titleLabel)
-        self.contentView.addSubview(self.campusButton)
-        self.contentView.addSubview(self.themeButton)
-        self.contentView.addSubview(self.arrowImageView)
-        self.contentView.addSubview(self.contentLabel)
-        self.contentView.addSubview(self.analyticsSwitch)
-        self.iconImageView.snp.makeConstraints { make in
+        selectionStyle = .none
+        contentView.addSubview(iconImageView)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(campusButton)
+        contentView.addSubview(themeButton)
+        contentView.addSubview(arrowImageView)
+        contentView.addSubview(contentLabel)
+        contentView.addSubview(analyticsSwitch)
+        iconImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.size.equalTo(20)
         }
-        self.titleLabel.snp.makeConstraints { make in
+        titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(self.iconImageView.snp.trailing).offset(20)
             make.centerY.equalToSuperview()
         }
-        self.campusButton.snp.makeConstraints { make in
+        campusButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
-        self.themeButton.snp.makeConstraints { make in
+        themeButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
-        self.arrowImageView.snp.makeConstraints { make in
+        arrowImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
-        self.contentLabel.snp.makeConstraints { make in
+        contentLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
-        self.analyticsSwitch.snp.makeConstraints { make in
+        analyticsSwitch.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalToSuperview()
         }
     }
 
     func setupUI(imageName: String, title: String.LocalizationValue, onAnalyticsConsentChanged: ((Bool) -> Void)? = nil) {
-        self.iconImageView.image = UIImage(systemName: imageName)
-        self.titleLabel.text = String(localized: title)
+        iconImageView.image = UIImage(systemName: imageName)
+        titleLabel.text = String(localized: title)
         self.onAnalyticsConsentChanged = nil
-        self.campusButton.isHidden = true
-        self.themeButton.isHidden = true
-        self.arrowImageView.isHidden = true
-        self.contentLabel.isHidden = true
-        self.contentLabel.text = nil
-        self.analyticsSwitch.isHidden = true
+        campusButton.isHidden = true
+        themeButton.isHidden = true
+        arrowImageView.isHidden = true
+        contentLabel.isHidden = true
+        contentLabel.text = nil
+        analyticsSwitch.isHidden = true
         if title == "setting.campus" {
-            self.campusButton.do {
+            campusButton.do {
                 $0.isHidden = false
                 let campusID = UserDefaults.standard.integer(forKey: "campusID")
-                if campusID == 1 {
-                    self.setButtonTitle($0, "campus.seoul")
-                } else if campusID == 2 {
-                    self.setButtonTitle($0, "campus.erica")
-                }
+                self.setButtonTitle($0, SettingsLogic.campusKey(for: campusID))
             }
         } else if title == "setting.theme" {
-            self.themeButton.do {
+            themeButton.do {
                 $0.isHidden = false
                 let themeID = UserDefaults.standard.integer(forKey: "themeID")
-                if themeID == 0 {
-                    self.setButtonTitle($0, "theme.system")
-                } else if themeID == 1 {
-                    self.setButtonTitle($0, "theme.light")
-                } else {
-                    self.setButtonTitle($0, "theme.dark")
-                }
+                self.setButtonTitle($0, SettingsLogic.themeKey(for: themeID))
             }
         } else if title == "setting.language" {
-            self.arrowImageView.isHidden = false
+            arrowImageView.isHidden = false
         } else if title == "setting.analytics" {
-            self.analyticsSwitch.isHidden = false
-            self.analyticsSwitch.isOn = AnalyticsManager.isCollectionEnabled
+            analyticsSwitch.isHidden = false
+            analyticsSwitch.isOn = AnalyticsManager.isCollectionEnabled
             self.onAnalyticsConsentChanged = onAnalyticsConsentChanged
         } else if title == "setting.developer" {
-            self.contentLabel.isHidden = false
-            self.contentLabel.text = String(localized: "setting.developer.info")
+            contentLabel.isHidden = false
+            contentLabel.text = String(localized: "setting.developer.info")
         } else if title == "setting.version" {
-            self.contentLabel.isHidden = false
-            self.contentLabel.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+            contentLabel.isHidden = false
+            contentLabel.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         }
     }
 
     @objc private func analyticsSwitchChanged() {
-        self.onAnalyticsConsentChanged?(self.analyticsSwitch.isOn)
+        onAnalyticsConsentChanged?(analyticsSwitch.isOn)
     }
 
     private func selectCampus(_ campus: String.LocalizationValue) {
-        let campusID = campus == "campus.seoul" ? 1 : 2
+        let campusID = SettingsLogic.campusID(for: campus)
         AnalyticsManager.logSelect(.settingSelectCampus, type: .menu, name: campusID == 1 ? "seoul" : "erica")
         UserDefaults.standard.set(campusID, forKey: "campusID")
         UserDefaults(suiteName: "group.net.jaram.hyuabot")?.set(campusID, forKey: "campusID")
         WidgetCenter.shared.reloadTimelines(ofKind: "CafeteriaWidget")
         if campus == "campus.seoul" {
-            self.setButtonTitle(self.campusButton, "campus.seoul")
+            setButtonTitle(campusButton, "campus.seoul")
         } else {
-            self.setButtonTitle(self.campusButton, "campus.erica")
+            setButtonTitle(campusButton, "campus.erica")
         }
     }
 
     private func selectTheme(_ theme: String.LocalizationValue) {
-        let themeName = theme == "theme.system" ? "system" : (theme == "theme.light" ? "light" : "dark")
+        let themeID = SettingsLogic.themeID(for: theme)
+        let themeName = themeID == 0 ? "system" : (themeID == 1 ? "light" : "dark")
         AnalyticsManager.logSelect(.settingSelectTheme, type: .menu, name: themeName)
         let scenes = UIApplication.shared.connectedScenes
         let windowScene = scenes.first as? UIWindowScene
         let window = windowScene?.windows.first
-        if theme == "theme.system" {
-            UserDefaults.standard.set(0, forKey: "themeID")
+        if themeID == 0 {
+            UserDefaults.standard.set(themeID, forKey: "themeID")
             window?.overrideUserInterfaceStyle = .unspecified
-            self.setButtonTitle(self.themeButton, "theme.system")
-        } else if theme == "theme.light" {
-            UserDefaults.standard.set(1, forKey: "themeID")
+            setButtonTitle(themeButton, "theme.system")
+        } else if themeID == 1 {
+            UserDefaults.standard.set(themeID, forKey: "themeID")
             window?.overrideUserInterfaceStyle = .light
-            self.setButtonTitle(self.themeButton, "theme.light")
+            setButtonTitle(themeButton, "theme.light")
         } else {
-            UserDefaults.standard.set(2, forKey: "themeID")
+            UserDefaults.standard.set(themeID, forKey: "themeID")
             window?.overrideUserInterfaceStyle = .dark
-            self.setButtonTitle(self.themeButton, "theme.dark")
+            setButtonTitle(themeButton, "theme.dark")
         }
     }
 
     private func setButtonTitle(_ button: UIButton, _ title: String.LocalizationValue) {
         var config = button.configuration
-        var title = AttributedString.init(String(localized: title))
+        var title = AttributedString(String(localized: title))
         title.font = .godo(size: 16, weight: .medium)
         title.foregroundColor = .label
         config?.attributedTitle = title

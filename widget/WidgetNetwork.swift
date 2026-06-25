@@ -1,6 +1,6 @@
-import Foundation
 import Apollo
 import ApolloAPI
+import Foundation
 
 final class WidgetNetwork {
     static let shared = WidgetNetwork()
@@ -8,7 +8,9 @@ final class WidgetNetwork {
 
     private init() {}
 
-    func fetch<Query: GraphQLQuery>(query: Query) async throws -> GraphQLResponse<Query> where Query.ResponseFormat == SingleResponseFormat {
+    func fetch<Query: GraphQLQuery>(query: Query) async throws -> GraphQLResponse<Query>
+        where Query.ResponseFormat == SingleResponseFormat
+    {
         try await client.fetch(query: query, cachePolicy: .networkOnly)
     }
 }

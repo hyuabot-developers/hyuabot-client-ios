@@ -1,6 +1,6 @@
-import UIKit
-import RxSwift
 import Api
+import RxSwift
+import UIKit
 
 class CafeteriaTabVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -13,52 +13,51 @@ class CafeteriaTabVC: UIViewController {
         $0.textColor = .label
         $0.textAlignment = .center
     }
-    private lazy var cafeteriaTableView: UITableView = {
-        let tableView = UITableView().then {
-            $0.delegate = self
-            $0.dataSource = self
-            $0.sectionHeaderTopPadding = 0
-            $0.showsVerticalScrollIndicator = false
-            $0.contentInset.bottom = 88
-            $0.verticalScrollIndicatorInsets.bottom = 88
-            // Register Cell
-            $0.register(CafeteriaHeaderView.self, forHeaderFooterViewReuseIdentifier: CafeteriaHeaderView.reuseIdentifier)
-            $0.register(CafeteriaSkeletonHeaderView.self, forHeaderFooterViewReuseIdentifier: CafeteriaSkeletonHeaderView.reuseIdentifier)
-            $0.register(CafeteriaMenuCellView.self, forCellReuseIdentifier: CafeteriaMenuCellView.reuseIdentifier)
-            $0.register(CafeteriaSkeletonCellView.self, forCellReuseIdentifier: CafeteriaSkeletonCellView.reuseIdentifier)
-        }
-        return tableView
-    }()
-    
+
+    private lazy var cafeteriaTableView: UITableView = .init().then {
+        $0.delegate = self
+        $0.dataSource = self
+        $0.sectionHeaderTopPadding = 0
+        $0.showsVerticalScrollIndicator = false
+        $0.contentInset.bottom = 88
+        $0.verticalScrollIndicatorInsets.bottom = 88
+        // Register Cell
+        $0.register(CafeteriaHeaderView.self, forHeaderFooterViewReuseIdentifier: CafeteriaHeaderView.reuseIdentifier)
+        $0.register(CafeteriaSkeletonHeaderView.self, forHeaderFooterViewReuseIdentifier: CafeteriaSkeletonHeaderView.reuseIdentifier)
+        $0.register(CafeteriaMenuCellView.self, forCellReuseIdentifier: CafeteriaMenuCellView.reuseIdentifier)
+        $0.register(CafeteriaSkeletonCellView.self, forCellReuseIdentifier: CafeteriaSkeletonCellView.reuseIdentifier)
+    }
+
     required init(cafeteriaType: CafeteriaType, showCafeteriaInfoVC: @escaping (Int) -> Void) {
         self.cafeteriaType = cafeteriaType
         self.showCafeteriaInfoVC = showCafeteriaInfoVC
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     private func setupUI() {
-        self.view.addSubview(self.cafeteriaTableView)
-        self.view.addSubview(self.noDataLabel)
-        self.cafeteriaTableView.snp.makeConstraints { make in
+        view.addSubview(cafeteriaTableView)
+        view.addSubview(noDataLabel)
+        cafeteriaTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        self.noDataLabel.snp.makeConstraints { make in
+        noDataLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
     }
-    
+
     private func showCafeteriaInfoVC(cafeteriaID: Int) {
-        self.showCafeteriaInfoVC(cafeteriaID)
+        showCafeteriaInfoVC(cafeteriaID)
     }
 
     private func observeSubjects() {
@@ -71,73 +70,73 @@ class CafeteriaTabVC: UIViewController {
             })
             .disposed(by: disposeBag)
     }
-    
+
     private func languageFilteredMenus(
         _ menus: [CafeteriaPageQuery.Data.Cafeterium.Menu],
         type: String
     ) -> [CafeteriaPageQuery.Data.Cafeterium.Menu] {
-        return menus.filter { $0.type.contains(type) }
+        menus.filter { $0.type.contains(type) }
     }
 
     private var cafeteriaItems: [CafeteriaPageQuery.Data.Cafeterium] {
         switch cafeteriaType {
         case .breakfast:
-            return (try? CafeteriaData.shared.breakfastItems.value()) ?? []
+            (try? CafeteriaData.shared.breakfastItems.value()) ?? []
         case .lunch:
-            return (try? CafeteriaData.shared.lunchItems.value()) ?? []
+            (try? CafeteriaData.shared.lunchItems.value()) ?? []
         case .dinner:
-            return (try? CafeteriaData.shared.dinnerItems.value()) ?? []
+            (try? CafeteriaData.shared.dinnerItems.value()) ?? []
         }
     }
 
     private var mealTypeQuery: String {
         switch cafeteriaType {
         case .breakfast:
-            return "조식"
+            "조식"
         case .lunch:
-            return "중식"
+            "중식"
         case .dinner:
-            return "석식"
+            "석식"
         }
     }
 
     private var mealTypeLabel: String {
         switch cafeteriaType {
         case .breakfast:
-            return String(localized: "cafeteria.tab.breakfast")
+            String(localized: "cafeteria.tab.breakfast")
         case .lunch:
-            return String(localized: "cafeteria.tab.lunch")
+            String(localized: "cafeteria.tab.lunch")
         case .dinner:
-            return String(localized: "cafeteria.tab.dinner")
+            String(localized: "cafeteria.tab.dinner")
         }
     }
 
     private func cafeteriaTitle(id: Int) -> String {
         switch id {
         case 1:
-            return String(localized: "cafeteria.title.1")
+            String(localized: "cafeteria.title.1")
         case 2:
-            return String(localized: "cafeteria.title.2")
+            String(localized: "cafeteria.title.2")
         case 4:
-            return String(localized: "cafeteria.title.4")
+            String(localized: "cafeteria.title.4")
         case 6:
-            return String(localized: "cafeteria.title.6")
+            String(localized: "cafeteria.title.6")
         case 7:
-            return String(localized: "cafeteria.title.7")
+            String(localized: "cafeteria.title.7")
         case 8:
-            return String(localized: "cafeteria.title.8")
+            String(localized: "cafeteria.title.8")
         case 11:
-            return String(localized: "cafeteria.title.11")
+            String(localized: "cafeteria.title.11")
         case 12:
-            return String(localized: "cafeteria.title.12")
+            String(localized: "cafeteria.title.12")
         case 13:
-            return String(localized: "cafeteria.title.13")
+            String(localized: "cafeteria.title.13")
         case 14:
-            return String(localized: "cafeteria.title.14")
+            String(localized: "cafeteria.title.14")
         case 15:
-            return String(localized: "cafeteria.title.15")
+            String(localized: "cafeteria.title.15")
         default:
-            return String(localized: "cafeteria.title.1")
+            String(localized: "cafeteria.title.1")
         }
     }
 
@@ -221,16 +220,16 @@ class CafeteriaTabVC: UIViewController {
     }
 
     func reload() {
-        self.cafeteriaTableView.reloadData()
+        cafeteriaTableView.reloadData()
         if showsSkeleton {
-            self.cafeteriaTableView.isHidden = false
-            self.noDataLabel.isHidden = true
-        } else if (self.cafeteriaTableView.numberOfSections == 0) {
-            self.cafeteriaTableView.isHidden = true
-            self.noDataLabel.isHidden = false
+            cafeteriaTableView.isHidden = false
+            noDataLabel.isHidden = true
+        } else if cafeteriaTableView.numberOfSections == 0 {
+            cafeteriaTableView.isHidden = true
+            noDataLabel.isHidden = false
         } else {
-            self.cafeteriaTableView.isHidden = false
-            self.noDataLabel.isHidden = true
+            cafeteriaTableView.isHidden = false
+            noDataLabel.isHidden = true
         }
     }
 
@@ -253,37 +252,39 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         if showsSkeleton {
             return 3
         }
-        if (self.cafeteriaType == .breakfast) {
+        if cafeteriaType == .breakfast {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
             return cafeteriaItems.count
-        } else if (self.cafeteriaType == .lunch) {
+        } else if cafeteriaType == .lunch {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return 0 }
             return cafeteriaItems.count
-        } else if (self.cafeteriaType == .dinner) {
+        } else if cafeteriaType == .dinner {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return 0 }
             return cafeteriaItems.count
         }
         return 0
     }
-    
+
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if showsSkeleton {
             return tableView.dequeueReusableHeaderFooterView(withIdentifier: CafeteriaSkeletonHeaderView.reuseIdentifier)
         }
-        guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: CafeteriaHeaderView.reuseIdentifier) as? CafeteriaHeaderView else { return UIView() }
-        if (self.cafeteriaType == .breakfast) {
+        guard let headerView = tableView
+            .dequeueReusableHeaderFooterView(withIdentifier: CafeteriaHeaderView.reuseIdentifier) as? CafeteriaHeaderView
+        else { return UIView() }
+        if cafeteriaType == .breakfast {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
             headerView.setupUI(id: item.seq, runningTime: item.runningTime.breakfast, showCafeteriaInfoVC: { [weak self] in
                 self?.showCafeteriaInfoVC(cafeteriaID: item.seq)
             })
-        } else if (self.cafeteriaType == .lunch) {
+        } else if cafeteriaType == .lunch {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
             headerView.setupUI(id: item.seq, runningTime: item.runningTime.lunch, showCafeteriaInfoVC: { [weak self] in
                 self?.showCafeteriaInfoVC(cafeteriaID: item.seq)
             })
-        } else if (self.cafeteriaType == .dinner) {
+        } else if cafeteriaType == .dinner {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UIView() }
             let item = cafeteriaItems[section]
             headerView.setupUI(id: item.seq, runningTime: item.runningTime.dinner, showCafeteriaInfoVC: { [weak self] in
@@ -292,18 +293,18 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         }
         return headerView
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if showsSkeleton {
             return section == 0 ? 3 : 2
         }
-        if (self.cafeteriaType == .breakfast) {
+        if cafeteriaType == .breakfast {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return 0 }
             return languageFilteredMenus(cafeteriaItems[section].menus, type: "조식").count
-        } else if (self.cafeteriaType == .lunch) {
+        } else if cafeteriaType == .lunch {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return 0 }
             return languageFilteredMenus(cafeteriaItems[section].menus, type: "중식").count
-        } else if (self.cafeteriaType == .dinner) {
+        } else if cafeteriaType == .dinner {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return 0 }
             return languageFilteredMenus(cafeteriaItems[section].menus, type: "석식").count
         }
@@ -314,24 +315,25 @@ extension CafeteriaTabVC: UITableViewDelegate, UITableViewDataSource {
         if showsSkeleton {
             return tableView.dequeueReusableCell(withIdentifier: CafeteriaSkeletonCellView.reuseIdentifier, for: indexPath)
         }
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: CafeteriaMenuCellView.reuseIdentifier) as? CafeteriaMenuCellView else { return UITableViewCell() }
-        if (self.cafeteriaType == .breakfast) {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CafeteriaMenuCellView.reuseIdentifier) as? CafeteriaMenuCellView
+        else { return UITableViewCell() }
+        if cafeteriaType == .breakfast {
             guard let cafeteriaItems = try? CafeteriaData.shared.breakfastItems.value() else { return UITableViewCell() }
             let item = languageFilteredMenus(cafeteriaItems[indexPath.section].menus, type: "조식")[indexPath.row]
             cell.setupUI(item: item)
-        } else if (self.cafeteriaType == .lunch) {
+        } else if cafeteriaType == .lunch {
             guard let cafeteriaItems = try? CafeteriaData.shared.lunchItems.value() else { return UITableViewCell() }
             let item = languageFilteredMenus(cafeteriaItems[indexPath.section].menus, type: "중식")[indexPath.row]
             cell.setupUI(item: item)
-        } else if (self.cafeteriaType == .dinner) {
+        } else if cafeteriaType == .dinner {
             guard let cafeteriaItems = try? CafeteriaData.shared.dinnerItems.value() else { return UITableViewCell() }
             let item = languageFilteredMenus(cafeteriaItems[indexPath.section].menus, type: "석식")[indexPath.row]
             cell.setupUI(item: item)
         }
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 70
+        70
     }
 }

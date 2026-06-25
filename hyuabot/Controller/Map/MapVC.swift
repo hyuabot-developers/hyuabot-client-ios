@@ -1,7 +1,7 @@
-import UIKit
+import Api
 import MapKit
 import RxSwift
-import Api
+import UIKit
 
 class MapVC: UIViewController {
     private let disposeBag = DisposeBag()
@@ -16,6 +16,7 @@ class MapVC: UIViewController {
         }
         $0.searchResultsUpdater = self
     }
+
     private lazy var mapView = MKMapView().then {
         $0.camera = MKMapCamera(
             lookingAtCenter: CLLocationCoordinate2D(latitude: 37.29650544998881, longitude: 126.83513202158153),
@@ -28,6 +29,7 @@ class MapVC: UIViewController {
         $0.isPitchEnabled = true
         $0.delegate = self
     }
+
     private lazy var searchResultView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.isHidden = true
@@ -36,11 +38,11 @@ class MapVC: UIViewController {
         $0.register(SearchEmptyCellView.self, forCellReuseIdentifier: SearchEmptyCellView.reuseIdentifier)
         $0.register(SearchResultCellView.self, forCellReuseIdentifier: SearchResultCellView.reuseIdentifier)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.map)
-        self.showCoachMarksIfNeeded()
+        logScreenView(.map)
+        showCoachMarksIfNeeded()
     }
 
     private func showCoachMarksIfNeeded() {
@@ -56,56 +58,62 @@ class MapVC: UIViewController {
                 targetView: mapView,
                 title: String(localized: "coach.map.map.title"),
                 message: String(localized: "coach.map.map.message")
-            ),
+            )
         ])
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
+        setupUI()
+        observeSubjects()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: false)
     }
-    
+
     private func setupUI() {
-        self.view.addSubview(self.mapView)
-        self.view.addSubview(self.searchResultView)
-        self.navigationItem.do {
+        view.addSubview(mapView)
+        view.addSubview(searchResultView)
+        navigationItem.do {
             $0.title = String(localized: "tabbar.map")
             $0.searchController = self.searchController
             $0.hidesSearchBarWhenScrolling = false
         }
-        self.mapView.snp.makeConstraints { make in
+        mapView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        self.searchResultView.snp.makeConstraints { make in
+        searchResultView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
-    
+
     private func observeSubjects() {
         MapData.shared.searchKeyword.subscribe(onNext: { keyword in
-            guard let keyword = keyword else { return }
+            guard let keyword else { return }
             Task {
                 let response = try? await Network.shared.client.fetch(query: MapPageSearchQuery(keyword: keyword))
                 if let data = response?.data {
                     MapData.shared.searchResult.onNext(data.building.map { building in
                         building.rooms.map { room in
-                            RoomItem(name: room.name, number: room.name, building: building.name, latitude: building.latitude, longitude: building.longitude)
+                            RoomItem(
+                                name: room.name,
+                                number: room.name,
+                                building: building.name,
+                                latitude: building.latitude,
+                                longitude: building.longitude
+                            )
                         }
                     }.flatMap { $0 })
                 }
             }
-        }).disposed(by: self.disposeBag)
-        MapData.shared.searchResult.subscribe(onNext: { result in
+        }).disposed(by: disposeBag)
+        MapData.shared.searchResult.subscribe(onNext: { _ in
             self.searchResultView.reloadData()
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
         MapData.shared.searchMode.subscribe(onNext: { isSearching in
-            if (!isSearching) {
+            if !isSearching {
                 self.searchController.isActive = false
                 let nw = self.mapView.northWestCoordinate
                 let se = self.mapView.southEastCoordinate
@@ -118,16 +126,16 @@ class MapVC: UIViewController {
                     }
                 }
             }
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
         MapData.shared.buildingResult.subscribe(onNext: { result in
             self.mapView.removeAnnotations(self.mapView.annotations)
-            result.forEach { building in
+            for building in result {
                 self.mapView.addAnnotation(MKPointAnnotation().with {
                     $0.coordinate = CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude)
                     $0.title = building.name
                 })
             }
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
     }
 }
 
@@ -142,8 +150,9 @@ extension MapVC: UITextFieldDelegate {
 extension MapVC: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchKeyword = searchController.searchBar.text else { return }
-        self.searchResultView.isHidden = searchKeyword.isEmpty
-        MapData.shared.searchKeyword.onNext(searchKeyword.isEmpty ? nil : searchKeyword)
+        let isVisible = MapSearchLogic.isSearchResultVisible(keyword: searchKeyword)
+        searchResultView.isHidden = !isVisible
+        MapData.shared.searchKeyword.onNext(isVisible ? searchKeyword : nil)
     }
 }
 
@@ -151,27 +160,30 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         1
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let items = try? MapData.shared.searchResult.value() else { return 0 }
-        return max(1, items.count)
+        return MapSearchLogic.rowCount(for: items)
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let items = try? MapData.shared.searchResult.value() else { return SearchEmptyCellView() }
-        if (items.isEmpty) {
+        if items.isEmpty {
             return tableView.dequeueReusableCell(withIdentifier: SearchEmptyCellView.reuseIdentifier, for: indexPath)
         }
-        let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultCellView.reuseIdentifier, for: indexPath) as! SearchResultCellView
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: SearchResultCellView.reuseIdentifier,
+            for: indexPath
+        ) as! SearchResultCellView
         cell.setupUI(item: items[indexPath.row])
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = try? MapData.shared.searchResult.value()[indexPath.row] else { return }
         AnalyticsManager.logSelect(.mapSelectSearchResult, type: .listItem, name: item.name)
         MapData.shared.searchMode.onNext(true)
-        self.mapView.do {
+        mapView.do {
             $0.removeAnnotations($0.annotations)
             $0.addAnnotation(MKPointAnnotation().with {
                 $0.coordinate = CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude)
@@ -184,8 +196,8 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
                 heading: 0
             )
         }
-        self.searchResultView.isHidden = true
-        self.searchController.isActive = false
+        searchResultView.isHidden = true
+        searchController.isActive = false
     }
 }
 
@@ -196,10 +208,10 @@ extension MapVC: MKMapViewDelegate {
         annotationView.glyphImage = UIImage(systemName: "building")
         return annotationView
     }
-    
+
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
         guard let searchMode = try? MapData.shared.searchMode.value() else { return }
-        if (searchMode) { return }
+        if searchMode { return }
         let nw = mapView.northWestCoordinate
         let se = mapView.southEastCoordinate
         Task {
@@ -211,7 +223,7 @@ extension MapVC: MKMapViewDelegate {
             }
         }
     }
-    
+
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard let annotation = view.annotation else { return }
         guard let buildings = try? MapData.shared.buildingResult.value() else { return }
@@ -225,6 +237,6 @@ extension MapVC: MKMapViewDelegate {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
 }

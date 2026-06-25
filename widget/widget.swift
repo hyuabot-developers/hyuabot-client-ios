@@ -1,8 +1,8 @@
-import WidgetKit
-import SwiftUI
-import AppIntents
-import Apollo
 import Api
+import Apollo
+import AppIntents
+import SwiftUI
+import WidgetKit
 
 private let appGroupID = "group.net.jaram.hyuabot"
 
@@ -13,38 +13,38 @@ enum MealType {
 
     var title: String {
         switch self {
-        case .breakfast: return String(localized: "meal.breakfast")
-        case .lunch: return String(localized: "meal.lunch")
-        case .dinner: return String(localized: "meal.dinner")
-        case .closed: return String(localized: "meal.closed")
+        case .breakfast: String(localized: "meal.breakfast")
+        case .lunch: String(localized: "meal.lunch")
+        case .dinner: String(localized: "meal.dinner")
+        case .closed: String(localized: "meal.closed")
         }
     }
 
     var typeString: String {
         switch self {
-        case .breakfast, .closed: return "조식"
-        case .lunch: return "중식"
-        case .dinner: return "석식"
+        case .breakfast, .closed: "조식"
+        case .lunch: "중식"
+        case .dinner: "석식"
         }
     }
 
     var icon: String {
         switch self {
-        case .breakfast: return "sunrise.fill"
-        case .lunch: return "sun.max.fill"
-        case .dinner: return "moon.stars.fill"
-        case .closed: return "moon.zzz.fill"
+        case .breakfast: "sunrise.fill"
+        case .lunch: "sun.max.fill"
+        case .dinner: "moon.stars.fill"
+        case .closed: "moon.zzz.fill"
         }
     }
 
     var deepLinkURL: URL {
         switch self {
         case .breakfast, .closed:
-            return URL(string: "hyuabot://cafeteria?tab=breakfast")!
+            URL(string: "hyuabot://cafeteria?tab=breakfast")!
         case .lunch:
-            return URL(string: "hyuabot://cafeteria?tab=lunch")!
+            URL(string: "hyuabot://cafeteria?tab=lunch")!
         case .dinner:
-            return URL(string: "hyuabot://cafeteria?tab=dinner")!
+            URL(string: "hyuabot://cafeteria?tab=dinner")!
         }
     }
 }
@@ -74,27 +74,26 @@ private func currentMealType(for date: Foundation.Date = .now) -> MealType {
     let hour = Calendar.current.component(.hour, from: date)
     switch hour {
     case ..<10: return .breakfast
-    case 10..<15: return .lunch
-    case 15..<20: return .dinner
+    case 10 ..< 15: return .lunch
+    case 15 ..< 20: return .dinner
     default: return .closed
     }
 }
 
 private func cafeteriaDisplayName(for seq: Int) -> String {
-    let key: String
-    switch seq {
-    case 1:  key = "cafeteria.title.1"
-    case 2:  key = "cafeteria.title.2"
-    case 4:  key = "cafeteria.title.4"
-    case 6:  key = "cafeteria.title.6"
-    case 7:  key = "cafeteria.title.7"
-    case 8:  key = "cafeteria.title.8"
-    case 11: key = "cafeteria.title.11"
-    case 12: key = "cafeteria.title.12"
-    case 13: key = "cafeteria.title.13"
-    case 14: key = "cafeteria.title.14"
-    case 15: key = "cafeteria.title.15"
-    default: key = "cafeteria.default"
+    let key = switch seq {
+    case 1: "cafeteria.title.1"
+    case 2: "cafeteria.title.2"
+    case 4: "cafeteria.title.4"
+    case 6: "cafeteria.title.6"
+    case 7: "cafeteria.title.7"
+    case 8: "cafeteria.title.8"
+    case 11: "cafeteria.title.11"
+    case 12: "cafeteria.title.12"
+    case 13: "cafeteria.title.13"
+    case 14: "cafeteria.title.14"
+    case 15: "cafeteria.title.15"
+    default: "cafeteria.default"
     }
     return String(localized: LocalizedStringResource(stringLiteral: key))
 }
@@ -105,9 +104,9 @@ private func nextMealTransition(after date: Foundation.Date) -> Foundation.Date 
     switch hour {
     case ..<10:
         return cal.date(bySettingHour: 10, minute: 0, second: 0, of: date)!
-    case 10..<15:
+    case 10 ..< 15:
         return cal.date(bySettingHour: 15, minute: 0, second: 0, of: date)!
-    case 15..<20:
+    case 15 ..< 20:
         return cal.date(bySettingHour: 20, minute: 0, second: 0, of: date)!
     default:
         let tomorrow = cal.date(byAdding: .day, value: 1, to: date)!
@@ -206,13 +205,11 @@ struct CafeteriaProvider: TimelineProvider {
                                 .trimmingCharacters(in: .whitespaces)
                         )
                     }
-                    let runningTime: String? = {
-                        switch mealType {
-                        case .breakfast, .closed: return cafe.runningTime.breakfast
-                        case .lunch: return cafe.runningTime.lunch
-                        case .dinner: return cafe.runningTime.dinner
-                        }
-                    }()
+                    let runningTime: String? = switch mealType {
+                    case .breakfast, .closed: cafe.runningTime.breakfast
+                    case .lunch: cafe.runningTime.lunch
+                    case .dinner: cafe.runningTime.dinner
+                    }
                     return CafeteriaMenuItem(
                         cafeteriaName: cafeteriaDisplayName(for: cafe.seq),
                         menus: menus,

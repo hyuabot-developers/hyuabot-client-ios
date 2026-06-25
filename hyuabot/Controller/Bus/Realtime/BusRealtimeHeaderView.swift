@@ -17,39 +17,41 @@ class BusRealtimeHeaderView: UITableViewHeaderFooterView {
         $0.textColor = .white
         $0.textAlignment = .center
     }
-    private var showStopVC: () -> () = {}
+
+    private var showStopVC: () -> Void = {}
     lazy var locationButton: UIButton = ExtendedHitAreaButton().then {
         $0.setImage(UIImage(systemName: "location.magnifyingglass"), for: .normal)
         $0.addTarget(self, action: #selector(stopButtonTapped), for: .touchUpInside)
         $0.tintColor = .white
     }
-    
+
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    func setupUI(title: String, showStopVC: @escaping () -> ()) {
+
+    func setupUI(title: String, showStopVC: @escaping () -> Void) {
         self.showStopVC = showStopVC
-        self.contentView.backgroundColor = .hanyangBlue
-        self.contentView.addSubview(titleLabel)
-        self.contentView.addSubview(locationButton)
-        self.titleLabel.text = title
-        self.titleLabel.snp.makeConstraints { make in
+        contentView.backgroundColor = .hanyangBlue
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(locationButton)
+        titleLabel.text = title
+        titleLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        self.locationButton.snp.makeConstraints { make in
+        locationButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.height.width.equalTo(30)
         }
     }
-    
+
     @objc private func stopButtonTapped() {
         AnalyticsManager.logSelect(.busStopButton)
-        self.showStopVC()
+        showStopVC()
     }
 }

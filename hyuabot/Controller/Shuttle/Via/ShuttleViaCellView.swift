@@ -1,112 +1,123 @@
-import UIKit
 import Api
 import RxSwift
+import UIKit
 
 class ShuttleViaCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleViaCellView"
     private let shuttleStopLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
+
     private let shuttleTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.setupUI()
+        setupUI()
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.shuttleStopLabel.textColor = .label
-        self.shuttleTimeLabel.textColor = .label
+        shuttleStopLabel.textColor = .label
+        shuttleTimeLabel.textColor = .label
     }
-    
+
     func setupUI() {
-        self.contentView.addSubview(self.shuttleStopLabel)
-        self.contentView.addSubview(self.shuttleTimeLabel)
-        self.selectionStyle = .none
-        self.shuttleStopLabel.snp.makeConstraints { make in
+        contentView.addSubview(shuttleStopLabel)
+        contentView.addSubview(shuttleTimeLabel)
+        selectionStyle = .none
+        shuttleStopLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
         }
-        self.shuttleTimeLabel.snp.makeConstraints { make in
+        shuttleTimeLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
         }
     }
-    
-    func setupUI(startStop: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order.Stop) {
+
+    func setupUI(
+        startStop: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order.Stop
+    ) {
         if item.stop == "dormitory_o" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         } else if item.stop == "shuttlecock_o" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
         } else if item.stop == "station" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.station")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.station")
         } else if item.stop == "terminal" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
         } else if item.stop == "jungang_stn" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
         } else if item.stop == "shuttlecock_i" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
         } else {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.shuttleTimeLabel.text = self.formatTime(item.time)
-        if (startStop.time > item.time) {
-            self.shuttleStopLabel.textColor = .gray
-            self.shuttleTimeLabel.textColor = .gray
+        shuttleTimeLabel.text = formatTime(item.time)
+        if startStop.time > item.time {
+            shuttleStopLabel.textColor = .gray
+            shuttleTimeLabel.textColor = .gray
         }
     }
-    
-    func setupUI(startStop: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry.Stop) {
+
+    func setupUI(
+        startStop: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry.Stop
+    ) {
         if item.stop == "dormitory_o" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         } else if item.stop == "shuttlecock_o" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
         } else if item.stop == "station" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.station")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.station")
         } else if item.stop == "terminal" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
         } else if item.stop == "jungang_stn" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
         } else if item.stop == "shuttlecock_i" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
         } else {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.shuttleTimeLabel.text = self.formatTime(item.time)
-        if (startStop.time > item.time) {
-            self.shuttleStopLabel.textColor = .gray
-            self.shuttleTimeLabel.textColor = .gray
+        shuttleTimeLabel.text = formatTime(item.time)
+        if startStop.time > item.time {
+            shuttleStopLabel.textColor = .gray
+            shuttleTimeLabel.textColor = .gray
         }
     }
-    
-    func setupUI(startStop: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order, item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order.Stop) {
+
+    func setupUI(
+        startStop: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order,
+        item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order.Stop
+    ) {
         if item.stop == "dormitory_o" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         } else if item.stop == "shuttlecock_o" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.out")
         } else if item.stop == "station" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.station")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.station")
         } else if item.stop == "terminal" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.terminal")
         } else if item.stop == "jungang_stn" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.jungang.station")
         } else if item.stop == "shuttlecock_i" {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.shuttlecock.in")
         } else {
-            self.shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
+            shuttleStopLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
-        self.shuttleTimeLabel.text = self.formatTime(item.time)
-        if (startStop.time > item.time) {
-            self.shuttleStopLabel.textColor = .gray
-            self.shuttleTimeLabel.textColor = .gray
+        shuttleTimeLabel.text = formatTime(item.time)
+        if startStop.time > item.time {
+            shuttleStopLabel.textColor = .gray
+            shuttleTimeLabel.textColor = .gray
         }
     }
 
@@ -116,7 +127,8 @@ class ShuttleViaCellView: UITableViewCell {
         }
         let components = Calendar.current.dateComponents([.hour, .minute], from: date)
         guard let hour = components.hour,
-              let minute = components.minute else {
+              let minute = components.minute
+        else {
             return time.substring(from: 0, to: 4)
         }
         return String(format: String(localized: "shuttle.shorten.time.%lld.%lld"), hour, minute)

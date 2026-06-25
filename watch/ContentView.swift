@@ -5,9 +5,9 @@
 //  Created by 이정인 on 4/12/25.
 //
 
+import Api
 import SwiftUI
 import Then
-import Api
 
 struct WatchShuttleStop: Hashable {
     let id: String

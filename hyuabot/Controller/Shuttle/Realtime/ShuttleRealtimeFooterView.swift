@@ -1,6 +1,6 @@
-import UIKit
-import Then
 import SnapKit
+import Then
+import UIKit
 
 private final class ExtendedHitAreaButton: UIButton {
     var minimumHitArea = CGSize(width: 44, height: 44)
@@ -26,9 +26,10 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         $0.spacing = 0
         $0.alignment = .fill
     }
+
     let showEntireTimeTableButton = UIButton().then {
         var conf = UIButton.Configuration.plain()
-        var title = AttributedString.init(String(localized: "shuttle.show.entire.timetable"))
+        var title = AttributedString(String(localized: "shuttle.show.entire.timetable"))
         title.font = .godo(size: 16, weight: .medium)
         conf.attributedTitle = title
         $0.configuration = conf
@@ -40,6 +41,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         setupLayout()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -66,7 +68,14 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         busAlternativeContainer.isHidden = true
     }
 
-    func setupUI(stopID: ShuttleStopEnum, section: Int, busAlternatives: [ShuttleBusAlternativeDisplayData], forceShow: Bool = false, showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void, showBusAlternativeStop: @escaping (_ alternative: ShuttleBusAlternativeDisplayData) -> Void) {
+    func setupUI(
+        stopID: ShuttleStopEnum,
+        section: Int,
+        busAlternatives: [ShuttleBusAlternativeDisplayData],
+        forceShow: Bool = false,
+        showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void,
+        showBusAlternativeStop: @escaping (_ alternative: ShuttleBusAlternativeDisplayData) -> Void
+    ) {
         self.stopID = stopID
         self.section = section
         self.showEntireTimetable = showEntireTimetable
@@ -74,7 +83,8 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
 
         let alternatives = forceShow && busAlternatives.isEmpty
             ? [ShuttleBusAlternativeDisplayData(
-                routeName: String(localized: String.LocalizationValue(stopID == .station ? "shuttle.bus.alternative.route.campus" : "shuttle.bus.alternative.route")),
+                routeName: String(localized: String
+                    .LocalizationValue(stopID == .station ? "shuttle.bus.alternative.route.campus" : "shuttle.bus.alternative.route")),
                 minutes: nil,
                 color: .busGreen,
                 busStopName: "",
@@ -85,13 +95,14 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         if self.stopID == stopID,
            self.section == section,
            self.alternatives == alternatives,
-           busAlternativeContainer.isHidden == alternatives.isEmpty {
+           busAlternativeContainer.isHidden == alternatives.isEmpty
+        {
             return
         }
 
-        busAlternativeStackView.arrangedSubviews.forEach {
-            busAlternativeStackView.removeArrangedSubview($0)
-            $0.removeFromSuperview()
+        for arrangedSubview in busAlternativeStackView.arrangedSubviews {
+            busAlternativeStackView.removeArrangedSubview(arrangedSubview)
+            arrangedSubview.removeFromSuperview()
         }
 
         self.alternatives = alternatives
@@ -101,7 +112,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             return
         }
 
-        alternatives.enumerated().forEach { index, alternative in
+        for (index, alternative) in alternatives.enumerated() {
             let row = makeAlternativeRow(alternative: alternative, index: index)
             busAlternativeStackView.addArrangedSubview(row)
             row.snp.makeConstraints { make in
@@ -176,7 +187,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
 
     @objc func showEntireTimeTable() {
         AnalyticsManager.logSelect(.shuttleShowEntireTimetable)
-        guard let stopID = self.stopID, let section = self.section else { return }
-        self.showEntireTimetable?(stopID, section)
+        guard let stopID, let section else { return }
+        showEntireTimetable?(stopID, section)
     }
 }

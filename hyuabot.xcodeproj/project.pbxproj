@@ -24,6 +24,7 @@
 		C7C51A772F8D02550002329A /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = C7C51A762F8D02550002329A /* Api */; };
 		C7CBC01C2F91E85A00010444 /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = C7CBC01B2F91E85A00010444 /* Api */; };
 		C7CBC01E2F91E8A100010444 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7CBC01D2F91E8A100010444 /* FirebaseAnalytics */; };
+		C7D5B0422FEF200100000042 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = C7D5B0412FEF200100000041 /* SnapshotTesting */; };
 		C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468952DAE2DDD00E8975E /* Apollo */; };
 		C7E4689D2DAE2ED500E8975E /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7E4689C2DAE2ED500E8975E /* Then */; };
 		C7E468A12DAE2F1800E8975E /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468A02DAE2F1800E8975E /* RxSwift */; };
@@ -43,6 +44,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = C79048C42FC947FD005BF1C1;
 			remoteInfo = widgetExtension;
+		};
+		C7D5B0312FEF100100000031 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C056E32D277910007A228B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C7C056EA2D277910007A228B;
+			remoteInfo = hyuabot;
+		};
+		C7D5B0322FEF100100000032 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C056E32D277910007A228B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C7C056EA2D277910007A228B;
+			remoteInfo = hyuabot;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -88,6 +103,8 @@
 		C79048C62FC947FD005BF1C1 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		C79048C82FC947FD005BF1C1 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		C7C056EB2D277910007A228B /* hyuabot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hyuabot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7D5B0112FEF100100000011 /* hyuabotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hyuabotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7D5B0212FEF100100000021 /* hyuabotUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hyuabotUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -139,6 +156,16 @@
 			path = hyuabot;
 			sourceTree = "<group>";
 		};
+		C7D5B0122FEF100100000012 /* hyuabotTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = hyuabotTests;
+			sourceTree = "<group>";
+		};
+		C7D5B0222FEF100100000022 /* hyuabotUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = hyuabotUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +207,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C7D5B0132FEF100100000013 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7D5B0422FEF200100000042 /* SnapshotTesting in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7D5B0232FEF100100000023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -187,6 +229,8 @@
 			isa = PBXGroup;
 			children = (
 				C7C056ED2D277910007A228B /* hyuabot */,
+				C7D5B0122FEF100100000012 /* hyuabotTests */,
+				C7D5B0222FEF100100000022 /* hyuabotUITests */,
 				C72A95E22DAA961500979B22 /* watch */,
 				C79048CA2FC947FD005BF1C1 /* widget */,
 				C7CBC01A2F91E85A00010444 /* Frameworks */,
@@ -198,6 +242,8 @@
 			isa = PBXGroup;
 			children = (
 				C7C056EB2D277910007A228B /* hyuabot.app */,
+				C7D5B0112FEF100100000011 /* hyuabotTests.xctest */,
+				C7D5B0212FEF100100000021 /* hyuabotUITests.xctest */,
 				C72A95E12DAA961500979B22 /* watch.app */,
 				C79048C52FC947FD005BF1C1 /* widgetExtension.appex */,
 			);
@@ -304,6 +350,53 @@
 			productReference = C7C056EB2D277910007A228B /* hyuabot.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C7D5B0102FEF100100000010 /* hyuabotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7D5B0182FEF100100000018 /* Build configuration list for PBXNativeTarget "hyuabotTests" */;
+			buildPhases = (
+				C7D5B0142FEF100100000014 /* Sources */,
+				C7D5B0132FEF100100000013 /* Frameworks */,
+				C7D5B0152FEF100100000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C7D5B0332FEF100100000033 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C7D5B0122FEF100100000012 /* hyuabotTests */,
+			);
+			name = hyuabotTests;
+			packageProductDependencies = (
+				C7D5B0412FEF200100000041 /* SnapshotTesting */,
+			);
+			productName = hyuabotTests;
+			productReference = C7D5B0112FEF100100000011 /* hyuabotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C7D5B0202FEF100100000020 /* hyuabotUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7D5B0282FEF100100000028 /* Build configuration list for PBXNativeTarget "hyuabotUITests" */;
+			buildPhases = (
+				C7D5B0242FEF100100000024 /* Sources */,
+				C7D5B0232FEF100100000023 /* Frameworks */,
+				C7D5B0252FEF100100000025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C7D5B0342FEF100100000034 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C7D5B0222FEF100100000022 /* hyuabotUITests */,
+			);
+			name = hyuabotUITests;
+			packageProductDependencies = (
+			);
+			productName = hyuabotUITests;
+			productReference = C7D5B0212FEF100100000021 /* hyuabotUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -322,6 +415,14 @@
 					};
 					C7C056EA2D277910007A228B = {
 						CreatedOnToolsVersion = 16.2;
+					};
+					C7D5B0102FEF100100000010 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = C7C056EA2D277910007A228B;
+					};
+					C7D5B0202FEF100100000020 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = C7C056EA2D277910007A228B;
 					};
 				};
 			};
@@ -345,6 +446,7 @@
 				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */,
 				C7C51A752F8D02550002329A /* XCLocalSwiftPackageReference "api" */,
+				C7D5B0402FEF200100000040 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C7C056EC2D277910007A228B /* Products */;
@@ -352,6 +454,8 @@
 			projectRoot = "";
 			targets = (
 				C7C056EA2D277910007A228B /* hyuabot */,
+				C7D5B0102FEF100100000010 /* hyuabotTests */,
+				C7D5B0202FEF100100000020 /* hyuabotUITests */,
 				C72A95E02DAA961500979B22 /* watch */,
 				C79048C42FC947FD005BF1C1 /* widgetExtension */,
 			);
@@ -374,6 +478,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C7C056E92D277910007A228B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7D5B0152FEF100100000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7D5B0252FEF100100000025 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -466,6 +584,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C7D5B0142FEF100100000014 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7D5B0242FEF100100000024 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -478,6 +610,16 @@
 			isa = PBXTargetDependency;
 			target = C79048C42FC947FD005BF1C1 /* widgetExtension */;
 			targetProxy = C79048D82FC947FE005BF1C1 /* PBXContainerItemProxy */;
+		};
+		C7D5B0332FEF100100000033 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C7C056EA2D277910007A228B /* hyuabot */;
+			targetProxy = C7D5B0312FEF100100000031 /* PBXContainerItemProxy */;
+		};
+		C7D5B0342FEF100100000034 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C7C056EA2D277910007A228B /* hyuabot */;
+			targetProxy = C7D5B0322FEF100100000032 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -708,7 +850,7 @@
 				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -777,7 +919,7 @@
 				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -796,6 +938,74 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C7D5B0162FEF100100000016 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hyuabot.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hyuabot";
+			};
+			name = Debug;
+		};
+		C7D5B0172FEF100100000017 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hyuabot.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hyuabot";
+			};
+			name = Release;
+		};
+		C7D5B0262FEF100100000026 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabotUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = hyuabot;
+			};
+			name = Debug;
+		};
+		C7D5B0272FEF100100000027 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabotUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = hyuabot;
 			};
 			name = Release;
 		};
@@ -834,6 +1044,24 @@
 			buildConfigurations = (
 				C7C056FF2D277911007A228B /* Debug */,
 				C7C057002D277911007A228B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C7D5B0182FEF100100000018 /* Build configuration list for PBXNativeTarget "hyuabotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7D5B0162FEF100100000016 /* Debug */,
+				C7D5B0172FEF100100000017 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C7D5B0282FEF100100000028 /* Build configuration list for PBXNativeTarget "hyuabotUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7D5B0262FEF100100000026 /* Debug */,
+				C7D5B0272FEF100100000027 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -894,6 +1122,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 3.0.0;
+			};
+		};
+		C7D5B0402FEF200100000040 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.18.7;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -957,6 +1193,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
+		};
+		C7D5B0412FEF200100000041 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7D5B0402FEF200100000040 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
 		};
 		C7E468952DAE2DDD00E8975E /* Apollo */ = {
 			isa = XCSwiftPackageProductDependency;

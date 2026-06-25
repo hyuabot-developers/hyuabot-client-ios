@@ -11,6 +11,7 @@ final class ShuttleTimetableSkeletonCellView: UITableViewCell {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -24,7 +25,7 @@ final class ShuttleTimetableSkeletonCellView: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .systemBackground
 
-        [typePlaceholder, timePlaceholder].forEach { view in
+        for view in [typePlaceholder, timePlaceholder] {
             view.backgroundColor = .secondarySystemFill
             view.layer.cornerRadius = 4
             view.layer.masksToBounds = true
@@ -57,7 +58,7 @@ final class ShuttleTimetableSkeletonCellView: UITableViewCell {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        [typePlaceholder, timePlaceholder].forEach { view in
+        for view in [typePlaceholder, timePlaceholder] {
             view.layer.removeAnimation(forKey: "shuttleTimetableSkeletonOpacity")
             view.layer.add(animation, forKey: "shuttleTimetableSkeletonOpacity")
         }

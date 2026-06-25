@@ -1,7 +1,7 @@
-import UIKit
+import Api
 import MapKit
 import RxSwift
-import Api
+import UIKit
 
 class CafeteriaInfoVC: UIViewController {
     private let cafeteriaID: Int
@@ -13,11 +13,13 @@ class CafeteriaInfoVC: UIViewController {
         $0.backgroundColor = .hanyangBlue
         $0.textAlignment = .center
     }
+
     private let cafeteriaMapView = MKMapView().then {
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
         $0.isPitchEnabled = false
     }
+
     private let runningTimeTitleLabel = UILabel().then {
         $0.font = .godo(size: 18, weight: .bold)
         $0.text = String(localized: "cafeteria.running.time")
@@ -25,24 +27,28 @@ class CafeteriaInfoVC: UIViewController {
         $0.textColor = .white
         $0.textAlignment = .center
     }
+
     private let breakfastTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textColor = .label
         $0.textAlignment = .right
         $0.text = "08:00"
     }
+
     private let lunchTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textColor = .label
         $0.textAlignment = .right
         $0.text = "12:00"
     }
+
     private let dinnerTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
         $0.textColor = .label
         $0.textAlignment = .right
         $0.text = "18:00"
     }
+
     private lazy var runningTimeView = UIView().then {
         $0.backgroundColor = .systemBackground
         let breakfastLabel = UILabel().then {
@@ -100,56 +106,57 @@ class CafeteriaInfoVC: UIViewController {
             make.height.equalTo(30)
         }
     }
-    
+
     init(cafeteriaID: Int) {
         self.cafeteriaID = cafeteriaID
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.cafeteriaInfo)
+        logScreenView(.cafeteriaInfo)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.fetchCafeteriaInfo()
-        self.observeSubjects()
+        setupUI()
+        fetchCafeteriaInfo()
+        observeSubjects()
     }
-    
+
     private func setupUI() {
-        self.view.backgroundColor = .hanyangBlue
-        self.view.addSubview(self.titleLabel)
-        self.view.addSubview(self.cafeteriaMapView)
-        self.view.addSubview(self.runningTimeTitleLabel)
-        self.view.addSubview(self.runningTimeView)
-        self.cafeteriaMapView.delegate = self
-        self.titleLabel.snp.makeConstraints { make in
+        view.backgroundColor = .hanyangBlue
+        view.addSubview(titleLabel)
+        view.addSubview(cafeteriaMapView)
+        view.addSubview(runningTimeTitleLabel)
+        view.addSubview(runningTimeView)
+        cafeteriaMapView.delegate = self
+        titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
         }
-        self.cafeteriaMapView.snp.makeConstraints { make in
+        cafeteriaMapView.snp.makeConstraints { make in
             make.height.equalTo(300)
             make.top.equalTo(self.titleLabel.snp.bottom)
             make.leading.trailing.equalToSuperview()
         }
-        self.runningTimeTitleLabel.snp.makeConstraints { make in
+        runningTimeTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(self.cafeteriaMapView.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
         }
-        self.runningTimeView.snp.makeConstraints { make in
+        runningTimeView.snp.makeConstraints { make in
             make.top.equalTo(self.runningTimeTitleLabel.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-    
+
     private func fetchCafeteriaInfo() {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
         Task {
@@ -161,10 +168,10 @@ class CafeteriaInfoVC: UIViewController {
             }
         }
     }
-    
+
     private func observeSubjects() {
-        self.cafeteriaInfo.subscribe(onNext: { cafeteria in
-            guard let cafeteria = cafeteria else { return }
+        cafeteriaInfo.subscribe(onNext: { cafeteria in
+            guard let cafeteria else { return }
             var title = ""
             switch self.cafeteriaID {
             case 1:
@@ -198,7 +205,7 @@ class CafeteriaInfoVC: UIViewController {
             self.dinnerTimeLabel.text = cafeteria.runningTime.dinner ?? "-"
             self.cafeteriaMapView.do {
                 $0.removeAnnotations($0.annotations)
-                if (cafeteria.latitude == 0 && cafeteria.longitude == 0) {
+                if cafeteria.latitude == 0, cafeteria.longitude == 0 {
                     return
                 }
                 $0.addAnnotation(MKPointAnnotation().with {
@@ -212,7 +219,7 @@ class CafeteriaInfoVC: UIViewController {
                     heading: 0
                 )
             }
-        }).disposed(by: self.disposeBag)
+        }).disposed(by: disposeBag)
     }
 }
 

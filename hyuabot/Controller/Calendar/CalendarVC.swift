@@ -1,11 +1,10 @@
-import UIKit
-import SnapKit
-import RxSwift
-import RealmSwift
 import Api
+import RealmSwift
+import RxSwift
+import SnapKit
+import UIKit
 
 class CalendarVC: UIViewController {
-
     // MARK: - Private types
 
     private struct EventSegment {
@@ -13,8 +12,8 @@ class CalendarVC: UIViewController {
         let row: Int
         let startCol: Int
         let endCol: Int
-        let roundLeft: Bool   // event actually starts here (not continuing from prev row)
-        let roundRight: Bool  // event actually ends here (not continuing to next row)
+        let roundLeft: Bool // event actually starts here (not continuing from prev row)
+        let roundRight: Bool // event actually ends here (not continuing to next row)
         let slot: Int
         let dimmed: Bool
     }
@@ -30,6 +29,7 @@ class CalendarVC: UIViewController {
         let cal = Calendar.current
         return cal.date(from: cal.dateComponents([.year, .month], from: Foundation.Date())) ?? Foundation.Date()
     }()
+
     private var calendarDates: [Foundation.Date] = []
     private var eventSegments: [EventSegment] = []
     private var selectedDate: Foundation.Date?
@@ -46,11 +46,13 @@ class CalendarVC: UIViewController {
         $0.dateFormat = "yyyy-MM-dd"
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
+
     private let monthLabelFormatter = DateFormatter().then {
         $0.dateFormat = "yyyy년 M월"
         $0.locale = Locale(identifier: "ko_KR")
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
+
     private let selectedDateFormatter = DateFormatter().then {
         $0.dateFormat = "yyyy년 M월 d일 (E)"
         $0.locale = Locale(identifier: "ko_KR")
@@ -63,6 +65,7 @@ class CalendarVC: UIViewController {
         $0.showsVerticalScrollIndicator = false
         $0.alwaysBounceVertical = true
     }
+
     private let scrollContent = UIView()
 
     private let monthNavView = UIView()
@@ -70,18 +73,22 @@ class CalendarVC: UIViewController {
         $0.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         $0.tintColor = .label
     }
+
     private let nextButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "chevron.right"), for: .normal)
         $0.tintColor = .label
     }
+
     private let monthLabel = UILabel().then {
         $0.font = .godo(size: 17, weight: .bold)
         $0.textAlignment = .center
     }
+
     private let weekdayHeaderView = UIStackView().then {
         $0.axis = .horizontal
         $0.distribution = .fillEqually
     }
+
     private lazy var calendarCollectionView: UICollectionView = {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: makeCompositionalLayout())
         cv.isScrollEnabled = false
@@ -91,23 +98,27 @@ class CalendarVC: UIViewController {
         cv.dataSource = self
         return cv
     }()
-    // Overlay sits on top of collection view; bars are drawn here as frame-based views
+
+    /// Overlay sits on top of collection view; bars are drawn here as frame-based views
     private let eventOverlayView = UIView().then {
         $0.backgroundColor = .clear
         $0.isUserInteractionEnabled = false
     }
+
     private let panelDivider = UIView().then { $0.backgroundColor = .separator }
     private let selectedDateLabel = UILabel().then {
         $0.font = .godo(size: 15, weight: .bold)
         $0.textColor = .label
         $0.isHidden = true
     }
+
     private let noEventsLabel = UILabel().then {
         $0.font = .godo(size: 14, weight: .regular)
         $0.textColor = .secondaryLabel
         $0.textAlignment = .center
         $0.numberOfLines = 0
     }
+
     private lazy var selectedEventView = UITableView().then {
         $0.delegate = self
         $0.dataSource = self
@@ -117,16 +128,20 @@ class CalendarVC: UIViewController {
         $0.separatorStyle = .none
         $0.register(CalendarEventCellView.self, forCellReuseIdentifier: CalendarEventCellView.reuseIdentifier)
     }
+
     private let loadingSpinner = UIActivityIndicatorView().then {
         $0.style = .large; $0.color = .label
     }
+
     private let loadingLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular); $0.textColor = .label
     }
+
     private lazy var loadingStackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel]).then {
         $0.axis = .vertical; $0.spacing = 10; $0.alignment = .center
         $0.backgroundColor = .systemBackground
     }
+
     private lazy var loadingView = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.addSubview(loadingStackView)
@@ -220,7 +235,7 @@ class CalendarVC: UIViewController {
         monthNavView.addSubview(nextButton)
         scrollContent.addSubview(weekdayHeaderView)
         scrollContent.addSubview(calendarCollectionView)
-        scrollContent.addSubview(eventOverlayView)   // sibling of collection view, on top
+        scrollContent.addSubview(eventOverlayView) // sibling of collection view, on top
         scrollContent.addSubview(panelDivider)
         scrollContent.addSubview(selectedDateLabel)
         scrollContent.addSubview(noEventsLabel)
@@ -313,7 +328,7 @@ class CalendarVC: UIViewController {
             if let d = cal.date(byAdding: .day, value: -(i + 1), to: first) { dates.append(d) }
         }
         let count = cal.range(of: .day, in: .month, for: first)?.count ?? 0
-        for i in 0..<count {
+        for i in 0 ..< count {
             if let d = cal.date(byAdding: .day, value: i, to: first) { dates.append(d) }
         }
         let total = ((dates.count + 6) / 7) * 7
@@ -332,51 +347,54 @@ class CalendarVC: UIViewController {
         var segments: [EventSegment] = []
         let numRows = calendarDates.count / 7
 
-        for row in 0..<numRows {
+        for row in 0 ..< numRows {
             let startIdx = row * 7
-            let weekDates = Array(calendarDates[startIdx..<min(startIdx + 7, calendarDates.count)])
+            let weekDates = Array(calendarDates[startIdx ..< min(startIdx + 7, calendarDates.count)])
             guard !weekDates.isEmpty else { continue }
 
             let weekStartStr = dateFormatter.string(from: weekDates.first!)
-            let weekEndStr   = dateFormatter.string(from: weekDates.last!)
+            let weekEndStr = dateFormatter.string(from: weekDates.last!)
 
             let rowEvents = allEvents.filter {
-                String($0.endDate.prefix(10))   >= weekStartStr &&
-                String($0.startDate.prefix(10)) <= weekEndStr
+                String($0.endDate.prefix(10)) >= weekStartStr &&
+                    String($0.startDate.prefix(10)) <= weekEndStr
             }.sorted { lhs, rhs in
                 lhs.startDate != rhs.startDate
                     ? lhs.startDate < rhs.startDate
-                    : lhs.endDate > rhs.endDate     // longer events get lower slots
+                    : lhs.endDate > rhs.endDate // longer events get lower slots
             }
 
             var slotOccupancy: [Int: Set<Int>] = [:]
 
             for event in rowEvents {
                 let evStart = String(event.startDate.prefix(10))
-                let evEnd   = String(event.endDate.prefix(10))
+                let evEnd = String(event.endDate.prefix(10))
 
                 var cols = Set<Int>()
-                for col in 0..<weekDates.count {
+                for col in 0 ..< weekDates.count {
                     let dayStr = dateFormatter.string(from: weekDates[col])
-                    if evStart <= dayStr && evEnd >= dayStr { cols.insert(col) }
+                    if evStart <= dayStr, evEnd >= dayStr { cols.insert(col) }
                 }
                 guard !cols.isEmpty else { continue }
 
                 var slot = 0
-                while let occ = slotOccupancy[slot], !occ.isDisjoint(with: cols) { slot += 1 }
+                while let occ = slotOccupancy[slot], !occ.isDisjoint(with: cols) {
+                    slot += 1
+                }
                 slotOccupancy[slot] = (slotOccupancy[slot] ?? []).union(cols)
 
                 let sc = cols.min()!, ec = cols.max()!
                 let isCurrent = Calendar.current.isDate(
-                    weekDates[sc], equalTo: currentMonth, toGranularity: .month)
+                    weekDates[sc], equalTo: currentMonth, toGranularity: .month
+                )
 
                 segments.append(EventSegment(
                     event: event,
                     row: row,
                     startCol: sc,
                     endCol: ec,
-                    roundLeft:  evStart == dateFormatter.string(from: weekDates[sc]),
-                    roundRight: evEnd   == dateFormatter.string(from: weekDates[ec]),
+                    roundLeft: evStart == dateFormatter.string(from: weekDates[sc]),
+                    roundRight: evEnd == dateFormatter.string(from: weekDates[ec]),
                     slot: slot,
                     dimmed: !isCurrent
                 ))
@@ -390,7 +408,7 @@ class CalendarVC: UIViewController {
     private static let maxSlot: Int = 2
     private static let barH: CGFloat = 14
     private static let barSpacing: CGFloat = 1
-    private static let dateAreaH: CGFloat = 30  // top of cell to where bars start
+    private static let dateAreaH: CGFloat = 30 // top of cell to where bars start
 
     private func renderEventBars() {
         eventOverlayView.subviews.forEach { $0.removeFromSuperview() }
@@ -398,12 +416,12 @@ class CalendarVC: UIViewController {
         let colW = view.bounds.width / 7
 
         for seg in eventSegments where seg.slot < Self.maxSlot {
-            let leftInset: CGFloat  = seg.roundLeft  ? 3 : 0
+            let leftInset: CGFloat = seg.roundLeft ? 3 : 0
             let rightInset: CGFloat = seg.roundRight ? 3 : 0
             let x = CGFloat(seg.startCol) * colW + leftInset
             let y = CGFloat(seg.row) * currentCellHeight
-                  + Self.dateAreaH
-                  + CGFloat(seg.slot) * (Self.barH + Self.barSpacing)
+                + Self.dateAreaH
+                + CGFloat(seg.slot) * (Self.barH + Self.barSpacing)
             let w = max(0, CGFloat(seg.endCol - seg.startCol + 1) * colW - leftInset - rightInset)
 
             let bar = UIView()
@@ -412,7 +430,7 @@ class CalendarVC: UIViewController {
             bar.clipsToBounds = true
 
             var corners: CACornerMask = []
-            if seg.roundLeft  { corners.formUnion([.layerMinXMinYCorner, .layerMinXMaxYCorner]) }
+            if seg.roundLeft { corners.formUnion([.layerMinXMinYCorner, .layerMinXMaxYCorner]) }
             if seg.roundRight { corners.formUnion([.layerMaxXMinYCorner, .layerMaxXMaxYCorner]) }
             bar.layer.cornerRadius = (seg.roundLeft || seg.roundRight) ? 3 : 0
             bar.layer.maskedCorners = corners
@@ -497,9 +515,9 @@ class CalendarVC: UIViewController {
     private func observeSubjects() {
         notificationToken = Database.shared.database.objects(Event.self).observe { [weak self] changes in
             switch changes {
-            case .initial(let results):
+            case let .initial(results):
                 self?.eventSubject.onNext(results.map { $0 })
-            case .update(_, let deletions, let insertions, let modifications):
+            case let .update(_, deletions, insertions, modifications):
                 if !deletions.isEmpty || !insertions.isEmpty || !modifications.isEmpty {
                     self?.eventSubject.onNext(Database.shared.database.objects(Event.self).map { $0 })
                 }
@@ -559,7 +577,7 @@ class CalendarVC: UIViewController {
                 targetView: calendarCollectionView,
                 title: String(localized: "coach.calendar.calendar.title"),
                 message: String(localized: "coach.calendar.calendar.message")
-            ),
+            )
         ])
     }
 }

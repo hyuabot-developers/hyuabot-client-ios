@@ -1,6 +1,6 @@
-import UIKit
-import SnapKit
 import Api
+import SnapKit
+import UIKit
 
 private extension UIColor {
     static let line4Color = UIColor(red: 0, green: 160 / 255, blue: 233 / 255, alpha: 1)
@@ -39,9 +39,9 @@ private struct TransferRow: Equatable {
     var preferredHeight: CGFloat {
         switch vehicleType {
         case .subway:
-            return 100
+            100
         case .bus:
-            return 84
+            84
         }
     }
 
@@ -68,6 +68,7 @@ private final class TransferTimelineView: UIView {
         isOpaque = false
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -92,11 +93,29 @@ private final class TransferTimelineView: UIView {
         context.setLineWidth(2)
 
         if row.vehicleType == .subway {
-            drawSubwayTrack(context: context, entriesByDirection: entriesByDirection, targetX: targetX, centerY: centerY, left: left, right: right, color: color)
+            drawSubwayTrack(
+                context: context,
+                entriesByDirection: entriesByDirection,
+                targetX: targetX,
+                centerY: centerY,
+                left: left,
+                right: right,
+                color: color
+            )
         }
 
         for (direction, entries) in entriesByDirection {
-            drawEntries(context: context, type: row.vehicleType, entries: Array(entries.prefix(2)), targetX: targetX, centerY: centerY, direction: direction, left: left, right: right, color: color)
+            drawEntries(
+                context: context,
+                type: row.vehicleType,
+                entries: Array(entries.prefix(2)),
+                targetX: targetX,
+                centerY: centerY,
+                direction: direction,
+                left: left,
+                right: right,
+                color: color
+            )
         }
 
         drawTarget(context: context, type: row.vehicleType, targetX: targetX, centerY: centerY, color: color)
@@ -117,15 +136,42 @@ private final class TransferTimelineView: UIView {
         for direction in [-1, 1] {
             let directionEntries = entriesByDirection[direction] ?? []
             let allFar = !directionEntries.isEmpty && directionEntries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
-            let edgeX = trackX(targetX: targetX, direction: direction, index: sideStations, clearance: targetClearance, step: step, left: left, right: right)
+            let edgeX = trackX(
+                targetX: targetX,
+                direction: direction,
+                index: sideStations,
+                clearance: targetClearance,
+                step: step,
+                left: left,
+                right: right
+            )
             if allFar {
-                let solidEndX = trackX(targetX: targetX, direction: direction, index: sideStations - 1, clearance: targetClearance, step: step, left: left, right: right)
+                let solidEndX = trackX(
+                    targetX: targetX,
+                    direction: direction,
+                    index: sideStations - 1,
+                    clearance: targetClearance,
+                    step: step,
+                    left: left,
+                    right: right
+                )
                 drawLine(context: context, from: targetX, to: solidEndX, y: centerY)
                 drawLine(context: context, from: solidEndX, to: edgeX, y: centerY, dashed: true)
             } else {
                 drawLine(context: context, from: targetX, to: edgeX, y: centerY)
             }
-            drawDots(context: context, targetX: targetX, step: step, count: sideStations, direction: direction, centerY: centerY, color: color, left: left, right: right, clearance: targetClearance)
+            drawDots(
+                context: context,
+                targetX: targetX,
+                step: step,
+                count: sideStations,
+                direction: direction,
+                centerY: centerY,
+                color: color,
+                left: left,
+                right: right,
+                clearance: targetClearance
+            )
         }
     }
 
@@ -147,15 +193,42 @@ private final class TransferTimelineView: UIView {
 
         if type == .bus {
             let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
-            let edgeX = trackX(targetX: targetX, direction: direction, index: visibleBusStops, clearance: targetClearance, step: step, left: left, right: right)
+            let edgeX = trackX(
+                targetX: targetX,
+                direction: direction,
+                index: visibleBusStops,
+                clearance: targetClearance,
+                step: step,
+                left: left,
+                right: right
+            )
             if allFar {
-                let solidEndX = trackX(targetX: targetX, direction: direction, index: compressedNearBusStop, clearance: targetClearance, step: step, left: left, right: right)
+                let solidEndX = trackX(
+                    targetX: targetX,
+                    direction: direction,
+                    index: compressedNearBusStop,
+                    clearance: targetClearance,
+                    step: step,
+                    left: left,
+                    right: right
+                )
                 drawLine(context: context, from: targetX, to: solidEndX, y: centerY)
                 drawLine(context: context, from: solidEndX, to: edgeX, y: centerY, dashed: true)
             } else {
                 drawLine(context: context, from: targetX, to: edgeX, y: centerY)
             }
-            drawDots(context: context, targetX: targetX, step: step, count: visibleBusStops, direction: direction, centerY: centerY, color: color, left: left, right: right, clearance: targetClearance)
+            drawDots(
+                context: context,
+                targetX: targetX,
+                step: step,
+                count: visibleBusStops,
+                direction: direction,
+                centerY: centerY,
+                color: color,
+                left: left,
+                right: right,
+                clearance: targetClearance
+            )
         }
 
         for (index, entry) in entries.enumerated() {
@@ -164,11 +237,27 @@ private final class TransferTimelineView: UIView {
             if type == .subway {
                 let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
                 let visibleStops = allFar ? index + 2 : min(stops, sideStations)
-                vehicleX = trackX(targetX: targetX, direction: direction, index: visibleStops, clearance: targetClearance, step: step, left: left, right: right)
+                vehicleX = trackX(
+                    targetX: targetX,
+                    direction: direction,
+                    index: visibleStops,
+                    clearance: targetClearance,
+                    step: step,
+                    left: left,
+                    right: right
+                )
             } else {
                 let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
                 let visibleStops = allFar ? (index == 0 ? compressedNearBusStop : visibleBusStops) : min(stops, visibleBusStops)
-                vehicleX = trackX(targetX: targetX, direction: direction, index: visibleStops, clearance: targetClearance, step: step, left: left, right: right)
+                vehicleX = trackX(
+                    targetX: targetX,
+                    direction: direction,
+                    index: visibleStops,
+                    clearance: targetClearance,
+                    step: step,
+                    left: left,
+                    right: right
+                )
             }
             let clampedX = clamp(vehicleX, left, right)
             drawVehicle(context: context, type: type, x: clampedX, y: centerY, color: color)
@@ -185,10 +274,21 @@ private final class TransferTimelineView: UIView {
         context.restoreGState()
     }
 
-    private func drawDots(context: CGContext, targetX: CGFloat, step: CGFloat, count: Int, direction: Int, centerY: CGFloat, color: UIColor, left: CGFloat, right: CGFloat, clearance: CGFloat) {
-        for index in 1...count {
+    private func drawDots(
+        context: CGContext,
+        targetX: CGFloat,
+        step: CGFloat,
+        count: Int,
+        direction: Int,
+        centerY: CGFloat,
+        color: UIColor,
+        left: CGFloat,
+        right: CGFloat,
+        clearance: CGFloat
+    ) {
+        for index in 1 ... count {
             let x = trackX(targetX: targetX, direction: direction, index: index, clearance: clearance, step: step, left: left, right: right)
-            guard x >= left && x <= right else { continue }
+            guard x >= left, x <= right else { continue }
             context.setFillColor(color.cgColor)
             context.fillEllipse(in: CGRect(x: x - 4, y: centerY - 4, width: 8, height: 8))
             context.setFillColor(UIColor.systemBackground.cgColor)
@@ -213,7 +313,8 @@ private final class TransferTimelineView: UIView {
         let primary: String
         if type == .bus {
             let minuteText = entry.minutes.map { localizedTransferMinuteText($0) } ?? entry.destination
-            let stopsText = entry.stops.map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) }
+            let stopsText = entry.stops
+                .map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) }
             primary = [minuteText, stopsText].compactMap { $0 }.joined(separator: " ")
         } else {
             primary = String(format: String(localized: "subway.terminal.%@"), entry.destination)
@@ -238,11 +339,10 @@ private final class TransferTimelineView: UIView {
 
         let width = bubbleWidth(for: Array(lines), type: type)
         let height: CGFloat = lines.count == 1 ? 20 : bubbleHeight
-        let above: Bool
-        if type == .subway {
-            above = entry.direction < 0
+        let above: Bool = if type == .subway {
+            entry.direction < 0
         } else {
-            above = total == 1 || index == 0
+            total == 1 || index == 0
         }
         let bubbleTrackGap: CGFloat = 16
         let top = above ? y - bubbleTrackGap - height : y + bubbleTrackGap
@@ -331,7 +431,15 @@ private final class TransferTimelineView: UIView {
         return max((availableLength - clearance) / CGFloat(stopCount - 1), 1)
     }
 
-    private func trackX(targetX: CGFloat, direction: Int, index: Int, clearance: CGFloat, step: CGFloat, left: CGFloat, right: CGFloat) -> CGFloat {
+    private func trackX(
+        targetX: CGFloat,
+        direction: Int,
+        index: Int,
+        clearance: CGFloat,
+        step: CGFloat,
+        left: CGFloat,
+        right: CGFloat
+    ) -> CGFloat {
         let distance = clearance + CGFloat(max(index - 1, 0)) * step
         return clamp(targetX + CGFloat(direction) * distance, left, right)
     }
@@ -347,6 +455,7 @@ private final class TransferRowView: UIView {
         $0.layer.cornerRadius = 8
         $0.clipsToBounds = true
     }
+
     private let timelineView = TransferTimelineView()
 
     init(row: TransferRow) {
@@ -369,6 +478,7 @@ private final class TransferRowView: UIView {
         }
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -389,6 +499,7 @@ final class ShuttleTransferInfoView: UIView {
         $0.font = .godo(size: 16, weight: .bold)
         $0.backgroundColor = .hanyangBlue
     }
+
     private let rowStackView = UIStackView().then {
         $0.axis = .vertical
         $0.spacing = 0
@@ -407,6 +518,7 @@ final class ShuttleTransferInfoView: UIView {
         setupUI()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -431,22 +543,21 @@ final class ShuttleTransferInfoView: UIView {
             handleEmptyRows()
             return
         }
-        let rows: [TransferRow]
-        switch stopID {
+        let rows: [TransferRow] = switch stopID {
         case .dormiotryOut, .shuttlecockOut:
-            rows = buildSubwayRows(data: data.subway) + buildBusRows(
+            buildSubwayRows(data: data.subway) + buildBusRows(
                 data: data.transferBus,
-                stopSeq: 216000759,
+                stopSeq: 216_000_759,
                 label: String(localized: "shuttle.transfer.bus50.to.kwangmyeong")
             )
         case .terminal:
-            rows = buildBusRows(
+            buildBusRows(
                 data: data.transferBus,
-                stopSeq: 216000117,
+                stopSeq: 216_000_117,
                 label: String(localized: "shuttle.transfer.bus50.to.ansan")
             )
         default:
-            rows = []
+            []
         }
 
         guard !rows.isEmpty else {
@@ -477,11 +588,11 @@ final class ShuttleTransferInfoView: UIView {
     private func render(rows: [TransferRow]) {
         guard rows != self.rows else { return }
         self.rows = rows
-        rowStackView.arrangedSubviews.forEach {
-            rowStackView.removeArrangedSubview($0)
-            $0.removeFromSuperview()
+        for arrangedSubview in rowStackView.arrangedSubviews {
+            rowStackView.removeArrangedSubview(arrangedSubview)
+            arrangedSubview.removeFromSuperview()
         }
-        rows.forEach { row in
+        for row in rows {
             let rowView = TransferRowView(row: row)
             rowStackView.addArrangedSubview(rowView)
             rowView.snp.makeConstraints { make in
@@ -501,7 +612,7 @@ final class ShuttleTransferInfoView: UIView {
             guard let station = data.first(where: { $0.stationID == info.stationID }) else { return nil }
             let timeline = station.arrival.flatMap { group in
                 group.entries
-                    .filter { $0.isRealtime }
+                    .filter(\.isRealtime)
                     .prefix(1)
                     .map {
                         TransferTimelineEntry(
@@ -528,7 +639,7 @@ final class ShuttleTransferInfoView: UIView {
         let displayLabel = transferBusDisplayLabel(koreanLabel: label)
         let timeline = data
             .filter { $0.stop.seq == stopSeq }
-            .flatMap { $0.arrival }
+            .flatMap(\.arrival)
             .filter { $0.minutes != nil }
             .prefix(2)
             .map {
@@ -536,7 +647,8 @@ final class ShuttleTransferInfoView: UIView {
                     destination: displayLabel,
                     minutes: $0.minutes,
                     stops: $0.stops,
-                    locationLabel: $0.stops.map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) },
+                    locationLabel: $0.stops
+                        .map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) },
                     direction: -1
                 )
             }
@@ -566,9 +678,9 @@ final class ShuttleTransferInfoView: UIView {
     private func subwayDirection(_ direction: String) -> Int {
         switch direction {
         case "down", "1":
-            return 1
+            1
         default:
-            return -1
+            -1
         }
     }
 }

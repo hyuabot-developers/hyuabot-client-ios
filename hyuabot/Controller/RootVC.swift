@@ -1,6 +1,6 @@
-import UIKit
 import SafariServices
 import Then
+import UIKit
 
 class RootVC: UITabBarController {
     // NavigationController for each Tab
@@ -22,7 +22,8 @@ class RootVC: UITabBarController {
         retryShuttleCoachMarksIfNeeded()
         // Shuttle marks already shown on a previous launch — show immediately
         if !isWaitingForShuttleCoachMarksAfterReset,
-           !CoachMarkManager.shared.shouldShowPage("shuttle.realtime") {
+           !CoachMarkManager.shared.shouldShowPage("shuttle.realtime")
+        {
             showMoreCoachMarkIfNeeded()
         }
     }
@@ -55,7 +56,7 @@ class RootVC: UITabBarController {
                 targetViewProvider: { [weak self] in self?.moreButtonView },
                 title: String(localized: "coach.root.more.title"),
                 message: String(localized: "coach.root.more.message")
-            ),
+            )
         ])
     }
 
@@ -82,21 +83,43 @@ class RootVC: UITabBarController {
         )
         // TabBar
         shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus.fill"), tag: 0)
+        shuttleNC.tabBarItem.accessibilityIdentifier = "tab.shuttle"
         busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker.fill"), tag: 1)
+        busNC.tabBarItem.accessibilityIdentifier = "tab.bus"
         subwayNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.subway"), image: UIImage(systemName: "tram.fill"), tag: 2)
-        cafeteriaNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.cafeteria"), image: UIImage(systemName: "fork.knife"), tag: 3)
+        subwayNC.tabBarItem.accessibilityIdentifier = "tab.subway"
+        cafeteriaNC.tabBarItem = UITabBarItem(
+            title: String(localized: "tabbar.cafeteria"),
+            image: UIImage(systemName: "fork.knife"),
+            tag: 3
+        )
+        cafeteriaNC.tabBarItem.accessibilityIdentifier = "tab.cafeteria"
         mapNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.map"), image: UIImage(systemName: "map.fill"), tag: 4)
-        readingRoomNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.readingroom"), image: UIImage(systemName: "book.fill"), tag: 5)
+        mapNC.tabBarItem.accessibilityIdentifier = "tab.map"
+        readingRoomNC.tabBarItem = UITabBarItem(
+            title: String(localized: "tabbar.readingroom"),
+            image: UIImage(systemName: "book.fill"),
+            tag: 5
+        )
+        readingRoomNC.tabBarItem.accessibilityIdentifier = "tab.readingroom"
         contactNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.contact"), image: UIImage(systemName: "person.fill"), tag: 6)
+        contactNC.tabBarItem.accessibilityIdentifier = "tab.contact"
         calendarNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.calendar"), image: UIImage(systemName: "calendar"), tag: 7)
+        calendarNC.tabBarItem.accessibilityIdentifier = "tab.calendar"
         settingNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.setting"), image: UIImage(systemName: "gear"), tag: 8)
+        settingNC.tabBarItem.accessibilityIdentifier = "tab.setting"
         chatVC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.chat"), image: UIImage(systemName: "message.fill"), tag: 9)
+        chatVC.tabBarItem.accessibilityIdentifier = "tab.chat"
         donateVC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.donate"), image: UIImage(systemName: "heart.fill"), tag: 10)
-        if let moreTableView = self.moreNavigationController.viewControllers.first?.view as? UITableView {
+        donateVC.tabBarItem.accessibilityIdentifier = "tab.donate"
+        if let moreTableView = moreNavigationController.viewControllers.first?.view as? UITableView {
             moreTableView.delegate = self
         }
-        self.delegate = self
-        self.setViewControllers([shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC], animated: true)
+        delegate = self
+        setViewControllers(
+            [shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC],
+            animated: true
+        )
         // Appearance
         UITabBar.appearance().backgroundColor = .systemBackground
     }
@@ -104,18 +127,18 @@ class RootVC: UITabBarController {
     /// Maps a tab's view controller to its analytics item for tab-switch tracking.
     func analyticsItem(for viewController: UIViewController?) -> AnalyticsItem? {
         switch viewController {
-        case shuttleNC:     return .tabShuttle
-        case busNC:         return .tabBus
-        case subwayNC:      return .tabSubway
-        case cafeteriaNC:   return .tabCafeteria
-        case mapNC:         return .tabMap
-        case readingRoomNC: return .tabReadingRoom
-        case contactNC:     return .tabContact
-        case calendarNC:    return .tabCalendar
-        case settingNC:     return .tabSetting
-        case chatVC:        return .tabChat
-        case donateVC:      return .tabDonate
-        default:            return nil
+        case shuttleNC: .tabShuttle
+        case busNC: .tabBus
+        case subwayNC: .tabSubway
+        case cafeteriaNC: .tabCafeteria
+        case mapNC: .tabMap
+        case readingRoomNC: .tabReadingRoom
+        case contactNC: .tabContact
+        case calendarNC: .tabCalendar
+        case settingNC: .tabSetting
+        case chatVC: .tabChat
+        case donateVC: .tabDonate
+        default: nil
         }
     }
 }
@@ -135,37 +158,37 @@ extension RootVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.textLabel?.font = UIFont.godo(size: 16, weight: .regular)
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath)
         switch cell?.textLabel?.text {
         case String(localized: "tabbar.shuttle"):
-            self.selectedViewController = shuttleNC
+            selectedViewController = shuttleNC
             retryShuttleCoachMarksIfNeeded()
         case String(localized: "tabbar.bus"):
-            self.selectedViewController = busNC
+            selectedViewController = busNC
         case String(localized: "tabbar.subway"):
-            self.selectedViewController = subwayNC
+            selectedViewController = subwayNC
         case String(localized: "tabbar.cafeteria"):
-            self.selectedViewController = cafeteriaNC
+            selectedViewController = cafeteriaNC
         case String(localized: "tabbar.map"):
-            self.selectedViewController = mapNC
+            selectedViewController = mapNC
         case String(localized: "tabbar.readingroom"):
-            self.selectedViewController = readingRoomNC
+            selectedViewController = readingRoomNC
         case String(localized: "tabbar.contact"):
-            self.selectedViewController = contactNC
+            selectedViewController = contactNC
         case String(localized: "tabbar.calendar"):
-            self.selectedViewController = calendarNC
+            selectedViewController = calendarNC
         case String(localized: "tabbar.setting"):
-            self.selectedViewController = settingNC
+            selectedViewController = settingNC
         case String(localized: "tabbar.chat"):
-            self.selectedViewController = chatVC
+            selectedViewController = chatVC
         case String(localized: "tabbar.donate"):
-            self.selectedViewController = donateVC
+            selectedViewController = donateVC
         default:
             break
         }
-        if let item = analyticsItem(for: self.selectedViewController) {
+        if let item = analyticsItem(for: selectedViewController) {
             AnalyticsManager.logSelect(item, type: .tab)
         }
     }

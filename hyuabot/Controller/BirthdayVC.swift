@@ -1,6 +1,5 @@
-import UIKit
 import RxSwift
-
+import UIKit
 
 class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -17,6 +16,7 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+
     private lazy var dialogMessage: UILabel = {
         let label = UILabel()
         label.text = String(format: String(localized: "birthday.content.%lld.%@"), currentYear - 2017, String(currentYear))
@@ -26,6 +26,7 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+
     private lazy var dialogMessageView = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.translatesAutoresizingMaskIntoConstraints = false
@@ -34,9 +35,10 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
             dialogMessage.topAnchor.constraint(equalTo: $0.topAnchor, constant: 12),
             dialogMessage.leadingAnchor.constraint(equalTo: $0.leadingAnchor, constant: 12),
             dialogMessage.trailingAnchor.constraint(equalTo: $0.trailingAnchor, constant: -12),
-            dialogMessage.bottomAnchor.constraint(equalTo: $0.bottomAnchor, constant: -12),
+            dialogMessage.bottomAnchor.constraint(equalTo: $0.bottomAnchor, constant: -12)
         ])
     }
+
     private lazy var dialogStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [dialogTitle, dialogMessageView])
         stackView.axis = .vertical
@@ -45,13 +47,14 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         stackView.distribution = .fill
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            dialogMessageView.widthAnchor.constraint(equalTo: stackView.widthAnchor),
+            dialogMessageView.widthAnchor.constraint(equalTo: stackView.widthAnchor)
         ])
         return stackView
     }()
+
     private lazy var doNotShowCheckbox: UIButton = {
         var configuration = UIButton.Configuration.plain()
-        
+
         let title = String(localized: "birthday.dont.show.again")
         configuration.title = title
         configuration.baseForegroundColor = .white
@@ -61,7 +64,7 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         configuration.image = UIImage(systemName: "square")
         configuration.imagePlacement = .leading
         configuration.imagePadding = 4.0
-        
+
         let button = UIButton(configuration: configuration, primaryAction: nil)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(onDoNotShowCheckboxTapped), for: .touchUpInside)
@@ -76,6 +79,7 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         }
         return button
     }()
+
     private lazy var closeButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(String(localized: "close"), for: .normal)
@@ -85,6 +89,7 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         button.addTarget(self, action: #selector(onBackgroundClicked), for: .touchUpInside)
         return button
     }()
+
     private lazy var contentView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.hanyangBlue
@@ -102,37 +107,38 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
             doNotShowCheckbox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 4),
             doNotShowCheckbox.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
             closeButton.centerYAnchor.constraint(equalTo: doNotShowCheckbox.centerYAnchor),
-            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
         ])
         return view
     }()
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.birthday)
+        logScreenView(.birthday)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         let backgroundTapGesture = UITapGestureRecognizer(target: self, action: #selector(onBackgroundClicked))
         backgroundTapGesture.delegate = self
-        self.view.addGestureRecognizer(backgroundTapGesture)
-        self.view.addSubview(contentView)
+        view.addGestureRecognizer(backgroundTapGesture)
+        view.addSubview(contentView)
         NSLayoutConstraint.activate([
-            contentView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            contentView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-            contentView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            contentView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            contentView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            contentView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8)
         ])
     }
-    
+
     @objc private func onBackgroundClicked() {
         AnalyticsManager.logSelect(.birthdayDismiss)
-        self.dismiss(animated: true, completion: nil)
-        if (backgroundClicked != nil) {
+        dismiss(animated: true, completion: nil)
+        if backgroundClicked != nil {
             backgroundClicked!()
         }
     }
-    
+
     @objc private func onDoNotShowCheckboxTapped(_ sender: UIButton) {
         AnalyticsManager.logSelect(.birthdayDoNotShow)
         sender.isSelected.toggle()

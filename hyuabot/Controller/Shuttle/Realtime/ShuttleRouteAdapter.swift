@@ -18,30 +18,32 @@ class ShuttleRouteAdapter: UIView {
         }
         return view
     }()
+
     private lazy var stackView = UIStackView().then {
         $0.axis = .vertical
         $0.spacing = 0
         $0.addArrangedSubview(headerView)
     }
-    
+
     init(routes: [ShuttleRouteItemView.Route], labels: [String.LocalizationValue]) {
         self.routes = routes
         self.labels = labels
         super.init(frame: .zero)
-        self.setupUI()
+        setupUI()
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func setupUI() {
-        self.backgroundColor = .hanyangBlue
+        backgroundColor = .hanyangBlue
         addSubview(stackView)
         stackView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
-        routes.enumerated().forEach { index, route in
+        for (index, route) in routes.enumerated() {
             let rowView = UIView()
             let label = UILabel().then {
                 $0.text = index < labels.count ? String(localized: labels[index]).replacingOccurrences(of: " ", with: "\n") : ""

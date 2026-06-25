@@ -1,6 +1,6 @@
-import UIKit
-import RxSwift
 import Api
+import RxSwift
+import UIKit
 
 class BusTimetableVC: UIViewController {
     let stopID: Int32
@@ -20,33 +20,35 @@ class BusTimetableVC: UIViewController {
         viewPager.contentView.pages = [weekdaysVC.view, saturdaysVC.view, sundaysVC.view]
         return viewPager
     }()
+
     required init(stopID: Int32, routes: [Int32], title: String.LocalizationValue) {
         self.stopID = stopID
         self.routes = routes
-        self.navigationTitle = title
+        navigationTitle = title
         super.init(nibName: nil, bundle: nil)
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.logScreenView(.busTimetable)
+        logScreenView(.busTimetable)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        self.observeSubjects()
-        self.fetchBusTimetable()
+        setupUI()
+        observeSubjects()
+        fetchBusTimetable()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: false)
     }
-    
+
     private func fetchBusTimetable() {
         BusTimetableData.shared.isLoading.onNext(true)
         Task {
@@ -68,22 +70,22 @@ class BusTimetableVC: UIViewController {
             }
         }
     }
-    
+
     private func setupUI() {
-        self.view.backgroundColor = .hanyangBlue
-        self.view.addSubview(viewPager)
-        self.navigationItem.title = String(localized: navigationTitle)
-        self.viewPager.snp.makeConstraints { make in
+        view.backgroundColor = .hanyangBlue
+        view.addSubview(viewPager)
+        navigationItem.title = String(localized: navigationTitle)
+        viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
     }
-    
+
     private func observeSubjects() {
         BusTimetableData.shared.timetable.subscribe(onNext: { timetable in
             let isLoading = (try? BusTimetableData.shared.isLoading.value()) ?? false
-            if isLoading && timetable.isEmpty {
+            if isLoading, timetable.isEmpty {
                 return
             }
             BusTimetableData.shared.weekdays.onNext(timetable.filter { $0.weekdays == "weekdays" }.sorted())
@@ -91,13 +93,13 @@ class BusTimetableVC: UIViewController {
             BusTimetableData.shared.sundays.onNext(timetable.filter { $0.weekdays == "sunday" }.sorted())
             BusTimetableData.shared.isLoading.onNext(false)
         }).disposed(by: disposeBag)
-        BusTimetableData.shared.weekdays.subscribe(onNext: { weekdays in
+        BusTimetableData.shared.weekdays.subscribe(onNext: { _ in
             self.weekdaysVC.reload()
         }).disposed(by: disposeBag)
-        BusTimetableData.shared.saturdays.subscribe(onNext: { weekends in
+        BusTimetableData.shared.saturdays.subscribe(onNext: { _ in
             self.saturdaysVC.reload()
         }).disposed(by: disposeBag)
-        BusTimetableData.shared.sundays.subscribe(onNext: { weekends in
+        BusTimetableData.shared.sundays.subscribe(onNext: { _ in
             self.sundaysVC.reload()
         }).disposed(by: disposeBag)
     }
