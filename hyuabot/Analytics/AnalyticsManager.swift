@@ -22,7 +22,7 @@ import UIKit
 // MARK: - Screens (GA4 `screen_view` -> screen_name)
 
 /// Every user-visible screen. rawValue == GA4 `screen_name` (shared with Android).
-enum AnalyticsScreen: String {
+enum AnalyticsScreen: String, CaseIterable {
     // Shuttle
     case shuttleRealtime = "shuttle_realtime"
     case shuttleTimetable = "shuttle_timetable"
