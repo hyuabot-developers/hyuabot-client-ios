@@ -1625,7 +1625,7 @@ final class TodayHomeVC: UIViewController {
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(64)
+            make.width.equalTo(82)
             make.height.equalTo(24)
         }
 

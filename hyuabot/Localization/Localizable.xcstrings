@@ -6431,25 +6431,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check alternatives below if shuttle service is unavailable."
+            "value" : "Check again later or use an alternative route below."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "運行の空き時間なら下の代替移動を確認してください。"
+            "value" : "しばらくしてから再確認するか、下の代替ルートを確認してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "운행 공백이면 아래 대체 이동을 확인하세요."
+            "value" : "잠시 후 다시 확인하거나 아래 대체 노선을 확인해요."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "如果暂时没有班次，请查看下方替代路线。"
+            "value" : "请稍后再确认，或查看下方替代路线。"
           }
         }
       }
@@ -6459,25 +6459,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No nearby shuttle"
+            "value" : "No shuttle available now"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "近いシャトルがありません"
+            "value" : "今乗れるシャトルがありません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "가까운 셔틀이 없어요"
+            "value" : "지금 탈 수 있는 셔틀이 없어요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "附近暂无校车"
+            "value" : "现在暂无可乘坐的校车"
           }
         }
       }
@@ -7473,7 +7473,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suin-Bundang"
+            "value" : "Suin"
           }
         },
         "ja" : {
@@ -7529,13 +7529,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check alternatives/transfers"
+            "value" : "Alternatives / transfers"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "代替/乗り換えを確認"
+            "value" : "代替/乗換"
           }
         },
         "ko" : {
@@ -7547,7 +7547,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看替代/换乘"
+            "value" : "替代/换乘"
           }
         }
       }
