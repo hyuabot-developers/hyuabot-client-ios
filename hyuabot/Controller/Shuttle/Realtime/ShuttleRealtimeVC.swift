@@ -4,6 +4,7 @@ import RxSwift
 import UIKit
 
 class ShuttleRealtimeVC: UIViewController {
+    private let returnsToHome: Bool
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
     private lazy var locationManager = CLLocationManager().then {
@@ -145,19 +146,19 @@ class ShuttleRealtimeVC: UIViewController {
         var config = UIButton.Configuration.tinted()
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
-        config.image = UIImage(systemName: "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
+        config.image = UIImage(systemName: returnsToHome ? "house.fill" : "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
             pointSize: 16,
             weight: .semibold
         ))
-        config.attributedTitle = AttributedString(String(localized: "shuttle.quick_settings.button"), attributes: AttributeContainer([
+        config.attributedTitle = AttributedString(String(localized: returnsToHome ? "home.return" : "shuttle.quick_settings.button"), attributes: AttributeContainer([
             .font: UIFont.godo(size: 14, weight: .bold)
         ]))
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
         $0.configuration = config
-        $0.addTarget(self, action: #selector(openQuickSettings), for: .touchUpInside)
-        $0.accessibilityLabel = String(localized: "shuttle.quick_settings.title")
-        $0.accessibilityIdentifier = "shuttle.quick_settings"
+        $0.addTarget(self, action: returnsToHome ? #selector(returnToHome) : #selector(openQuickSettings), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: returnsToHome ? "home.return" : "shuttle.quick_settings.title")
+        $0.accessibilityIdentifier = returnsToHome ? "shuttle.return_home" : "shuttle.quick_settings"
     }
 
     private lazy var quickSettingsBar = UIView().then {
@@ -167,7 +168,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private lazy var quickSettingsBarLabel = UILabel().then {
-        $0.text = String(localized: "shuttle.action_bar.title")
+        $0.text = String(localized: returnsToHome ? "home.action_bar.title" : "shuttle.action_bar.title")
         $0.textColor = .secondaryLabel
         $0.font = .godo(size: 13, weight: .bold)
     }
@@ -182,7 +183,8 @@ class ShuttleRealtimeVC: UIViewController {
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
             sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0),
-            noticeView: self.noticeView
+            noticeView: self.noticeView,
+            navigationBarEnabled: self.returnsToHome
         )
         // Add the content pages to the view pager
         viewPager.contentView.pages = [
@@ -204,6 +206,16 @@ class ShuttleRealtimeVC: UIViewController {
         ]
         return viewPager
     }()
+
+    init(returnsToHome: Bool = false) {
+        self.returnsToHome = returnsToHome
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -415,6 +427,9 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if returnsToHome {
+            navigationItem.title = String(localized: "home.movement.detail")
+        }
         setupUI()
         observeSubjects()
         checkBirthdayDialog()
@@ -424,7 +439,7 @@ class ShuttleRealtimeVC: UIViewController {
         super.viewWillAppear(animated)
         startPolling()
         noticeView.resumeAutoScroll()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(!returnsToHome, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -468,7 +483,12 @@ class ShuttleRealtimeVC: UIViewController {
         quickSettingsBar.addSubview(quickSettingsBarLabel)
         quickSettingsBar.addSubview(homeButton)
         viewPager.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            if self.returnsToHome {
+                make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+                make.leading.trailing.equalToSuperview()
+            } else {
+                make.top.leading.trailing.equalToSuperview()
+            }
             make.bottom.equalTo(self.quickSettingsBar.snp.top)
         }
         quickSettingsBar.snp.makeConstraints { make in
@@ -915,6 +935,11 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func openHomeExperience() {
         AnalyticsManager.logSelect(.homeTry)
+        guard let nc = navigationController as? ShuttleNC else { return }
+        nc.showHome()
+    }
+
+    @objc private func returnToHome() {
         guard let nc = navigationController as? ShuttleNC else { return }
         nc.showHome()
     }

@@ -17,6 +17,11 @@ class ShuttleNC: UINavigationController {
         setViewControllers([ShuttleRealtimeVC()], animated: true)
     }
 
+    func showShuttleDetailFromHome() {
+        updateTabBarItemForCurrentExperience()
+        pushViewController(ShuttleRealtimeVC(returnsToHome: true), animated: true)
+    }
+
     func updateTabBarItemForCurrentExperience() {
         if HomeExperienceManager.isEnabled {
             tabBarItem.title = String(localized: "tabbar.home")

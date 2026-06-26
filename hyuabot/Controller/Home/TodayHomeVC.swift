@@ -327,7 +327,7 @@ final class TodayHomeVC: UIViewController {
             icon: "bus.fill",
             title: String(localized: "home.movement.title"),
             buttonTitle: String(localized: "home.movement.detail"),
-            action: #selector(openLegacyShuttle)
+            action: #selector(openShuttleDetail)
         )
         movementStateLabel.font = .godo(size: 15, weight: .regular)
         movementStateLabel.textColor = .secondaryLabel
@@ -1125,6 +1125,10 @@ final class TodayHomeVC: UIViewController {
         (navigationController as? ShuttleNC)?.showLegacyShuttle()
     }
 
+    @objc private func openShuttleDetail() {
+        AnalyticsManager.logSelect(.homeOpenLegacyShuttle)
+        (navigationController as? ShuttleNC)?.showShuttleDetailFromHome()
+    }
 
     @objc private func openCafeteria() {
         AnalyticsManager.logSelect(.homeOpenCafeteria)
