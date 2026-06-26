@@ -8,21 +8,24 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
   public static let operationName: String = "HomePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HomePageQuery($after: LocalTime, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 8 } } { name: "shuttlecock_o", limit: { destination: 8 } } { name: "station", limit: { destination: 8 } } { name: "terminal", limit: { destination: 8 } } { name: "jungang_stn", limit: { destination: 8 } } { name: "shuttlecock_i", limit: { destination: 8 } } ] after: $after } ) { __typename stops { __typename name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
+      #"query HomePageQuery($after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 8 } } { name: "shuttlecock_o", limit: { destination: 8 } } { name: "station", limit: { destination: 8 } } { name: "terminal", limit: { destination: 8 } } { name: "jungang_stn", limit: { destination: 8 } } { name: "shuttlecock_i", limit: { destination: 8 } } ] after: $after } ) { __typename stops { __typename name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes } } subway( input: { keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
     ))
 
   public var after: GraphQLNullable<LocalTime>
+  public var weekday: String
   public var date: Date
   public var campusID: Int32
   public var busInput: [BusRouteStopInput]
 
   public init(
     after: GraphQLNullable<LocalTime>,
+    weekday: String,
     date: Date,
     campusID: Int32,
     busInput: [BusRouteStopInput]
   ) {
     self.after = after
+    self.weekday = weekday
     self.date = date
     self.campusID = campusID
     self.busInput = busInput
@@ -30,6 +33,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "after": after,
+    "weekday": weekday,
     "date": date,
     "campusID": campusID,
     "busInput": busInput
@@ -68,6 +72,22 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         "stop": 216000759,
         "limit": 2
       ]]]),
+      .field("subway", [Subway].self, arguments: ["input": ["keys": [[
+        "stationID": "K449",
+        "direction": ["up", "down"],
+        "weekdays": [.variable("weekday")],
+        "limit": 12
+      ], [
+        "stationID": "K251",
+        "direction": ["up", "down"],
+        "weekdays": [.variable("weekday")],
+        "limit": 12
+      ], [
+        "stationID": "K258",
+        "direction": ["down"],
+        "weekdays": [.variable("weekday")],
+        "limit": 12
+      ]]]]),
       .field("bus", [Bus].self, arguments: ["input": .variable("busInput")]),
       .field("cafeteria", [Cafeterium].self, arguments: ["input": [
         "date": .variable("date"),
@@ -80,6 +100,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
     public var shuttle: Shuttle { __data["shuttle"] }
     public var transferBus: [TransferBus] { __data["transferBus"] }
+    public var subway: [Subway] { __data["subway"] }
     public var bus: [Bus] { __data["bus"] }
     public var cafeteria: [Cafeterium] { __data["cafeteria"] }
 
@@ -284,6 +305,90 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         ] }
 
         public var minutes: Int? { __data["minutes"] }
+      }
+    }
+
+    /// Subway
+    ///
+    /// Parent Type: `SubwayStation`
+    nonisolated public struct Subway: Api.SelectionSet {
+      @_spi(Unsafe) public let __data: DataDict
+      @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+      @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayStation }
+      @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+        .field("__typename", String.self),
+        .field("stationID", String.self),
+        .field("arrival", [Arrival].self),
+      ] }
+      @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+        HomePageQuery.Data.Subway.self
+      ] }
+
+      public var stationID: String { __data["stationID"] }
+      public var arrival: [Arrival] { __data["arrival"] }
+
+      /// Subway.Arrival
+      ///
+      /// Parent Type: `SubwayArrivalGroup`
+      nonisolated public struct Arrival: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayArrivalGroup }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("direction", String.self),
+          .field("entries", [Entry].self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          HomePageQuery.Data.Subway.Arrival.self
+        ] }
+
+        public var direction: String { __data["direction"] }
+        public var entries: [Entry] { __data["entries"] }
+
+        /// Subway.Arrival.Entry
+        ///
+        /// Parent Type: `SubwayArrival`
+        nonisolated public struct Entry: Api.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayArrival }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("minutes", Int.self),
+            .field("terminal", Terminal.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            HomePageQuery.Data.Subway.Arrival.Entry.self
+          ] }
+
+          public var minutes: Int { __data["minutes"] }
+          public var terminal: Terminal { __data["terminal"] }
+
+          /// Subway.Arrival.Entry.Terminal
+          ///
+          /// Parent Type: `SubwayOriginTerminal`
+          nonisolated public struct Terminal: Api.SelectionSet {
+            @_spi(Unsafe) public let __data: DataDict
+            @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+            @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayOriginTerminal }
+            @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+              .field("__typename", String.self),
+              .field("stationID", String.self),
+              .field("name", String.self),
+            ] }
+            @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+              HomePageQuery.Data.Subway.Arrival.Entry.Terminal.self
+            ] }
+
+            public var stationID: String { __data["stationID"] }
+            public var name: String { __data["name"] }
+          }
+        }
       }
     }
 

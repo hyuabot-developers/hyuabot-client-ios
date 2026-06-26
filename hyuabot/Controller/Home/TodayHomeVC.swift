@@ -112,7 +112,7 @@ private struct HomeTransitOption {
     let minutes: Int?
     let badge: String
     let tintColor: UIColor
-    let connection: HomeTransferConnection?
+    let connections: [HomeTransferConnection]
 
     init(
         kind: Kind,
@@ -121,7 +121,7 @@ private struct HomeTransitOption {
         minutes: Int?,
         badge: String,
         tintColor: UIColor,
-        connection: HomeTransferConnection? = nil
+        connections: [HomeTransferConnection] = []
     ) {
         self.kind = kind
         self.title = title
@@ -129,13 +129,23 @@ private struct HomeTransitOption {
         self.minutes = minutes
         self.badge = badge
         self.tintColor = tintColor
-        self.connection = connection
+        self.connections = connections
     }
 }
 
 private struct HomeTransferConnection {
+    let badge: String
     let title: String
     let trailing: String
+    let tintColor: UIColor
+    let arrivalDate: Foundation.Date
+    let minimumTransferMinutes: Int
+}
+
+private struct HomeSubwayArrival {
+    let lineBadge: String
+    let terminalStationID: String
+    let terminalName: String
     let tintColor: UIColor
     let arrivalDate: Foundation.Date
 }
@@ -186,8 +196,14 @@ private struct HomeMealPeriod {
     let mealIndex: Int
 }
 
+private extension UIColor {
+    static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
+}
+
 private enum HomeSettings {
     static let showBus50TransferKey = "home.showBus50Transfer"
+    static let showSubwayTransferKey = "home.showSubwayTransfer"
+    static let subwayTransferDestinationKey = "home.subwayTransferDestination"
 
     static var showBus50Transfer: Bool {
         get {
@@ -200,19 +216,96 @@ private enum HomeSettings {
             UserDefaults.standard.set(newValue, forKey: showBus50TransferKey)
         }
     }
+
+    static var showSubwayTransfer: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: showSubwayTransferKey) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: showSubwayTransferKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: showSubwayTransferKey)
+        }
+    }
+
+    static var subwayTransferDestination: SubwayTransferDestination {
+        get {
+            guard let rawValue = UserDefaults.standard.string(forKey: subwayTransferDestinationKey),
+                  let destination = SubwayTransferDestination(rawValue: rawValue)
+            else { return .seoul }
+            return destination
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: subwayTransferDestinationKey)
+        }
+    }
 }
+
+private enum SubwayTransferDestination: String, CaseIterable {
+    case seoul
+    case suwonYongin
+    case incheon
+    case oido
+
+    var title: String {
+        switch self {
+        case .seoul:
+            return String(localized: "home.quick_settings.subway_destination.seoul")
+        case .suwonYongin:
+            return String(localized: "home.quick_settings.subway_destination.suwon_yongin")
+        case .incheon:
+            return String(localized: "home.quick_settings.subway_destination.incheon")
+        case .oido:
+            return String(localized: "home.quick_settings.subway_destination.oido")
+        }
+    }
+}
+
+#if DEBUG
+private extension SubwayTransferDestination {
+    init?(debugValue: String) {
+        switch debugValue {
+        case "seoul":
+            self = .seoul
+        case "suwonYongin", "suwon_yongin":
+            self = .suwonYongin
+        case "incheon":
+            self = .incheon
+        case "oido":
+            self = .oido
+        default:
+            return nil
+        }
+    }
+}
+#endif
 
 private final class HomeQuickSettingsVC: UIViewController {
     var openLegacyShuttle: (() -> Void)?
     var updateShowBus50Transfer: ((Bool) -> Void)?
-    let preferredSheetHeight: CGFloat = 245
+    var updateShowSubwayTransfer: ((Bool) -> Void)?
+    var updateSubwayTransferDestination: ((SubwayTransferDestination) -> Void)?
+    let preferredSheetHeight: CGFloat = 370
 
     private let contentStack = UIStackView()
     private let showBus50TransferSwitch = UISwitch()
+    private let showSubwayTransferSwitch = UISwitch()
+    private let subwayDestinationControl = UISegmentedControl()
 
-    init(showBus50Transfer: Bool) {
+    init(
+        showBus50Transfer: Bool,
+        showSubwayTransfer: Bool,
+        subwayTransferDestination: SubwayTransferDestination
+    ) {
         showBus50TransferSwitch.isOn = showBus50Transfer
+        showSubwayTransferSwitch.isOn = showSubwayTransfer
         super.init(nibName: nil, bundle: nil)
+        SubwayTransferDestination.allCases.enumerated().forEach { index, destination in
+            subwayDestinationControl.insertSegment(withTitle: destination.title, at: index, animated: false)
+        }
+        subwayDestinationControl.selectedSegmentIndex = SubwayTransferDestination.allCases.firstIndex(of: subwayTransferDestination) ?? 0
+        subwayDestinationControl.isEnabled = showSubwayTransfer
     }
 
     @available(*, unavailable)
@@ -244,6 +337,8 @@ private final class HomeQuickSettingsVC: UIViewController {
         title.textColor = .label
 
         showBus50TransferSwitch.addTarget(self, action: #selector(onChangeShowBus50Transfer), for: .valueChanged)
+        showSubwayTransferSwitch.addTarget(self, action: #selector(onChangeShowSubwayTransfer), for: .valueChanged)
+        subwayDestinationControl.addTarget(self, action: #selector(onChangeSubwayTransferDestination), for: .valueChanged)
 
         contentStack.addArrangedSubview(title)
         contentStack.addArrangedSubview(settingRow(
@@ -252,6 +347,7 @@ private final class HomeQuickSettingsVC: UIViewController {
             control: showBus50TransferSwitch,
             identifier: "home.quick_settings.bus50_transfer_row"
         ))
+        contentStack.addArrangedSubview(subwayTransferRow())
         contentStack.addArrangedSubview(legacyActionRow())
     }
 
@@ -294,6 +390,58 @@ private final class HomeQuickSettingsVC: UIViewController {
         return row
     }
 
+    private func subwayTransferRow() -> UIView {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 10
+        stack.accessibilityIdentifier = "home.quick_settings.subway_transfer_row"
+        stack.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.backgroundColor = .secondarySystemBackground
+        stack.layer.cornerRadius = 8
+
+        let header = UIStackView()
+        header.axis = .horizontal
+        header.alignment = .center
+        header.spacing = 12
+
+        let textStack = UIStackView()
+        textStack.axis = .vertical
+        textStack.spacing = 4
+
+        let titleLabel = UILabel()
+        titleLabel.text = String(localized: "home.quick_settings.subway_transfer.title")
+        titleLabel.font = .godo(size: 16, weight: .bold)
+        titleLabel.textColor = .label
+
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = String(localized: "home.quick_settings.subway_transfer.subtitle")
+        subtitleLabel.font = .godo(size: 13, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 0
+
+        textStack.addArrangedSubview(titleLabel)
+        textStack.addArrangedSubview(subtitleLabel)
+        header.addArrangedSubview(textStack)
+        header.addArrangedSubview(showSubwayTransferSwitch)
+
+        subwayDestinationControl.setTitleTextAttributes([
+            .font: UIFont.godo(size: 12, weight: .regular)
+        ], for: .normal)
+        subwayDestinationControl.setTitleTextAttributes([
+            .font: UIFont.godo(size: 12, weight: .bold)
+        ], for: .selected)
+
+        stack.addArrangedSubview(header)
+        stack.addArrangedSubview(subwayDestinationControl)
+        stack.snp.makeConstraints { make in
+            make.height.equalTo(118)
+        }
+        stack.setContentHuggingPriority(.required, for: .vertical)
+        stack.setContentCompressionResistancePriority(.required, for: .vertical)
+        return stack
+    }
+
     private func legacyActionRow() -> UIView {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.tinted()
@@ -321,6 +469,16 @@ private final class HomeQuickSettingsVC: UIViewController {
         updateShowBus50Transfer?(showBus50TransferSwitch.isOn)
     }
 
+    @objc private func onChangeShowSubwayTransfer() {
+        subwayDestinationControl.isEnabled = showSubwayTransferSwitch.isOn
+        updateShowSubwayTransfer?(showSubwayTransferSwitch.isOn)
+    }
+
+    @objc private func onChangeSubwayTransferDestination() {
+        guard SubwayTransferDestination.allCases.indices.contains(subwayDestinationControl.selectedSegmentIndex) else { return }
+        updateSubwayTransferDestination?(SubwayTransferDestination.allCases[subwayDestinationControl.selectedSegmentIndex])
+    }
+
     @objc private func onTapLegacy() {
         dismiss(animated: true) { [weak self] in
             self?.openLegacyShuttle?()
@@ -330,6 +488,7 @@ private final class HomeQuickSettingsVC: UIViewController {
 
 final class TodayHomeVC: UIViewController {
     private static let autoRefreshIntervalSeconds = 60
+    private static let subwayMinimumTransferMinutes = 5
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -721,10 +880,10 @@ final class TodayHomeVC: UIViewController {
     ) -> [HomeTransitOption] {
         guard let stop = shuttleData?.shuttle.stops.first(where: { $0.name == stopName }) else { return [] }
         let candidates = shuttleCandidates(stop: stop, stopName: stopName, destination: destination, routeFilter: routeFilter)
-        let connections = candidates.map { bus50TransferConnection(from: stopName, to: destination, candidate: $0) }
-        return candidates
+        let visibleCandidates = Array(candidates.prefix(2))
+        let connectionGroups = visibleCandidates.map { transferConnections(from: stopName, to: destination, candidate: $0) }
+        return visibleCandidates
             .enumerated()
-            .prefix(2)
             .map { index, candidate in
                 let routeDisplay = shuttleRouteDisplay(stop: stopName, destination: destination, candidate: candidate)
                 return HomeTransitOption(
@@ -734,31 +893,48 @@ final class TodayHomeVC: UIViewController {
                     minutes: minutesUntil(candidate.time),
                     badge: routeDisplay.badge,
                     tintColor: routeDisplay.tintColor,
-                    connection: HomeSettings.showBus50Transfer
-                        ? displayableBus50Connection(at: index, in: connections, candidates: candidates)
-                        : nil
+                    connections: displayableConnections(
+                        at: index,
+                        to: destination,
+                        in: connectionGroups,
+                        candidates: visibleCandidates
+                    )
                 )
             }
     }
 
-    private func displayableBus50Connection(
+    private func displayableConnections(
         at index: Int,
-        in connections: [HomeTransferConnection?],
+        to destination: String,
+        in connectionGroups: [[HomeTransferConnection]],
         candidates: [HomeShuttleCandidate]
-    ) -> HomeTransferConnection? {
-        guard let connection = connections[index] else { return nil }
+    ) -> [HomeTransferConnection] {
+        let connections = connectionGroups[index]
+        guard let firstConnection = connections.first else { return [] }
         let laterCandidates = candidates.suffix(from: candidates.index(after: index))
-        if laterCandidates.contains(where: { candidateCanCatchBus($0, arrivalDate: connection.arrivalDate) }) {
-            return nil
+        if laterCandidates.contains(where: {
+            candidateCanCatchConnection(
+                $0,
+                destination: destination,
+                arrivalDate: firstConnection.arrivalDate,
+                minimumTransferMinutes: firstConnection.minimumTransferMinutes
+            )
+        }) {
+            return []
         }
-        return connection
+        return connections
     }
 
-    private func candidateCanCatchBus(_ candidate: HomeShuttleCandidate, arrivalDate: Foundation.Date) -> Bool {
-        guard let terminalArrival = candidate.stops.first(where: { $0.name == "terminal" })?.time.toLocalTimeOrNil() else {
+    private func candidateCanCatchConnection(
+        _ candidate: HomeShuttleCandidate,
+        destination: String,
+        arrivalDate: Foundation.Date,
+        minimumTransferMinutes: Int
+    ) -> Bool {
+        guard let transferArrival = candidateArrivalDate(candidate, for: destination) else {
             return false
         }
-        return terminalArrival <= arrivalDate
+        return arrivalDate.timeIntervalSince(transferArrival) >= TimeInterval(minimumTransferMinutes * 60)
     }
 
     private func shuttleCandidates(
@@ -771,6 +947,21 @@ final class TodayHomeVC: UIViewController {
         return group.entries
             .filter { routeFilter?($0) ?? true }
             .map(HomeShuttleCandidate.init(entry:))
+    }
+
+    private func transferConnections(
+        from stopName: String,
+        to destination: String,
+        candidate: HomeShuttleCandidate
+    ) -> [HomeTransferConnection] {
+        if HomeSettings.showBus50Transfer,
+           let busConnection = bus50TransferConnection(from: stopName, to: destination, candidate: candidate) {
+            return [busConnection]
+        }
+        if HomeSettings.showSubwayTransfer {
+            return subwayTransferConnection(from: stopName, to: destination, candidate: candidate)
+        }
+        return []
     }
 
     private func bus50TransferConnection(
@@ -804,10 +995,12 @@ final class TodayHomeVC: UIViewController {
         let title = String(format: String(localized: "home.transfer.bus50.realtime.title"), compactTime(busArrival))
         let trailing = String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes)
         return HomeTransferConnection(
+            badge: String(localized: "home.transfer.bus50.badge"),
             title: title,
             trailing: trailing,
             tintColor: bufferMinutes >= 3 ? .hanyangGreen : .systemOrange,
-            arrivalDate: busArrival
+            arrivalDate: busArrival,
+            minimumTransferMinutes: 0
         )
     }
 
@@ -822,11 +1015,193 @@ final class TodayHomeVC: UIViewController {
         let title = String(format: String(localized: "home.transfer.bus50.log.title"), compactTime(busArrival))
         let trailing = String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes)
         return HomeTransferConnection(
+            badge: String(localized: "home.transfer.bus50.badge"),
             title: title,
             trailing: trailing,
             tintColor: UIColor(named: "busGreen") ?? .systemGreen,
-            arrivalDate: busArrival
+            arrivalDate: busArrival,
+            minimumTransferMinutes: 0
         )
+    }
+
+    private func subwayTransferConnection(
+        from stopName: String,
+        to destination: String,
+        candidate: HomeShuttleCandidate
+    ) -> [HomeTransferConnection] {
+        guard destination == "STATION",
+              stopName == "dormitory_o" || stopName == "shuttlecock_o",
+              let stationArrival = candidateArrivalDate(candidate, for: destination),
+              let subwayConnections = bestSubwayConnections(after: stationArrival)
+        else { return [] }
+
+        return subwayConnections
+    }
+
+    private func bestSubwayConnections(after stationArrival: Foundation.Date) -> [HomeTransferConnection]? {
+        switch HomeSettings.subwayTransferDestination {
+        case .incheon:
+            return bestIncheonSubwayConnections(after: stationArrival)
+        case .seoul, .suwonYongin, .oido:
+            guard let subwayArrival = subwayArrivalOptions()
+                .filter({ canTransfer(to: $0.arrivalDate, after: stationArrival) })
+                .min(by: { $0.arrivalDate < $1.arrivalDate })
+            else { return nil }
+            return [subwayConnection(for: subwayArrival, after: stationArrival)]
+        }
+    }
+
+    private func bestIncheonSubwayConnections(after stationArrival: Foundation.Date) -> [HomeTransferConnection]? {
+        let direct = subwayArrivalOptions(for: .incheonDirect)
+            .filter { canTransfer(to: $0.arrivalDate, after: stationArrival) }
+            .map { [subwayConnection(for: $0, after: stationArrival)] }
+
+        let transfer = oidoTransferSubwayConnections(after: stationArrival)
+        return (direct + transfer)
+            .min { lhs, rhs in
+                (lhs.last?.arrivalDate ?? .distantFuture) < (rhs.last?.arrivalDate ?? .distantFuture)
+            }
+    }
+
+    private func oidoTransferSubwayConnections(after stationArrival: Foundation.Date) -> [[HomeTransferConnection]] {
+        let firstLegs = subwayArrivalOptions(for: .oido)
+            .filter { canTransfer(to: $0.arrivalDate, after: stationArrival) }
+        let secondLegs = subwayArrivalOptions(for: .incheonFromOido)
+        return firstLegs.compactMap { firstLeg in
+            guard let secondLeg = secondLegs
+                .filter({ canTransfer(to: $0.arrivalDate, after: firstLeg.arrivalDate) })
+                .min(by: { $0.arrivalDate < $1.arrivalDate })
+            else { return nil }
+            return [
+                subwayConnection(for: firstLeg, after: stationArrival),
+                subwayConnection(for: secondLeg, after: firstLeg.arrivalDate)
+            ]
+        }
+    }
+
+    private func subwayConnection(
+        for subwayArrival: HomeSubwayArrival,
+        after transferStartDate: Foundation.Date
+    ) -> HomeTransferConnection {
+        let bufferMinutes = max(0, Int(floor(subwayArrival.arrivalDate.timeIntervalSince(transferStartDate) / 60)))
+        let terminal = localizedSubwayStationName(
+            subwayArrival.terminalStationID,
+            fallback: subwayArrival.terminalName
+        )
+        return HomeTransferConnection(
+            badge: subwayArrival.lineBadge,
+            title: String(format: String(localized: "subway.terminal.%@"), terminal),
+            trailing: String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes),
+            tintColor: subwayArrival.tintColor,
+            arrivalDate: subwayArrival.arrivalDate,
+            minimumTransferMinutes: Self.subwayMinimumTransferMinutes
+        )
+    }
+
+    private func canTransfer(to arrivalDate: Foundation.Date, after previousArrivalDate: Foundation.Date) -> Bool {
+        arrivalDate.timeIntervalSince(previousArrivalDate) >= TimeInterval(Self.subwayMinimumTransferMinutes * 60)
+    }
+
+    private func subwayArrivalOptions() -> [HomeSubwayArrival] {
+        switch HomeSettings.subwayTransferDestination {
+        case .seoul:
+            return subwayArrivalOptions(for: .seoul)
+        case .suwonYongin:
+            return subwayArrivalOptions(for: .suwonYongin)
+        case .incheon:
+            return subwayArrivalOptions(for: .incheonDirect)
+        case .oido:
+            return subwayArrivalOptions(for: .oido)
+        }
+    }
+
+    private enum HomeSubwayRouteTarget {
+        case seoul
+        case suwonYongin
+        case incheonDirect
+        case incheonFromOido
+        case oido
+    }
+
+    private func subwayArrivalOptions(for target: HomeSubwayRouteTarget) -> [HomeSubwayArrival] {
+        let subwayList = shuttleData?.subway ?? []
+        let line4 = subwayList.first { $0.stationID == "K449" }
+        let suin = subwayList.first { $0.stationID == "K251" }
+        let oidoSuin = subwayList.first { $0.stationID == "K258" }
+        let blue = UIColor.subwaySkyblue
+        let yellow = UIColor.homeSubwayYellow
+
+        switch target {
+        case .seoul:
+            return subwayArrivalOptions(
+                subway: line4,
+                direction: "up",
+                badge: String(localized: "subway.line4"),
+                tintColor: blue
+            )
+        case .suwonYongin:
+            return subwayArrivalOptions(
+                subway: suin,
+                direction: "up",
+                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+                tintColor: yellow
+            )
+        case .incheonDirect:
+            return subwayArrivalOptions(
+                subway: suin,
+                direction: "down",
+                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+                tintColor: yellow
+            ) { $0.terminal.stationID > "K258" && $0.terminal.stationID.hasPrefix("K2") }
+        case .incheonFromOido:
+            return subwayArrivalOptions(
+                subway: oidoSuin,
+                direction: "down",
+                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+                tintColor: yellow
+            ) { $0.terminal.stationID > "K258" && $0.terminal.stationID.hasPrefix("K2") }
+        case .oido:
+            let line4Down = subwayArrivalOptions(
+                subway: line4,
+                direction: "down",
+                badge: String(localized: "subway.line4"),
+                tintColor: blue
+            ) { $0.terminal.stationID == "K456" }
+            let suinDown = subwayArrivalOptions(
+                subway: suin,
+                direction: "down",
+                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+                tintColor: yellow
+            ) { $0.terminal.stationID >= "K258" && $0.terminal.stationID.hasPrefix("K2") }
+            return line4Down + suinDown
+        }
+    }
+
+    private func subwayArrivalOptions(
+        subway: HomePageQuery.Data.Subway?,
+        direction: String,
+        badge: String,
+        tintColor: UIColor,
+        isEligible: (HomePageQuery.Data.Subway.Arrival.Entry) -> Bool = { _ in true }
+    ) -> [HomeSubwayArrival] {
+        subway?.arrival
+            .first { $0.direction == direction }?
+            .entries
+            .filter(isEligible)
+            .map {
+                HomeSubwayArrival(
+                    lineBadge: badge,
+                    terminalStationID: $0.terminal.stationID,
+                    terminalName: $0.terminal.name,
+                    tintColor: tintColor,
+                    arrivalDate: Foundation.Date.now.addingTimeInterval(TimeInterval($0.minutes * 60))
+                )
+            } ?? []
+    }
+
+    private func candidateArrivalDate(_ candidate: HomeShuttleCandidate, for destination: String) -> Foundation.Date? {
+        guard let stopID = shuttleStopID(for: destination) else { return nil }
+        return candidate.stops.first(where: { $0.name == stopID })?.time.toLocalTimeOrNil()
     }
 
     private func shuttleStopSummary(
@@ -1042,6 +1417,7 @@ final class TodayHomeVC: UIViewController {
 
         let mealPeriod = currentMealPeriod()
         displayedMealPeriod = mealPeriod
+        let weekday = currentSubwayWeekday()
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
 
@@ -1049,6 +1425,7 @@ final class TodayHomeVC: UIViewController {
             let response = try? await Network.shared.client.fetch(
                 query: HomePageQuery(
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
+                    weekday: weekday,
                     date: mealPeriod.queryDate.toLocalDateString(),
                     campusID: Int32(campusID),
                     busInput: homeBusInput()
@@ -1126,6 +1503,11 @@ final class TodayHomeVC: UIViewController {
            let destination = HomeDestination(debugValue: destinationValue),
            selectedDeparture.destinations.contains(destination) {
             selectedDestination = destination
+        }
+        if let subwayDestinationValue = argumentValue(named: "-homeDebugSubwayDestination", in: arguments),
+           let subwayDestination = SubwayTransferDestination(debugValue: subwayDestinationValue) {
+            HomeSettings.subwayTransferDestination = subwayDestination
+            HomeSettings.showSubwayTransfer = true
         }
     }
 
@@ -1280,12 +1662,12 @@ final class TodayHomeVC: UIViewController {
 
     private func shuttleTransferPairViews(for options: [HomeTransitOption]) -> [UIView] {
         options.enumerated().map { index, option in
-            guard let connection = option.connection else {
+            guard let firstConnection = option.connections.first else {
                 return makeTransitRow(option, emphasized: true)
             }
-            let nextConnection = options.indices.contains(index + 1) ? options[index + 1].connection : nil
+            let nextConnection = options.indices.contains(index + 1) ? options[index + 1].connections.first : nil
             if let nextConnection,
-               abs(nextConnection.arrivalDate.timeIntervalSince(connection.arrivalDate)) < 60 {
+               abs(nextConnection.arrivalDate.timeIntervalSince(firstConnection.arrivalDate)) < 60 {
                 return makeTransitRow(option, emphasized: true)
             }
             return makeShuttleTransferPair(option)
@@ -1293,7 +1675,7 @@ final class TodayHomeVC: UIViewController {
     }
 
     private func makeShuttleTransferPair(_ option: HomeTransitOption) -> UIView {
-        guard let connection = option.connection else {
+        guard !option.connections.isEmpty else {
             return makeTransitRow(option, emphasized: true)
         }
 
@@ -1303,36 +1685,40 @@ final class TodayHomeVC: UIViewController {
         stack.spacing = 8
 
         let shuttleRow = makeTransitRow(option, emphasized: true)
-        let transferRow = makeTransferConnectionRow(connection)
-        let linkBadge = UIView()
-        linkBadge.backgroundColor = .systemBackground
-        linkBadge.layer.cornerRadius = 11
-        linkBadge.layer.borderWidth = 1
-        linkBadge.layer.borderColor = connection.tintColor.withAlphaComponent(0.18).cgColor
-        linkBadge.isAccessibilityElement = false
-
-        let linkIcon = UIImageView(image: UIImage(systemName: "link"))
-        linkIcon.tintColor = connection.tintColor.withAlphaComponent(0.72)
-        linkIcon.contentMode = .scaleAspectFit
-        linkIcon.isAccessibilityElement = false
+        let transferRows = option.connections.map(makeTransferConnectionRow)
 
         container.addSubview(stack)
-        container.addSubview(linkBadge)
-        linkBadge.addSubview(linkIcon)
         stack.addArrangedSubview(shuttleRow)
-        stack.addArrangedSubview(transferRow)
+        transferRows.forEach(stack.addArrangedSubview)
 
         stack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        linkBadge.snp.makeConstraints { make in
-            make.width.height.equalTo(22)
-            make.centerX.equalToSuperview()
-            make.centerY.equalTo(shuttleRow.snp.bottom).offset(4)
-        }
-        linkIcon.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.width.height.equalTo(12)
+        let linkUpperRows = [shuttleRow] + Array(transferRows.dropLast())
+        zip(linkUpperRows, option.connections).forEach { upperRow, connection in
+            let linkBadge = UIView()
+            linkBadge.backgroundColor = .systemBackground
+            linkBadge.layer.cornerRadius = 11
+            linkBadge.layer.borderWidth = 1
+            linkBadge.layer.borderColor = connection.tintColor.withAlphaComponent(0.18).cgColor
+            linkBadge.isAccessibilityElement = false
+
+            let linkIcon = UIImageView(image: UIImage(systemName: "link"))
+            linkIcon.tintColor = connection.tintColor.withAlphaComponent(0.72)
+            linkIcon.contentMode = .scaleAspectFit
+            linkIcon.isAccessibilityElement = false
+
+            container.addSubview(linkBadge)
+            linkBadge.addSubview(linkIcon)
+            linkBadge.snp.makeConstraints { make in
+                make.width.height.equalTo(22)
+                make.centerX.equalToSuperview()
+                make.centerY.equalTo(upperRow.snp.bottom).offset(4)
+            }
+            linkIcon.snp.makeConstraints { make in
+                make.center.equalToSuperview()
+                make.width.height.equalTo(12)
+            }
         }
         return container
     }
@@ -1350,7 +1736,7 @@ final class TodayHomeVC: UIViewController {
         row.layer.borderColor = connection.tintColor.withAlphaComponent(0.12).cgColor
 
         let badge = UILabel()
-        badge.text = String(localized: "home.transfer.bus50.badge")
+        badge.text = connection.badge
         badge.font = .godo(size: 12, weight: .bold)
         badge.textColor = .white
         badge.textAlignment = .center
@@ -1551,12 +1937,24 @@ final class TodayHomeVC: UIViewController {
     }
 
     @objc private func openQuickSettings() {
-        let vc = HomeQuickSettingsVC(showBus50Transfer: HomeSettings.showBus50Transfer)
+        let vc = HomeQuickSettingsVC(
+            showBus50Transfer: HomeSettings.showBus50Transfer,
+            showSubwayTransfer: HomeSettings.showSubwayTransfer,
+            subwayTransferDestination: HomeSettings.subwayTransferDestination
+        )
         vc.openLegacyShuttle = { [weak self] in
             self?.openLegacyShuttle()
         }
         vc.updateShowBus50Transfer = { [weak self] isOn in
             HomeSettings.showBus50Transfer = isOn
+            self?.renderMovement()
+        }
+        vc.updateShowSubwayTransfer = { [weak self] isOn in
+            HomeSettings.showSubwayTransfer = isOn
+            self?.renderMovement()
+        }
+        vc.updateSubwayTransferDestination = { [weak self] destination in
+            HomeSettings.subwayTransferDestination = destination
             self?.renderMovement()
         }
         if let sheet = vc.sheetPresentationController {
@@ -1604,6 +2002,35 @@ final class TodayHomeVC: UIViewController {
             $0.dateFormat = "HH:mm"
         }
         return formatter.string(from: date)
+    }
+
+    private func currentSubwayWeekday() -> String {
+        let component = Calendar.current.component(.weekday, from: Foundation.Date.now)
+        return (component == 1 || component == 7) ? "weekends" : "weekdays"
+    }
+
+    private func localizedSubwayStationName(_ stationID: String, fallback: String) -> String {
+        switch stationID {
+        case "K405": return String(localized: "subway.station.k405")
+        case "K409": return String(localized: "subway.station.k409")
+        case "K411": return String(localized: "subway.station.k411")
+        case "K419": return String(localized: "subway.station.k419")
+        case "K433": return String(localized: "subway.station.k433")
+        case "K443": return String(localized: "subway.station.k443")
+        case "K444": return String(localized: "subway.station.k444")
+        case "K453": return String(localized: "subway.station.k453")
+        case "K456": return String(localized: "subway.station.k456")
+        case "K209": return String(localized: "subway.station.k209")
+        case "K210": return String(localized: "subway.station.k210")
+        case "K233": return String(localized: "subway.station.k233")
+        case "K246": return String(localized: "subway.station.k246")
+        case "K258": return String(localized: "subway.station.k258")
+        case "K272": return String(localized: "subway.station.k272")
+        default:
+            let key = "subway.station.\(stationID.lowercased())"
+            let localized = String(localized: String.LocalizationValue(stringLiteral: key))
+            return localized == key ? fallback : localized
+        }
     }
 
     private func currentMealPeriod() -> HomeMealPeriod {
