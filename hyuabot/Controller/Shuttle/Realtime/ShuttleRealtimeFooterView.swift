@@ -2,6 +2,16 @@ import SnapKit
 import Then
 import UIKit
 
+private final class ExtendedHitAreaButton: UIButton {
+    var minimumHitArea = CGSize(width: 44, height: 44)
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let widthInset = min(0, bounds.width - minimumHitArea.width) / 2
+        let heightInset = min(0, bounds.height - minimumHitArea.height) / 2
+        return bounds.insetBy(dx: widthInset, dy: heightInset).contains(point)
+    }
+}
+
 class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "ShuttleRealtimeFooterView"
     private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
@@ -133,7 +143,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
                 $0.text = String(localized: "shuttle.bus.alternative.no.data")
             }
         }
-        let infoButton = UIButton(type: .system).then {
+        let infoButton = ExtendedHitAreaButton(type: .system).then {
             $0.tag = index
             let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
             $0.setImage(UIImage(systemName: "info.circle", withConfiguration: symbolConfiguration), for: .normal)

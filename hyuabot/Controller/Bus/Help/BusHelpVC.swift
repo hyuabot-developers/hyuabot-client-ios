@@ -14,6 +14,7 @@ class BusHelpVC: UIViewController {
         $0.backgroundColor = .hanyangBlue
         $0.textAlignment = .center
         $0.text = String(localized: "bus.help")
+        $0.accessibilityIdentifier = "bus.help.title"
     }
 
     private lazy var helpTableView = UITableView().then {

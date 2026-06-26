@@ -12,6 +12,7 @@ class MapVC: UIViewController {
             $0.searchTextField.do {
                 $0.backgroundColor = .systemBackground
                 $0.delegate = self
+                $0.accessibilityIdentifier = "map.search_text_field"
             }
         }
         $0.searchResultsUpdater = self
@@ -28,6 +29,7 @@ class MapVC: UIViewController {
         $0.isScrollEnabled = true
         $0.isPitchEnabled = true
         $0.delegate = self
+        $0.accessibilityIdentifier = "map.view"
     }
 
     private lazy var searchResultView = UITableView().then {

@@ -19,7 +19,7 @@ final class SnapshotSmokeTests: XCTestCase {
     func testCafeteriaHeaderSnapshot() {
         let header = CafeteriaHeaderView(reuseIdentifier: CafeteriaHeaderView.reuseIdentifier)
         header.frame = CGRect(x: 0, y: 0, width: 390, height: 72)
-        header.setupUI(id: 1, runningTime: "11:00 ~ 14:00", hasMenu: true, showCafeteriaInfoVC: {})
+        header.setupUI(id: 1, runningTime: "00:00 ~ 23:59", hasMenu: true, showCafeteriaInfoVC: {})
 
         assertSnapshot(of: header, as: .image(size: header.frame.size), record: .missing, timeout: 5)
     }

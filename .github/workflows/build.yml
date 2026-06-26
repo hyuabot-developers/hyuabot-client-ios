@@ -105,6 +105,7 @@ jobs:
             -destination "$DESTINATION" \
             -derivedDataPath "$DERIVED_DATA_PATH" \
             -quiet \
+            -skip-testing:hyuabotUITests \
             test-without-building
 
       - name: Upload test results

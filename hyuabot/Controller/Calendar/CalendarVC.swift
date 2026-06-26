@@ -72,11 +72,13 @@ class CalendarVC: UIViewController {
     private let prevButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         $0.tintColor = .label
+        $0.accessibilityIdentifier = "calendar.previous_month"
     }
 
     private let nextButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "chevron.right"), for: .normal)
         $0.tintColor = .label
+        $0.accessibilityIdentifier = "calendar.next_month"
     }
 
     private let monthLabel = UILabel().then {
@@ -254,12 +256,12 @@ class CalendarVC: UIViewController {
         prevButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.width.height.equalTo(36)
+            make.width.height.equalTo(44)
         }
         nextButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.width.height.equalTo(36)
+            make.width.height.equalTo(44)
         }
         monthLabel.snp.makeConstraints { $0.center.equalToSuperview() }
         weekdayHeaderView.snp.makeConstraints { make in

@@ -1,7 +1,7 @@
 import RxSwift
 import UIKit
 
-class BirthdayVC: UIViewController {
+class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let disposeBag = DisposeBag()
     let currentYear = Calendar.current.component(.year, from: Date())
@@ -120,7 +120,9 @@ class BirthdayVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onBackgroundClicked)))
+        let backgroundTapGesture = UITapGestureRecognizer(target: self, action: #selector(onBackgroundClicked))
+        backgroundTapGesture.delegate = self
+        view.addGestureRecognizer(backgroundTapGesture)
         view.addSubview(contentView)
         NSLayoutConstraint.activate([
             contentView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -145,5 +147,10 @@ class BirthdayVC: UIViewController {
         } else {
             UserDefaults.standard.set(false, forKey: "hideBirthdayPopup\(currentYear)")
         }
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let location = touch.location(in: contentView)
+        return !contentView.bounds.contains(location)
     }
 }

@@ -2,7 +2,36 @@ import UIKit
 
 class ShuttleNC: UINavigationController {
     convenience init() {
-        self.init(rootViewController: ShuttleRealtimeVC())
+        self.init(rootViewController: HomeExperienceManager.isEnabled ? TodayHomeVC() : ShuttleRealtimeVC())
+    }
+
+    func showHome() {
+        HomeExperienceManager.enable()
+        updateTabBarItemForCurrentExperience()
+        setViewControllers([TodayHomeVC()], animated: true)
+    }
+
+    func showLegacyShuttle() {
+        HomeExperienceManager.disable()
+        updateTabBarItemForCurrentExperience()
+        setViewControllers([ShuttleRealtimeVC()], animated: true)
+    }
+
+    func showShuttleDetailFromHome() {
+        updateTabBarItemForCurrentExperience()
+        pushViewController(ShuttleRealtimeVC(returnsToHome: true), animated: true)
+    }
+
+    func updateTabBarItemForCurrentExperience() {
+        if HomeExperienceManager.isEnabled {
+            tabBarItem.title = String(localized: "tabbar.home")
+            tabBarItem.image = UIImage(systemName: "house.fill")
+            tabBarItem.accessibilityIdentifier = "tab.home"
+        } else {
+            tabBarItem.title = String(localized: "tabbar.shuttle")
+            tabBarItem.image = UIImage(systemName: "bus.fill")
+            tabBarItem.accessibilityIdentifier = "tab.shuttle"
+        }
     }
 
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {

@@ -4,6 +4,7 @@ import RxSwift
 import UIKit
 
 class ShuttleRealtimeVC: UIViewController {
+    private let returnsToHome: Bool
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
     private lazy var locationManager = CLLocationManager().then {
@@ -141,6 +142,41 @@ class ShuttleRealtimeVC: UIViewController {
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
     }
 
+    private lazy var homeButton = UIButton(type: .system).then {
+        var config = UIButton.Configuration.tinted()
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: returnsToHome ? "house.fill" : "slider.horizontal.3")?
+            .withConfiguration(UIImage.SymbolConfiguration(
+                pointSize: 16,
+                weight: .semibold
+            ))
+        config.attributedTitle = AttributedString(
+            String(localized: returnsToHome ? "home.return" : "shuttle.quick_settings.button"),
+            attributes: AttributeContainer([
+                .font: UIFont.godo(size: 14, weight: .bold)
+            ])
+        )
+        config.imagePadding = 6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        $0.configuration = config
+        $0.addTarget(self, action: returnsToHome ? #selector(returnToHome) : #selector(openQuickSettings), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: returnsToHome ? "home.return" : "shuttle.quick_settings.title")
+        $0.accessibilityIdentifier = returnsToHome ? "shuttle.return_home" : "shuttle.quick_settings"
+    }
+
+    private lazy var quickSettingsBar = UIView().then {
+        $0.backgroundColor = .systemBackground
+        $0.layer.borderWidth = 1 / UIScreen.main.scale
+        $0.layer.borderColor = UIColor.separator.cgColor
+    }
+
+    private lazy var quickSettingsBarLabel = UILabel().then {
+        $0.text = String(localized: returnsToHome ? "home.action_bar.title" : "shuttle.action_bar.title")
+        $0.textColor = .secondaryLabel
+        $0.font = .godo(size: 13, weight: .bold)
+    }
+
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
@@ -151,8 +187,8 @@ class ShuttleRealtimeVC: UIViewController {
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
             sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0),
-            optionView: self.shuttleOptionView,
-            noticeView: self.noticeView
+            noticeView: self.noticeView,
+            navigationBarEnabled: self.returnsToHome
         )
         // Add the content pages to the view pager
         viewPager.contentView.pages = [
@@ -175,10 +211,21 @@ class ShuttleRealtimeVC: UIViewController {
         return viewPager
     }()
 
+    init(returnsToHome: Bool = false) {
+        self.returnsToHome = returnsToHome
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         logScreenView(.shuttleRealtime)
         scheduleCoachMarksIfNeeded()
+        promptHomeExperienceIfNeeded()
     }
 
     func retryCoachMarksIfNeeded() {
@@ -242,16 +289,10 @@ class ShuttleRealtimeVC: UIViewController {
                 message: String(localized: "coach.shuttle.tabs.message")
             ),
             CoachMarkItem(
-                id: "shuttle.byDestination",
-                targetView: shuttleShowByDestination,
-                title: String(localized: "coach.shuttle.byDestination.title"),
-                message: String(localized: "coach.shuttle.byDestination.message")
-            ),
-            CoachMarkItem(
-                id: "shuttle.departureTime",
-                targetView: shuttleShowDepartureTime,
-                title: String(localized: "coach.shuttle.departureTime.title"),
-                message: String(localized: "coach.shuttle.departureTime.message")
+                id: "shuttle.quickSettings",
+                targetView: homeButton,
+                title: String(localized: "shuttle.quick_settings.button"),
+                message: String(localized: "coach.shuttle.quick_settings.message")
             ),
             CoachMarkItem(
                 id: "shuttle.sectionHelp",
@@ -390,6 +431,9 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if returnsToHome {
+            navigationItem.title = String(localized: "home.movement.detail")
+        }
         setupUI()
         observeSubjects()
         checkBirthdayDialog()
@@ -399,7 +443,7 @@ class ShuttleRealtimeVC: UIViewController {
         super.viewWillAppear(animated)
         startPolling()
         noticeView.resumeAutoScroll()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(!returnsToHome, animated: false)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -438,32 +482,32 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func setupUI() {
-        shuttleOptionView.addSubview(shuttleShowByDestinationLabel)
-        shuttleOptionView.addSubview(shuttleShowDepartureTimeLabel)
-        shuttleOptionView.addSubview(shuttleShowByDestination)
-        shuttleOptionView.addSubview(shuttleShowDepartureTime)
-        shuttleShowByDestinationLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
-            make.leading.equalTo(self.shuttleOptionView.snp.leading).offset(10)
-            make.trailing.lessThanOrEqualTo(self.shuttleShowByDestination.snp.leading).offset(-6)
-        }
-        shuttleShowDepartureTimeLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
-            make.leading.equalTo(self.shuttleOptionView.snp.centerX).offset(10)
-            make.trailing.lessThanOrEqualTo(self.shuttleShowDepartureTime.snp.leading).offset(-6)
-        }
-        shuttleShowByDestination.snp.makeConstraints { make in
-            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
-            make.trailing.equalTo(self.shuttleOptionView.snp.centerX).offset(-10)
-        }
-        shuttleShowDepartureTime.snp.makeConstraints { make in
-            make.centerY.equalTo(self.shuttleOptionView.snp.centerY)
-            make.trailing.equalTo(self.shuttleOptionView.snp.trailing).offset(-10)
-        }
         view.addSubview(viewPager)
+        view.addSubview(quickSettingsBar)
+        quickSettingsBar.addSubview(quickSettingsBarLabel)
+        quickSettingsBar.addSubview(homeButton)
         viewPager.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            if self.returnsToHome {
+                make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+                make.leading.trailing.equalToSuperview()
+            } else {
+                make.top.leading.trailing.equalToSuperview()
+            }
+            make.bottom.equalTo(self.quickSettingsBar.snp.top)
+        }
+        quickSettingsBar.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+            make.height.equalTo(54)
+        }
+        quickSettingsBarLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+        }
+        homeButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -893,16 +937,86 @@ class ShuttleRealtimeVC: UIViewController {
         present(vc, animated: true, completion: nil)
     }
 
+    private func openHomeExperience() {
+        AnalyticsManager.logSelect(.homeTry)
+        guard let nc = navigationController as? ShuttleNC else { return }
+        nc.showHome()
+    }
+
+    @objc private func returnToHome() {
+        guard let nc = navigationController as? ShuttleNC else { return }
+        nc.showHome()
+    }
+
+    @objc private func openQuickSettings() {
+        let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
+        let showArrivalByTime = UserDefaults.standard.bool(forKey: "showArrivalByTime")
+        let vc = ShuttleQuickSettingsVC(
+            showArrivalByTime: showArrivalByTime,
+            showDepartureTime: !showRemainingTime
+        )
+        vc.openHome = { [weak self] in
+            self?.openHomeExperience()
+        }
+        vc.updateShowArrivalByTime = { [weak self] isOn in
+            self?.applyShowArrivalByTime(isOn)
+        }
+        vc.updateShowDepartureTime = { [weak self] isOn in
+            self?.applyShowDepartureTime(isOn)
+        }
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom { context in
+                min(vc.preferredSheetHeight, context.maximumDetentValue)
+            }]
+            sheet.prefersGrabberVisible = true
+        }
+        present(vc, animated: true)
+    }
+
+    private func promptHomeExperienceIfNeeded() {
+        guard HomeExperienceManager.shouldPrompt else { return }
+        guard presentedViewController == nil, coachMarkOverlayIsAbsent else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
+            guard let self else { return }
+            guard HomeExperienceManager.shouldPrompt else { return }
+            guard presentedViewController == nil, coachMarkOverlayIsAbsent else { return }
+            let alert = UIAlertController(
+                title: String(localized: "home.prompt.title"),
+                message: String(localized: "home.prompt.message"),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: String(localized: "home.open_new"), style: .default) { [weak self] _ in
+                AnalyticsManager.logSelect(.homeTry)
+                (self?.navigationController as? ShuttleNC)?.showHome()
+            })
+            alert.addAction(UIAlertAction(title: String(localized: "common.later"), style: .cancel) { _ in
+                AnalyticsManager.logSelect(.homeDismissPrompt)
+                HomeExperienceManager.deferPrompt()
+            })
+            present(alert, animated: true)
+        }
+    }
+
     @objc private func onClickDepartureSwitch(sender: UISwitch) {
         AnalyticsManager.logSelect(.shuttleDepartureSwitch, type: .toggle)
-        ShuttleRealtimeData.shared.showRemainingTime.onNext(!sender.isOn)
-        UserDefaults.standard.set(!sender.isOn, forKey: "showRemainingTime")
+        applyShowDepartureTime(sender.isOn)
     }
 
     @objc private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
         AnalyticsManager.logSelect(.shuttleArrivalByTimeSwitch, type: .toggle)
-        ShuttleRealtimeData.shared.showArrivalByTime.onNext(sender.isOn)
-        UserDefaults.standard.set(sender.isOn, forKey: "showArrivalByTime")
+        applyShowArrivalByTime(sender.isOn)
+    }
+
+    private func applyShowDepartureTime(_ isOn: Bool) {
+        shuttleShowDepartureTime.isOn = isOn
+        ShuttleRealtimeData.shared.showRemainingTime.onNext(!isOn)
+        UserDefaults.standard.set(!isOn, forKey: "showRemainingTime")
+    }
+
+    private func applyShowArrivalByTime(_ isOn: Bool) {
+        shuttleShowByDestination.isOn = isOn
+        ShuttleRealtimeData.shared.showArrivalByTime.onNext(isOn)
+        UserDefaults.standard.set(isOn, forKey: "showArrivalByTime")
     }
 }
 

@@ -3,6 +3,16 @@ import FirebaseMessaging
 import RxSwift
 import UIKit
 
+private final class ExtendedHitAreaButton: UIButton {
+    var minimumHitArea = CGSize(width: 44, height: 44)
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let widthInset = min(0, bounds.width - minimumHitArea.width) / 2
+        let heightInset = min(0, bounds.height - minimumHitArea.height) / 2
+        return bounds.insetBy(dx: widthInset, dy: heightInset).contains(point)
+    }
+}
+
 class ReadingRoomCellView: UITableViewCell {
     static let reuseIdentifier = "ReadingRoomCellView"
     private var item: ReadingRoomPageQuery.Data.ReadingRoom?
@@ -13,7 +23,7 @@ class ReadingRoomCellView: UITableViewCell {
         $0.numberOfLines = 1
     }
 
-    lazy var alarmButton = UIButton().then {
+    lazy var alarmButton: UIButton = ExtendedHitAreaButton().then {
         $0.setImage(UIImage(systemName: "bell"), for: .normal)
         $0.tintColor = .plainButtonText
         $0.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)

@@ -22,7 +22,10 @@ import UIKit
 // MARK: - Screens (GA4 `screen_view` -> screen_name)
 
 /// Every user-visible screen. rawValue == GA4 `screen_name` (shared with Android).
-enum AnalyticsScreen: String {
+enum AnalyticsScreen: String, CaseIterable {
+    /// Home
+    case home
+
     // Shuttle
     case shuttleRealtime = "shuttle_realtime"
     case shuttleTimetable = "shuttle_timetable"
@@ -92,6 +95,14 @@ enum AnalyticsItem: String {
     case shuttleRouteToggle = "shuttle_route_toggle"
     case shuttleRefresh = "shuttle_refresh"
     case shuttleSelectViaRow = "shuttle_select_via_row"
+
+    // Home
+    case homeTry = "home_try"
+    case homeDismissPrompt = "home_dismiss_prompt"
+    case homeOpenLegacyShuttle = "home_open_legacy_shuttle"
+    case homeOpenCafeteria = "home_open_cafeteria"
+    case homeRefresh = "home_refresh"
+    case homeSelectDestination = "home_select_destination"
 
     // Shuttle - timetable
     case shuttleOpenFilter = "shuttle_open_filter"

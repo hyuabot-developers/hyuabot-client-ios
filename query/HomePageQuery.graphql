@@ -1,0 +1,90 @@
+query HomePageQuery(
+    $after: LocalTime
+    $weekday: String!
+    $date: Date!
+    $campusID: Int!
+    $busInput: [BusRouteStopInput!]!
+) {
+    shuttle(input: {
+        stops: [
+            { name: "dormitory_o", limit: { destination: 8 } },
+            { name: "shuttlecock_o", limit: { destination: 8 } },
+            { name: "station", limit: { destination: 8 } },
+            { name: "terminal", limit: { destination: 8 } },
+            { name: "jungang_stn", limit: { destination: 8 } },
+            { name: "shuttlecock_i", limit: { destination: 8 } },
+        ],
+        after: $after
+    }) {
+        stops {
+            name
+            timetable {
+                destination {
+                    destination
+                    entries {
+                        route {
+                            tag
+                            name
+                        }
+                        time
+                        stops {
+                            stop
+                            time
+                        }
+                    }
+                }
+            }
+        }
+    }
+    transferBus: bus(input: [
+        { route: 216000075, stop: 216000759, limit: 2 }
+    ]) {
+        stop {
+            seq
+        }
+        arrival {
+            minutes
+        }
+    }
+    subway(input: { keys: [
+        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 }
+    ]}) {
+        stationID
+        arrival {
+            direction
+            entries {
+                minutes
+                terminal {
+                    stationID
+                    name
+                }
+            }
+        }
+    }
+    bus(input: $busInput) {
+        route {
+            seq
+        }
+        stop {
+            seq
+        }
+        arrival {
+            minutes
+        }
+    }
+    cafeteria(input: { date: $date, campus: $campusID }) {
+        seq
+        runningTime {
+            breakfast
+            lunch
+            dinner
+        }
+        menus {
+            type
+            food
+            price
+        }
+    }
+}

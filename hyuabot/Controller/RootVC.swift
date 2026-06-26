@@ -84,6 +84,7 @@ class RootVC: UITabBarController {
         // TabBar
         shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus.fill"), tag: 0)
         shuttleNC.tabBarItem.accessibilityIdentifier = "tab.shuttle"
+        shuttleNC.updateTabBarItemForCurrentExperience()
         busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker.fill"), tag: 1)
         busNC.tabBarItem.accessibilityIdentifier = "tab.bus"
         subwayNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.subway"), image: UIImage(systemName: "tram.fill"), tag: 2)

@@ -136,6 +136,7 @@ extension TabView: UICollectionViewDataSource {
 extension TabView: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard tabs.indices.contains(indexPath.item) else { return }
+        guard indexPath.item != selectedIndex else { return }
         moveToTab(index: indexPath.item)
         delegate?.didMoveToTab(index: indexPath.item)
     }

@@ -4,20 +4,21 @@ import UIKit
 class ShuttleHelpItemCell: UITableViewCell {
     static let reuseIdentifier = "ShuttleHelpItemCell"
     private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 18, weight: .bold)
+        $0.font = .godo(size: 16, weight: .bold)
         $0.textAlignment = .left
     }
 
     private let contentLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+        $0.font = .godo(size: 14, weight: .regular)
         $0.textAlignment = .left
         $0.numberOfLines = 0
+        $0.textColor = .secondaryLabel
     }
 
     private lazy var cellStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [self.titleLabel, self.contentLabel])
         stackView.axis = .vertical
-        stackView.spacing = 10
+        stackView.spacing = 8
         return stackView
     }()
 
@@ -35,7 +36,7 @@ class ShuttleHelpItemCell: UITableViewCell {
         contentView.addSubview(cellStackView)
         cellStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview().inset(20)
-            make.verticalEdges.equalToSuperview().inset(15)
+            make.verticalEdges.equalToSuperview().inset(12)
         }
     }
 

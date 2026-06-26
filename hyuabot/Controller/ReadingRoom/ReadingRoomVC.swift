@@ -17,6 +17,7 @@ class ReadingRoomVC: UIViewController {
         config.baseBackgroundColor = .hanyangBlue
         config.cornerStyle = .medium
         let btn = UIButton(configuration: config)
+        btn.accessibilityIdentifier = "reading_room.alarm_3hour"
         btn.addTarget(self, action: #selector(alarm3HourTapped), for: .touchUpInside)
         return btn
     }()
@@ -27,6 +28,7 @@ class ReadingRoomVC: UIViewController {
         config.baseBackgroundColor = .hanyangBlue
         config.cornerStyle = .medium
         let btn = UIButton(configuration: config)
+        btn.accessibilityIdentifier = "reading_room.alarm_4hour"
         btn.addTarget(self, action: #selector(alarm4HourTapped), for: .touchUpInside)
         return btn
     }()
@@ -38,6 +40,7 @@ class ReadingRoomVC: UIViewController {
         config.cornerStyle = .medium
         let btn = UIButton(configuration: config)
         btn.isHidden = true
+        btn.accessibilityIdentifier = "reading_room.alarm_cancel"
         btn.addTarget(self, action: #selector(alarmCancelTapped), for: .touchUpInside)
         return btn
     }()

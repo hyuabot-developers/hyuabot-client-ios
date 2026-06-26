@@ -19,6 +19,10 @@ class TabItem: UIView, TabItemProtocol {
     init(title: String) {
         self.title = title
         super.init(frame: .zero)
+        isAccessibilityElement = true
+        accessibilityTraits = [.button]
+        accessibilityLabel = title
+        accessibilityIdentifier = "viewpager.tab.\(title)"
         setupUI()
     }
 
