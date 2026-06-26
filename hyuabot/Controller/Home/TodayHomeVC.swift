@@ -112,6 +112,53 @@ private struct HomeTransitOption {
     let minutes: Int?
     let badge: String
     let tintColor: UIColor
+    let connection: HomeTransferConnection?
+
+    init(
+        kind: Kind,
+        title: String,
+        subtitle: String,
+        minutes: Int?,
+        badge: String,
+        tintColor: UIColor,
+        connection: HomeTransferConnection? = nil
+    ) {
+        self.kind = kind
+        self.title = title
+        self.subtitle = subtitle
+        self.minutes = minutes
+        self.badge = badge
+        self.tintColor = tintColor
+        self.connection = connection
+    }
+}
+
+private struct HomeTransferConnection {
+    let title: String
+    let trailing: String
+    let tintColor: UIColor
+    let arrivalDate: Foundation.Date
+}
+
+private struct HomeShuttleCandidate {
+    struct Stop {
+        let name: String
+        let time: LocalTime
+    }
+
+    let routeTag: String
+    let routeName: String
+    let time: LocalTime
+    let stops: [Stop]
+}
+
+private extension HomeShuttleCandidate {
+    init(entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+        routeTag = entry.route.tag
+        routeName = entry.route.name
+        time = entry.time
+        stops = entry.stops.map { Stop(name: $0.stop, time: $0.time) }
+    }
 }
 
 private struct HomeShuttleRoute {
@@ -193,6 +240,7 @@ final class TodayHomeVC: UIViewController {
     }
     private var shuttleData: HomePageQuery.Data?
     private var busAlternatives: [String: [HomeTransitOption]] = [:]
+    private var bus50TerminalLogTimes: [LocalTime] = []
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
     private var isLoading = false
@@ -462,7 +510,7 @@ final class TodayHomeVC: UIViewController {
                 )
             ])
         } else {
-            replaceSubviews(in: shuttleOptionStack, with: shuttleOptions.prefix(2).map { makeTransitRow($0, emphasized: true) })
+            replaceSubviews(in: shuttleOptionStack, with: shuttleTransferPairViews(for: Array(shuttleOptions.prefix(2))))
         }
 
         let supportHeader = UILabel()
@@ -532,44 +580,120 @@ final class TodayHomeVC: UIViewController {
         destination: String,
         routeFilter: ((HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool)? = nil
     ) -> [HomeTransitOption] {
-        guard let stop = shuttleData?.shuttle.stops.first(where: { $0.name == stopName }),
-              let group = stop.timetable.destination.first(where: { $0.destination == destination }) else { return [] }
-        return group.entries
-            .filter { routeFilter?($0) ?? true }
+        guard let stop = shuttleData?.shuttle.stops.first(where: { $0.name == stopName }) else { return [] }
+        let candidates = shuttleCandidates(stop: stop, stopName: stopName, destination: destination, routeFilter: routeFilter)
+        let connections = candidates.map { bus50TransferConnection(from: stopName, to: destination, candidate: $0) }
+        return candidates
+            .enumerated()
             .prefix(2)
-            .map { entry in
-                let routeDisplay = shuttleRouteDisplay(stop: stopName, destination: destination, entry: entry)
+            .map { index, candidate in
+                let routeDisplay = shuttleRouteDisplay(stop: stopName, destination: destination, candidate: candidate)
                 return HomeTransitOption(
                     kind: .shuttle,
-                    title: String(format: String(localized: "home.shuttle.departure.title"), compactTime(entry.time)),
-                    subtitle: shuttleStopSummary(from: stopName, to: destination, entry: entry),
-                    minutes: minutesUntil(entry.time),
+                    title: String(format: String(localized: "home.shuttle.departure.title"), compactTime(candidate.time)),
+                    subtitle: shuttleStopSummary(from: stopName, to: destination, candidate: candidate),
+                    minutes: minutesUntil(candidate.time),
                     badge: routeDisplay.badge,
-                    tintColor: routeDisplay.tintColor
+                    tintColor: routeDisplay.tintColor,
+                    connection: displayableBus50Connection(at: index, in: connections, candidates: candidates)
                 )
             }
+    }
+
+    private func displayableBus50Connection(
+        at index: Int,
+        in connections: [HomeTransferConnection?],
+        candidates: [HomeShuttleCandidate]
+    ) -> HomeTransferConnection? {
+        guard let connection = connections[index] else { return nil }
+        let laterCandidates = candidates.suffix(from: candidates.index(after: index))
+        if laterCandidates.contains(where: { candidateCanCatchBus($0, arrivalDate: connection.arrivalDate) }) {
+            return nil
+        }
+        return connection
+    }
+
+    private func candidateCanCatchBus(_ candidate: HomeShuttleCandidate, arrivalDate: Foundation.Date) -> Bool {
+        guard let terminalArrival = candidate.stops.first(where: { $0.name == "terminal" })?.time.toLocalTimeOrNil() else {
+            return false
+        }
+        return terminalArrival <= arrivalDate
+    }
+
+    private func shuttleCandidates(
+        stop: HomePageQuery.Data.Shuttle.Stop,
+        stopName: String,
+        destination: String,
+        routeFilter: ((HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool)?
+    ) -> [HomeShuttleCandidate] {
+        guard let group = stop.timetable.destination.first(where: { $0.destination == destination }) else { return [] }
+        return group.entries
+            .filter { routeFilter?($0) ?? true }
+            .map(HomeShuttleCandidate.init(entry:))
+    }
+
+    private func bus50TransferConnection(
+        from stopName: String,
+        to destination: String,
+        candidate: HomeShuttleCandidate
+    ) -> HomeTransferConnection? {
+        guard destination == "TERMINAL",
+              stopName == "dormitory_o" || stopName == "shuttlecock_o",
+              let terminalArrival = candidate.stops.first(where: { $0.name == "terminal" })?.time.toLocalTimeOrNil()
+        else { return nil }
+
+        if let realtimeConnection = bus50RealtimeTransferConnection(after: terminalArrival) {
+            return realtimeConnection
+        }
+        return bus50LogTransferConnection(after: terminalArrival)
+    }
+
+    private func bus50RealtimeTransferConnection(after terminalArrival: Foundation.Date) -> HomeTransferConnection? {
+        let busArrivals = shuttleData?.transferBus
+            .filter { $0.stop.seq == 216_000_759 }
+            .flatMap(\.arrival)
+            .compactMap { arrival -> Foundation.Date? in
+                guard let minutes = arrival.minutes else { return nil }
+                return Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60))
+            }
+            .sorted() ?? []
+        guard let busArrival = busArrivals.first(where: { $0 >= terminalArrival }) else { return nil }
+
+        let bufferMinutes = max(0, Int(floor(busArrival.timeIntervalSince(terminalArrival) / 60)))
+        let title = String(format: String(localized: "home.transfer.bus50.realtime.title"), compactTime(busArrival))
+        let trailing = String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes)
+        return HomeTransferConnection(
+            title: title,
+            trailing: trailing,
+            tintColor: bufferMinutes >= 3 ? .hanyangGreen : .systemOrange,
+            arrivalDate: busArrival
+        )
+    }
+
+    private func bus50LogTransferConnection(after terminalArrival: Foundation.Date) -> HomeTransferConnection? {
+        let logDates = bus50TerminalLogTimes
+            .compactMap { $0.toLocalTimeOrNil() }
+            .filter { $0 >= terminalArrival }
+            .sorted()
+        guard let busArrival = logDates.first else { return nil }
+
+        let bufferMinutes = max(0, Int(floor(busArrival.timeIntervalSince(terminalArrival) / 60)))
+        let title = String(format: String(localized: "home.transfer.bus50.log.title"), compactTime(busArrival))
+        let trailing = String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes)
+        return HomeTransferConnection(
+            title: title,
+            trailing: trailing,
+            tintColor: UIColor(named: "busGreen") ?? .systemGreen,
+            arrivalDate: busArrival
+        )
     }
 
     private func shuttleStopSummary(
         from stopName: String,
         to destination: String,
-        entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+        candidate: HomeShuttleCandidate
     ) -> String {
-        let stopIDs = entry.stops.map(\.stop)
-        let destinationStopID = shuttleStopID(for: destination)
-        let pathStopIDs: [String]
-        if let startIndex = stopIDs.firstIndex(of: stopName) {
-            let remainingStopIDs = Array(stopIDs[startIndex...])
-            if let destinationStopID,
-               let destinationIndex = remainingStopIDs.firstIndex(of: destinationStopID) {
-                pathStopIDs = Array(remainingStopIDs[...destinationIndex])
-            } else {
-                pathStopIDs = remainingStopIDs
-            }
-        } else {
-            pathStopIDs = stopIDs
-        }
-
+        let pathStopIDs = shuttlePathStopIDs(from: stopName, to: destination, stops: candidate.stops.map(\.name))
         let viaStopNames = pathStopIDs
             .dropFirst()
             .dropLast()
@@ -578,6 +702,19 @@ final class TodayHomeVC: UIViewController {
             return String(localized: "home.shuttle.no_via")
         }
         return String(format: String(localized: "home.shuttle.via"), viaStopNames.joined(separator: " · "))
+    }
+
+    private func shuttlePathStopIDs(from stopName: String, to destination: String, stops stopIDs: [String]) -> [String] {
+        let destinationStopID = shuttleStopID(for: destination)
+        if let startIndex = stopIDs.firstIndex(of: stopName) {
+            let remainingStopIDs = Array(stopIDs[startIndex...])
+            if let destinationStopID,
+               let destinationIndex = remainingStopIDs.firstIndex(of: destinationStopID) {
+                return Array(remainingStopIDs[...destinationIndex])
+            }
+            return remainingStopIDs
+        }
+        return stopIDs
     }
 
     private func shuttleStopID(for destination: String) -> String? {
@@ -628,10 +765,10 @@ final class TodayHomeVC: UIViewController {
     private func shuttleRouteDisplay(
         stop: String,
         destination: String,
-        entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+        candidate: HomeShuttleCandidate
     ) -> (badge: String, tintColor: UIColor) {
-        let routeTag = entry.route.tag
-        let routeName = entry.route.name
+        let routeTag = candidate.routeTag
+        let routeName = candidate.routeName
 
         switch (stop, destination) {
         case ("dormitory_o", "STATION"), ("shuttlecock_o", "STATION"):
@@ -751,11 +888,13 @@ final class TodayHomeVC: UIViewController {
                 ),
                 cachePolicy: .networkOnly
             )
+            let bus50TerminalLogTimes = await fetchBus50TerminalLogTimes()
 
             await MainActor.run {
                 if let data = response?.data {
                     shuttleData = data
                     busAlternatives = buildBusAlternatives(data.bus)
+                    self.bus50TerminalLogTimes = bus50TerminalLogTimes
                     mealSections = buildMealSections(data.cafeteria, mealPeriod: mealPeriod)
                 }
                 isLoading = false
@@ -763,6 +902,24 @@ final class TodayHomeVC: UIViewController {
                 render()
             }
         }
+    }
+
+    private func fetchBus50TerminalLogTimes() async -> [LocalTime] {
+        let now = Foundation.Date.now
+        let queryDateFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd" }
+        let dates = [
+            now.addingTimeInterval(-60 * 60 * 24 * 7),
+            now.addingTimeInterval(-60 * 60 * 24 * 2),
+            now.addingTimeInterval(-60 * 60 * 24)
+        ].map(queryDateFormatter.string)
+
+        let response = try? await Network.shared.client.fetch(query: BusDepartureLogDialogQuery(routeStops: [
+            BusRouteStopInput(route: 216_000_075, stop: 216_000_759, dates: .some(dates))
+        ]))
+        return response?.data?.bus
+            .flatMap { $0.log }
+            .map { $0.time }
+            .sorted() ?? []
     }
 
     private func startAutoRefresh() {
@@ -945,6 +1102,115 @@ final class TodayHomeVC: UIViewController {
         row.addArrangedSubview(badge)
         row.addArrangedSubview(textStack)
         row.addArrangedSubview(minutes)
+        return row
+    }
+
+    private func shuttleTransferPairViews(for options: [HomeTransitOption]) -> [UIView] {
+        options.enumerated().map { index, option in
+            guard let connection = option.connection else {
+                return makeTransitRow(option, emphasized: true)
+            }
+            let nextConnection = options.indices.contains(index + 1) ? options[index + 1].connection : nil
+            if let nextConnection,
+               abs(nextConnection.arrivalDate.timeIntervalSince(connection.arrivalDate)) < 60 {
+                return makeTransitRow(option, emphasized: true)
+            }
+            return makeShuttleTransferPair(option)
+        }
+    }
+
+    private func makeShuttleTransferPair(_ option: HomeTransitOption) -> UIView {
+        guard let connection = option.connection else {
+            return makeTransitRow(option, emphasized: true)
+        }
+
+        let container = UIView()
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+
+        let shuttleRow = makeTransitRow(option, emphasized: true)
+        let transferRow = makeTransferConnectionRow(connection)
+        let linkBadge = UIView()
+        linkBadge.backgroundColor = .systemBackground
+        linkBadge.layer.cornerRadius = 11
+        linkBadge.layer.borderWidth = 1
+        linkBadge.layer.borderColor = connection.tintColor.withAlphaComponent(0.18).cgColor
+        linkBadge.isAccessibilityElement = false
+
+        let linkIcon = UIImageView(image: UIImage(systemName: "link"))
+        linkIcon.tintColor = connection.tintColor.withAlphaComponent(0.72)
+        linkIcon.contentMode = .scaleAspectFit
+        linkIcon.isAccessibilityElement = false
+
+        container.addSubview(stack)
+        container.addSubview(linkBadge)
+        linkBadge.addSubview(linkIcon)
+        stack.addArrangedSubview(shuttleRow)
+        stack.addArrangedSubview(transferRow)
+
+        stack.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        linkBadge.snp.makeConstraints { make in
+            make.width.height.equalTo(22)
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(shuttleRow.snp.bottom).offset(4)
+        }
+        linkIcon.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.height.equalTo(12)
+        }
+        return container
+    }
+
+    private func makeTransferConnectionRow(_ connection: HomeTransferConnection) -> UIView {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 10
+        row.layoutMargins = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        row.isLayoutMarginsRelativeArrangement = true
+        row.backgroundColor = connection.tintColor.withAlphaComponent(0.08)
+        row.layer.cornerRadius = 8
+        row.layer.borderWidth = 1
+        row.layer.borderColor = connection.tintColor.withAlphaComponent(0.12).cgColor
+
+        let badge = UILabel()
+        badge.text = String(localized: "home.transfer.bus50.badge")
+        badge.font = .godo(size: 12, weight: .bold)
+        badge.textColor = .white
+        badge.textAlignment = .center
+        badge.backgroundColor = connection.tintColor
+        badge.layer.cornerRadius = 12
+        badge.clipsToBounds = true
+        badge.adjustsFontSizeToFitWidth = true
+        badge.minimumScaleFactor = 0.75
+        badge.snp.makeConstraints { make in
+            make.width.equalTo(64)
+            make.height.equalTo(24)
+        }
+
+        let title = UILabel()
+        title.text = connection.title
+        title.font = .godo(size: 15, weight: .bold)
+        title.textColor = .label
+        title.numberOfLines = 1
+        title.adjustsFontSizeToFitWidth = true
+        title.minimumScaleFactor = 0.75
+
+        let trailing = UILabel()
+        trailing.text = connection.trailing
+        trailing.font = .godo(size: 16, weight: .bold)
+        trailing.textColor = connection.tintColor
+        trailing.textAlignment = .right
+        trailing.adjustsFontSizeToFitWidth = true
+        trailing.minimumScaleFactor = 0.75
+        trailing.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        row.addArrangedSubview(badge)
+        row.addArrangedSubview(title)
+        row.addArrangedSubview(trailing)
         return row
     }
 
@@ -1137,6 +1403,16 @@ final class TodayHomeVC: UIViewController {
 
     private func compactTime(_ time: LocalTime) -> String {
         String(time.prefix(5))
+    }
+
+    private func compactTime(_ date: Foundation.Date) -> String {
+        let formatter = DateFormatter().then {
+            $0.calendar = Calendar(identifier: .iso8601)
+            $0.locale = Locale(identifier: "en_US_POSIX")
+            $0.timeZone = TimeZone(identifier: "Asia/Seoul")
+            $0.dateFormat = "HH:mm"
+        }
+        return formatter.string(from: date)
     }
 
     private func currentMealPeriod() -> HomeMealPeriod {
