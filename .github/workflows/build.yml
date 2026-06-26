@@ -135,7 +135,7 @@ jobs:
     name: Release Archive
     runs-on: [self-hosted, macOS]
     needs: quality
-    if: github.event_name == 'push'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
