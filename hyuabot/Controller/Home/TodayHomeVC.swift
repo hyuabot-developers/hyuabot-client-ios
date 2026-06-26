@@ -744,9 +744,7 @@ final class TodayHomeVC: UIViewController {
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: HomePageQuery(
-                    language: noticeLanguage(),
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
-                    weekday: currentWeekdayString(),
                     date: mealPeriod.queryDate.toLocalDateString(),
                     campusID: Int32(campusID),
                     busInput: homeBusInput()
@@ -852,17 +850,10 @@ final class TodayHomeVC: UIViewController {
     private func homeBusInput() -> [BusRouteStopInput] {
         [
             BusRouteStopInput(route: 216_000_068, stop: 216_000_383, limit: 1),
-            BusRouteStopInput(route: 216_000_068, stop: 216_000_379, limit: 1),
             BusRouteStopInput(route: 216_000_068, stop: 216_000_138, limit: 1),
             BusRouteStopInput(route: 216_000_081, stop: 216_000_028, limit: 1),
             BusRouteStopInput(route: 216_000_101, stop: 216_000_028, limit: 1),
             BusRouteStopInput(route: 216_000_016, stop: 216_000_152, limit: 1),
-            BusRouteStopInput(route: 216_000_082, stop: 216_000_077, limit: 1),
-            BusRouteStopInput(route: 216_000_102, stop: 216_000_077, limit: 1),
-            BusRouteStopInput(route: 216_000_016, stop: 216_000_074, limit: 1),
-            BusRouteStopInput(route: 216_000_082, stop: 217_000_140, limit: 1),
-            BusRouteStopInput(route: 216_000_102, stop: 217_000_140, limit: 1),
-            BusRouteStopInput(route: 216_000_016, stop: 217_000_264, limit: 1)
         ]
     }
 
@@ -1260,23 +1251,6 @@ final class TodayHomeVC: UIViewController {
         }.string(from: Foundation.Date.now)
     }
 
-    private func noticeLanguage() -> String {
-        let code = Locale.current.language.languageCode?.identifier ?? "ko"
-        return code.starts(with: "en") ? "ENGLISH" : "KOREAN"
-    }
-
-    private func currentWeekdayString() -> String {
-        var calendar = Calendar.current
-        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? calendar.timeZone
-        switch calendar.component(.weekday, from: Foundation.Date.now) {
-        case 1:
-            return "sunday"
-        case 7:
-            return "saturday"
-        default:
-            return "weekday"
-        }
-    }
 }
 
 extension TodayHomeVC: CLLocationManagerDelegate {

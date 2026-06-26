@@ -1,45 +1,23 @@
 query HomePageQuery(
-    $language: String!
     $after: LocalTime
-    $weekday: String!
     $date: Date!
     $campusID: Int!
     $busInput: [BusRouteStopInput!]!
 ) {
-    notices(input: { language: $language, category: "셔틀,날씨" }) {
-        notices {
-            title
-            url
-            expiredAt
-        }
-    }
     shuttle(input: {
         stops: [
-            { name: "dormitory_o", limit: { order: 8, destination: 3 } },
-            { name: "shuttlecock_o", limit: { order: 8, destination: 3 } },
-            { name: "station", limit: { order: 8, destination: 3 } },
-            { name: "terminal", limit: { order: 8, destination: 8 } },
-            { name: "jungang_stn", limit: { order: 8, destination: 8 } },
-            { name: "shuttlecock_i", limit: { order: 8, destination: 8 } },
+            { name: "dormitory_o", limit: { destination: 8 } },
+            { name: "shuttlecock_o", limit: { destination: 8 } },
+            { name: "station", limit: { destination: 8 } },
+            { name: "terminal", limit: { destination: 8 } },
+            { name: "jungang_stn", limit: { destination: 8 } },
+            { name: "shuttlecock_i", limit: { destination: 8 } },
         ],
         after: $after
     }) {
         stops {
-            latitude
-            longitude
             name
             timetable {
-                order {
-                    route {
-                        tag
-                        name
-                    }
-                    time
-                    stops {
-                        stop
-                        time
-                    }
-                }
                 destination {
                     destination
                     entries {
@@ -57,40 +35,14 @@ query HomePageQuery(
             }
         }
     }
-    subway(input: { keys: [
-        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 2 },
-        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 2 },
-    ]}) {
-        stationID
-        arrival {
-            direction
-            entries {
-                minutes
-                isRealtime
-                location
-                stops
-                terminal {
-                    stationID
-                    name
-                }
-            }
-        }
-    }
     transferBus: bus(input: [
-        { route: 216000075, stop: 216000759, limit: 2 },
-        { route: 216000075, stop: 216000117, limit: 2 },
+        { route: 216000075, stop: 216000759, limit: 2 }
     ]) {
-        route {
-            seq
-            name
-        }
         stop {
             seq
         }
         arrival {
             minutes
-            stops
-            isRealtime
         }
     }
     bus(input: $busInput) {
@@ -99,17 +51,9 @@ query HomePageQuery(
         }
         stop {
             seq
-            name
-            latitude
-            longitude
         }
         arrival {
-            stops
-            seats
             minutes
-            lowFloor
-            isRealtime
-            time
         }
     }
     cafeteria(input: { date: $date, campus: $campusID }) {
