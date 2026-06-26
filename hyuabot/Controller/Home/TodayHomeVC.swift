@@ -48,10 +48,14 @@ private struct HomeTransitOption {
 }
 
 private struct HomeMealItem {
-    let cafeteria: String
     let menu: String
     let price: String
+}
+
+private struct HomeMealSection {
+    let cafeteria: String
     let runningTime: String?
+    let items: [HomeMealItem]
 }
 
 private struct HomeMealPeriod {
@@ -106,7 +110,7 @@ final class TodayHomeVC: UIViewController {
     private var selectedDestination: HomeDestination = .station
     private var shuttleData: ShuttleRealtimePageQuery.Data?
     private var busAlternatives: [String: [HomeTransitOption]] = [:]
-    private var mealItems: [HomeMealItem] = []
+    private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
     private var isLoading = false
 
@@ -373,7 +377,7 @@ final class TodayHomeVC: UIViewController {
         let mealPeriod = activeMealPeriod()
         cafeteriaIconView.image = UIImage(systemName: mealPeriod.iconName)
         cafeteriaTitleLabel.text = mealPeriod.title
-        if mealItems.isEmpty {
+        if mealSections.isEmpty {
             replaceSubviews(in: mealStack, with: [
                 makeEmptyView(
                     title: String(format: String(localized: "home.empty.meal.title"), currentMealTitle()),
@@ -382,7 +386,7 @@ final class TodayHomeVC: UIViewController {
             ])
             return
         }
-        replaceSubviews(in: mealStack, with: mealItems.prefix(3).map(makeMealRow))
+        replaceSubviews(in: mealStack, with: mealSections.map(makeMealSection))
     }
 
     private func movementOptions(for destination: HomeDestination) -> [HomeTransitOption] {
@@ -517,7 +521,7 @@ final class TodayHomeVC: UIViewController {
                         busAlternatives = buildBusAlternatives(busData.bus)
                     }
                     if let cafeteriaData = responses.2.data {
-                        mealItems = buildMealItems(cafeteriaData.cafeteria, mealPeriod: mealPeriod)
+                        mealSections = buildMealSections(cafeteriaData.cafeteria, mealPeriod: mealPeriod)
                     }
                 }
                 isLoading = false
@@ -527,23 +531,39 @@ final class TodayHomeVC: UIViewController {
         }
     }
 
-    private func buildMealItems(
+    private func buildMealSections(
         _ cafeterias: [CafeteriaPageQuery.Data.Cafeterium],
         mealPeriod: HomeMealPeriod
-    ) -> [HomeMealItem] {
+    ) -> [HomeMealSection] {
         let marker = mealPeriod.marker
         return cafeterias
-            .filter { $0.menus.contains(where: { $0.type.contains(marker) }) }
             .sorted { $0.seq < $1.seq }
             .compactMap { cafeteria in
-                guard let menu = cafeteria.menus.first(where: { $0.type.contains(marker) }) else { return nil }
-                return HomeMealItem(
+                let items = cafeteria.menus
+                    .filter { $0.type.contains(marker) }
+                    .compactMap { menu -> HomeMealItem? in
+                        let menuText = representativeMenuText(menu.food)
+                        guard !menuText.isEmpty else { return nil }
+                        return HomeMealItem(
+                            menu: menuText,
+                            price: menu.price
+                        )
+                    }
+                guard !items.isEmpty else { return nil }
+                return HomeMealSection(
                     cafeteria: cafeteriaName(seq: cafeteria.seq),
-                    menu: localizedMenuText(menu.food),
-                    price: menu.price,
-                    runningTime: runningTime(for: cafeteria, mealPeriod: mealPeriod)
+                    runningTime: runningTime(for: cafeteria, mealPeriod: mealPeriod),
+                    items: items
                 )
             }
+    }
+
+    private func representativeMenuText(_ text: String) -> String {
+        let menuText = localizedMenuText(text)
+        guard !menuText.isEmpty else { return "" }
+        return menuText
+            .components(separatedBy: .whitespacesAndNewlines)
+            .first(where: { !$0.isEmpty }) ?? menuText
     }
 
     private func makeTransitRow(_ option: HomeTransitOption, emphasized: Bool) -> UIView {
@@ -600,24 +620,61 @@ final class TodayHomeVC: UIViewController {
         return row
     }
 
-    private func makeMealRow(_ item: HomeMealItem) -> UIView {
-        let row = UIStackView()
-        row.axis = .vertical
-        row.spacing = 6
-        row.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
-        row.isLayoutMarginsRelativeArrangement = true
-        row.backgroundColor = .tertiarySystemGroupedBackground
-        row.layer.cornerRadius = 8
+    private func makeMealSection(_ section: HomeMealSection) -> UIView {
+        let sectionStack = UIStackView()
+        sectionStack.axis = .vertical
+        sectionStack.spacing = 10
+        sectionStack.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        sectionStack.isLayoutMarginsRelativeArrangement = true
+        sectionStack.backgroundColor = .tertiarySystemGroupedBackground
+        sectionStack.layer.cornerRadius = 8
 
-        let top = UIStackView()
-        top.axis = .horizontal
-        top.alignment = .firstBaseline
-        top.spacing = 8
+        let header = UIStackView()
+        header.axis = .vertical
+        header.spacing = 3
 
         let title = UILabel()
-        title.text = item.cafeteria
+        title.text = section.cafeteria
         title.font = .godo(size: 16, weight: .bold)
         title.textColor = .label
+
+        header.addArrangedSubview(title)
+        if let runningTime = section.runningTime, !runningTime.isEmpty {
+            let time = UILabel()
+            time.text = runningTime
+            time.font = .godo(size: 12, weight: .regular)
+            time.textColor = .tertiaryLabel
+            header.addArrangedSubview(time)
+        }
+        sectionStack.addArrangedSubview(header)
+
+        section.items.enumerated().forEach { index, item in
+            if index > 0 {
+                let separator = UIView()
+                separator.backgroundColor = .separator.withAlphaComponent(0.35)
+                separator.snp.makeConstraints { make in
+                    make.height.equalTo(1 / UIScreen.main.scale)
+                }
+                sectionStack.addArrangedSubview(separator)
+            }
+            sectionStack.addArrangedSubview(makeMealMenuRow(item))
+        }
+        return sectionStack
+    }
+
+    private func makeMealMenuRow(_ item: HomeMealItem) -> UIView {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.alignment = .firstBaseline
+        row.spacing = 8
+
+        let menu = UILabel()
+        menu.text = item.menu
+        menu.font = .godo(size: 14, weight: .regular)
+        menu.textColor = .secondaryLabel
+        menu.numberOfLines = 1
+        menu.adjustsFontSizeToFitWidth = true
+        menu.minimumScaleFactor = 0.8
 
         let price = UILabel()
         price.text = item.price
@@ -626,25 +683,8 @@ final class TodayHomeVC: UIViewController {
         price.textAlignment = .right
         price.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        top.addArrangedSubview(title)
-        top.addArrangedSubview(UIView())
-        top.addArrangedSubview(price)
-
-        let menu = UILabel()
-        menu.text = item.menu
-        menu.font = .godo(size: 14, weight: .regular)
-        menu.textColor = .secondaryLabel
-        menu.numberOfLines = 2
-
-        row.addArrangedSubview(top)
         row.addArrangedSubview(menu)
-        if let runningTime = item.runningTime, !runningTime.isEmpty {
-            let time = UILabel()
-            time.text = runningTime
-            time.font = .godo(size: 12, weight: .regular)
-            time.textColor = .tertiaryLabel
-            row.addArrangedSubview(time)
-        }
+        row.addArrangedSubview(price)
         return row
     }
 
