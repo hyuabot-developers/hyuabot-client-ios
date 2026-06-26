@@ -108,7 +108,7 @@ final class TodayHomeVC: UIViewController {
     }
 
     private var selectedDestination: HomeDestination = .station
-    private var shuttleData: ShuttleRealtimePageQuery.Data?
+    private var shuttleData: HomePageQuery.Data?
     private var busAlternatives: [String: [HomeTransitOption]] = [:]
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
@@ -452,12 +452,12 @@ final class TodayHomeVC: UIViewController {
         }
     }
 
-    private func buildBusAlternatives(_ busList: [ShuttleBusAlternativeQuery.Data.Bus]) -> [String: [HomeTransitOption]] {
-        func item(routeSeq: Int, stopSeq: Int) -> ShuttleBusAlternativeQuery.Data.Bus? {
+    private func buildBusAlternatives(_ busList: [HomePageQuery.Data.Bus]) -> [String: [HomeTransitOption]] {
+        func item(routeSeq: Int, stopSeq: Int) -> HomePageQuery.Data.Bus? {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
         }
 
-        func option(_ bus: ShuttleBusAlternativeQuery.Data.Bus?, route: String, subtitle: String, color: UIColor) -> HomeTransitOption? {
+        func option(_ bus: HomePageQuery.Data.Bus?, route: String, subtitle: String, color: UIColor) -> HomeTransitOption? {
             guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
             return HomeTransitOption(kind: .alternative, title: route, subtitle: subtitle, minutes: minutes, badge: String(localized: "home.badge.alternative"), tintColor: color)
         }
@@ -499,30 +499,23 @@ final class TodayHomeVC: UIViewController {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
 
         Task {
-            async let shuttleResponse = Network.shared.client.fetch(
-                query: ShuttleRealtimePageQuery(
+            let response = try? await Network.shared.client.fetch(
+                query: HomePageQuery(
                     language: noticeLanguage(),
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
-                    weekday: currentWeekdayString()
+                    weekday: currentWeekdayString(),
+                    date: mealPeriod.queryDate.toLocalDateString(),
+                    campusID: Int32(campusID),
+                    busInput: homeBusInput()
                 ),
                 cachePolicy: .networkOnly
             )
-            async let busResponse = Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
-            async let cafeteriaResponse = Network.shared.client.fetch(
-                query: CafeteriaPageQuery(date: mealPeriod.queryDate.toLocalDateString(), campusID: Int32(campusID)),
-                cachePolicy: .networkOnly
-            )
 
-            let responses = try? await (shuttleResponse, busResponse, cafeteriaResponse)
             await MainActor.run {
-                if let responses {
-                    shuttleData = responses.0.data
-                    if let busData = responses.1.data {
-                        busAlternatives = buildBusAlternatives(busData.bus)
-                    }
-                    if let cafeteriaData = responses.2.data {
-                        mealSections = buildMealSections(cafeteriaData.cafeteria, mealPeriod: mealPeriod)
-                    }
+                if let data = response?.data {
+                    shuttleData = data
+                    busAlternatives = buildBusAlternatives(data.bus)
+                    mealSections = buildMealSections(data.cafeteria, mealPeriod: mealPeriod)
                 }
                 isLoading = false
                 refreshControl.endRefreshing()
@@ -531,8 +524,25 @@ final class TodayHomeVC: UIViewController {
         }
     }
 
+    private func homeBusInput() -> [BusRouteStopInput] {
+        [
+            BusRouteStopInput(route: 216_000_068, stop: 216_000_383, limit: 1),
+            BusRouteStopInput(route: 216_000_068, stop: 216_000_379, limit: 1),
+            BusRouteStopInput(route: 216_000_068, stop: 216_000_138, limit: 1),
+            BusRouteStopInput(route: 216_000_081, stop: 216_000_028, limit: 1),
+            BusRouteStopInput(route: 216_000_101, stop: 216_000_028, limit: 1),
+            BusRouteStopInput(route: 216_000_016, stop: 216_000_152, limit: 1),
+            BusRouteStopInput(route: 216_000_082, stop: 216_000_077, limit: 1),
+            BusRouteStopInput(route: 216_000_102, stop: 216_000_077, limit: 1),
+            BusRouteStopInput(route: 216_000_016, stop: 216_000_074, limit: 1),
+            BusRouteStopInput(route: 216_000_082, stop: 217_000_140, limit: 1),
+            BusRouteStopInput(route: 216_000_102, stop: 217_000_140, limit: 1),
+            BusRouteStopInput(route: 216_000_016, stop: 217_000_264, limit: 1)
+        ]
+    }
+
     private func buildMealSections(
-        _ cafeterias: [CafeteriaPageQuery.Data.Cafeterium],
+        _ cafeterias: [HomePageQuery.Data.Cafeterium],
         mealPeriod: HomeMealPeriod
     ) -> [HomeMealSection] {
         let marker = mealPeriod.marker
@@ -824,7 +834,7 @@ final class TodayHomeVC: UIViewController {
     }
 
     private func runningTime(
-        for cafeteria: CafeteriaPageQuery.Data.Cafeterium,
+        for cafeteria: HomePageQuery.Data.Cafeterium,
         mealPeriod: HomeMealPeriod
     ) -> String? {
         switch mealPeriod.marker {
