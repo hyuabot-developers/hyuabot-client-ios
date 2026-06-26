@@ -13957,25 +13957,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Using Today Home"
+            "value" : "The home screen is new"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日ホームを使用中"
+            "value" : "ホーム画面が新しくなりました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "오늘 홈 사용 중"
+            "value" : "홈 화면이 새로워졌어요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在使用今日首页"
+            "value" : "首页焕新了"
           }
         }
       }
