@@ -923,6 +923,9 @@ final class TodayHomeVC: UIViewController {
             if routeTag == "DY" {
                 return (String(localized: "shuttle.type.direct"), .busRed)
             }
+            if routeTag == "DJ" {
+                return (String(localized: "shuttle.type.jungang_station"), .hanyangGreen)
+            }
             if routeTag == "C" {
                 return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
             }
