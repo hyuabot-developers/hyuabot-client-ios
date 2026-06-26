@@ -5587,25 +5587,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nearby dormitory stop"
+            "value" : "Hanyang Univ. Dormitory Front"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "寮近くの停留所"
+            "value" : "漢陽大寄宿舎前"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기숙사 인근 정류장"
+            "value" : "한양대기숙사앞"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "宿舍附近站点"
+            "value" : "汉阳大宿舍前"
           }
         }
       }
@@ -5615,25 +5615,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "From Gyeonggi Techno Park"
+            "value" : "Gyeonggi Techno Park"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "京畿テクノパーク発"
+            "value" : "京畿テクノパーク"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "경기테크노파크 출발"
+            "value" : "경기테크노파크"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "从京畿科技园出发"
+            "value" : "京畿科技园"
           }
         }
       }
@@ -5643,25 +5643,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "From Sangnoksu Station"
+            "value" : "Sangnoksu Station"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "常緑樹駅発"
+            "value" : "常緑樹駅"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "상록수역 출발"
+            "value" : "상록수역"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "从常绿树站出发"
+            "value" : "常绿树站"
           }
         }
       }
@@ -5671,25 +5671,221 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "From Seongan-gil Entrance"
+            "value" : "Seongan-gil Entrance"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "城安キル入口発"
+            "value" : "城安キル入口"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "성안길입구 출발"
+            "value" : "성안길입구"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "从城安路入口出发"
+            "value" : "城安路入口"
+          }
+        }
+      }
+    },
+    "home.alt.bus_direction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toward %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@方面"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 방면"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@方向"
+          }
+        }
+      }
+    },
+    "home.alt.direction.intercity_terminal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercity Bus Terminal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "市外バスターミナル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시외버스터미널"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "市外巴士客运站"
+          }
+        }
+      }
+    },
+    "home.alt.direction.sangnoksu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangnoksu Station"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常緑樹駅"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常绿树站"
+          }
+        }
+      }
+    },
+    "home.alt.direction.shuttlecock_dormitory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock · Dormitory"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルコック・寄宿舎"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀콕·기숙사"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttlecock · 宿舍"
+          }
+        }
+      }
+    },
+    "home.alt.intercity_terminal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercity Bus Terminal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "市外バスターミナル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시외버스터미널"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "市外巴士客运站"
+          }
+        }
+      }
+    },
+    "home.alt.direction.haesol" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansan Haesol Elementary School"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安山ヘソル小学校"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안산해솔초등학교"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安山海松小学"
+          }
+        }
+      }
+    },
+    "home.alt.direction.sangnoksu_exit3_opposite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangnoksu Stn. Exit 3 Opposite"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常緑樹駅3番出口向かい"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역3번출구건너편"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常绿树站3号出口对面"
           }
         }
       }

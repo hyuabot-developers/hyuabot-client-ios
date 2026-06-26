@@ -661,7 +661,7 @@ final class TodayHomeVC: UIViewController {
         supportHeader.textColor = shouldEmphasizeSupport ? .label : .secondaryLabel
         supportHeader.text = shouldEmphasizeSupport ? String(localized: "home.support.emphasized") : String(localized: "home.support.default")
 
-        let rows = supportOptions.prefix(shouldEmphasizeSupport ? 4 : 2).map { makeTransitRow($0, emphasized: shouldEmphasizeSupport) }
+        let rows = supportOptions.prefix(shouldEmphasizeSupport ? 4 : 2).map { makeTransitRow($0, emphasized: true) }
         replaceSubviews(in: supportingOptionStack, with: rows.isEmpty ? [] : [supportHeader] + rows)
     }
 
@@ -694,14 +694,6 @@ final class TodayHomeVC: UIViewController {
         switch (selectedDeparture, destination) {
         case (.dormitory, .station):
             options.append(contentsOf: busAlternatives["dormitory_station"] ?? [])
-            options.append(HomeTransitOption(
-                kind: .transfer,
-                title: String(localized: "home.transit.station_transfer.title"),
-                subtitle: String(localized: "home.transit.station_transfer.subtitle"),
-                minutes: nil,
-                badge: String(localized: "home.badge.transfer"),
-                tintColor: .systemIndigo
-            ))
         case (.dormitory, .terminal):
             options.append(contentsOf: busAlternatives["dormitory_terminal"] ?? [])
         case (.dormitory, .jungang):
@@ -712,6 +704,10 @@ final class TodayHomeVC: UIViewController {
             options.append(contentsOf: busAlternatives["shuttlecock_jungang"] ?? [])
         case (.station, .dormitory):
             options.append(contentsOf: busAlternatives["station_dormitory"] ?? [])
+        case (.terminal, .dormitory):
+            options.append(contentsOf: busAlternatives["terminal_dormitory"] ?? [])
+        case (.jungang, .dormitory):
+            options.append(contentsOf: busAlternatives["jungang_dormitory"] ?? [])
         default:
             break
         }
@@ -960,29 +956,21 @@ final class TodayHomeVC: UIViewController {
         return (String(localized: "home.badge.free"), .hanyangBlue)
     }
 
-    private func transferBusOptions(stopSeq: Int, title: String, subtitle: String) -> [HomeTransitOption] {
-        guard let bus = shuttleData?.transferBus.first(where: { $0.stop.seq == stopSeq }) else { return [] }
-        return bus.arrival.prefix(2).compactMap { arrival in
-            guard let minutes = arrival.minutes else { return nil }
-            return HomeTransitOption(
-                kind: .transfer,
-                title: title,
-                subtitle: subtitle,
-                minutes: minutes,
-                badge: String(localized: "home.badge.transfer"),
-                tintColor: UIColor(named: "busGreen") ?? .systemGreen
-            )
-        }
-    }
-
     private func buildBusAlternatives(_ busList: [HomePageQuery.Data.Bus]) -> [String: [HomeTransitOption]] {
         func item(routeSeq: Int, stopSeq: Int) -> HomePageQuery.Data.Bus? {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
         }
 
-        func option(_ bus: HomePageQuery.Data.Bus?, route: String, subtitle: String, color: UIColor) -> HomeTransitOption? {
+        func option(
+            _ bus: HomePageQuery.Data.Bus?,
+            route: String,
+            stopName: String,
+            direction: String,
+            color: UIColor
+        ) -> HomeTransitOption? {
             guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
-            return HomeTransitOption(kind: .alternative, title: route, subtitle: subtitle, minutes: minutes, badge: String(localized: "home.badge.alternative"), tintColor: color)
+            let subtitle = String(format: String(localized: "home.alt.bus_direction"), direction)
+            return HomeTransitOption(kind: .alternative, title: stopName, subtitle: subtitle, minutes: minutes, badge: route, tintColor: color)
         }
 
         func best(_ options: [HomeTransitOption?]) -> HomeTransitOption? {
@@ -991,22 +979,53 @@ final class TodayHomeVC: UIViewController {
 
         let green = UIColor(named: "busGreen") ?? .systemGreen
         let blue = UIColor(named: "busBlue") ?? .systemBlue
+        let terminal = String(localized: "home.alt.direction.intercity_terminal")
+        let terminalStop = String(localized: "home.alt.intercity_terminal")
+        let jungang = String(localized: "home.destination.jungang")
+        let dormitory = String(localized: "shuttle.stop.dormitory.in")
+        let shuttlecock = String(localized: "shuttle.stop.shuttlecock.out")
+        let sangnoksu = String(localized: "home.alt.direction.sangnoksu")
+        let shuttlecockDormitory = String(localized: "home.alt.direction.shuttlecock_dormitory")
         let route80A = best([
-            option(item(routeSeq: 216_000_081, stopSeq: 216_000_028), route: "80A", subtitle: String(localized: "home.alt.gyeonggi_technopark"), color: blue),
-            option(item(routeSeq: 216_000_101, stopSeq: 216_000_028), route: "N80A", subtitle: String(localized: "home.alt.gyeonggi_technopark"), color: blue)
+            option(item(routeSeq: 216_000_081, stopSeq: 216_000_028), route: "80A", stopName: String(localized: "home.alt.gyeonggi_technopark"), direction: terminal, color: blue),
+            option(item(routeSeq: 216_000_101, stopSeq: 216_000_028), route: "N80A", stopName: String(localized: "home.alt.gyeonggi_technopark"), direction: terminal, color: blue)
         ])
-        let route62Out = option(item(routeSeq: 216_000_016, stopSeq: 216_000_152), route: "62", subtitle: String(localized: "home.alt.seongan_entrance"), color: green)
+        let terminal80B = best([
+            option(item(routeSeq: 216_000_082, stopSeq: 216_000_077), route: "80B", stopName: terminalStop, direction: dormitory, color: blue),
+            option(item(routeSeq: 216_000_102, stopSeq: 216_000_077), route: "N80B", stopName: terminalStop, direction: dormitory, color: blue)
+        ])
+        let jungang80B = best([
+            option(item(routeSeq: 216_000_082, stopSeq: 217_000_140), route: "80B", stopName: String(localized: "home.destination.jungang"), direction: dormitory, color: blue),
+            option(item(routeSeq: 216_000_102, stopSeq: 217_000_140), route: "N80B", stopName: String(localized: "home.destination.jungang"), direction: dormitory, color: blue)
+        ])
 
         return [
             "dormitory_station": [
-                option(item(routeSeq: 216_000_068, stopSeq: 216_000_383), route: "10-1", subtitle: String(localized: "home.alt.dormitory_nearby"), color: green)
+                option(item(routeSeq: 216_000_068, stopSeq: 216_000_383), route: "10-1", stopName: String(localized: "home.alt.dormitory_nearby"), direction: sangnoksu, color: green)
             ].compactMap { $0 },
             "dormitory_terminal": [route80A].compactMap { $0 },
-            "dormitory_jungang": [route80A].compactMap { $0 },
-            "shuttlecock_terminal": [route62Out].compactMap { $0 },
-            "shuttlecock_jungang": [route62Out].compactMap { $0 },
+            "dormitory_jungang": [
+                best([
+                    option(item(routeSeq: 216_000_081, stopSeq: 216_000_028), route: "80A", stopName: String(localized: "home.alt.gyeonggi_technopark"), direction: jungang, color: blue),
+                    option(item(routeSeq: 216_000_101, stopSeq: 216_000_028), route: "N80A", stopName: String(localized: "home.alt.gyeonggi_technopark"), direction: jungang, color: blue)
+                ])
+            ].compactMap { $0 },
+            "shuttlecock_terminal": [
+                option(item(routeSeq: 216_000_016, stopSeq: 216_000_152), route: "62", stopName: String(localized: "home.alt.seongan_entrance"), direction: terminal, color: green)
+            ].compactMap { $0 },
+            "shuttlecock_jungang": [
+                option(item(routeSeq: 216_000_016, stopSeq: 216_000_152), route: "62", stopName: String(localized: "home.alt.seongan_entrance"), direction: jungang, color: green)
+            ].compactMap { $0 },
             "station_dormitory": [
-                option(item(routeSeq: 216_000_068, stopSeq: 216_000_138), route: "10-1", subtitle: String(localized: "home.alt.sangnoksu"), color: green)
+                option(item(routeSeq: 216_000_068, stopSeq: 216_000_138), route: "10-1", stopName: String(localized: "home.alt.sangnoksu"), direction: shuttlecockDormitory, color: green)
+            ].compactMap { $0 },
+            "terminal_dormitory": [
+                terminal80B,
+                option(item(routeSeq: 216_000_016, stopSeq: 216_000_074), route: "62", stopName: terminalStop, direction: shuttlecock, color: green)
+            ].compactMap { $0 },
+            "jungang_dormitory": [
+                jungang80B,
+                option(item(routeSeq: 216_000_016, stopSeq: 217_000_264), route: "62", stopName: String(localized: "home.destination.jungang"), direction: shuttlecock, color: green)
             ].compactMap { $0 }
         ]
     }
@@ -1156,6 +1175,12 @@ final class TodayHomeVC: UIViewController {
             BusRouteStopInput(route: 216_000_081, stop: 216_000_028, limit: 1),
             BusRouteStopInput(route: 216_000_101, stop: 216_000_028, limit: 1),
             BusRouteStopInput(route: 216_000_016, stop: 216_000_152, limit: 1),
+            BusRouteStopInput(route: 216_000_082, stop: 216_000_077, limit: 1),
+            BusRouteStopInput(route: 216_000_102, stop: 216_000_077, limit: 1),
+            BusRouteStopInput(route: 216_000_016, stop: 216_000_074, limit: 1),
+            BusRouteStopInput(route: 216_000_082, stop: 217_000_140, limit: 1),
+            BusRouteStopInput(route: 216_000_102, stop: 217_000_140, limit: 1),
+            BusRouteStopInput(route: 216_000_016, stop: 217_000_264, limit: 1)
         ]
     }
 
