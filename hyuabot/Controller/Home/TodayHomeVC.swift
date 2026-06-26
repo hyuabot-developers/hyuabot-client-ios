@@ -186,6 +186,148 @@ private struct HomeMealPeriod {
     let mealIndex: Int
 }
 
+private enum HomeSettings {
+    static let showBus50TransferKey = "home.showBus50Transfer"
+
+    static var showBus50Transfer: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: showBus50TransferKey) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: showBus50TransferKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: showBus50TransferKey)
+        }
+    }
+}
+
+private final class HomeQuickSettingsVC: UIViewController {
+    var openLegacyShuttle: (() -> Void)?
+    var updateShowBus50Transfer: ((Bool) -> Void)?
+    let preferredSheetHeight: CGFloat = 245
+
+    private let contentStack = UIStackView()
+    private let showBus50TransferSwitch = UISwitch()
+
+    init(showBus50Transfer: Bool) {
+        showBus50TransferSwitch.isOn = showBus50Transfer
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+    }
+
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+
+        view.addSubview(contentStack)
+        contentStack.axis = .vertical
+        contentStack.spacing = 14
+        contentStack.layoutMargins = UIEdgeInsets(top: 22, left: 20, bottom: 24, right: 20)
+        contentStack.isLayoutMarginsRelativeArrangement = true
+        contentStack.snp.makeConstraints { make in
+            make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide)
+        }
+
+        let title = UILabel()
+        title.text = String(localized: "home.quick_settings.title")
+        title.font = .godo(size: 20, weight: .bold)
+        title.textColor = .label
+
+        showBus50TransferSwitch.addTarget(self, action: #selector(onChangeShowBus50Transfer), for: .valueChanged)
+
+        contentStack.addArrangedSubview(title)
+        contentStack.addArrangedSubview(settingRow(
+            title: String(localized: "home.quick_settings.bus50_transfer.title"),
+            subtitle: String(localized: "home.quick_settings.bus50_transfer.subtitle"),
+            control: showBus50TransferSwitch,
+            identifier: "home.quick_settings.bus50_transfer_row"
+        ))
+        contentStack.addArrangedSubview(legacyActionRow())
+    }
+
+    private func settingRow(title: String, subtitle: String, control: UISwitch, identifier: String) -> UIView {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 12
+        row.accessibilityIdentifier = identifier
+        row.isAccessibilityElement = true
+        row.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
+        row.isLayoutMarginsRelativeArrangement = true
+        row.backgroundColor = .secondarySystemBackground
+        row.layer.cornerRadius = 8
+
+        let textStack = UIStackView()
+        textStack.axis = .vertical
+        textStack.spacing = 4
+
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .godo(size: 16, weight: .bold)
+        titleLabel.textColor = .label
+
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = subtitle
+        subtitleLabel.font = .godo(size: 13, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 0
+
+        textStack.addArrangedSubview(titleLabel)
+        textStack.addArrangedSubview(subtitleLabel)
+        row.addArrangedSubview(textStack)
+        row.addArrangedSubview(control)
+        row.snp.makeConstraints { make in
+            make.height.equalTo(76)
+        }
+        row.setContentHuggingPriority(.required, for: .vertical)
+        row.setContentCompressionResistancePriority(.required, for: .vertical)
+        return row
+    }
+
+    private func legacyActionRow() -> UIView {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.tinted()
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "bus.fill")
+        config.attributedTitle = AttributedString(String(localized: "home.quick_settings.legacy"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 17, weight: .bold)
+        ]))
+        config.imagePadding = 8
+        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
+        button.configuration = config
+        button.contentHorizontalAlignment = .leading
+        button.addTarget(self, action: #selector(onTapLegacy), for: .touchUpInside)
+        button.accessibilityIdentifier = "home.quick_settings.open_legacy"
+        button.snp.makeConstraints { make in
+            make.height.equalTo(52)
+        }
+        button.setContentHuggingPriority(.required, for: .vertical)
+        button.setContentCompressionResistancePriority(.required, for: .vertical)
+        return button
+    }
+
+    @objc private func onChangeShowBus50Transfer() {
+        updateShowBus50Transfer?(showBus50TransferSwitch.isOn)
+    }
+
+    @objc private func onTapLegacy() {
+        dismiss(animated: true) { [weak self] in
+            self?.openLegacyShuttle?()
+        }
+    }
+}
+
 final class TodayHomeVC: UIViewController {
     private static let autoRefreshIntervalSeconds = 60
 
@@ -211,7 +353,7 @@ final class TodayHomeVC: UIViewController {
         $0.layer.borderColor = UIColor.separator.cgColor
     }
     private lazy var legacyBarLabel = UILabel().then {
-        $0.text = String(localized: "home.action_bar.title")
+        $0.text = String(localized: "home.quick_settings.action_bar.title")
         $0.textColor = .secondaryLabel
         $0.font = .godo(size: 13, weight: .bold)
     }
@@ -219,18 +361,19 @@ final class TodayHomeVC: UIViewController {
         var config = UIButton.Configuration.tinted()
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
-        config.image = UIImage(systemName: "bus.fill")?.withConfiguration(UIImage.SymbolConfiguration(
+        config.image = UIImage(systemName: "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
             pointSize: 16,
             weight: .semibold
         ))
-        config.attributedTitle = AttributedString(String(localized: "home.legacy"), attributes: AttributeContainer([
+        config.attributedTitle = AttributedString(String(localized: "home.quick_settings.button"), attributes: AttributeContainer([
             .font: UIFont.godo(size: 14, weight: .bold)
         ]))
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
         $0.configuration = config
-        $0.addTarget(self, action: #selector(openLegacyShuttle), for: .touchUpInside)
-        $0.accessibilityIdentifier = "home.open_legacy"
+        $0.addTarget(self, action: #selector(openQuickSettings), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: "home.quick_settings.title")
+        $0.accessibilityIdentifier = "home.quick_settings"
     }
 
     private var selectedDeparture: HomeDeparture = .dormitory
@@ -595,7 +738,9 @@ final class TodayHomeVC: UIViewController {
                     minutes: minutesUntil(candidate.time),
                     badge: routeDisplay.badge,
                     tintColor: routeDisplay.tintColor,
-                    connection: displayableBus50Connection(at: index, in: connections, candidates: candidates)
+                    connection: HomeSettings.showBus50Transfer
+                        ? displayableBus50Connection(at: index, in: connections, candidates: candidates)
+                        : nil
                 )
             }
     }
@@ -1375,6 +1520,24 @@ final class TodayHomeVC: UIViewController {
     @objc private func refresh() {
         AnalyticsManager.logSelect(.homeRefresh)
         refreshHomeContext()
+    }
+
+    @objc private func openQuickSettings() {
+        let vc = HomeQuickSettingsVC(showBus50Transfer: HomeSettings.showBus50Transfer)
+        vc.openLegacyShuttle = { [weak self] in
+            self?.openLegacyShuttle()
+        }
+        vc.updateShowBus50Transfer = { [weak self] isOn in
+            HomeSettings.showBus50Transfer = isOn
+            self?.renderMovement()
+        }
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom { context in
+                min(vc.preferredSheetHeight, context.maximumDetentValue)
+            }]
+            sheet.prefersGrabberVisible = true
+        }
+        present(vc, animated: true)
     }
 
     @objc private func openLegacyShuttle() {
