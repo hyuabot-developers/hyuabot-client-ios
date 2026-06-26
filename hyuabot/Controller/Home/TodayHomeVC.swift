@@ -1,36 +1,103 @@
 import Api
 import ApolloAPI
+import CoreLocation
+import RxSwift
 import SnapKit
 import Then
 import UIKit
 
-private enum HomeDestination: Int, CaseIterable {
+private enum HomeDeparture: CaseIterable {
+    case dormitory
+    case shuttlecock
     case station
     case terminal
     case jungang
-    case gwangmyeong
-    case campus
+
+    var title: String {
+        switch self {
+        case .dormitory: String(localized: "shuttle.stop.dormitory.out")
+        case .shuttlecock: String(localized: "shuttle.stop.shuttlecock.out")
+        case .station: String(localized: "shuttle.stop.station")
+        case .terminal: String(localized: "shuttle.stop.terminal")
+        case .jungang: String(localized: "shuttle.stop.jungang.station")
+        }
+    }
+
+    var location: CLLocation {
+        switch self {
+        case .dormitory: CLLocation(latitude: 37.29339607529377, longitude: 126.83630604103446)
+        case .shuttlecock: CLLocation(latitude: 37.29875417910844, longitude: 126.83784054072336)
+        case .station: CLLocation(latitude: 37.309700971618255, longitude: 126.85207173389148)
+        case .terminal: CLLocation(latitude: 37.319338173415936, longitude: 126.8455263115596)
+        case .jungang: CLLocation(latitude: 37.31487247528457, longitude: 126.83963540399434)
+        }
+    }
+
+    var destinations: [HomeDestination] {
+        switch self {
+        case .dormitory: [.station, .terminal, .jungang]
+        case .shuttlecock: [.station, .terminal, .jungang, .dormitory]
+        case .station: [.dormitory, .terminal, .jungang]
+        case .terminal, .jungang: [.dormitory]
+        }
+    }
+}
+
+#if DEBUG
+private extension HomeDeparture {
+    init?(debugValue: String) {
+        switch debugValue {
+        case "dormitory":
+            self = .dormitory
+        case "shuttlecock":
+            self = .shuttlecock
+        case "station":
+            self = .station
+        case "terminal":
+            self = .terminal
+        case "jungang":
+            self = .jungang
+        default:
+            return nil
+        }
+    }
+}
+#endif
+
+private enum HomeDestination: CaseIterable {
+    case station
+    case terminal
+    case jungang
+    case dormitory
 
     var title: String {
         switch self {
         case .station: String(localized: "home.destination.station")
-        case .terminal: String(localized: "home.destination.terminal")
+        case .terminal: String(localized: "shuttle.stop.terminal")
         case .jungang: String(localized: "home.destination.jungang")
-        case .gwangmyeong: String(localized: "home.destination.gwangmyeong")
-        case .campus: String(localized: "home.destination.campus")
-        }
-    }
-
-    var routeTitle: String {
-        switch self {
-        case .station: String(localized: "home.route.station")
-        case .terminal: String(localized: "home.route.terminal")
-        case .jungang: String(localized: "home.route.jungang")
-        case .gwangmyeong: String(localized: "home.route.gwangmyeong")
-        case .campus: String(localized: "home.route.campus")
+        case .dormitory: String(localized: "shuttle.stop.dormitory.in")
         }
     }
 }
+
+#if DEBUG
+private extension HomeDestination {
+    init?(debugValue: String) {
+        switch debugValue {
+        case "station":
+            self = .station
+        case "terminal":
+            self = .terminal
+        case "jungang":
+            self = .jungang
+        case "dormitory":
+            self = .dormitory
+        default:
+            return nil
+        }
+    }
+}
+#endif
 
 private struct HomeTransitOption {
     enum Kind {
@@ -45,6 +112,12 @@ private struct HomeTransitOption {
     let minutes: Int?
     let badge: String
     let tintColor: UIColor
+}
+
+private struct HomeShuttleRoute {
+    let stop: String
+    let destination: String
+    let routeFilter: ((HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool)?
 }
 
 private struct HomeMealItem {
@@ -67,9 +140,15 @@ private struct HomeMealPeriod {
 }
 
 final class TodayHomeVC: UIViewController {
+    private static let autoRefreshIntervalSeconds = 60
+
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
-    private let destinationControl = UISegmentedControl(items: HomeDestination.allCases.map(\.title))
+    private let destinationControl = UISegmentedControl()
+    private lazy var locationManager = CLLocationManager().then {
+        $0.delegate = self
+        $0.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
     private let movementCard = UIStackView()
     private let movementStateLabel = UILabel()
     private let shuttleOptionStack = UIStackView()
@@ -107,22 +186,45 @@ final class TodayHomeVC: UIViewController {
         $0.accessibilityIdentifier = "home.open_legacy"
     }
 
+    private var selectedDeparture: HomeDeparture = .dormitory
     private var selectedDestination: HomeDestination = .station
+    private var availableDestinations: [HomeDestination] {
+        selectedDeparture.destinations
+    }
     private var shuttleData: HomePageQuery.Data?
     private var busAlternatives: [String: [HomeTransitOption]] = [:]
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
     private var isLoading = false
+    private var autoRefreshSubscription: Disposable?
+#if DEBUG
+    private var usesDebugDeparture = false
+#endif
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        fetchHomeData()
+#if DEBUG
+        applyDebugRouteOverride()
+#endif
+        updateDestinationControl()
+        refreshHomeContext()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         logScreenView(.home)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        startAutoRefresh()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopAutoRefresh()
     }
 
     private func setupUI() {
@@ -199,7 +301,6 @@ final class TodayHomeVC: UIViewController {
         subtitle.textColor = .secondaryLabel
         subtitle.numberOfLines = 0
 
-        destinationControl.selectedSegmentIndex = selectedDestination.rawValue
         destinationControl.setTitleTextAttributes([
             .font: UIFont.godo(size: 13, weight: .regular)
         ], for: .normal)
@@ -352,7 +453,7 @@ final class TodayHomeVC: UIViewController {
         let nextShuttleMinutes = shuttleOptions.first?.minutes
         let shouldEmphasizeSupport = nextShuttleMinutes.map { $0 > 20 } ?? true
 
-        movementStateLabel.text = selectedDestination.routeTitle
+        movementStateLabel.text = "\(selectedDeparture.title) → \(selectedDestination.title)"
         if shuttleOptions.isEmpty {
             replaceSubviews(in: shuttleOptionStack, with: [
                 makeEmptyView(
@@ -391,9 +492,16 @@ final class TodayHomeVC: UIViewController {
 
     private func movementOptions(for destination: HomeDestination) -> [HomeTransitOption] {
         var options: [HomeTransitOption] = []
-        switch destination {
-        case .station:
-            options.append(contentsOf: shuttleOptions(stop: "dormitory_o", destination: "STATION", subtitle: String(localized: "home.transit.free_station_transfer")))
+        if let route = shuttleRoute(from: selectedDeparture, to: destination) {
+            options.append(contentsOf: shuttleOptions(
+                stop: route.stop,
+                destination: route.destination,
+                routeFilter: route.routeFilter
+            ))
+        }
+
+        switch (selectedDeparture, destination) {
+        case (.dormitory, .station):
             options.append(contentsOf: busAlternatives["dormitory_station"] ?? [])
             options.append(HomeTransitOption(
                 kind: .transfer,
@@ -403,38 +511,171 @@ final class TodayHomeVC: UIViewController {
                 badge: String(localized: "home.badge.transfer"),
                 tintColor: .systemIndigo
             ))
-        case .terminal:
-            options.append(contentsOf: shuttleOptions(stop: "dormitory_o", destination: "TERMINAL", subtitle: String(localized: "home.transit.free_terminal")))
+        case (.dormitory, .terminal):
             options.append(contentsOf: busAlternatives["dormitory_terminal"] ?? [])
-            options.append(contentsOf: busAlternatives["shuttlecock_terminal"] ?? [])
-        case .jungang:
-            options.append(contentsOf: shuttleOptions(stop: "dormitory_o", destination: "JUNGANG", subtitle: String(localized: "home.transit.free_jungang")))
+        case (.dormitory, .jungang):
             options.append(contentsOf: busAlternatives["dormitory_jungang"] ?? [])
+        case (.shuttlecock, .terminal):
+            options.append(contentsOf: busAlternatives["shuttlecock_terminal"] ?? [])
+        case (.shuttlecock, .jungang):
             options.append(contentsOf: busAlternatives["shuttlecock_jungang"] ?? [])
-        case .gwangmyeong:
-            options.append(contentsOf: shuttleOptions(stop: "dormitory_o", destination: "STATION", subtitle: String(localized: "home.transit.free_artist_50")))
-            options.append(contentsOf: transferBusOptions(stopSeq: 216_000_759, title: String(localized: "home.transit.bus_50_gwangmyeong.title"), subtitle: String(localized: "home.transit.bus_50_gwangmyeong.subtitle")))
-        case .campus:
-            options.append(contentsOf: shuttleOptions(stop: "station", destination: "CAMPUS", subtitle: String(localized: "home.transit.free_campus")))
+        case (.station, .dormitory):
             options.append(contentsOf: busAlternatives["station_dormitory"] ?? [])
-            options.append(contentsOf: transferBusOptions(stopSeq: 216_000_117, title: String(localized: "home.transit.bus_50_ansan.title"), subtitle: String(localized: "home.transit.bus_50_ansan.subtitle")))
+        default:
+            break
         }
         return options
     }
 
-    private func shuttleOptions(stop stopName: String, destination: String, subtitle: String) -> [HomeTransitOption] {
+    private func shuttleOptions(
+        stop stopName: String,
+        destination: String,
+        routeFilter: ((HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool)? = nil
+    ) -> [HomeTransitOption] {
         guard let stop = shuttleData?.shuttle.stops.first(where: { $0.name == stopName }),
               let group = stop.timetable.destination.first(where: { $0.destination == destination }) else { return [] }
-        return group.entries.prefix(2).map { entry in
-            HomeTransitOption(
-                kind: .shuttle,
-                title: String(format: String(localized: "home.shuttle.departure.title"), compactTime(entry.time)),
-                subtitle: subtitle,
-                minutes: minutesUntil(entry.time),
-                badge: String(localized: "home.badge.free"),
-                tintColor: .hanyangBlue
-            )
+        return group.entries
+            .filter { routeFilter?($0) ?? true }
+            .prefix(2)
+            .map { entry in
+                let routeDisplay = shuttleRouteDisplay(stop: stopName, destination: destination, entry: entry)
+                return HomeTransitOption(
+                    kind: .shuttle,
+                    title: String(format: String(localized: "home.shuttle.departure.title"), compactTime(entry.time)),
+                    subtitle: shuttleStopSummary(from: stopName, to: destination, entry: entry),
+                    minutes: minutesUntil(entry.time),
+                    badge: routeDisplay.badge,
+                    tintColor: routeDisplay.tintColor
+                )
+            }
+    }
+
+    private func shuttleStopSummary(
+        from stopName: String,
+        to destination: String,
+        entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) -> String {
+        let stopIDs = entry.stops.map(\.stop)
+        let destinationStopID = shuttleStopID(for: destination)
+        let pathStopIDs: [String]
+        if let startIndex = stopIDs.firstIndex(of: stopName) {
+            let remainingStopIDs = Array(stopIDs[startIndex...])
+            if let destinationStopID,
+               let destinationIndex = remainingStopIDs.firstIndex(of: destinationStopID) {
+                pathStopIDs = Array(remainingStopIDs[...destinationIndex])
+            } else {
+                pathStopIDs = remainingStopIDs
+            }
+        } else {
+            pathStopIDs = stopIDs
         }
+
+        let viaStopNames = pathStopIDs
+            .dropFirst()
+            .dropLast()
+            .map(localizedShuttleViaStopName)
+        guard !viaStopNames.isEmpty else {
+            return String(localized: "home.shuttle.no_via")
+        }
+        return String(format: String(localized: "home.shuttle.via"), viaStopNames.joined(separator: " · "))
+    }
+
+    private func shuttleStopID(for destination: String) -> String? {
+        switch destination {
+        case "STATION":
+            return "station"
+        case "TERMINAL":
+            return "terminal"
+        case "JUNGANG":
+            return "jungang_stn"
+        case "CAMPUS":
+            return "dormitory_i"
+        default:
+            return nil
+        }
+    }
+
+    private func localizedShuttleStopName(_ stopID: String) -> String {
+        switch stopID {
+        case "dormitory_o":
+            return String(localized: "shuttle.stop.dormitory.out")
+        case "dormitory_i":
+            return String(localized: "shuttle.stop.dormitory.in")
+        case "shuttlecock_o":
+            return String(localized: "shuttle.stop.shuttlecock.out")
+        case "shuttlecock_i":
+            return String(localized: "shuttle.stop.shuttlecock.in")
+        case "station":
+            return String(localized: "shuttle.stop.station")
+        case "terminal":
+            return String(localized: "shuttle.stop.terminal")
+        case "jungang_stn":
+            return String(localized: "shuttle.stop.jungang.station")
+        default:
+            return stopID
+        }
+    }
+
+    private func localizedShuttleViaStopName(_ stopID: String) -> String {
+        switch stopID {
+        case "shuttlecock_i":
+            return String(localized: "shuttle.stop.shuttlecock.out")
+        default:
+            return localizedShuttleStopName(stopID)
+        }
+    }
+
+    private func shuttleRouteDisplay(
+        stop: String,
+        destination: String,
+        entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) -> (badge: String, tintColor: UIColor) {
+        let routeTag = entry.route.tag
+        let routeName = entry.route.name
+
+        switch (stop, destination) {
+        case ("dormitory_o", "STATION"), ("shuttlecock_o", "STATION"):
+            if routeTag == "DH" || routeTag == "DJ" {
+                return (String(localized: "shuttle.type.direct"), .busRed)
+            }
+            if routeTag == "C" {
+                return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
+            }
+        case ("dormitory_o", "TERMINAL"), ("shuttlecock_o", "TERMINAL"):
+            if routeTag == "DY" {
+                return (String(localized: "shuttle.type.direct"), .busRed)
+            }
+            if routeTag == "C" {
+                return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
+            }
+        case ("dormitory_o", "JUNGANG"), ("shuttlecock_o", "JUNGANG"), ("station", "JUNGANG"):
+            return (String(localized: "shuttle.type.jungang_station"), .hanyangGreen)
+        case ("station", "CAMPUS"):
+            if routeTag == "DH" {
+                return (String(localized: "shuttle.type.direct"), .busRed)
+            }
+            if routeTag == "DJ" {
+                return (String(localized: "shuttle.type.jungang_station"), .hanyangGreen)
+            }
+            if routeTag == "C" {
+                return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
+            }
+        case ("station", "TERMINAL"):
+            if routeTag == "C" {
+                return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
+            }
+        case ("terminal", "CAMPUS"), ("jungang_stn", "CAMPUS"), ("shuttlecock_i", "CAMPUS"):
+            if routeName.hasSuffix("S") {
+                return (String(localized: "shuttle.type.shuttlecock"), .busRed)
+            }
+            if routeName.hasSuffix("D") {
+                return (String(localized: "shuttle.type.dormitory"), .hanyangBlue)
+            }
+        default:
+            break
+        }
+
+        return (String(localized: "home.badge.free"), .hanyangBlue)
     }
 
     private func transferBusOptions(stopSeq: Int, title: String, subtitle: String) -> [HomeTransitOption] {
@@ -488,10 +729,12 @@ final class TodayHomeVC: UIViewController {
         ]
     }
 
-    private func fetchHomeData() {
+    private func fetchHomeData(showsLoadingState: Bool = true) {
         guard !isLoading else { return }
         isLoading = true
-        renderLoadingState()
+        if showsLoadingState || shuttleData == nil {
+            renderLoadingState()
+        }
 
         let mealPeriod = currentMealPeriod()
         displayedMealPeriod = mealPeriod
@@ -521,6 +764,88 @@ final class TodayHomeVC: UIViewController {
                 refreshControl.endRefreshing()
                 render()
             }
+        }
+    }
+
+    private func startAutoRefresh() {
+        stopAutoRefresh()
+        autoRefreshSubscription = Observable<Int>
+            .interval(.seconds(Self.autoRefreshIntervalSeconds), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                self?.refreshHomeContext(showsLoadingState: false)
+            })
+    }
+
+    private func stopAutoRefresh() {
+        autoRefreshSubscription?.dispose()
+        autoRefreshSubscription = nil
+    }
+
+    private func refreshHomeContext(showsLoadingState: Bool = true) {
+#if DEBUG
+        if !usesDebugDeparture {
+            requestDepartureLocation()
+        }
+#else
+        requestDepartureLocation()
+#endif
+        fetchHomeData(showsLoadingState: showsLoadingState)
+    }
+
+#if DEBUG
+    private func applyDebugRouteOverride() {
+        let arguments = ProcessInfo.processInfo.arguments
+        if let departureValue = argumentValue(named: "-homeDebugDeparture", in: arguments),
+           let departure = HomeDeparture(debugValue: departureValue) {
+            selectedDeparture = departure
+            usesDebugDeparture = true
+        }
+        if let destinationValue = argumentValue(named: "-homeDebugDestination", in: arguments),
+           let destination = HomeDestination(debugValue: destinationValue),
+           selectedDeparture.destinations.contains(destination) {
+            selectedDestination = destination
+        }
+    }
+
+    private func argumentValue(named name: String, in arguments: [String]) -> String? {
+        guard let index = arguments.firstIndex(of: name),
+              arguments.indices.contains(arguments.index(after: index)) else { return nil }
+        return arguments[arguments.index(after: index)]
+    }
+#endif
+
+    private func shuttleRoute(from departure: HomeDeparture, to destination: HomeDestination) -> HomeShuttleRoute? {
+        let dormitoryRoute: (HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool = {
+            $0.route.name.hasSuffix("D")
+        }
+
+        switch (departure, destination) {
+        case (.dormitory, .station):
+            return HomeShuttleRoute(stop: "dormitory_o", destination: "STATION", routeFilter: nil)
+        case (.dormitory, .terminal):
+            return HomeShuttleRoute(stop: "dormitory_o", destination: "TERMINAL", routeFilter: nil)
+        case (.dormitory, .jungang):
+            return HomeShuttleRoute(stop: "dormitory_o", destination: "JUNGANG", routeFilter: nil)
+        case (.shuttlecock, .station):
+            return HomeShuttleRoute(stop: "shuttlecock_o", destination: "STATION", routeFilter: nil)
+        case (.shuttlecock, .terminal):
+            return HomeShuttleRoute(stop: "shuttlecock_o", destination: "TERMINAL", routeFilter: nil)
+        case (.shuttlecock, .jungang):
+            return HomeShuttleRoute(stop: "shuttlecock_o", destination: "JUNGANG", routeFilter: nil)
+        case (.shuttlecock, .dormitory):
+            return HomeShuttleRoute(stop: "shuttlecock_i", destination: "CAMPUS", routeFilter: dormitoryRoute)
+        case (.station, .dormitory):
+            return HomeShuttleRoute(stop: "station", destination: "CAMPUS", routeFilter: dormitoryRoute)
+        case (.station, .terminal):
+            return HomeShuttleRoute(stop: "station", destination: "TERMINAL", routeFilter: nil)
+        case (.station, .jungang):
+            return HomeShuttleRoute(stop: "station", destination: "JUNGANG", routeFilter: nil)
+        case (.terminal, .dormitory):
+            return HomeShuttleRoute(stop: "terminal", destination: "CAMPUS", routeFilter: dormitoryRoute)
+        case (.jungang, .dormitory):
+            return HomeShuttleRoute(stop: "jungang_stn", destination: "CAMPUS", routeFilter: dormitoryRoute)
+        default:
+            return nil
         }
     }
 
@@ -594,8 +919,10 @@ final class TodayHomeVC: UIViewController {
         badge.backgroundColor = option.tintColor
         badge.layer.cornerRadius = 12
         badge.clipsToBounds = true
+        badge.adjustsFontSizeToFitWidth = true
+        badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(44)
+            make.width.equalTo(64)
             make.height.equalTo(24)
         }
 
@@ -751,8 +1078,38 @@ final class TodayHomeVC: UIViewController {
         views.forEach(stack.addArrangedSubview)
     }
 
+    private func updateDestinationControl() {
+        destinationControl.removeAllSegments()
+        availableDestinations.enumerated().forEach { index, destination in
+            destinationControl.insertSegment(withTitle: destination.title, at: index, animated: false)
+        }
+        if !availableDestinations.contains(selectedDestination) {
+            selectedDestination = availableDestinations.first ?? .station
+        }
+        destinationControl.selectedSegmentIndex = availableDestinations.firstIndex(of: selectedDestination) ?? 0
+    }
+
+    private func updateDeparture(_ departure: HomeDeparture) {
+        guard selectedDeparture != departure else { return }
+        selectedDeparture = departure
+        updateDestinationControl()
+        renderMovement()
+    }
+
+    private func requestDepartureLocation() {
+        switch locationManager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            locationManager.requestLocation()
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        default:
+            break
+        }
+    }
+
     @objc private func destinationChanged() {
-        guard let destination = HomeDestination(rawValue: destinationControl.selectedSegmentIndex) else { return }
+        guard availableDestinations.indices.contains(destinationControl.selectedSegmentIndex) else { return }
+        let destination = availableDestinations[destinationControl.selectedSegmentIndex]
         selectedDestination = destination
         AnalyticsManager.logSelect(.homeSelectDestination, type: .tab, name: destination.title)
         renderMovement()
@@ -760,13 +1117,14 @@ final class TodayHomeVC: UIViewController {
 
     @objc private func refresh() {
         AnalyticsManager.logSelect(.homeRefresh)
-        fetchHomeData()
+        refreshHomeContext()
     }
 
     @objc private func openLegacyShuttle() {
         AnalyticsManager.logSelect(.homeOpenLegacyShuttle)
         (navigationController as? ShuttleNC)?.showLegacyShuttle()
     }
+
 
     @objc private func openCafeteria() {
         AnalyticsManager.logSelect(.homeOpenCafeteria)
@@ -914,5 +1272,21 @@ final class TodayHomeVC: UIViewController {
         default:
             return "weekday"
         }
+    }
+}
+
+extension TodayHomeVC: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last,
+              let nearestDeparture = HomeDeparture.allCases.min(by: {
+                  $0.location.distance(from: location) < $1.location.distance(from: location)
+              }) else { return }
+        updateDeparture(nearestDeparture)
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {}
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        requestDepartureLocation()
     }
 }
