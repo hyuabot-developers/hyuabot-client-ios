@@ -23,7 +23,7 @@ import UIKit
 
 /// Every user-visible screen. rawValue == GA4 `screen_name` (shared with Android).
 enum AnalyticsScreen: String, CaseIterable {
-    // Home
+    /// Home
     case home
 
     // Shuttle

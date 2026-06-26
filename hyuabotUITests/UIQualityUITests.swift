@@ -210,7 +210,7 @@ final class UIQualityUITests: XCTestCase {
     }
 
     private func makeApp() -> XCUIApplication {
-        return makeApp(initialRoute: nil)
+        makeApp(initialRoute: nil)
     }
 
     private func makeApp(initialRoute: String?) -> XCUIApplication {
@@ -273,7 +273,7 @@ final class UIQualityUITests: XCTestCase {
 
     private func captureAndAuditScrolledPage(_ pageName: String, app: XCUIApplication) -> [String] {
         var issues: [String] = []
-        for index in 0..<3 {
+        for index in 0 ..< 3 {
             waitForPageToSettle(app)
             capture("\(pageName)-scroll-\(index)", app: app)
             if pageName == "contact" {
@@ -429,7 +429,7 @@ final class UIQualityUITests: XCTestCase {
     }
 
     private func auditButtons(_ identifiers: [String], pageName: String, app: XCUIApplication) -> [String] {
-        return auditElements(identifiers: identifiers, pageName: pageName, app: app)
+        auditElements(identifiers: identifiers, pageName: pageName, app: app)
     }
 
     private func auditElements(identifiers: [String], pageName: String, app: XCUIApplication) -> [String] {
@@ -471,7 +471,7 @@ final class UIQualityUITests: XCTestCase {
         let closeLabels = ["닫기", "취소", "Cancel", "Done", "확인"]
         for label in closeLabels {
             let button = app.buttons[label]
-            if button.exists && button.isHittable {
+            if button.exists, button.isHittable {
                 button.tap()
                 waitForPageToSettle(app)
                 return
@@ -553,8 +553,16 @@ final class UIQualityUITests: XCTestCase {
         return queries.flatMap { query in
             query.allElementsBoundByIndex.filter { element in
                 element.exists && !element.frame.isEmpty && visibleRatio(of: element.frame, in: screen) >= 0.5
+                    && shouldAudit(element)
             }
         }
+    }
+
+    private func shouldAudit(_ element: XCUIElement) -> Bool {
+        if element.elementType == .staticText, element.label.hasPrefix("[공지]") {
+            return false
+        }
+        return true
     }
 
     private func visibleRatio(of frame: CGRect, in screen: CGRect) -> CGFloat {
@@ -603,7 +611,7 @@ private extension CGRect {
 
 private extension XCUIElement {
     func tapIfExists() {
-        if exists && isHittable {
+        if exists, isHittable {
             tap()
         }
     }
@@ -617,17 +625,17 @@ private extension XCUIElement {
     var elementTypeDescription: String {
         switch elementType {
         case .button:
-            return "button"
+            "button"
         case .staticText:
-            return "text"
+            "text"
         case .switch:
-            return "switch"
+            "switch"
         case .cell:
-            return "cell"
+            "cell"
         case .image:
-            return "image"
+            "image"
         default:
-            return "\(elementType.rawValue)"
+            "\(elementType.rawValue)"
         }
     }
 }

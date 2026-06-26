@@ -81,7 +81,9 @@ final class HyuabotSmokeUITests: XCTestCase {
         app.launchArguments = [
             "-UITestsDisableCoachMarks",
             "-AppleLanguages", "(en)",
-            "-AppleLocale", "en_US"
+            "-AppleLocale", "en_US",
+            "-homeExperienceEnabled", "NO",
+            "-homeExperiencePromptDecision", "YES"
         ]
         return app
     }

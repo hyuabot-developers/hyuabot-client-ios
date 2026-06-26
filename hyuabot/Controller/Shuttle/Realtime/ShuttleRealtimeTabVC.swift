@@ -469,7 +469,8 @@ class ShuttleRealtimeTabVC: UIViewController {
             routeName: routeName,
             departureDate: departureDate
         ),
-           normalizedStops.dropFirst(boardingRouteStopIndex + 1).isEmpty {
+            normalizedStops.dropFirst(boardingRouteStopIndex + 1).isEmpty
+        {
             normalizedStops.append(fallbackDestination)
         }
         let orderedStops = normalizedStops
@@ -651,19 +652,19 @@ class ShuttleRealtimeTabVC: UIViewController {
     private static func shuttleAlarmFallbackLocation(for stopID: String) -> (latitude: Double, longitude: Double)? {
         switch stopID {
         case "dormitory_o":
-            return (37.29339607529377, 126.83630604103446)
+            (37.29339607529377, 126.83630604103446)
         case "shuttlecock_o":
-            return (37.29875417910844, 126.83784054072336)
+            (37.29875417910844, 126.83784054072336)
         case "station":
-            return (37.309700971618255, 126.85207173389148)
+            (37.309700971618255, 126.85207173389148)
         case "terminal":
-            return (37.319338173415936, 126.8455263115596)
+            (37.319338173415936, 126.8455263115596)
         case "jungang_stn":
-            return (37.31487247528457, 126.83963540399434)
+            (37.31487247528457, 126.83963540399434)
         case "shuttlecock_i":
-            return (37.29869328231496, 126.8377767466817)
+            (37.29869328231496, 126.8377767466817)
         default:
-            return nil
+            nil
         }
     }
 

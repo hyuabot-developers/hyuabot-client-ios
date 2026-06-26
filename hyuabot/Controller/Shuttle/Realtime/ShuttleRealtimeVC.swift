@@ -146,13 +146,17 @@ class ShuttleRealtimeVC: UIViewController {
         var config = UIButton.Configuration.tinted()
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
-        config.image = UIImage(systemName: returnsToHome ? "house.fill" : "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 16,
-            weight: .semibold
-        ))
-        config.attributedTitle = AttributedString(String(localized: returnsToHome ? "home.return" : "shuttle.quick_settings.button"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 14, weight: .bold)
-        ]))
+        config.image = UIImage(systemName: returnsToHome ? "house.fill" : "slider.horizontal.3")?
+            .withConfiguration(UIImage.SymbolConfiguration(
+                pointSize: 16,
+                weight: .semibold
+            ))
+        config.attributedTitle = AttributedString(
+            String(localized: returnsToHome ? "home.return" : "shuttle.quick_settings.button"),
+            attributes: AttributeContainer([
+                .font: UIFont.godo(size: 14, weight: .bold)
+            ])
+        )
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
         $0.configuration = config
@@ -975,7 +979,7 @@ class ShuttleRealtimeVC: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
             guard let self else { return }
             guard HomeExperienceManager.shouldPrompt else { return }
-            guard self.presentedViewController == nil, self.coachMarkOverlayIsAbsent else { return }
+            guard presentedViewController == nil, coachMarkOverlayIsAbsent else { return }
             let alert = UIAlertController(
                 title: String(localized: "home.prompt.title"),
                 message: String(localized: "home.prompt.message"),
@@ -989,7 +993,7 @@ class ShuttleRealtimeVC: UIViewController {
                 AnalyticsManager.logSelect(.homeDismissPrompt)
                 HomeExperienceManager.deferPrompt()
             })
-            self.present(alert, animated: true)
+            present(alert, animated: true)
         }
     }
 
