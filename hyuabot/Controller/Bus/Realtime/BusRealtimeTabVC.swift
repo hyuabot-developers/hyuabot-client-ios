@@ -16,6 +16,7 @@ class BusRealtimeTabVC: UIViewController {
         $0.delegate = self
         $0.dataSource = self
         $0.sectionHeaderTopPadding = 0
+        $0.backgroundColor = .systemBackground
         $0.refreshControl = refreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.showsVerticalScrollIndicator = false

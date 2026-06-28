@@ -14,6 +14,10 @@ class SubwayRealtimeFooterView: UITableViewHeaderFooterView {
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
+        backgroundView = UIView().then {
+            $0.backgroundColor = .systemBackground
+        }
+        contentView.backgroundColor = .systemBackground
     }
 
     @available(*, unavailable)
@@ -24,6 +28,7 @@ class SubwayRealtimeFooterView: UITableViewHeaderFooterView {
     func setupUI(tabType: SubwayTabType, showEntireTimetable: @escaping () -> Void) {
         showEntireTimeTableButton.isEnabled = tabType != .transfer
         self.showEntireTimetable = showEntireTimetable
+        contentView.backgroundColor = .systemBackground
         contentView.addSubview(showEntireTimeTableButton)
         showEntireTimeTableButton.addTarget(self, action: #selector(showEntireTimeTable), for: .touchUpInside)
         showEntireTimeTableButton.snp.makeConstraints { make in

@@ -14,6 +14,7 @@ class SubwayRealtimeTabVC: UIViewController {
         $0.delegate = self
         $0.dataSource = self
         $0.sectionHeaderTopPadding = 0
+        $0.backgroundColor = .systemBackground
         $0.estimatedRowHeight = 60
         $0.refreshControl = self.refreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)

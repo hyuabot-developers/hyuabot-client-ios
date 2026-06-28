@@ -189,6 +189,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
 
         let footer = UIView(frame: CGRect(origin: .zero, size: desiredSize))
+        footer.backgroundColor = .systemBackground
 
         footer.addSubview(actionFooter)
         footer.addSubview(transferView)

@@ -100,7 +100,7 @@ class NoticeCarouselView: UIView {
 
     private func scrollToNext() {
         currentIndex = (currentIndex + 1) % notices.count
-        collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: .centeredHorizontally, animated: true)
+        collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: .centeredHorizontally, animated: false)
     }
 }
 

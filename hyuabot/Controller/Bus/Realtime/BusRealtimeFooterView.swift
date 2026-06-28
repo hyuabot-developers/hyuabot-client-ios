@@ -33,6 +33,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
 
     private lazy var buttonStackView: UIView = {
         let view = UIView()
+        view.backgroundColor = .systemBackground
         let separator = UIView().then {
             $0.backgroundColor = .gray
         }
@@ -58,6 +59,10 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
+        backgroundView = UIView().then {
+            $0.backgroundColor = .systemBackground
+        }
+        contentView.backgroundColor = .systemBackground
     }
 
     @available(*, unavailable)
@@ -77,6 +82,7 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         self.title = title
         self.showEntireTimetable = showEntireTimetable
         self.showDepartureLog = showDepartureLog
+        contentView.backgroundColor = .systemBackground
         contentView.addSubview(buttonStackView)
         showEntireTimeTableButton.addTarget(self, action: #selector(entireTimetableButtonTapped), for: .touchUpInside)
         showDeparuteLogButton.addTarget(self, action: #selector(departureLogButtonTapped), for: .touchUpInside)

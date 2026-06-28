@@ -8,6 +8,8 @@ class NoticeCell: UICollectionViewCell {
         $0.textAlignment = .center
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingTail
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.82
     }
 
     var onTap: (() -> Void)?
@@ -16,8 +18,9 @@ class NoticeCell: UICollectionViewCell {
         super.init(frame: frame)
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12))
         }
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTap))
         contentView.addGestureRecognizer(tapGesture)
     }

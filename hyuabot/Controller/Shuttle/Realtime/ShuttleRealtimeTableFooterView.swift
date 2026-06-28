@@ -26,6 +26,7 @@ class ShuttleRealtimeTableFooterView: UIView {
     }
 
     func setupUI() {
+        backgroundColor = .systemBackground
         addSubview(showStopModalButton)
         showStopModalButton.addTarget(self, action: #selector(showStopModalButtonTapped), for: .touchUpInside)
         updateButtonConstraints()

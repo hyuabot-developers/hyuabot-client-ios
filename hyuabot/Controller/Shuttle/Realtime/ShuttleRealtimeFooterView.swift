@@ -38,6 +38,10 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
+        backgroundView = UIView().then {
+            $0.backgroundColor = .systemBackground
+        }
+        contentView.backgroundColor = .systemBackground
         setupLayout()
     }
 
@@ -47,6 +51,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     }
 
     private func setupLayout() {
+        busAlternativeContainer.backgroundColor = .systemBackground
         busAlternativeContainer.addSubview(busAlternativeStackView)
         busAlternativeStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -124,6 +129,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
 
     private func makeAlternativeRow(alternative: ShuttleBusAlternativeDisplayData, index: Int) -> UIView {
         let row = UIView()
+        row.backgroundColor = .systemBackground
         let accent = UIView().then {
             $0.backgroundColor = alternative.color
         }
