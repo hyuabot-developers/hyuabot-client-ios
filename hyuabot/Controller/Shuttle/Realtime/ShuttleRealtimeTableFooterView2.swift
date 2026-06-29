@@ -74,6 +74,7 @@ class ShuttleRealtimeTableFooterView2: UIView {
     }
 
     func setupUI() {
+        backgroundColor = .systemBackground
         showStopModalButton.addTarget(self, action: #selector(showStopModalButtonTapped), for: .touchUpInside)
         showEntireTimeTableButton1.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
         showEntireTimeTableButton2.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
@@ -113,6 +114,7 @@ class ShuttleRealtimeTableFooterView2: UIView {
             $0.axis = .vertical
             $0.spacing = 0
             $0.alignment = .fill
+            $0.backgroundColor = .systemBackground
         }
         addSubview(verticalView)
         verticalView.snp.makeConstraints { make in

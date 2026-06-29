@@ -40,7 +40,7 @@ class SubwayTimetableCellView: UITableViewCell {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm:ss"
 
-        destinationLabel.text = getDestinationLabelText(item.terminal.stationID, fallback: item.terminal.name)
+        destinationLabel.setKoreanTranslatedText(getDestinationLabelText(item.terminal.stationID, fallback: item.terminal.name))
         setUITimeLabel(dateFormatter.string(from: Date.now), item)
     }
 

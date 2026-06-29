@@ -19,6 +19,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Firebase SDK
         FirebaseApp.configure()
         AnalyticsManager.applyCollectionSettings()
+        KoreanTextTranslator.shared.invalidateStoredDataIfLanguageChanged()
+        KoreanTextTranslator.shared.prepareForCurrentLanguage()
         // Initialize Firebase Cloud Messaging
         Messaging.messaging().delegate = self
         configureApplicationShortcuts(application)

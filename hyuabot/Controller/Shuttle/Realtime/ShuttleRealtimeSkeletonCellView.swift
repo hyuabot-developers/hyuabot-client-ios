@@ -25,6 +25,7 @@ class ShuttleRealtimeSkeletonCellView: UITableViewCell {
     private func setupUI() {
         selectionStyle = .none
         backgroundColor = .systemBackground
+        contentView.backgroundColor = .systemBackground
 
         for view in [routePlaceholder, timePlaceholder, alarmPlaceholder] {
             view.backgroundColor = .secondarySystemFill

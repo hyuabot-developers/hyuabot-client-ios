@@ -10347,7 +10347,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld min(s) to arrive"
+            "value" : "Arrives in %lld min"
           }
         },
         "ja" : {
@@ -11973,7 +11973,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld min(s)"
+            "value" : "%lld min"
           }
         },
         "ja" : {
@@ -12792,7 +12792,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -12820,7 +12820,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -12848,7 +12848,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -12876,7 +12876,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -12932,7 +12932,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -12960,7 +12960,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -12988,7 +12988,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -13016,7 +13016,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -13044,7 +13044,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld min(s)"
+            "value" : "%1$lld min"
           }
         },
         "ja" : {
@@ -13943,7 +13943,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$(minute)lldmins left"
+            "value" : "%1$(minute)lld min left"
           }
         },
         "ja" : {

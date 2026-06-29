@@ -1,8 +1,11 @@
+// swiftlint:disable file_length
+
 import Api
 import RxSwift
 import SnapKit
 import UIKit
 
+// swiftlint:disable:next type_body_length
 class ShuttleRealtimeTabVC: UIViewController {
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
@@ -189,6 +192,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
 
         let footer = UIView(frame: CGRect(origin: .zero, size: desiredSize))
+        footer.backgroundColor = .systemBackground
 
         footer.addSubview(actionFooter)
         footer.addSubview(transferView)

@@ -45,7 +45,7 @@ class SearchResultCellView: UITableViewCell {
     }
 
     func setupUI(item: RoomItem) {
-        roomLabel.text = item.name
-        buildingLabel.text = "\(item.building) (\(item.number)호)"
+        roomLabel.setKoreanTranslatedText(item.name)
+        buildingLabel.setKoreanTranslatedText("\(item.building) (\(item.number)호)")
     }
 }

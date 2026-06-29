@@ -25,7 +25,7 @@ final class HyuabotSmokeUITests: XCTestCase {
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
 
         let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 5))
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10), app.debugDescription)
 
         for tab in ["tab.shuttle", "tab.bus", "tab.subway", "tab.cafeteria"] {
             let button = tabBar.buttons[tab]

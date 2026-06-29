@@ -39,7 +39,7 @@ class BuildingVC: UIViewController {
         view.backgroundColor = .hanyangBlue
         view.addSubview(titleLabel)
         view.addSubview(webView)
-        titleLabel.text = buildingName
+        titleLabel.setKoreanTranslatedText(buildingName)
         webView.load(URLRequest(url: url))
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)

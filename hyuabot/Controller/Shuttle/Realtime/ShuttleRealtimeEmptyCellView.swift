@@ -18,6 +18,8 @@ class ShuttleRealtimeEmptyCellView: UITableViewCell {
     }
 
     private func setupUI() {
+        backgroundColor = .systemBackground
+        contentView.backgroundColor = .systemBackground
         contentView.addSubview(emptyLabel)
         selectionStyle = .none
         emptyLabel.snp.makeConstraints { make in

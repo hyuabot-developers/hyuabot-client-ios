@@ -74,6 +74,8 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     func setupUI() {
+        backgroundColor = .systemBackground
+        contentView.backgroundColor = .systemBackground
         contentView.addSubview(shuttleTypeLabel)
         contentView.addSubview(shuttleTimeLabel)
         contentView.addSubview(shuttleAlertView)
