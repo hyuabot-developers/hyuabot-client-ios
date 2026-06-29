@@ -1,4 +1,5 @@
 import SafariServices
+import SwiftUI
 import Then
 import UIKit
 
@@ -15,10 +16,12 @@ class RootVC: UITabBarController {
     let settingNC = SettingNC()
     let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
     let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
+    private var translationPreparationHost: UIViewController?
     private var isWaitingForShuttleCoachMarksAfterReset = false
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        installTranslationPreparationHostIfNeeded()
         retryShuttleCoachMarksIfNeeded()
         // Shuttle marks already shown on a previous launch — show immediately
         if !isWaitingForShuttleCoachMarksAfterReset,
@@ -123,6 +126,25 @@ class RootVC: UITabBarController {
         )
         // Appearance
         UITabBar.appearance().backgroundColor = .systemBackground
+    }
+
+    private func installTranslationPreparationHostIfNeeded() {
+        guard #available(iOS 26.0, *), translationPreparationHost == nil else { return }
+
+        let host = UIHostingController(rootView: TranslationPreparationView())
+        host.view.backgroundColor = .clear
+        host.view.isUserInteractionEnabled = false
+        addChild(host)
+        view.addSubview(host.view)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            host.view.widthAnchor.constraint(equalToConstant: 1),
+            host.view.heightAnchor.constraint(equalToConstant: 1),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.topAnchor.constraint(equalTo: view.topAnchor)
+        ])
+        host.didMove(toParent: self)
+        translationPreparationHost = host
     }
 
     /// Maps a tab's view controller to its analytics item for tab-switch tracking.

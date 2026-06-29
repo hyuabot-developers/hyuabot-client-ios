@@ -25,7 +25,6 @@
 		C7CBC01C2F91E85A00010444 /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = C7CBC01B2F91E85A00010444 /* Api */; };
 		C7CBC01E2F91E8A100010444 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7CBC01D2F91E8A100010444 /* FirebaseAnalytics */; };
 		C7D5B0422FEF200100000042 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = C7D5B0412FEF200100000041 /* SnapshotTesting */; };
-		C7D5C0022FEF300100000002 /* MLKitTranslate in Frameworks */ = {isa = PBXBuildFile; productRef = C7D5C0012FEF300100000001 /* MLKitTranslate */; };
 		C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468952DAE2DDD00E8975E /* Apollo */; };
 		C7E4689D2DAE2ED500E8975E /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7E4689C2DAE2ED500E8975E /* Then */; };
 		C7E468A12DAE2F1800E8975E /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468A02DAE2F1800E8975E /* RxSwift */; };
@@ -203,7 +202,6 @@
 				C7C51A772F8D02550002329A /* Api in Frameworks */,
 				C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */,
 				C7BAB0372D2804EA00BBE940 /* FirebaseMessaging in Frameworks */,
-				C7D5C0022FEF300100000002 /* MLKitTranslate in Frameworks */,
 				C70119632D2954670077A1A5 /* SnapKit in Frameworks */,
 				C7CBC01E2F91E8A100010444 /* FirebaseAnalytics in Frameworks */,
 			);
@@ -324,7 +322,6 @@
 				C73CB6302D4101A2005E9731 /* Embed Frameworks */,
 				C72A95EC2DAA961600979B22 /* Embed Watch Content */,
 				C79048DB2FC947FE005BF1C1 /* Embed Foundation Extensions */,
-				C7D5B0502FEF300100000050 /* Copy MLKit Resources */,
 				C7D5A0012FEF000100000001 /* Generate Firebase Framework dSYMs */,
 				C7BAB03B2D28098B00BBE940 /* Crashlytics */,
 			);
@@ -449,7 +446,6 @@
 				C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				C73CB62C2D4100F3005E9731 /* XCRemoteSwiftPackageReference "realm-swift" */,
 				C7C51A752F8D02550002329A /* XCLocalSwiftPackageReference "api" */,
-				C7D5C0002FEF300100000000 /* XCLocalSwiftPackageReference "MLKitTranslatePackage" */,
 				C7D5B0402FEF200100000040 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -528,28 +524,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
-		};
-		C7D5B0502FEF300100000050 /* Copy MLKit Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/MLKitTranslate.framework/MLKitTranslate_resource.bundle",
-				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/MLKitXenoCommon.framework/MLKitXenoResources.bundle",
-			);
-			name = "Copy MLKit Resources";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MLKitTranslate_resource.bundle",
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MLKitXenoResources.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\n\ncopy_bundle() {\n  src=\"$1\"\n  dst=\"$2\"\n  if [ -d \"$src\" ]; then\n    rm -rf \"$dst\"\n    cp -R \"$src\" \"$dst\"\n  fi\n}\n\nfix_framework_minimum_os_version() {\n  framework=\"$1\"\n  plist=\"${framework}/Info.plist\"\n  if [ -f \"$plist\" ] && ! /usr/libexec/PlistBuddy -c \"Print :MinimumOSVersion\" \"$plist\" >/dev/null 2>&1; then\n    /usr/libexec/PlistBuddy -c \"Add :MinimumOSVersion string ${IPHONEOS_DEPLOYMENT_TARGET}\" \"$plist\"\n\n    if [ \"${CODE_SIGNING_ALLOWED}\" = \"YES\" ] && [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ]; then\n      /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --preserve-metadata=identifier,entitlements \"$framework\"\n    fi\n  fi\n}\n\ngenerate_framework_dsym() {\n  framework_name=\"$1\"\n  framework=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/${framework_name}.framework\"\n  executable=\"${framework}/${framework_name}\"\n  dsym=\"${DWARF_DSYM_FOLDER_PATH}/${framework_name}.framework.dSYM\"\n\n  if [ -f \"$executable\" ] && [ -n \"${DWARF_DSYM_FOLDER_PATH:-}\" ]; then\n    rm -rf \"$dsym\"\n    mkdir -p \"${DWARF_DSYM_FOLDER_PATH}\"\n    dsymutil \"$executable\" -o \"$dsym\"\n  fi\n}\n\napp_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nfix_framework_minimum_os_version \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MLKitNaturalLanguage.framework\"\ngenerate_framework_dsym \"GoogleToolboxForMac\"\ngenerate_framework_dsym \"MLKitCommon\"\ngenerate_framework_dsym \"MLKitNaturalLanguage\"\ngenerate_framework_dsym \"MLKitTranslate\"\ngenerate_framework_dsym \"MLKitVision\"\ngenerate_framework_dsym \"MLKitXenoCommon\"\ngenerate_framework_dsym \"SSZipArchive\"\ncopy_bundle \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MLKitTranslate.framework/MLKitTranslate_resource.bundle\" \"${app_root}/MLKitTranslate_resource.bundle\"\ncopy_bundle \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MLKitXenoCommon.framework/MLKitXenoResources.bundle\" \"${app_root}/MLKitXenoResources.bundle\"\n";
 		};
 		C7D5A0012FEF000100000001 /* Generate Firebase Framework dSYMs */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1099,10 +1073,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = api;
 		};
-		C7D5C0002FEF300100000000 /* XCLocalSwiftPackageReference "MLKitTranslatePackage" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = MLKitTranslatePackage;
-		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1228,11 +1198,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7D5B0402FEF200100000040 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
-		};
-		C7D5C0012FEF300100000001 /* MLKitTranslate */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C7D5C0002FEF300100000000 /* XCLocalSwiftPackageReference "MLKitTranslatePackage" */;
-			productName = MLKitTranslate;
 		};
 		C7E468952DAE2DDD00E8975E /* Apollo */ = {
 			isa = XCSwiftPackageProductDependency;

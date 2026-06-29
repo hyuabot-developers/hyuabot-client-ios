@@ -4,26 +4,22 @@
 //
 
 import Foundation
-#if !targetEnvironment(simulator)
-    import MLKitTranslate
-#endif
 import OSLog
+import Translation
 import UIKit
 
 @MainActor
 final class KoreanTextTranslator {
     static let shared = KoreanTextTranslator()
 
-    private let cacheKey = "koreanTextTranslationCacheV1"
+    private let cacheKey = "koreanTextTranslationCacheV2"
     private let translatedDataLanguageKey = "translatedDataLanguageV1"
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier ?? "net.jaram.hyuabot",
         category: "KoreanTextTranslator"
     )
     private var memoryCache: [String: String]
-    #if !targetEnvironment(simulator)
-        private var translators: [String: Translator] = [:]
-    #endif
+    private var unsupportedTargetLanguageIDs: Set<String> = []
 
     private init() {
         memoryCache = UserDefaults.standard.dictionary(forKey: cacheKey) as? [String: String] ?? [:]
@@ -37,33 +33,66 @@ final class KoreanTextTranslator {
     }
 
     var shouldTranslateKorean: Bool {
-        #if targetEnvironment(simulator)
-            false
-        #else
+        if #available(iOS 26.0, *) {
             targetLanguage != nil
-        #endif
+        } else {
+            false
+        }
     }
 
     func prepareForCurrentLanguage() {
-        #if targetEnvironment(simulator)
-            debugLog("Skipping model download on simulator")
-        #else
+        if #available(iOS 26.0, *) {
             guard let targetLanguage else {
                 debugLog("Skipping model download for language: \(currentLanguageCode)")
                 return
             }
+            guard !isUnsupportedTargetLanguage(targetLanguage) else {
+                debugLog("Skipping model download for unsupported language: \(currentLanguageCode)")
+                return
+            }
 
             Task {
-                let translator = translator(for: targetLanguage)
-                let conditions = ModelDownloadConditions(allowsCellularAccess: true, allowsBackgroundDownloading: true)
-                do {
-                    try await downloadModelIfNeeded(translator, conditions: conditions)
-                    debugLog("Translation model is ready for language: \(currentLanguageCode)")
-                } catch {
-                    debugLog("Translation model download failed for language: \(currentLanguageCode), error: \(error)")
+                switch await translationAvailabilityStatus(to: targetLanguage) {
+                case .installed:
+                    do {
+                        let session = translationSession(for: targetLanguage)
+                        try await session.prepareTranslation()
+                        debugLog("Translation model is ready for language: \(currentLanguageCode)")
+                    } catch {
+                        markUnsupportedTargetLanguage(targetLanguage)
+                        debugLog("Translation model preparation failed for language: \(currentLanguageCode), error: \(error)")
+                    }
+                case .supported:
+                    debugLog("Translation model is supported but not installed for language: \(currentLanguageCode)")
+                case .unsupported:
+                    markUnsupportedTargetLanguage(targetLanguage)
+                    debugLog("Translation model is unsupported for language: \(currentLanguageCode)")
+                @unknown default:
+                    debugLog("Unknown translation availability for language: \(currentLanguageCode)")
                 }
             }
-        #endif
+        } else {
+            debugLog("Skipping translation model download on iOS versions earlier than 26.0")
+        }
+    }
+
+    @available(iOS 26.0, *)
+    func translationPreparationConfiguration() async -> TranslationSession.Configuration? {
+        guard let targetLanguage else { return nil }
+        let availability = LanguageAvailability()
+        let status = await availability.status(from: Locale.Language(identifier: "ko"), to: targetLanguage)
+        guard status == .supported else { return nil }
+        return TranslationSession.Configuration(
+            source: Locale.Language(identifier: "ko"),
+            target: targetLanguage
+        )
+    }
+
+    @available(iOS 26.0, *)
+    func didPrepareTranslation(for configuration: TranslationSession.Configuration) {
+        if let target = configuration.target {
+            unsupportedTargetLanguageIDs.remove(target.minimalIdentifier)
+        }
     }
 
     func invalidateStoredDataIfLanguageChanged() {
@@ -83,32 +112,43 @@ final class KoreanTextTranslator {
     }
 
     func translate(_ text: String) async -> String {
-        #if targetEnvironment(simulator)
+        guard #available(iOS 26.0, *) else {
             return text
-        #else
-            let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard shouldTranslate(cleaned), let targetLanguage else { return text }
+        }
 
-            let key = cacheKey(for: cleaned)
-            if let cached = memoryCache[key] {
-                return cached
-            }
+        let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard shouldTranslate(cleaned), let targetLanguage else { return text }
+        guard !isUnsupportedTargetLanguage(targetLanguage) else { return text }
 
-            let translator = translator(for: targetLanguage)
-            let conditions = ModelDownloadConditions(allowsCellularAccess: true, allowsBackgroundDownloading: true)
+        let key = cacheKey(for: cleaned)
+        if let cached = memoryCache[key] {
+            return cached
+        }
+
+        switch await translationAvailabilityStatus(to: targetLanguage) {
+        case .installed:
             do {
-                try await downloadModelIfNeeded(translator, conditions: conditions)
-                let translated = try await translate(cleaned, translator: translator)
+                let session = translationSession(for: targetLanguage)
+                try await session.prepareTranslation()
+                let translated = try await session.translate(cleaned).targetText
                 let final = translated.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !final.isEmpty else { return text }
                 memoryCache[key] = final
                 UserDefaults.standard.set(memoryCache, forKey: cacheKey)
                 return final
             } catch {
+                markUnsupportedTargetLanguage(targetLanguage)
                 debugLog("Translation failed for language: \(currentLanguageCode), text: \(cleaned), error: \(error)")
                 return text
             }
-        #endif
+        case .supported:
+            return text
+        case .unsupported:
+            markUnsupportedTargetLanguage(targetLanguage)
+            return text
+        @unknown default:
+            return text
+        }
     }
 
     func translateMany(_ texts: [String]) async -> [String: String] {
@@ -119,16 +159,15 @@ final class KoreanTextTranslator {
         return result
     }
 
-    #if !targetEnvironment(simulator)
-        private var targetLanguage: TranslateLanguage? {
-            let code = currentLanguageCode.lowercased()
-            if code.hasPrefix("ko") { return nil }
-            if code.hasPrefix("en") { return .english }
-            if code.hasPrefix("ja") { return .japanese }
-            if code.hasPrefix("zh") { return .chinese }
-            return nil
-        }
-    #endif
+    @available(iOS 26.0, *)
+    private var targetLanguage: Locale.Language? {
+        let code = currentLanguageCode.lowercased()
+        if code.hasPrefix("ko") { return nil }
+        if code.hasPrefix("en") { return Locale.Language(identifier: "en") }
+        if code.hasPrefix("ja") { return Locale.Language(identifier: "ja") }
+        if code.hasPrefix("zh") { return Locale.Language(identifier: "zh") }
+        return nil
+    }
 
     private func shouldTranslate(_ text: String) -> Bool {
         guard !text.isEmpty else { return false }
@@ -149,42 +188,26 @@ final class KoreanTextTranslator {
         UserDefaults.standard.removeObject(forKey: "contactVersion")
     }
 
-    #if !targetEnvironment(simulator)
-        private func translator(for targetLanguage: TranslateLanguage) -> Translator {
-            let key = "\(targetLanguage.rawValue)"
-            if let translator = translators[key] {
-                return translator
-            }
-            let options = TranslatorOptions(sourceLanguage: .korean, targetLanguage: targetLanguage)
-            let translator = Translator.translator(options: options)
-            translators[key] = translator
-            return translator
-        }
+    @available(iOS 26.0, *)
+    private func translationSession(for targetLanguage: Locale.Language) -> TranslationSession {
+        TranslationSession(installedSource: Locale.Language(identifier: "ko"), target: targetLanguage)
+    }
 
-        private func downloadModelIfNeeded(_ translator: Translator, conditions: ModelDownloadConditions) async throws {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                translator.downloadModelIfNeeded(with: conditions) { error in
-                    if let error {
-                        continuation.resume(throwing: error)
-                    } else {
-                        continuation.resume()
-                    }
-                }
-            }
-        }
+    @available(iOS 26.0, *)
+    private func translationAvailabilityStatus(to targetLanguage: Locale.Language) async -> LanguageAvailability.Status {
+        let availability = LanguageAvailability()
+        return await availability.status(from: Locale.Language(identifier: "ko"), to: targetLanguage)
+    }
 
-        private func translate(_ text: String, translator: Translator) async throws -> String {
-            try await withCheckedThrowingContinuation { continuation in
-                translator.translate(text) { translatedText, error in
-                    if let error {
-                        continuation.resume(throwing: error)
-                    } else {
-                        continuation.resume(returning: translatedText ?? text)
-                    }
-                }
-            }
-        }
-    #endif
+    @available(iOS 26.0, *)
+    private func isUnsupportedTargetLanguage(_ targetLanguage: Locale.Language) -> Bool {
+        unsupportedTargetLanguageIDs.contains(targetLanguage.minimalIdentifier)
+    }
+
+    @available(iOS 26.0, *)
+    private func markUnsupportedTargetLanguage(_ targetLanguage: Locale.Language) {
+        unsupportedTargetLanguageIDs.insert(targetLanguage.minimalIdentifier)
+    }
 
     private func debugLog(_ message: String) {
         #if DEBUG
