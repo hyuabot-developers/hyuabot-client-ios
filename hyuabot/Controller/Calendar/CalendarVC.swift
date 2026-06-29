@@ -1,9 +1,12 @@
+// swiftlint:disable file_length
+
 import Api
 import RealmSwift
 import RxSwift
 import SnapKit
 import UIKit
 
+// swiftlint:disable:next type_body_length
 class CalendarVC: UIViewController {
     // MARK: - Private types
 
@@ -212,6 +215,7 @@ class CalendarVC: UIViewController {
 
     // MARK: - Setup
 
+    // swiftlint:disable:next function_body_length
     private func setupUI() {
         view.backgroundColor = .systemBackground
         navigationItem.title = String(localized: "tabbar.calendar")

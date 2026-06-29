@@ -3,8 +3,11 @@
 //  hyuabotUITests
 //
 
+// swiftlint:disable file_length
+
 import XCTest
 
+// swiftlint:disable:next type_body_length
 final class UIQualityUITests: XCTestCase {
     private let screenshotLifetime: XCTAttachment.Lifetime = .keepAlways
 

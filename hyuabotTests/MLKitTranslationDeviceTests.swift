@@ -24,7 +24,6 @@ final class MLKitTranslationDeviceTests: XCTestCase {
                 XCTAssertTrue(KoreanTextTranslator.shared.shouldTranslateKorean)
 
                 let translated = await KoreanTextTranslator.shared.translate(source)
-                print("[MLKitTranslationDeviceTests] \(languageCode): \(source) -> \(translated)")
 
                 XCTAssertNotEqual(translated, source)
                 XCTAssertNil(translated.range(of: #"\p{Hangul}"#, options: .regularExpression))

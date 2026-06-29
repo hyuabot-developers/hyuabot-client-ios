@@ -41,9 +41,13 @@ extension Contact {
 
     static func replaceAll(with contacts: [Contact]) {
         let realm = Database.shared.database
-        try! realm.write {
-            realm.delete(realm.objects(Contact.self))
-            realm.add(contacts)
+        do {
+            try realm.write {
+                realm.delete(realm.objects(Contact.self))
+                realm.add(contacts)
+            }
+        } catch {
+            assertionFailure("Failed to replace contacts: \(error)")
         }
     }
 
@@ -54,8 +58,12 @@ extension Contact {
 
     static func deleteAll() {
         let realm = Database.shared.database
-        try! realm.write {
-            realm.delete(realm.objects(Contact.self))
+        do {
+            try realm.write {
+                realm.delete(realm.objects(Contact.self))
+            }
+        } catch {
+            assertionFailure("Failed to delete contacts: \(error)")
         }
     }
 }

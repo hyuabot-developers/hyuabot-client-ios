@@ -1,7 +1,13 @@
+//
+//  KoreanTextTranslator.swift
+//  hyuabot
+//
+
 import Foundation
 #if !targetEnvironment(simulator)
     import MLKitTranslate
 #endif
+import OSLog
 import UIKit
 
 @MainActor
@@ -10,6 +16,10 @@ final class KoreanTextTranslator {
 
     private let cacheKey = "koreanTextTranslationCacheV1"
     private let translatedDataLanguageKey = "translatedDataLanguageV1"
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "net.jaram.hyuabot",
+        category: "KoreanTextTranslator"
+    )
     private var memoryCache: [String: String]
     #if !targetEnvironment(simulator)
         private var translators: [String: Translator] = [:]
@@ -20,7 +30,10 @@ final class KoreanTextTranslator {
     }
 
     var currentLanguageCode: String {
-        Locale.preferredLanguages.first ?? Bundle.main.preferredLocalizations.first ?? Locale.current.language.languageCode?.identifier ?? "ko"
+        Locale.preferredLanguages.first
+            ?? Bundle.main.preferredLocalizations.first
+            ?? Locale.current.language.languageCode?.identifier
+            ?? "ko"
     }
 
     var shouldTranslateKorean: Bool {
@@ -175,7 +188,7 @@ final class KoreanTextTranslator {
 
     private func debugLog(_ message: String) {
         #if DEBUG
-            print("[KoreanTextTranslator] \(message)")
+            logger.debug("\(message, privacy: .public)")
         #endif
     }
 }

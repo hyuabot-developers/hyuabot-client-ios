@@ -62,9 +62,13 @@ extension Event {
 
     static func replaceAll(with contacts: [Event]) {
         let realm = Database.shared.database
-        try! realm.write {
-            realm.delete(realm.objects(Event.self))
-            realm.add(contacts)
+        do {
+            try realm.write {
+                realm.delete(realm.objects(Event.self))
+                realm.add(contacts)
+            }
+        } catch {
+            assertionFailure("Failed to replace events: \(error)")
         }
     }
 
@@ -75,8 +79,12 @@ extension Event {
 
     static func deleteAll() {
         let realm = Database.shared.database
-        try! realm.write {
-            realm.delete(realm.objects(Event.self))
+        do {
+            try realm.write {
+                realm.delete(realm.objects(Event.self))
+            }
+        } catch {
+            assertionFailure("Failed to delete events: \(error)")
         }
     }
 

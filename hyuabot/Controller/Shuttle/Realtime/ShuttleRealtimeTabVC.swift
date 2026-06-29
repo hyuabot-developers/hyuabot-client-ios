@@ -1,8 +1,11 @@
+// swiftlint:disable file_length
+
 import Api
 import RxSwift
 import SnapKit
 import UIKit
 
+// swiftlint:disable:next type_body_length
 class ShuttleRealtimeTabVC: UIViewController {
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
