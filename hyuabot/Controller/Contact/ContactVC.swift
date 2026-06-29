@@ -207,7 +207,8 @@ class ContactVC: UIViewController {
         Task {
             let response = try? await Network.shared.client.fetch(query: ContactPageQuery())
             if let data = response?.data {
-                Contact.replaceAll(with: data.phonebook.categories.map { Contact.transform(from: $0) }.flatMap { $0 })
+                let contacts = await Contact.transformTranslated(from: data.phonebook.categories)
+                Contact.replaceAll(with: contacts)
                 UserDefaults.standard.set(data.phonebook.version, forKey: "contactVersion")
             }
         }

@@ -37,6 +37,29 @@ extension Event {
         }
     }
 
+    @MainActor
+    static func transformTranslated(from categories: [CalendarPageQuery.Data.Calendar.Category]) async -> [Event] {
+        let events = categories.flatMap { category in
+            category.events.map { (category, $0) }
+        }
+        let translations = await KoreanTextTranslator.shared.translateMany(
+            events.flatMap { category, event in
+                [category.name, event.title, event.description]
+            }
+        )
+        return events.map { category, event in
+            Event().then {
+                $0.id = event.seq
+                $0.title = translations[event.title] ?? event.title
+                $0.descriptionText = translations[event.description] ?? event.description
+                $0.startDate = event.start
+                $0.endDate = event.end
+                $0.categoryID = category.seq
+                $0.categoryName = translations[category.name] ?? category.name
+            }
+        }
+    }
+
     static func replaceAll(with contacts: [Event]) {
         let realm = Database.shared.database
         try! realm.write {
@@ -48,6 +71,13 @@ extension Event {
     static func fetchAll() -> Results<Event> {
         let realm = Database.shared.database
         return realm.objects(Event.self)
+    }
+
+    static func deleteAll() {
+        let realm = Database.shared.database
+        try! realm.write {
+            realm.delete(realm.objects(Event.self))
+        }
     }
 
     private static let dateOnlyFormatter: DateFormatter = {

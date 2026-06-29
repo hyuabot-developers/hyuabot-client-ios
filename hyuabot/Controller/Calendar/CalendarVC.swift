@@ -48,14 +48,14 @@ class CalendarVC: UIViewController {
     }
 
     private let monthLabelFormatter = DateFormatter().then {
-        $0.dateFormat = "yyyy년 M월"
-        $0.locale = Locale(identifier: "ko_KR")
+        $0.locale = Locale.autoupdatingCurrent
+        $0.setLocalizedDateFormatFromTemplate("yMMMM")
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
 
     private let selectedDateFormatter = DateFormatter().then {
-        $0.dateFormat = "yyyy년 M월 d일 (E)"
-        $0.locale = Locale(identifier: "ko_KR")
+        $0.locale = Locale.autoupdatingCurrent
+        $0.setLocalizedDateFormatFromTemplate("yMMMMdEEE")
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
 
@@ -216,7 +216,9 @@ class CalendarVC: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.title = String(localized: "tabbar.calendar")
 
-        let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+        let weekdayFormatter = DateFormatter()
+        weekdayFormatter.locale = .autoupdatingCurrent
+        let weekdays = weekdayFormatter.veryShortStandaloneWeekdaySymbols ?? ["S", "M", "T", "W", "T", "F", "S"]
         let wdColors: [UIColor] = [.systemRed, .label, .label, .label, .label, .label, .systemBlue]
         for (i, day) in weekdays.enumerated() {
             weekdayHeaderView.addArrangedSubview(UILabel().then {
@@ -558,7 +560,8 @@ class CalendarVC: UIViewController {
         Task {
             let response = try? await Network.shared.client.fetch(query: CalendarPageQuery())
             if let data = response?.data {
-                Event.replaceAll(with: data.calendar.categories.map { Event.transform(from: $0) }.flatMap { $0 })
+                let events = await Event.transformTranslated(from: data.calendar.categories)
+                Event.replaceAll(with: events)
                 UserDefaults.standard.set(data.calendar.version, forKey: "calendarVersion")
             }
         }

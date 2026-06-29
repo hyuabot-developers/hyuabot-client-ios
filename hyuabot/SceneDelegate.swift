@@ -13,7 +13,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-        let theme = UserDefaults.standard.integer(forKey: "themeID")
+        let arguments = ProcessInfo.processInfo.arguments
+        let theme: Int
+        if arguments.contains("-UITestDarkMode") {
+            theme = 2
+        } else {
+            theme = UserDefaults.standard.integer(forKey: "themeID")
+        }
         if theme == 0 {
             window.overrideUserInterfaceStyle = .unspecified
         } else if theme == 1 {

@@ -69,17 +69,17 @@ class BusFirstLastCellView: UITableViewCell {
         let downFirst = item.route.runningTime.down.first.substring(from: 0, to: 4)
         let downLast = item.route.runningTime.down.last.substring(from: 0, to: 4)
 
-        busUpTimeLabel.text = String(
+        busUpTimeLabel.setKoreanTranslatedText(String(
             format: String(localized: "bus.first.last.%@.%@.%@"),
             item.route.runningTime.up.terminal.name,
             upFirst,
             upLast
-        )
-        busDownTimeLabel.text = String(
+        ))
+        busDownTimeLabel.setKoreanTranslatedText(String(
             format: String(localized: "bus.first.last.%@.%@.%@"),
             item.route.runningTime.down.terminal.name,
             downFirst,
             downLast
-        )
+        ))
     }
 }

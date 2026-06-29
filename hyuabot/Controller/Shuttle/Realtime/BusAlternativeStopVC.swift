@@ -83,6 +83,10 @@ class BusAlternativeStopVC: UIViewController {
 
     private func renderStops() {
         mapView.addAnnotations([shuttleStop, busStop])
+        Task {
+            shuttleStop.title = await KoreanTextTranslator.shared.translate(shuttleStop.title ?? "")
+            busStop.title = await KoreanTextTranslator.shared.translate(busStop.title ?? "")
+        }
         fitMapToStopCoordinates()
         drawWalkingRoute()
 
@@ -191,7 +195,7 @@ private final class StopPoint: NSObject, MKAnnotation {
         case bus
     }
 
-    let title: String?
+    var title: String?
     let subtitle: String?
     let coordinate: CLLocationCoordinate2D
     let kind: Kind

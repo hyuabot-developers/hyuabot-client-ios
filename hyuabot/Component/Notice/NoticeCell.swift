@@ -32,9 +32,9 @@ class NoticeCell: UICollectionViewCell {
 
     func setupUI(with notice: Notice) {
         if notice.title.hasPrefix("[") {
-            titleLabel.text = notice.title
+            titleLabel.setKoreanTranslatedText(notice.title)
         } else {
-            titleLabel.text = String(format: String(localized: "notice.title.%@"), notice.title)
+            titleLabel.setKoreanTranslatedText(String(format: String(localized: "notice.title.%@"), notice.title))
         }
         contentView.isUserInteractionEnabled = notice.url != nil
     }

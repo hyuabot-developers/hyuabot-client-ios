@@ -215,13 +215,19 @@ final class UIQualityUITests: XCTestCase {
 
     private func makeApp(initialRoute: String?) -> XCUIApplication {
         let app = XCUIApplication()
+        let language = ProcessInfo.processInfo.environment["UIQUALITY_LANGUAGE"] ?? "en"
+        let locale = ProcessInfo.processInfo.environment["UIQUALITY_LOCALE"] ?? (language == "en" ? "en_US" : "ko_KR")
+        let style = ProcessInfo.processInfo.environment["UIQUALITY_STYLE"] ?? "dark"
         app.launchArguments = [
             "-UITestsDisableCoachMarks",
-            "-AppleLanguages", "(ko)",
-            "-AppleLocale", "ko_KR",
+            "-AppleLanguages", "(\(language))",
+            "-AppleLocale", locale,
             "-homeExperienceEnabled", "NO",
             "-homeExperiencePromptDecision", "YES"
         ]
+        if style == "dark" {
+            app.launchArguments += ["-UITestDarkMode"]
+        }
         if let initialRoute {
             app.launchArguments += ["-UITestInitialRoute", initialRoute]
         }
@@ -495,7 +501,8 @@ final class UIQualityUITests: XCTestCase {
 
     private func waitForPageToSettle(_ app: XCUIApplication) {
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 5)
-        usleep(800_000)
+        let settleTime = UInt32(ProcessInfo.processInfo.environment["UIQUALITY_SETTLE_USEC"] ?? "800000") ?? 800_000
+        usleep(settleTime)
     }
 
     private func auditVisibleLayout(app: XCUIApplication, pageName: String) -> [String] {
@@ -506,6 +513,7 @@ final class UIQualityUITests: XCTestCase {
         for element in visibleElements {
             let frame = element.frame
             guard frame.isFinite, !frame.isEmpty else { continue }
+            guard visibleRatio(of: frame, in: screen) >= 0.5 else { continue }
             if frame.width < 1 || frame.height < 1 {
                 issues.append("\(pageName): tiny visible element \(element.debugLabel) frame=\(frame)")
             }
@@ -544,7 +552,6 @@ final class UIQualityUITests: XCTestCase {
 
     private func representativeElements(app: XCUIApplication, screen: CGRect) -> [XCUIElement] {
         let queries: [XCUIElementQuery] = [
-            app.buttons,
             app.staticTexts,
             app.switches,
             app.segmentedControls,

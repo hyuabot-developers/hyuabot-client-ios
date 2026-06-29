@@ -59,7 +59,7 @@ class CafeteriaMenuCellView: UITableViewCell {
     }
 
     func setupUI(item: CafeteriaPageQuery.Data.Cafeterium.Menu) {
-        menuLabel.text = Self.localizedFood(item.food)
+        menuLabel.setKoreanTranslatedText(Self.localizedFood(item.food))
         pricaLabel.text = String(
             format: String(localized: "cafeteria.menu.price.%@"),
             item.price.replacingOccurrences(of: "원", with: "")

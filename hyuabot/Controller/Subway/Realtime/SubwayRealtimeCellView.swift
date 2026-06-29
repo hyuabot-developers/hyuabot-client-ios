@@ -42,11 +42,12 @@ class SubwayRealtimeCellView: UITableViewCell {
         if tabType == .line4 { destinationLabel.textColor = .subwaySkyblue }
         else if tabType == .lineSuin { destinationLabel.textColor = .subwayYellow }
         let destination = getDestinationLabelText(item.terminal.stationID, fallback: item.terminal.name)
+        let destinationText = String(format: String(localized: "subway.terminal.%@"), destination)
         if item.isRealtime {
-            destinationLabel.text = String(format: String(localized: "subway.terminal.%@"), destination)
+            destinationLabel.setKoreanTranslatedText(destinationText)
             setRealtimeAttributedText(getRealtimeLabelText(item))
         } else {
-            destinationLabel.text = String(format: String(localized: "subway.terminal.%@"), destination)
+            destinationLabel.setKoreanTranslatedText(destinationText)
             subwayTimeLabel.attributedText = nil
             subwayTimeLabel.text = getTimetableLabelText(item.minutes)
         }

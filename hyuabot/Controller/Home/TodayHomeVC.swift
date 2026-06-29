@@ -1924,7 +1924,7 @@ final class TodayHomeVC: UIViewController {
         row.spacing = 8
 
         let menu = UILabel()
-        menu.text = item.menu
+        menu.setKoreanTranslatedText(item.menu)
         menu.font = .godo(size: 14, weight: .regular)
         menu.textColor = .secondaryLabel
         menu.numberOfLines = 1

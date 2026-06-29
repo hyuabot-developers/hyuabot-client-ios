@@ -51,7 +51,8 @@ class TabItem: UIView, TabItemProtocol {
     func setupUI() {
         addSubview(titleLabel)
         titleLabel.snp.makeConstraints {
-            $0.center.equalToSuperview()
+            $0.centerY.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(8)
         }
     }
 }

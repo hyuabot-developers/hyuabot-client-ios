@@ -113,6 +113,10 @@ class BusStopInfoVC: UIViewController {
                 $0.addAnnotation(MKPointAnnotation().with {
                     $0.coordinate = CLLocationCoordinate2D(latitude: routeStop.stop.latitude, longitude: routeStop.stop.longitude)
                     $0.title = routeStop.stop.name
+                    let annotation = $0
+                    Task {
+                        annotation.title = await KoreanTextTranslator.shared.translate(routeStop.stop.name)
+                    }
                 })
                 $0.camera = MKMapCamera(
                     lookingAtCenter: CLLocationCoordinate2D(latitude: routeStop.stop.latitude, longitude: routeStop.stop.longitude),
