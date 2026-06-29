@@ -14,11 +14,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
         let arguments = ProcessInfo.processInfo.arguments
-        let theme: Int
-        if arguments.contains("-UITestDarkMode") {
-            theme = 2
+        let theme: Int = if arguments.contains("-UITestDarkMode") {
+            2
         } else {
-            theme = UserDefaults.standard.integer(forKey: "themeID")
+            UserDefaults.standard.integer(forKey: "themeID")
         }
         if theme == 0 {
             window.overrideUserInterfaceStyle = .unspecified

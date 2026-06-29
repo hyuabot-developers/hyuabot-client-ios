@@ -10,26 +10,26 @@ import XCTest
 final class MLKitTranslationDeviceTests: XCTestCase {
     func testKoreanTextTranslatorDownloadsModelAndTranslatesOnDevice() async throws {
         #if targetEnvironment(simulator)
-        throw XCTSkip("ML Kit translation is disabled on simulator.")
+            throw XCTSkip("ML Kit translation is disabled on simulator.")
         #else
-        let source = "학생지원팀"
-        for languageCode in ["en-US", "ja-JP", "zh-Hans"] {
-            UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
-            UserDefaults.standard.synchronize()
+            let source = "학생지원팀"
+            for languageCode in ["en-US", "ja-JP", "zh-Hans"] {
+                UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
+                UserDefaults.standard.synchronize()
 
-            XCTAssertTrue(
-                KoreanTextTranslator.shared.currentLanguageCode.lowercased().hasPrefix(languageCode.prefix(2).lowercased()),
-                "Expected \(languageCode), got \(KoreanTextTranslator.shared.currentLanguageCode)."
-            )
-            XCTAssertTrue(KoreanTextTranslator.shared.shouldTranslateKorean)
+                XCTAssertTrue(
+                    KoreanTextTranslator.shared.currentLanguageCode.lowercased().hasPrefix(languageCode.prefix(2).lowercased()),
+                    "Expected \(languageCode), got \(KoreanTextTranslator.shared.currentLanguageCode)."
+                )
+                XCTAssertTrue(KoreanTextTranslator.shared.shouldTranslateKorean)
 
-            let translated = await KoreanTextTranslator.shared.translate(source)
-            print("[MLKitTranslationDeviceTests] \(languageCode): \(source) -> \(translated)")
+                let translated = await KoreanTextTranslator.shared.translate(source)
+                print("[MLKitTranslationDeviceTests] \(languageCode): \(source) -> \(translated)")
 
-            XCTAssertNotEqual(translated, source)
-            XCTAssertNil(translated.range(of: #"\p{Hangul}"#, options: .regularExpression))
-            XCTAssertFalse(translated.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        }
+                XCTAssertNotEqual(translated, source)
+                XCTAssertNil(translated.range(of: #"\p{Hangul}"#, options: .regularExpression))
+                XCTAssertFalse(translated.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
         #endif
     }
 }
