@@ -3,6 +3,8 @@ import Then
 import UIKit
 
 final class ShuttleQuickSettingsVC: UIViewController {
+    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+
     var openHome: (() -> Void)?
     var updateShowArrivalByTime: ((Bool) -> Void)?
     var updateShowDepartureTime: ((Bool) -> Void)?
@@ -106,7 +108,8 @@ final class ShuttleQuickSettingsVC: UIViewController {
 
     private func homeActionRow() -> UIView {
         let button = UIButton(type: .system)
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "house.fill")

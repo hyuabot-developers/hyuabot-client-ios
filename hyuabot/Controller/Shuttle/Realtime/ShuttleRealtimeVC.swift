@@ -4,6 +4,8 @@ import RxSwift
 import UIKit
 
 class ShuttleRealtimeVC: UIViewController {
+    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+
     private let returnsToHome: Bool
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
@@ -143,7 +145,8 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private lazy var homeButton = UIButton(type: .system).then {
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: returnsToHome ? "house.fill" : "slider.horizontal.3")?

@@ -3,6 +3,8 @@ import RxSwift
 import UIKit
 
 class CafeteriaVC: UIViewController {
+    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+
     private let disposeBag = DisposeBag()
     private var selectedMealIndex = 0
     private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
@@ -60,7 +62,8 @@ class CafeteriaVC: UIViewController {
     }
 
     private lazy var shareButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.tinted()
+        var configuration = UIButton.Configuration.plain()
+        configuration.background.backgroundColor = Self.actionButtonBackground
         configuration.baseForegroundColor = .hanyangBlue
         configuration.cornerStyle = .medium
         configuration.image = UIImage(systemName: "square.and.arrow.up")?.withConfiguration(UIImage.SymbolConfiguration(

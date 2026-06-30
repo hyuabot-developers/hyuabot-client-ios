@@ -12,9 +12,10 @@ class ReadingRoomVC: UIViewController {
     private let roomSubject = BehaviorSubject<[ReadingRoomPageQuery.Data.ReadingRoom]>(value: [])
     /// Extend alarm UI
     private lazy var alarm3HourButton: UIButton = {
-        var config = UIButton.Configuration.filled()
+        var config = UIButton.Configuration.tinted()
         config.title = String(localized: "reading_room.alarm.3hour")
         config.baseBackgroundColor = .hanyangBlue
+        config.baseForegroundColor = .white
         config.cornerStyle = .medium
         let btn = UIButton(configuration: config)
         btn.accessibilityIdentifier = "reading_room.alarm_3hour"
@@ -23,9 +24,10 @@ class ReadingRoomVC: UIViewController {
     }()
 
     private lazy var alarm4HourButton: UIButton = {
-        var config = UIButton.Configuration.filled()
+        var config = UIButton.Configuration.tinted()
         config.title = String(localized: "reading_room.alarm.4hour")
         config.baseBackgroundColor = .hanyangBlue
+        config.baseForegroundColor = .white
         config.cornerStyle = .medium
         let btn = UIButton(configuration: config)
         btn.accessibilityIdentifier = "reading_room.alarm_4hour"
@@ -47,7 +49,7 @@ class ReadingRoomVC: UIViewController {
 
     private let runningAlarmLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
-        $0.textColor = .hanyangBlue
+        $0.textColor = .plainButtonText
         $0.isHidden = true
         $0.numberOfLines = 1
     }

@@ -14,7 +14,7 @@ class CafeteriaMenuCellView: UITableViewCell {
     private let pricaLabel = UILabel().then {
         $0.font = .godo(size: 15, weight: .bold)
         $0.textAlignment = .center
-        $0.textColor = .hanyangBlue
+        $0.textColor = .plainButtonText
     }
 
     private lazy var cellStackView: UIStackView = {

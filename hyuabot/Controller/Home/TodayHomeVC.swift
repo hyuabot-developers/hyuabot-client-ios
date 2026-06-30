@@ -198,6 +198,7 @@ private struct HomeMealPeriod {
 
 private extension UIColor {
     static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
+    static let homeActionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
 }
 
 private enum HomeSettings {
@@ -444,7 +445,8 @@ private final class HomeQuickSettingsVC: UIViewController {
 
     private func legacyActionRow() -> UIView {
         let button = UIButton(type: .system)
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "bus.fill")
@@ -520,7 +522,8 @@ final class TodayHomeVC: UIViewController {
     }
 
     private lazy var legacyButton = UIButton(type: .system).then {
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
@@ -759,6 +762,7 @@ final class TodayHomeVC: UIViewController {
 
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
+        config.baseForegroundColor = .plainButtonText
         config.attributedTitle = AttributedString(buttonTitle, attributes: AttributeContainer([
             .font: UIFont.godo(size: 13, weight: .bold)
         ]))
@@ -1934,7 +1938,7 @@ final class TodayHomeVC: UIViewController {
         let price = UILabel()
         price.text = item.price
         price.font = .godo(size: 14, weight: .bold)
-        price.textColor = .hanyangBlue
+        price.textColor = .plainButtonText
         price.textAlignment = .right
         price.setContentCompressionResistancePriority(.required, for: .horizontal)
 

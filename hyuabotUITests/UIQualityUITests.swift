@@ -226,7 +226,8 @@ final class UIQualityUITests: XCTestCase {
             "-AppleLanguages", "(\(language))",
             "-AppleLocale", locale,
             "-homeExperienceEnabled", "NO",
-            "-homeExperiencePromptDecision", "YES"
+            "-homeExperiencePromptDecision", "YES",
+            "-UITestsDisableReviewPrompt"
         ]
         if style == "dark" {
             app.launchArguments += ["-UITestDarkMode"]
