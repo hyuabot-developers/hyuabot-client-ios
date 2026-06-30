@@ -1702,11 +1702,23 @@ final class TodayHomeVC: UIViewController {
     }
 
     private func representativeMenuText(_ text: String) -> String {
-        let menuText = localizedMenuText(text)
+        let menuText = localizedMenuText(menuTextRemovingLeadingDescriptors(text))
         guard !menuText.isEmpty else { return "" }
         return menuText
             .components(separatedBy: .whitespacesAndNewlines)
             .first(where: { !$0.isEmpty }) ?? menuText
+    }
+
+    private func menuTextRemovingLeadingDescriptors(_ text: String) -> String {
+        var result = text
+        [
+            #"^\s*\[[^\]]+\]\s*"#,
+            #"^\s*<[^>]+>\s*"#,
+            #"^\s*[\w가-힣]+\)\s*"#
+        ].forEach {
+            result = result.replacingOccurrences(of: $0, with: "", options: .regularExpression)
+        }
+        return result
     }
 
     private func makeTransitRow(_ option: HomeTransitOption, emphasized: Bool) -> UIView {
