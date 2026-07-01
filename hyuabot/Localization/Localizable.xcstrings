@@ -7524,6 +7524,34 @@
         }
       }
     },
+    "home.transfer.subway.oido.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer at Oido Station"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "烏耳島駅で地下鉄に乗り換え"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오이도역에서 전철 환승"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在乌耳岛站换乘地铁"
+          }
+        }
+      }
+    },
     "home.support.default" : {
       "localizations" : {
         "en" : {

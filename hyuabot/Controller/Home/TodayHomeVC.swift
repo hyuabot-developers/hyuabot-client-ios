@@ -1087,7 +1087,11 @@ final class TodayHomeVC: UIViewController {
             else { return nil }
             return [
                 subwayConnection(for: firstLeg, after: stationArrival),
-                subwayConnection(for: secondLeg, after: firstLeg.arrivalDate)
+                subwayConnection(
+                    for: secondLeg,
+                    after: firstLeg.arrivalDate,
+                    subtitleKey: "home.transfer.subway.oido.subtitle"
+                )
             ]
         }
     }
