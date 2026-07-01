@@ -7389,25 +7389,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yesulin · Toward Gwangmyeong Station"
+            "value" : "Transfer to bus at Yesulin"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "芸術人 · 光明駅方面"
+            "value" : "芸術人でバスに乗り換え"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "예술인 · 광명역행"
+            "value" : "예술인에서 버스 환승"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "艺术人 · 开往光明站"
+            "value" : "在艺术人换乘公交"
           }
         }
       }
@@ -7492,6 +7492,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "水仁盆唐"
+          }
+        }
+      }
+    },
+    "home.transfer.subway.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer at Hanyang Univ. at Ansan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "韓大前で地下鉄に乗り換え"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞에서 전철 환승"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在汉大前换乘地铁"
           }
         }
       }

@@ -136,6 +136,7 @@ private struct HomeTransitOption {
 private struct HomeTransferConnection {
     let badge: String
     let title: String
+    let subtitle: String
     let trailing: String
     let tintColor: UIColor
     let arrivalDate: Foundation.Date
@@ -1007,6 +1008,7 @@ final class TodayHomeVC: UIViewController {
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
             title: title,
+            subtitle: String(localized: "home.transfer.bus50.subtitle"),
             trailing: trailing,
             tintColor: bufferMinutes >= 3 ? .hanyangGreen : .systemOrange,
             arrivalDate: busArrival,
@@ -1027,6 +1029,7 @@ final class TodayHomeVC: UIViewController {
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
             title: title,
+            subtitle: String(localized: "home.transfer.bus50.subtitle"),
             trailing: trailing,
             tintColor: UIColor(named: "busGreen") ?? .systemGreen,
             arrivalDate: busArrival,
@@ -1091,7 +1094,8 @@ final class TodayHomeVC: UIViewController {
 
     private func subwayConnection(
         for subwayArrival: HomeSubwayArrival,
-        after transferStartDate: Foundation.Date
+        after transferStartDate: Foundation.Date,
+        subtitleKey: String = "home.transfer.subway.subtitle"
     ) -> HomeTransferConnection {
         let bufferMinutes = max(0, Int(floor(subwayArrival.arrivalDate.timeIntervalSince(transferStartDate) / 60)))
         let terminal = localizedSubwayStationName(
@@ -1101,6 +1105,7 @@ final class TodayHomeVC: UIViewController {
         return HomeTransferConnection(
             badge: subwayArrival.lineBadge,
             title: String(format: String(localized: "subway.terminal.%@"), terminal),
+            subtitle: String(localized: String.LocalizationValue(subtitleKey)),
             trailing: String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes),
             tintColor: subwayArrival.tintColor,
             arrivalDate: subwayArrival.arrivalDate,
@@ -1876,6 +1881,18 @@ final class TodayHomeVC: UIViewController {
         title.adjustsFontSizeToFitWidth = true
         title.minimumScaleFactor = 0.75
 
+        let subtitle = UILabel()
+        subtitle.text = connection.subtitle
+        subtitle.font = .godo(size: 12, weight: .regular)
+        subtitle.textColor = .secondaryLabel
+        subtitle.numberOfLines = 1
+        subtitle.adjustsFontSizeToFitWidth = true
+        subtitle.minimumScaleFactor = 0.75
+
+        let textStack = UIStackView(arrangedSubviews: [title, subtitle])
+        textStack.axis = .vertical
+        textStack.spacing = 2
+
         let trailing = UILabel()
         trailing.text = connection.trailing
         trailing.font = .godo(size: 16, weight: .bold)
@@ -1886,7 +1903,7 @@ final class TodayHomeVC: UIViewController {
         trailing.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         row.addArrangedSubview(badge)
-        row.addArrangedSubview(title)
+        row.addArrangedSubview(textStack)
         row.addArrangedSubview(trailing)
         return row
     }
