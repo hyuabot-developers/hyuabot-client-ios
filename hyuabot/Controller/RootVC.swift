@@ -118,6 +118,7 @@ class RootVC: UITabBarController {
         donateVC.tabBarItem.accessibilityIdentifier = "tab.donate"
         if let moreTableView = moreNavigationController.viewControllers.first?.view as? UITableView {
             moreTableView.delegate = self
+            moreTableView.tintColor = .plainButtonText
         }
         delegate = self
         setViewControllers(
@@ -180,6 +181,9 @@ extension RootVC: UITabBarControllerDelegate {
 extension RootVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.textLabel?.font = UIFont.godo(size: 16, weight: .regular)
+        cell.textLabel?.textColor = .label
+        cell.imageView?.tintColor = .plainButtonText
+        cell.tintColor = .plainButtonText
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
