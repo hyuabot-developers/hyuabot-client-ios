@@ -47,6 +47,9 @@ class CafeteriaVC: UIViewController {
         $0.preferredDatePickerStyle = .compact
         $0.locale = Locale(identifier: "ko_KR")
         $0.accessibilityIdentifier = "cafeteria.date_picker"
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
+        $0.transform = CGAffineTransform(scaleX: 1.02, y: 1.06)
         $0.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
     }
 
@@ -74,7 +77,7 @@ class CafeteriaVC: UIViewController {
             .font: UIFont.godo(size: 14, weight: .bold)
         ]))
         configuration.imagePadding = 6
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 14)
         $0.configuration = configuration
         $0.accessibilityLabel = String(localized: "cafeteria.share")
         $0.accessibilityIdentifier = "cafeteria_share_button"
@@ -202,7 +205,7 @@ class CafeteriaVC: UIViewController {
         shareButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.height.equalTo(36)
+            make.height.equalTo(40)
         }
     }
 

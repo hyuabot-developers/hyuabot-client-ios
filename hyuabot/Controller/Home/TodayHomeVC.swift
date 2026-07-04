@@ -6,6 +6,27 @@ import SnapKit
 import Then
 import UIKit
 
+private final class HomePaddedLabel: UILabel {
+    var contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12) {
+        didSet {
+            invalidateIntrinsicContentSize()
+            setNeedsDisplay()
+        }
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(
+            width: size.width + contentInsets.left + contentInsets.right,
+            height: size.height + contentInsets.top + contentInsets.bottom
+        )
+    }
+
+    override func drawText(in rect: CGRect) {
+        super.drawText(in: rect.inset(by: contentInsets))
+    }
+}
+
 private enum HomeDeparture: CaseIterable {
     case dormitory
     case shuttlecock
@@ -1740,20 +1761,24 @@ final class TodayHomeVC: UIViewController {
         row.backgroundColor = emphasized ? option.tintColor.withAlphaComponent(0.10) : .tertiarySystemGroupedBackground
         row.layer.cornerRadius = 8
 
-        let badge = UILabel()
+        let badge = HomePaddedLabel()
         badge.text = option.badge
         badge.font = .godo(size: 12, weight: .bold)
         badge.textColor = .white
         badge.textAlignment = .center
         badge.backgroundColor = option.tintColor
-        badge.layer.cornerRadius = 12
+        badge.contentInsets = UIEdgeInsets(top: 5, left: 14, bottom: 5, right: 14)
+        badge.layer.cornerRadius = 13
         badge.clipsToBounds = true
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(82)
-            make.height.equalTo(24)
+            make.width.greaterThanOrEqualTo(48)
+            make.width.lessThanOrEqualTo(82)
+            make.height.equalTo(26)
         }
+        badge.setContentHuggingPriority(.required, for: .horizontal)
+        badge.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let textStack = UIStackView()
         textStack.axis = .vertical
@@ -1775,9 +1800,11 @@ final class TodayHomeVC: UIViewController {
 
         let minutes = UILabel()
         minutes.text = option.minutes.map { String(format: String(localized: "home.minutes"), $0) } ?? String(localized: "home.check")
-        minutes.font = .godo(size: emphasized ? 22 : 17, weight: .bold)
+        minutes.font = .godo(size: emphasized ? 20 : 17, weight: .bold)
         minutes.textColor = option.tintColor
         minutes.textAlignment = .right
+        minutes.adjustsFontSizeToFitWidth = true
+        minutes.minimumScaleFactor = 0.85
         minutes.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         row.addArrangedSubview(badge)
@@ -1862,20 +1889,24 @@ final class TodayHomeVC: UIViewController {
         row.layer.borderWidth = 1
         row.layer.borderColor = connection.tintColor.withAlphaComponent(0.12).cgColor
 
-        let badge = UILabel()
+        let badge = HomePaddedLabel()
         badge.text = connection.badge
         badge.font = .godo(size: 12, weight: .bold)
         badge.textColor = .white
         badge.textAlignment = .center
         badge.backgroundColor = connection.tintColor
-        badge.layer.cornerRadius = 12
+        badge.contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
+        badge.layer.cornerRadius = 13
         badge.clipsToBounds = true
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(64)
-            make.height.equalTo(24)
+            make.width.greaterThanOrEqualTo(48)
+            make.width.lessThanOrEqualTo(72)
+            make.height.equalTo(26)
         }
+        badge.setContentHuggingPriority(.required, for: .horizontal)
+        badge.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let title = UILabel()
         title.text = connection.title
@@ -1899,7 +1930,7 @@ final class TodayHomeVC: UIViewController {
 
         let trailing = UILabel()
         trailing.text = connection.trailing
-        trailing.font = .godo(size: 16, weight: .bold)
+        trailing.font = .godo(size: 15, weight: .bold)
         trailing.textColor = connection.tintColor
         trailing.textAlignment = .right
         trailing.adjustsFontSizeToFitWidth = true
