@@ -258,10 +258,18 @@ struct CafeteriaLargeView: View {
             Divider()
 
             if entry.items.isEmpty {
-                Text("cafeteria.no.data")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 16)
+                Spacer()
+                VStack(spacing: 8) {
+                    Image(systemName: "tray")
+                        .font(.title3)
+                        .foregroundStyle(.tertiary)
+                    Text("cafeteria.no.data")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                Spacer()
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(entry.items) { item in

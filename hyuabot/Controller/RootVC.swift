@@ -19,6 +19,19 @@ class RootVC: UITabBarController {
     private var translationPreparationHost: UIViewController?
     private var isWaitingForShuttleCoachMarksAfterReset = false
 
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        guard let navigationController = selectedViewController as? UINavigationController,
+              navigationController.topViewController is TodayHomeVC
+        else {
+            return .lightContent
+        }
+        return traitCollection.userInterfaceStyle == .dark ? .lightContent : .darkContent
+    }
+
+    override var childForStatusBarStyle: UIViewController? {
+        nil
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         installTranslationPreparationHostIfNeeded()
@@ -172,6 +185,7 @@ extension RootVC: UITabBarControllerDelegate {
         if let item = analyticsItem(for: viewController) {
             AnalyticsManager.logSelect(item, type: .tab)
         }
+        setNeedsStatusBarAppearanceUpdate()
         if viewController === shuttleNC {
             retryShuttleCoachMarksIfNeeded()
         }

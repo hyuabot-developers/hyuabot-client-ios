@@ -130,6 +130,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         default:
             break
         }
+        rootVC.setNeedsStatusBarAppearanceUpdate()
     }
 
     private func handleUITestInitialRouteIfNeeded() {

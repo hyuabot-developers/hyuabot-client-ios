@@ -637,8 +637,8 @@ final class TodayHomeVC: UIViewController {
 
         scrollView.addSubview(contentStack)
         contentStack.axis = .vertical
-        contentStack.spacing = 16
-        contentStack.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 28, right: 16)
+        contentStack.spacing = 14
+        contentStack.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 30, right: 16)
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.snp.makeConstraints { make in
             make.edges.equalTo(scrollView.contentLayoutGuide)
@@ -732,7 +732,7 @@ final class TodayHomeVC: UIViewController {
     private func makeCafeteriaCard() -> UIView {
         let card = cardView()
         cafeteriaCard.axis = .vertical
-        cafeteriaCard.spacing = 14
+        cafeteriaCard.spacing = 12
         cafeteriaCard.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 16, right: 16)
         cafeteriaCard.isLayoutMarginsRelativeArrangement = true
 
