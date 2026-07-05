@@ -189,7 +189,7 @@ class ShuttleRealtimeVC: UIViewController {
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
-            sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0),
+            sizeConfiguration: .fixed(width: 125, height: 52, spacing: 0),
             noticeView: self.noticeView,
             navigationBarEnabled: self.returnsToHome
         )

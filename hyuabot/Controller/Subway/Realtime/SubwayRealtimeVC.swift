@@ -21,7 +21,7 @@ class SubwayRealtimeVC: UIViewController {
     )
     private var subscription: Disposable?
     private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0))
+        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 52, spacing: 0))
         viewPager.contentView.pages = [
             self.line4VC.view,
             self.lineSuinVC.view,
