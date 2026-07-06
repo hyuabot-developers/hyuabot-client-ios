@@ -3,6 +3,9 @@ import RxSwift
 import UIKit
 
 class CafeteriaVC: UIViewController {
+    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+    private static let disabledActionButtonBackground = UIColor.tertiarySystemFill
+
     private let disposeBag = DisposeBag()
     private var selectedMealIndex = 0
     private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
@@ -45,6 +48,9 @@ class CafeteriaVC: UIViewController {
         $0.preferredDatePickerStyle = .compact
         $0.locale = Locale(identifier: "ko_KR")
         $0.accessibilityIdentifier = "cafeteria.date_picker"
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
+        $0.transform = CGAffineTransform(scaleX: 1.02, y: 1.06)
         $0.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
     }
 
@@ -60,7 +66,8 @@ class CafeteriaVC: UIViewController {
     }
 
     private lazy var shareButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.tinted()
+        var configuration = UIButton.Configuration.plain()
+        configuration.background.backgroundColor = Self.actionButtonBackground
         configuration.baseForegroundColor = .hanyangBlue
         configuration.cornerStyle = .medium
         configuration.image = UIImage(systemName: "square.and.arrow.up")?.withConfiguration(UIImage.SymbolConfiguration(
@@ -71,8 +78,21 @@ class CafeteriaVC: UIViewController {
             .font: UIFont.godo(size: 14, weight: .bold)
         ]))
         configuration.imagePadding = 6
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 14)
         $0.configuration = configuration
+        $0.configurationUpdateHandler = { button in
+            var updatedConfiguration = button.configuration
+            let foregroundColor: UIColor = button.isEnabled ? .hanyangBlue : .secondaryLabel
+            updatedConfiguration?.background.backgroundColor = button.isEnabled
+                ? Self.actionButtonBackground
+                : Self.disabledActionButtonBackground
+            updatedConfiguration?.baseForegroundColor = foregroundColor
+            updatedConfiguration?.attributedTitle = AttributedString(String(localized: "common.share"), attributes: AttributeContainer([
+                .font: UIFont.godo(size: 14, weight: .bold),
+                .foregroundColor: foregroundColor
+            ]))
+            button.configuration = updatedConfiguration
+        }
         $0.accessibilityLabel = String(localized: "cafeteria.share")
         $0.accessibilityIdentifier = "cafeteria_share_button"
         $0.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
@@ -199,7 +219,7 @@ class CafeteriaVC: UIViewController {
         shareButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.height.equalTo(36)
+            make.height.equalTo(40)
         }
     }
 

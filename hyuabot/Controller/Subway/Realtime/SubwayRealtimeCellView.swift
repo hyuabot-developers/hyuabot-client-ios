@@ -6,10 +6,17 @@ class SubwayRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "SubwayRealtimeCellView"
     private let destinationLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
+        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
 
     private let subwayTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+        $0.font = .godo(size: 15, weight: .regular)
+        $0.textAlignment = .right
+        $0.numberOfLines = 1
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.85
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -30,6 +37,7 @@ class SubwayRealtimeCellView: UITableViewCell {
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
+            make.trailing.lessThanOrEqualTo(self.subwayTimeLabel.snp.leading).offset(-12)
         }
         subwayTimeLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)

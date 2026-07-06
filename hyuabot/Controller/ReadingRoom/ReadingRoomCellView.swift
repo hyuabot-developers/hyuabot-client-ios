@@ -30,7 +30,7 @@ class ReadingRoomCellView: UITableViewCell {
     }
 
     private let seatLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+        $0.font = .godo(size: 15, weight: .bold)
         $0.numberOfLines = 1
     }
 
@@ -60,7 +60,7 @@ class ReadingRoomCellView: UITableViewCell {
         nameLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.top.equalToSuperview().inset(12)
-            make.trailing.lessThanOrEqualTo(self.seatLabel.snp.leading).offset(-10)
+            make.trailing.lessThanOrEqualTo(self.alarmButton.snp.leading).offset(-10)
         }
         alarmButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-20)
@@ -68,11 +68,12 @@ class ReadingRoomCellView: UITableViewCell {
             make.width.height.equalTo(32)
         }
         seatLabel.snp.makeConstraints { make in
-            make.trailing.equalTo(self.alarmButton.snp.leading).offset(-10)
-            make.centerY.equalTo(self.nameLabel)
+            make.leading.equalTo(self.nameLabel)
+            make.trailing.lessThanOrEqualTo(self.alarmButton.snp.leading).offset(-10)
+            make.top.equalTo(self.nameLabel.snp.bottom).offset(4)
         }
         occupancyProgressView.snp.makeConstraints { make in
-            make.top.equalTo(self.nameLabel.snp.bottom).offset(8)
+            make.top.equalTo(self.seatLabel.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().inset(12)
             make.height.equalTo(4)
@@ -88,7 +89,15 @@ class ReadingRoomCellView: UITableViewCell {
         self.showSubscribeToastMessage = showSubscribeToastMessage
         self.showUnsubscribeToastMessage = showUnsubscribeToastMessage
         nameLabel.text = getLocalizedString(readingRoomID: item.seq)
-        seatLabel.text = "\(item.seats.available) / \(item.seats.active)"
+        if item.seats.available <= 0 {
+            seatLabel.text = String(format: String(localized: "reading_room.full_seat_format"), item.seats.active)
+        } else {
+            seatLabel.text = String(
+                format: String(localized: "reading_room.available_seat_format"),
+                item.seats.available,
+                item.seats.active
+            )
+        }
         let progress = ReadingRoomDisplayLogic.occupancyRatio(occupied: item.seats.occupied, active: item.seats.active)
         occupancyProgressView.setProgress(progress, animated: false)
         occupancyProgressView.progressTintColor = ReadingRoomDisplayLogic.occupancyColor(progress: progress)

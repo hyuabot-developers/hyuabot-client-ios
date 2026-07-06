@@ -28,7 +28,13 @@ class BusRealtimeCellView: UITableViewCell {
     }
 
     private let busTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+        $0.font = .godo(size: 15, weight: .regular)
+        $0.textAlignment = .right
+        $0.numberOfLines = 1
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.85
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

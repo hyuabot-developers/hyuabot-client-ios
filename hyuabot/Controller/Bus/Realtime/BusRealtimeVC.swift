@@ -4,6 +4,8 @@ import RxSwift
 import UIKit
 
 class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
+    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
     private var didSelectBusStop = false
@@ -38,7 +40,8 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     )
     private var subscription: Disposable?
     private lazy var helpButton = UIButton().then {
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "questionmark.circle")?.withConfiguration(UIImage.SymbolConfiguration(
@@ -85,7 +88,7 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
 
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
-            sizeConfiguration: .fixed(width: 125, height: 60, spacing: 0),
+            sizeConfiguration: .fixed(width: 125, height: 52, spacing: 0),
             optionView: nil,
             noticeView: self.noticeView
         )

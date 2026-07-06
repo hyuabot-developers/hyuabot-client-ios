@@ -19,6 +19,19 @@ class RootVC: UITabBarController {
     private var translationPreparationHost: UIViewController?
     private var isWaitingForShuttleCoachMarksAfterReset = false
 
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        guard let navigationController = selectedViewController as? UINavigationController,
+              navigationController.topViewController is TodayHomeVC
+        else {
+            return .lightContent
+        }
+        return traitCollection.userInterfaceStyle == .dark ? .lightContent : .darkContent
+    }
+
+    override var childForStatusBarStyle: UIViewController? {
+        nil
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         installTranslationPreparationHostIfNeeded()
@@ -118,6 +131,7 @@ class RootVC: UITabBarController {
         donateVC.tabBarItem.accessibilityIdentifier = "tab.donate"
         if let moreTableView = moreNavigationController.viewControllers.first?.view as? UITableView {
             moreTableView.delegate = self
+            moreTableView.tintColor = .plainButtonText
         }
         delegate = self
         setViewControllers(
@@ -171,6 +185,7 @@ extension RootVC: UITabBarControllerDelegate {
         if let item = analyticsItem(for: viewController) {
             AnalyticsManager.logSelect(item, type: .tab)
         }
+        setNeedsStatusBarAppearanceUpdate()
         if viewController === shuttleNC {
             retryShuttleCoachMarksIfNeeded()
         }
@@ -180,6 +195,9 @@ extension RootVC: UITabBarControllerDelegate {
 extension RootVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.textLabel?.font = UIFont.godo(size: 16, weight: .regular)
+        cell.textLabel?.textColor = .label
+        cell.imageView?.tintColor = .plainButtonText
+        cell.tintColor = .plainButtonText
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

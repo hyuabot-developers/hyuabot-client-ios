@@ -121,7 +121,10 @@ extension Event {
         let today = Self.dateOnlyFormatter.string(from: Date())
         guard startDateOnly > today else { return nil }
         guard let start = Self.dateOnlyFormatter.date(from: startDateOnly) else { return nil }
-        return Calendar.current.dateComponents([.day], from: Date(), to: start).day
+        guard let todayStart = Self.dateOnlyFormatter.date(from: today) else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return calendar.dateComponents([.day], from: todayStart, to: start).day
     }
 
     private static let categoryPalette: [UIColor] = [

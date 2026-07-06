@@ -6,16 +6,17 @@ class ContactSearchResultCellView: UITableViewCell {
     static let reuseIdentifier = "ContactSearchResultCellView"
     private let nameLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
-        $0.numberOfLines = 1
+        $0.numberOfLines = 2
         $0.lineBreakMode = .byTruncatingTail
         $0.textAlignment = .left
     }
 
     private let phoneLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+        $0.font = .godo(size: 15, weight: .regular)
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingMiddle
-        $0.textAlignment = .right
+        $0.textAlignment = .left
+        $0.textColor = .secondaryLabel
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -33,14 +34,14 @@ class ContactSearchResultCellView: UITableViewCell {
         contentView.addSubview(phoneLabel)
         nameLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
-            make.trailing.lessThanOrEqualTo(self.contentView.snp.centerX).offset(-10)
-            make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
+            make.trailing.equalToSuperview().inset(20)
+            make.top.equalToSuperview().inset(11)
         }
         phoneLabel.snp.makeConstraints { make in
-            make.leading.equalTo(self.contentView.snp.centerX).offset(10)
+            make.leading.equalTo(self.nameLabel)
             make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
+            make.top.equalTo(self.nameLabel.snp.bottom).offset(4)
+            make.bottom.equalToSuperview().inset(11)
         }
     }
 

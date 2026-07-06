@@ -467,20 +467,34 @@ class CalendarVC: UIViewController {
             .sorted { $0.startDate < $1.startDate }
     }
 
+    private var visibleEvents: [Event] {
+        if selectedDate != nil { return selectedEvents }
+        guard let all = try? eventSubject.value() else { return [] }
+        let today = dateFormatter.string(from: Foundation.Date())
+        return all
+            .filter { String($0.endDate.prefix(10)) >= today }
+            .sorted { $0.startDate < $1.startDate }
+            .prefix(5)
+            .map { $0 }
+    }
+
     private func updateSelectedDatePanel() {
         if let date = selectedDate {
             selectedDateLabel.text = selectedDateFormatter.string(from: date)
             selectedDateLabel.isHidden = false
-            let events = selectedEvents
+            let events = visibleEvents
             noEventsLabel.text = String(localized: "calendar.no.events")
             noEventsLabel.isHidden = !events.isEmpty
             selectedEventView.reloadData()
             updateEventViewHeight()
         } else {
-            selectedDateLabel.isHidden = true
-            noEventsLabel.text = String(localized: "calendar.select.hint")
-            noEventsLabel.isHidden = false
-            eventViewHeightConstraint?.update(offset: 0)
+            selectedDateLabel.text = String(localized: "calendar.section.upcoming")
+            selectedDateLabel.isHidden = false
+            let events = visibleEvents
+            noEventsLabel.text = String(localized: "calendar.upcoming.empty")
+            noEventsLabel.isHidden = !events.isEmpty
+            selectedEventView.reloadData()
+            updateEventViewHeight()
         }
     }
 
@@ -625,14 +639,14 @@ extension CalendarVC: UICollectionViewDataSource, UICollectionViewDelegate {
 
 extension CalendarVC: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        selectedEvents.count
+        visibleEvents.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: CalendarEventCellView.reuseIdentifier
         ) as? CalendarEventCellView else { return UITableViewCell() }
-        cell.setupUI(item: selectedEvents[indexPath.row])
+        cell.setupUI(item: visibleEvents[indexPath.row])
         return cell
     }
 

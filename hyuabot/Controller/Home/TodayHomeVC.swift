@@ -6,6 +6,27 @@ import SnapKit
 import Then
 import UIKit
 
+private final class HomePaddedLabel: UILabel {
+    var contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12) {
+        didSet {
+            invalidateIntrinsicContentSize()
+            setNeedsDisplay()
+        }
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(
+            width: size.width + contentInsets.left + contentInsets.right,
+            height: size.height + contentInsets.top + contentInsets.bottom
+        )
+    }
+
+    override func drawText(in rect: CGRect) {
+        super.drawText(in: rect.inset(by: contentInsets))
+    }
+}
+
 private enum HomeDeparture: CaseIterable {
     case dormitory
     case shuttlecock
@@ -136,6 +157,7 @@ private struct HomeTransitOption {
 private struct HomeTransferConnection {
     let badge: String
     let title: String
+    let subtitle: String
     let trailing: String
     let tintColor: UIColor
     let arrivalDate: Foundation.Date
@@ -198,6 +220,7 @@ private struct HomeMealPeriod {
 
 private extension UIColor {
     static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
+    static let homeActionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
 }
 
 private enum HomeSettings {
@@ -444,7 +467,8 @@ private final class HomeQuickSettingsVC: UIViewController {
 
     private func legacyActionRow() -> UIView {
         let button = UIButton(type: .system)
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "bus.fill")
@@ -520,7 +544,8 @@ final class TodayHomeVC: UIViewController {
     }
 
     private lazy var legacyButton = UIButton(type: .system).then {
-        var config = UIButton.Configuration.tinted()
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
         config.baseForegroundColor = .hanyangBlue
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
@@ -612,8 +637,8 @@ final class TodayHomeVC: UIViewController {
 
         scrollView.addSubview(contentStack)
         contentStack.axis = .vertical
-        contentStack.spacing = 16
-        contentStack.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 28, right: 16)
+        contentStack.spacing = 14
+        contentStack.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 30, right: 16)
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.snp.makeConstraints { make in
             make.edges.equalTo(scrollView.contentLayoutGuide)
@@ -707,7 +732,7 @@ final class TodayHomeVC: UIViewController {
     private func makeCafeteriaCard() -> UIView {
         let card = cardView()
         cafeteriaCard.axis = .vertical
-        cafeteriaCard.spacing = 14
+        cafeteriaCard.spacing = 12
         cafeteriaCard.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 16, right: 16)
         cafeteriaCard.isLayoutMarginsRelativeArrangement = true
 
@@ -759,6 +784,7 @@ final class TodayHomeVC: UIViewController {
 
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
+        config.baseForegroundColor = .plainButtonText
         config.attributedTitle = AttributedString(buttonTitle, attributes: AttributeContainer([
             .font: UIFont.godo(size: 13, weight: .bold)
         ]))
@@ -1003,6 +1029,7 @@ final class TodayHomeVC: UIViewController {
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
             title: title,
+            subtitle: String(localized: "home.transfer.bus50.subtitle"),
             trailing: trailing,
             tintColor: bufferMinutes >= 3 ? .hanyangGreen : .systemOrange,
             arrivalDate: busArrival,
@@ -1023,6 +1050,7 @@ final class TodayHomeVC: UIViewController {
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
             title: title,
+            subtitle: String(localized: "home.transfer.bus50.subtitle"),
             trailing: trailing,
             tintColor: UIColor(named: "busGreen") ?? .systemGreen,
             arrivalDate: busArrival,
@@ -1080,14 +1108,19 @@ final class TodayHomeVC: UIViewController {
             else { return nil }
             return [
                 subwayConnection(for: firstLeg, after: stationArrival),
-                subwayConnection(for: secondLeg, after: firstLeg.arrivalDate)
+                subwayConnection(
+                    for: secondLeg,
+                    after: firstLeg.arrivalDate,
+                    subtitleKey: "home.transfer.subway.oido.subtitle"
+                )
             ]
         }
     }
 
     private func subwayConnection(
         for subwayArrival: HomeSubwayArrival,
-        after transferStartDate: Foundation.Date
+        after transferStartDate: Foundation.Date,
+        subtitleKey: String = "home.transfer.subway.subtitle"
     ) -> HomeTransferConnection {
         let bufferMinutes = max(0, Int(floor(subwayArrival.arrivalDate.timeIntervalSince(transferStartDate) / 60)))
         let terminal = localizedSubwayStationName(
@@ -1097,6 +1130,7 @@ final class TodayHomeVC: UIViewController {
         return HomeTransferConnection(
             badge: subwayArrival.lineBadge,
             title: String(format: String(localized: "subway.terminal.%@"), terminal),
+            subtitle: String(localized: String.LocalizationValue(subtitleKey)),
             trailing: String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes),
             tintColor: subwayArrival.tintColor,
             arrivalDate: subwayArrival.arrivalDate,
@@ -1698,11 +1732,23 @@ final class TodayHomeVC: UIViewController {
     }
 
     private func representativeMenuText(_ text: String) -> String {
-        let menuText = localizedMenuText(text)
+        let menuText = localizedMenuText(menuTextRemovingLeadingDescriptors(text))
         guard !menuText.isEmpty else { return "" }
         return menuText
             .components(separatedBy: .whitespacesAndNewlines)
             .first(where: { !$0.isEmpty }) ?? menuText
+    }
+
+    private func menuTextRemovingLeadingDescriptors(_ text: String) -> String {
+        var result = text
+        [
+            #"^\s*\[[^\]]+\]\s*"#,
+            #"^\s*<[^>]+>\s*"#,
+            #"^\s*[\w가-힣]+\)\s*"#
+        ].forEach {
+            result = result.replacingOccurrences(of: $0, with: "", options: .regularExpression)
+        }
+        return result
     }
 
     private func makeTransitRow(_ option: HomeTransitOption, emphasized: Bool) -> UIView {
@@ -1715,20 +1761,24 @@ final class TodayHomeVC: UIViewController {
         row.backgroundColor = emphasized ? option.tintColor.withAlphaComponent(0.10) : .tertiarySystemGroupedBackground
         row.layer.cornerRadius = 8
 
-        let badge = UILabel()
+        let badge = HomePaddedLabel()
         badge.text = option.badge
         badge.font = .godo(size: 12, weight: .bold)
         badge.textColor = .white
         badge.textAlignment = .center
         badge.backgroundColor = option.tintColor
-        badge.layer.cornerRadius = 12
+        badge.contentInsets = UIEdgeInsets(top: 5, left: 14, bottom: 5, right: 14)
+        badge.layer.cornerRadius = 13
         badge.clipsToBounds = true
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(82)
-            make.height.equalTo(24)
+            make.width.greaterThanOrEqualTo(48)
+            make.width.lessThanOrEqualTo(82)
+            make.height.equalTo(26)
         }
+        badge.setContentHuggingPriority(.required, for: .horizontal)
+        badge.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let textStack = UIStackView()
         textStack.axis = .vertical
@@ -1750,9 +1800,11 @@ final class TodayHomeVC: UIViewController {
 
         let minutes = UILabel()
         minutes.text = option.minutes.map { String(format: String(localized: "home.minutes"), $0) } ?? String(localized: "home.check")
-        minutes.font = .godo(size: emphasized ? 22 : 17, weight: .bold)
+        minutes.font = .godo(size: emphasized ? 20 : 17, weight: .bold)
         minutes.textColor = option.tintColor
         minutes.textAlignment = .right
+        minutes.adjustsFontSizeToFitWidth = true
+        minutes.minimumScaleFactor = 0.85
         minutes.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         row.addArrangedSubview(badge)
@@ -1837,20 +1889,24 @@ final class TodayHomeVC: UIViewController {
         row.layer.borderWidth = 1
         row.layer.borderColor = connection.tintColor.withAlphaComponent(0.12).cgColor
 
-        let badge = UILabel()
+        let badge = HomePaddedLabel()
         badge.text = connection.badge
         badge.font = .godo(size: 12, weight: .bold)
         badge.textColor = .white
         badge.textAlignment = .center
         badge.backgroundColor = connection.tintColor
-        badge.layer.cornerRadius = 12
+        badge.contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
+        badge.layer.cornerRadius = 13
         badge.clipsToBounds = true
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(64)
-            make.height.equalTo(24)
+            make.width.greaterThanOrEqualTo(48)
+            make.width.lessThanOrEqualTo(72)
+            make.height.equalTo(26)
         }
+        badge.setContentHuggingPriority(.required, for: .horizontal)
+        badge.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let title = UILabel()
         title.text = connection.title
@@ -1860,9 +1916,21 @@ final class TodayHomeVC: UIViewController {
         title.adjustsFontSizeToFitWidth = true
         title.minimumScaleFactor = 0.75
 
+        let subtitle = UILabel()
+        subtitle.text = connection.subtitle
+        subtitle.font = .godo(size: 12, weight: .regular)
+        subtitle.textColor = .secondaryLabel
+        subtitle.numberOfLines = 1
+        subtitle.adjustsFontSizeToFitWidth = true
+        subtitle.minimumScaleFactor = 0.75
+
+        let textStack = UIStackView(arrangedSubviews: [title, subtitle])
+        textStack.axis = .vertical
+        textStack.spacing = 2
+
         let trailing = UILabel()
         trailing.text = connection.trailing
-        trailing.font = .godo(size: 16, weight: .bold)
+        trailing.font = .godo(size: 15, weight: .bold)
         trailing.textColor = connection.tintColor
         trailing.textAlignment = .right
         trailing.adjustsFontSizeToFitWidth = true
@@ -1870,7 +1938,7 @@ final class TodayHomeVC: UIViewController {
         trailing.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         row.addArrangedSubview(badge)
-        row.addArrangedSubview(title)
+        row.addArrangedSubview(textStack)
         row.addArrangedSubview(trailing)
         return row
     }
@@ -1934,7 +2002,7 @@ final class TodayHomeVC: UIViewController {
         let price = UILabel()
         price.text = item.price
         price.font = .godo(size: 14, weight: .bold)
-        price.textColor = .hanyangBlue
+        price.textColor = .plainButtonText
         price.textAlignment = .right
         price.setContentCompressionResistancePriority(.required, for: .horizontal)
 

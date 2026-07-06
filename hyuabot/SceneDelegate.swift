@@ -32,7 +32,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         handleUITestInitialRouteIfNeeded()
-        ReviewRequestManager.shared.trackLaunch()
+        if !arguments.contains("-UITestsDisableReviewPrompt") {
+            ReviewRequestManager.shared.trackLaunch()
+        }
         showLanguageSuggestionIfNeeded()
 
         if let urlContext = connectionOptions.urlContexts.first {
@@ -128,6 +130,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         default:
             break
         }
+        rootVC.setNeedsStatusBarAppearanceUpdate()
     }
 
     private func handleUITestInitialRouteIfNeeded() {
@@ -187,6 +190,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidEnterBackground(_ scene: UIScene) {}
 
     func sceneDidBecomeActive(_ scene: UIScene) {
+        if ProcessInfo.processInfo.arguments.contains("-UITestsDisableReviewPrompt") {
+            return
+        }
         if let windowScene = scene as? UIWindowScene {
             ReviewRequestManager.shared.requestReviewIfAppropriate(in: windowScene)
         }

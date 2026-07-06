@@ -30,8 +30,8 @@ class BusLogCell: UITableViewCell {
         let departureTime = item.time.substring(from: 0, to: 4)
         busTimeLabel.text = departureTime
         if index % 2 == 0 {
-            backgroundColor = .hanyangBlue
-            busTimeLabel.textColor = .white
+            backgroundColor = .secondarySystemBackground
+            busTimeLabel.textColor = .label
         } else {
             backgroundColor = .systemBackground
             busTimeLabel.textColor = .label
