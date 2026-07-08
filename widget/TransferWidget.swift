@@ -261,7 +261,8 @@ struct TransferProvider: TimelineProvider {
         let entries = matchingBuses.flatMap(\.arrival).prefix(2).compactMap { arrival -> TransitEntry? in
             guard let m = arrival.minutes else { return nil }
             let stopsStr = (arrival.stops ?? 0) > 0
-                ? String(format: String(localized: "transit.stops.format"), arrival.stops!).trimmingCharacters(in: CharacterSet(charactersIn: "()"))
+                ? String(format: String(localized: "transit.stops.format"), arrival.stops!)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "()"))
                 : ""
             return TransitEntry(terminal: stopsStr, minutes: m)
         }
@@ -628,9 +629,9 @@ private struct ArrivalRow: View {
                         .foregroundStyle(.tertiary)
                     SubwayArrivalText(entry: row.subwayDown, minSuffix: minSuffix)
                 }
-                    .lineLimit(1)
-                    .layoutPriority(1)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                .lineLimit(1)
+                .layoutPriority(1)
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .padding(.vertical, 2)
         } else if let busEntry = row.busEntry {
@@ -647,7 +648,6 @@ private struct ArrivalRow: View {
             .padding(.vertical, 2)
         }
     }
-
 }
 
 private struct SubwayArrivalText: View {

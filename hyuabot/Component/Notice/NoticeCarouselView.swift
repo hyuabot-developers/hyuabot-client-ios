@@ -10,6 +10,7 @@ class NoticeCarouselView: UIView {
             collectionView.reloadData()
         }
     }
+
     var onNoticeTapped: ((String) -> Void)?
     private let skeletonBar = UIView().then {
         $0.backgroundColor = UIColor.white.withAlphaComponent(0.36)

@@ -15,6 +15,7 @@ class SubwayTransferCellView: UITableViewCell {
         $0.alignment = .fill
         $0.spacing = 10
     }
+
     private let firstRow = UIView()
     private let firstDot = UIView()
     private let firstDestinationLabel = UILabel().then {
@@ -22,6 +23,7 @@ class SubwayTransferCellView: UITableViewCell {
         $0.textColor = .label
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let firstTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.textColor = .label
@@ -29,27 +31,32 @@ class SubwayTransferCellView: UITableViewCell {
         $0.textAlignment = .right
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
+
     private let firstMetaLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .regular)
         $0.textColor = .secondaryLabel
         $0.lineBreakMode = .byTruncatingTail
         $0.text = " "
     }
+
     private let transferRow = UIView()
     private let transferLine = UIView().then {
         $0.backgroundColor = .separator
     }
+
     private let transferStationLabel = UILabel().then {
         $0.font = .godo(size: 14, weight: .bold)
         $0.textColor = .secondaryLabel
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let transferWaitLabel = UILabel().then {
         $0.font = .godo(size: 13, weight: .bold)
         $0.textColor = .secondaryLabel
         $0.textAlignment = .right
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
+
     private let secondRow = UIView()
     private let secondDot = UIView()
     private let secondDestinationLabel = UILabel().then {
@@ -57,6 +64,7 @@ class SubwayTransferCellView: UITableViewCell {
         $0.textColor = .label
         $0.lineBreakMode = .byTruncatingTail
     }
+
     private let secondTimeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.textColor = .label
