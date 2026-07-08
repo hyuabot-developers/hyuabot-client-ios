@@ -57,7 +57,8 @@ query HomePageQuery(
     subway(input: { keys: [
         { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
         { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
-        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 }
+        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "S26", direction: ["up"], weekdays: [$weekday] }
     ]}) {
         stationID
         arrival {
@@ -68,6 +69,15 @@ query HomePageQuery(
                     stationID
                     name
                 }
+            }
+        }
+        timetable {
+            weekday
+            direction
+            time
+            terminal {
+                stationID
+                name
             }
         }
     }

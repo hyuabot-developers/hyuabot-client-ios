@@ -6824,6 +6824,34 @@
         }
       }
     },
+    "home.quick_settings.subway_destination.sosa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ilsan/Bucheon"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一山・富川"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일산.부천"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一山·富川"
+          }
+        }
+      }
+    },
     "home.quick_settings.subway_destination.seoul" : {
       "localizations" : {
         "en" : {
@@ -7620,6 +7648,34 @@
         }
       }
     },
+    "home.transfer.subway.choji.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer at Choji Station"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "草芝駅で地下鉄に乗り換え"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초지역에서 전철 환승"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在草芝站换乘地铁"
+          }
+        }
+      }
+    },
     "home.transfer.subway.oido.subtitle" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7674,6 +7730,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在汉大前换乘地铁"
+          }
+        }
+      }
+    },
+    "home.transfer.subway.seohae.badge" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seohae"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西海線"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서해선"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西海线"
           }
         }
       }
