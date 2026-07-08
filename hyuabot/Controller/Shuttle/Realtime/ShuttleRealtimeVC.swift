@@ -983,11 +983,14 @@ class ShuttleRealtimeVC: UIViewController {
             guard let self else { return }
             guard HomeExperienceManager.shouldPrompt else { return }
             guard presentedViewController == nil, coachMarkOverlayIsAbsent else { return }
+            let title = String(localized: "home.prompt.title")
+            let message = String(localized: "home.prompt.message")
             let alert = UIAlertController(
-                title: String(localized: "home.prompt.title"),
-                message: String(localized: "home.prompt.message"),
+                title: title,
+                message: message,
                 preferredStyle: .alert
             )
+            alert.applyGodoTypography(title: title, message: message)
             alert.addAction(UIAlertAction(title: String(localized: "home.open_new"), style: .default) { [weak self] _ in
                 AnalyticsManager.logSelect(.homeTry)
                 (self?.navigationController as? ShuttleNC)?.showHome()

@@ -14,10 +14,10 @@ struct TransferBadge: View {
         if let info = transferInfo(for: stopID) {
             HStack(spacing: 3) {
                 Image(systemName: info.icon)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.secondary)
                 Text(info.label)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.secondary)
             }
         }
@@ -282,23 +282,22 @@ private struct TransferHeader: View {
         HStack(spacing: 4) {
             Image(systemName: "arrow.triangle.swap")
                 .foregroundStyle(Color("hanyangBlue"))
-                .font(.subheadline)
+                .font(.godoSubheadline)
             Text("widget.transfer.title")
-                .font(.subheadline)
-                .fontWeight(.bold)
+                .font(.godoSubheadlineBold)
                 .foregroundStyle(Color("hanyangBlue"))
             if !entry.stopDisplayName.isEmpty {
                 Text("· \(entry.stopDisplayName)")
-                    .font(.subheadline)
+                    .font(.godoSubheadline)
                     .foregroundStyle(.secondary)
             }
             Spacer()
             Text(entry.date, style: .time)
-                .font(.caption2)
+                .font(.godoCaption2)
                 .foregroundStyle(.tertiary)
             Button(intent: RefreshTransferIntent()) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.tertiary)
             }
             .buttonStyle(.plain)
@@ -319,13 +318,13 @@ struct TransferLargeView: View {
                 Spacer()
                 VStack(spacing: 8) {
                     Image(systemName: "location.slash.fill").font(.title2).foregroundStyle(.secondary)
-                    Text("shuttle.location.required").font(.subheadline).foregroundStyle(.secondary)
+                    Text("shuttle.location.required").font(.godoSubheadline).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 Spacer()
             case .noData:
                 Spacer()
-                Text("shuttle.no.data").font(.body).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
+                Text("shuttle.no.data").font(.godoBody).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
             case .none:
                 ShuttleSectionView(groups: entry.shuttleGroups)
@@ -385,19 +384,19 @@ struct ShuttleSectionView: View {
         VStack(alignment: .leading, spacing: 4) {
             SectionHeader(icon: "bus.fill", title: "shuttle.title")
             if groups.isEmpty {
-                Text("shuttle.no.data").font(.caption).foregroundStyle(.secondary)
+                Text("shuttle.no.data").font(.godoCaption).foregroundStyle(.secondary)
             } else {
                 ForEach(groups) { group in
                     HStack(spacing: 0) {
                         Text(group.destination)
-                            .font(.caption)
+                            .font(.godoCaption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: 80, alignment: .leading)
                             .lineLimit(1)
                         Spacer()
                         HStack(spacing: 6) {
                             ForEach(group.times.prefix(maxTimes), id: \.self) { t in
-                                Text(t).font(.caption).fontWeight(.semibold).monospacedDigit()
+                                Text(t).font(.godoCaptionSemibold).monospacedDigit()
                             }
                         }
                     }
@@ -421,15 +420,14 @@ private struct SectionHeader: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.caption2)
+                .font(.godoCaption2)
                 .foregroundStyle(Color("hanyangBlue"))
             Text(title)
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(.godoCaptionSemibold)
                 .foregroundStyle(Color("hanyangBlue"))
             if let subtitle {
                 Text("· \(subtitle)")
-                    .font(.caption)
+                    .font(.godoCaption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -445,14 +443,14 @@ struct TransitShuttleColumn: View {
     var body: some View {
         if groups.isEmpty {
             Text("shuttle.no.data")
-                .font(.caption2)
+                .font(.godoCaption2)
                 .foregroundStyle(.secondary)
         } else {
             VStack(alignment: .leading, spacing: 4) {
                 ForEach(groups.prefix(maxGroups)) { group in
                     HStack(spacing: 0) {
                         Text(group.destination)
-                            .font(.caption)
+                            .font(.godoCaption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: 80, alignment: .leading)
                             .lineLimit(1)
@@ -460,8 +458,7 @@ struct TransitShuttleColumn: View {
                         HStack(spacing: 4) {
                             ForEach(group.times.prefix(maxTimes), id: \.self) { t in
                                 Text(t)
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
+                                    .font(.godoCaptionSemibold)
                                     .monospacedDigit()
                             }
                         }
@@ -533,15 +530,13 @@ private struct ArrivalRow: View {
     var body: some View {
         HStack(spacing: 4) {
             Text(lineName ?? "")
-                .font(.caption2)
-                .fontWeight(.bold)
+                .font(.godoCaption2Bold)
                 .foregroundStyle(lineName != nil ? transitLineColor(colorKey) : .clear)
                 .lineLimit(1)
                 .frame(maxWidth: nameWidth, alignment: .leading)
             Spacer()
             Text(timeLabel)
-                .font(.caption2)
-                .fontWeight(.semibold)
+                .font(.godoCaption2Semibold)
                 .monospacedDigit()
                 .lineLimit(1)
         }

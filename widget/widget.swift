@@ -235,21 +235,20 @@ struct CafeteriaLargeView: View {
                 Image(systemName: entry.mealType.icon)
                     .foregroundStyle(.blue)
                 Text(entry.mealType.title)
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .font(.godoHeadline)
                     .foregroundStyle(.blue)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(entry.date, style: .date)
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.tertiary)
                     Text(entry.date, style: .time)
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.tertiary)
                 }
                 Button(intent: RefreshCafeteriaIntent()) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
@@ -264,7 +263,7 @@ struct CafeteriaLargeView: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("cafeteria.no.data")
-                        .font(.body)
+                        .font(.godoBody)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -276,11 +275,10 @@ struct CafeteriaLargeView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {
                                 Text(item.cafeteriaName)
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
+                                    .font(.godoSubheadlineBold)
                                 if let rt = item.runningTime {
                                     Text(rt)
-                                        .font(.caption2)
+                                        .font(.godoCaption2)
                                         .foregroundStyle(.tertiary)
                                 }
                                 Spacer()
@@ -288,13 +286,13 @@ struct CafeteriaLargeView: View {
                             ForEach(item.menus) { menu in
                                 HStack {
                                     Text(menu.food)
-                                        .font(.caption)
+                                        .font(.godoCaption)
                                         .foregroundStyle(.secondary)
                                         .lineLimit(1)
                                     Spacer()
                                     if !menu.price.isEmpty {
                                         Text("\(menu.price)원")
-                                            .font(.caption)
+                                            .font(.godoCaption)
                                             .foregroundStyle(.blue)
                                     }
                                 }

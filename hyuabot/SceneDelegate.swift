@@ -172,11 +172,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func presentLanguageSuggestion() {
         guard let rootVC = window?.rootViewController else { return }
         LanguageManager.shared.markSuggestionShown()
+        let title = String(localized: "language.suggestion.title")
+        let message = String(localized: "language.suggestion.message")
         let alert = UIAlertController(
-            title: String(localized: "language.suggestion.title"),
-            message: String(localized: "language.suggestion.message"),
+            title: title,
+            message: message,
             preferredStyle: .alert
         )
+        alert.applyGodoTypography(title: title, message: message)
         alert.addAction(UIAlertAction(title: String(localized: "language.open.settings"), style: .default) { _ in
             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
         })

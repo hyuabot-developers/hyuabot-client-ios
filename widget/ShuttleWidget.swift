@@ -249,18 +249,17 @@ struct ShuttleSmallView: View {
             HStack(spacing: 4) {
                 Image(systemName: "bus.fill")
                     .foregroundStyle(Color("hanyangBlue"))
-                    .font(.caption2)
+                    .font(.godoCaption2)
                 Text("shuttle.title")
-                    .font(.caption)
-                    .fontWeight(.semibold)
+                    .font(.godoCaptionSemibold)
                     .foregroundStyle(Color("hanyangBlue"))
                 Spacer()
                 Text(entry.date, style: .time)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.tertiary)
                 Button(intent: RefreshShuttleIntent()) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
@@ -272,39 +271,37 @@ struct ShuttleSmallView: View {
                 Image(systemName: "location.slash")
                     .foregroundStyle(.secondary)
                 Text("shuttle.no.location")
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Spacer()
             case .noData:
                 Spacer()
                 Text("shuttle.no.data")
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.secondary)
                 Spacer()
             case .none:
                 Text(entry.stopDisplayName)
-                    .font(.subheadline)
-                    .fontWeight(.bold)
+                    .font(.godoSubheadlineBold)
                     .lineLimit(1)
                 Spacer(minLength: 2)
 
                 if entry.groups.isEmpty {
                     Text("shuttle.no.data")
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(entry.groups) { group in
                         HStack {
                             Text(group.destination)
-                                .font(.caption2)
+                                .font(.godoCaption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                             Spacer()
                             if let first = group.times.first {
                                 Text(first)
-                                    .font(.caption2)
-                                    .fontWeight(.semibold)
+                                    .font(.godoCaption2Semibold)
                                     .monospacedDigit()
                             }
                         }
@@ -324,23 +321,22 @@ struct ShuttleMediumView: View {
             HStack(spacing: 4) {
                 Image(systemName: "bus.fill")
                     .foregroundStyle(Color("hanyangBlue"))
-                    .font(.subheadline)
+                    .font(.godoSubheadline)
                 Text("shuttle.title")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
+                    .font(.godoSubheadlineBold)
                     .foregroundStyle(Color("hanyangBlue"))
                 if !entry.stopDisplayName.isEmpty {
                     Text("· \(entry.stopDisplayName)")
-                        .font(.subheadline)
+                        .font(.godoSubheadline)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(entry.date, style: .time)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.tertiary)
                 Button(intent: RefreshShuttleIntent()) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
@@ -356,20 +352,20 @@ struct ShuttleMediumView: View {
                         Image(systemName: "location.slash")
                             .foregroundStyle(.secondary)
                         Text("shuttle.location.required")
-                            .font(.caption)
+                            .font(.godoCaption)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
                 }
             case .noData:
                 Text("shuttle.no.data")
-                    .font(.caption)
+                    .font(.godoCaption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .none:
                 if entry.groups.isEmpty {
                     Text("shuttle.no.data")
-                        .font(.caption)
+                        .font(.godoCaption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -379,7 +375,7 @@ struct ShuttleMediumView: View {
                             ForEach(entry.groups) { group in
                                 HStack(spacing: 0) {
                                     Text(group.destination)
-                                        .font(.caption)
+                                        .font(.godoCaption)
                                         .foregroundStyle(.secondary)
                                         .frame(maxWidth: 80, alignment: .leading)
                                         .lineLimit(1)
@@ -387,8 +383,7 @@ struct ShuttleMediumView: View {
                                     HStack(spacing: 6) {
                                         ForEach(group.times.prefix(count), id: \.self) { time in
                                             Text(time)
-                                                .font(.caption)
-                                                .fontWeight(.semibold)
+                                                .font(.godoCaptionSemibold)
                                                 .monospacedDigit()
                                         }
                                     }
@@ -413,21 +408,20 @@ struct ShuttleLargeView: View {
                 Image(systemName: "bus.fill")
                     .foregroundStyle(Color("hanyangBlue"))
                 Text("shuttle.title")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .font(.godoHeadline)
                     .foregroundStyle(Color("hanyangBlue"))
                 if !entry.stopDisplayName.isEmpty {
                     Text("· \(entry.stopDisplayName)")
-                        .font(.headline)
+                        .font(.godoHeadline)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(entry.date, style: .time)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.tertiary)
                 Button(intent: RefreshShuttleIntent()) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption2)
+                        .font(.godoCaption2)
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
@@ -443,10 +437,10 @@ struct ShuttleLargeView: View {
                         .font(.title2)
                         .foregroundStyle(.secondary)
                     Text("shuttle.location.required")
-                        .font(.subheadline)
+                        .font(.godoSubheadline)
                         .foregroundStyle(.secondary)
                     Text("shuttle.location.guide")
-                        .font(.caption)
+                        .font(.godoCaption)
                         .foregroundStyle(.tertiary)
                         .multilineTextAlignment(.center)
                 }
@@ -455,7 +449,7 @@ struct ShuttleLargeView: View {
             case .noData:
                 Spacer()
                 Text("shuttle.no.data")
-                    .font(.body)
+                    .font(.godoBody)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
@@ -466,7 +460,7 @@ struct ShuttleLargeView: View {
                 if sorted.isEmpty {
                     Spacer()
                     Text("shuttle.no.data")
-                        .font(.body)
+                        .font(.godoBody)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer()
@@ -477,15 +471,13 @@ struct ShuttleLargeView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: "arrow.right.circle.fill")
                                         .foregroundStyle(Color("hanyangBlue").opacity(0.7))
-                                        .font(.caption)
+                                        .font(.godoCaption)
                                     Text(item.dest)
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
+                                        .font(.godoSubheadlineMedium)
                                 }
                                 Spacer()
                                 Text(item.time)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
+                                    .font(.godoSubheadlineSemibold)
                                     .monospacedDigit()
                             }
                             .padding(.vertical, 6)

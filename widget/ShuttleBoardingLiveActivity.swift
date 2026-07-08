@@ -12,9 +12,9 @@ struct ShuttleBoardingLiveActivity: Widget {
                 let progress = liveProgress(attributes: context.attributes, fallback: context.state.progress, now: timeline.date)
                 VStack(alignment: .leading, spacing: 8) {
                     Text(verbatim: context.state.titleText)
-                        .font(.headline)
+                        .font(.godoHeadline)
                     Text(verbatim: statusText)
-                        .font(.subheadline)
+                        .font(.godoSubheadline)
                     ShuttleBoardingSegmentedProgress(
                         progress: progress,
                         segments: context.state.progressSegments
@@ -24,7 +24,7 @@ struct ShuttleBoardingLiveActivity: Widget {
                         segments: context.state.progressSegments
                     )
                     ShuttleBoardingCountdownText(departureTime: context.attributes.departureTime)
-                        .font(.title2.weight(.bold))
+                        .font(.godoTitle2)
                         .monospacedDigit()
                 }
             }
@@ -36,13 +36,13 @@ struct ShuttleBoardingLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: context.state.titleText)
-                            .font(.caption2)
+                            .font(.godoCaption2)
                             .foregroundStyle(Color.white.opacity(0.78))
                             .lineLimit(1)
                         Text(context.attributes
                             .alarmKind == "alighting" ? (context.attributes.targetStopName ?? context.attributes.boardingStopName) : context
                             .attributes.boardingStopName)
-                            .font(.caption.weight(.semibold))
+                            .font(.godoCaptionSemibold)
                             .foregroundStyle(.white)
                             .lineLimit(1)
                     }
@@ -51,7 +51,7 @@ struct ShuttleBoardingLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     ShuttleBoardingCountdownText(departureTime: context.attributes.departureTime)
-                        .font(.title3.weight(.semibold).monospacedDigit())
+                        .font(.godoTitle3)
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
@@ -66,11 +66,11 @@ struct ShuttleBoardingLiveActivity: Widget {
                         VStack(alignment: .leading, spacing: 5) {
                             HStack(spacing: 6) {
                                 Text(verbatim: context.attributes.routeDisplayName)
-                                    .font(.caption2.weight(.semibold))
+                                    .font(.godoCaption2Semibold)
                                     .foregroundStyle(Color.white)
                                     .lineLimit(1)
                                 Text(verbatim: statusText)
-                                    .font(.caption2)
+                                    .font(.godoCaption2)
                                     .foregroundStyle(Color.white.opacity(0.78))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.75)
@@ -90,6 +90,7 @@ struct ShuttleBoardingLiveActivity: Widget {
                     .foregroundStyle(.white)
             } compactTrailing: {
                 ShuttleBoardingCountdownText(departureTime: context.attributes.departureTime)
+                    .font(.godoCaption2Bold)
                     .monospacedDigit()
                     .frame(maxWidth: 52)
             } minimal: {
@@ -229,7 +230,7 @@ private struct ShuttleBoardingStopLabels: View {
         GeometryReader { geometry in
             ForEach(Array(displayNames.enumerated()), id: \.offset) { index, name in
                 Text(verbatim: name)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .lineLimit(1)
                     .minimumScaleFactor(0.65)
                     .foregroundStyle(.secondary)
@@ -317,7 +318,7 @@ private struct ShuttleBoardingSegmentedProgress: View {
                         .fill(hanyangBlue)
                         .frame(width: 18, height: 18)
                     Image(systemName: "bus.fill")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.godo(size: 11, weight: .semibold))
                         .foregroundStyle(.white)
                 }
                 .position(x: progressX(totalWidth: geometry.size.width), y: 11)
