@@ -238,18 +238,20 @@ struct CafeteriaLargeView: View {
                     .font(.godoHeadline)
                     .foregroundStyle(.blue)
                 Spacer()
-                VStack(alignment: .trailing, spacing: 1) {
+                HStack(spacing: 3) {
                     Text(entry.date, style: .date)
                         .font(.godoCaption2)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                     Text(entry.date, style: .time)
                         .font(.godoCaption2)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
                 Button(intent: RefreshCafeteriaIntent()) {
                     Image(systemName: "arrow.clockwise")
                         .font(.godoCaption2)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -289,11 +291,14 @@ struct CafeteriaLargeView: View {
                                         .font(.godoCaption)
                                         .foregroundStyle(.secondary)
                                         .lineLimit(1)
-                                    Spacer()
+                                        .minimumScaleFactor(0.8)
+                                    Spacer(minLength: 6)
                                     if !menu.price.isEmpty {
                                         Text("\(menu.price)원")
                                             .font(.godoCaption)
-                                            .foregroundStyle(.blue)
+                                            .foregroundStyle(Color("hanyangBlue"))
+                                            .lineLimit(1)
+                                            .fixedSize(horizontal: true, vertical: false)
                                     }
                                 }
                             }
