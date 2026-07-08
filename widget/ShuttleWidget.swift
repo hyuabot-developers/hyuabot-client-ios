@@ -245,15 +245,16 @@ struct ShuttleSmallView: View {
     let entry: ShuttleEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Image(systemName: "bus.fill")
-                    .foregroundStyle(Color("hanyangBlue"))
-                    .font(.godoCaption2)
-                Text("shuttle.title")
-                    .font(.godoCaptionSemibold)
-                    .foregroundStyle(Color("hanyangBlue"))
-                Spacer()
+                if !entry.stopDisplayName.isEmpty {
+                    Text(entry.stopDisplayName)
+                        .font(.godoCaptionSemibold)
+                        .foregroundStyle(Color("hanyangBlue"))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                Spacer(minLength: 4)
                 Text(entry.date, style: .time)
                     .font(.godoCaption2)
                     .foregroundStyle(.tertiary)
@@ -264,6 +265,8 @@ struct ShuttleSmallView: View {
                 }
                 .buttonStyle(.plain)
             }
+
+            Divider()
 
             switch entry.errorState {
             case .noLocation:
@@ -282,30 +285,38 @@ struct ShuttleSmallView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
             case .none:
-                Text(entry.stopDisplayName)
-                    .font(.godoSubheadlineBold)
-                    .lineLimit(1)
-                Spacer(minLength: 2)
-
                 if entry.groups.isEmpty {
+                    Spacer()
                     Text("shuttle.no.data")
                         .font(.godoCaption2)
                         .foregroundStyle(.secondary)
+                    Spacer()
                 } else {
-                    ForEach(entry.groups) { group in
-                        HStack {
-                            Text(group.destination)
-                                .font(.godoCaption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                            Spacer()
-                            if let first = group.times.first {
-                                Text(first)
-                                    .font(.godoCaption2Semibold)
-                                    .monospacedDigit()
+                    VStack(alignment: .leading, spacing: 5) {
+                        ForEach(entry.groups.prefix(4)) { group in
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.godoCaption)
+                                    .foregroundStyle(Color("hanyangBlue").opacity(0.65))
+                                    .frame(width: 11)
+                                Text(group.destination)
+                                    .font(.godoCaptionSemibold)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 48, alignment: .leading)
+                                    .lineLimit(1)
+                                Spacer(minLength: 2)
+                                if let first = group.times.first {
+                                    Text(first)
+                                        .font(.godoCaptionSemibold)
+                                        .monospacedDigit()
+                                        .lineLimit(1)
+                                        .fixedSize(horizontal: true, vertical: false)
+                                        .frame(minWidth: 42, alignment: .trailing)
+                                }
                             }
                         }
                     }
+                    Spacer(minLength: 0)
                 }
             }
         }
@@ -373,18 +384,20 @@ struct ShuttleMediumView: View {
                         let count = maxTimesInWidth(geo.size.width)
                         VStack(alignment: .leading, spacing: 4) {
                             ForEach(entry.groups) { group in
-                                HStack(spacing: 0) {
+                                HStack(spacing: 8) {
                                     Text(group.destination)
-                                        .font(.godoCaption)
+                                        .font(.godoCaptionSemibold)
                                         .foregroundStyle(.secondary)
-                                        .frame(maxWidth: 80, alignment: .leading)
+                                        .frame(width: 86, alignment: .leading)
                                         .lineLimit(1)
-                                    Spacer()
+                                        .minimumScaleFactor(0.75)
+                                    Spacer(minLength: 8)
                                     HStack(spacing: 6) {
                                         ForEach(group.times.prefix(count), id: \.self) { time in
                                             Text(time)
-                                                .font(.godoCaptionSemibold)
+                                                .font(.godoSubheadlineSemibold)
                                                 .monospacedDigit()
+                                                .lineLimit(1)
                                         }
                                     }
                                 }
