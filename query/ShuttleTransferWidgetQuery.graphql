@@ -1,4 +1,4 @@
-query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!) {
+query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!]) {
     shuttle(input: {
         stops: [
             { name: "dormitory_o", limit: { order: 0, destination: 8 } },
@@ -36,11 +36,12 @@ query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!) {
         }
     }
     transferBus: bus(input: [
-        { route: 216000075, stop: 216000759, limit: 2 },
-        { route: 216000075, stop: 216000117, limit: 2 }
+        { route: 216000075, stop: 216000759, limit: 2, dates: $logDates },
+        { route: 216000075, stop: 216000117, limit: 2, dates: $logDates }
     ]) {
         route { seq name }
         stop { seq }
         arrival { minutes stops }
+        log { date time }
     }
 }

@@ -9,25 +9,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "To Ansan"
+            "value": "50"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "안산행"
+            "value": "50번"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "安山行き"
+            "value": "50番"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "开往安山"
+            "value": "50路"
           }
         }
       }
@@ -38,25 +38,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "50(KTX Gwangmyeong)"
+            "value": "50"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "50번(KTX광명)"
+            "value": "50번"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "50番(KTX光明)"
+            "value": "50番"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "50路(KTX光明)"
+            "value": "50路"
           }
         }
       }
@@ -543,13 +543,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Station"
+            "value": "漢大前"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Station"
+            "value": "汉大前"
           }
         }
       }
@@ -572,13 +572,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Terminal"
+            "value": "芸術人村"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Terminal"
+            "value": "艺术人村"
           }
         }
       }
@@ -981,13 +981,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Station"
+            "value": "漢大前"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Station"
+            "value": "汉大前"
           }
         }
       }
@@ -1010,13 +1010,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Terminal"
+            "value": "芸術人村"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Terminal"
+            "value": "艺术人村"
           }
         }
       }
@@ -1630,6 +1630,35 @@
         }
       }
     },
+    "transit.estimated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "est."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예정"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "予定"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "预计"
+          }
+        }
+      }
+    },
     "transit.header.bus": {
       "extractionState": "manual",
       "localizations": {
@@ -1717,31 +1746,60 @@
         }
       }
     },
+    "transit.no.arrivals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No arrivals"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도착 정보 없음"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到着情報なし"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无到达信息"
+          }
+        }
+      }
+    },
     "transit.stops.format": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "(%lld stops)"
+            "value": "%lld away"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "(%lld 정류장)"
+            "value": "%lld전"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "(%lld停留所)"
+            "value": "%lld前"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "(%lld站)"
+            "value": "%lld站前"
           }
         }
       }

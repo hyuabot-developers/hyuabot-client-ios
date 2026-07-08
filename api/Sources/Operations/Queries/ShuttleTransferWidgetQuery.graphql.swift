@@ -8,23 +8,27 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTransferWidgetQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 0, destination: 8 } } { name: "shuttlecock_o", limit: { order: 0, destination: 8 } } { name: "station", limit: { order: 0, destination: 8 } } { name: "terminal", limit: { order: 0, destination: 8 } } { name: "jungang_stn", limit: { order: 0, destination: 8 } } { name: "shuttlecock_i", limit: { order: 0, destination: 8 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename time } } } } } subway( input: { keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 2 } { route: 216000075, stop: 216000117, limit: 2 } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops } } }"#
+      #"query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!]) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 0, destination: 8 } } { name: "shuttlecock_o", limit: { order: 0, destination: 8 } } { name: "station", limit: { order: 0, destination: 8 } } { name: "terminal", limit: { order: 0, destination: 8 } } { name: "jungang_stn", limit: { order: 0, destination: 8 } } { name: "shuttlecock_i", limit: { order: 0, destination: 8 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename time } } } } } subway( input: { keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 2, dates: $logDates } { route: 216000075, stop: 216000117, limit: 2, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops } log { __typename date time } } }"#
     ))
 
   public var after: GraphQLNullable<LocalTime>
   public var weekday: String
+  public var logDates: GraphQLNullable<[Date]>
 
   public init(
     after: GraphQLNullable<LocalTime>,
-    weekday: String
+    weekday: String,
+    logDates: GraphQLNullable<[Date]>
   ) {
     self.after = after
     self.weekday = weekday
+    self.logDates = logDates
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "after": after,
-    "weekday": weekday
+    "weekday": weekday,
+    "logDates": logDates
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -87,11 +91,13 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
       .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": [[
         "route": 216000075,
         "stop": 216000759,
-        "limit": 2
+        "limit": 2,
+        "dates": .variable("logDates")
       ], [
         "route": 216000075,
         "stop": 216000117,
-        "limit": 2
+        "limit": 2,
+        "dates": .variable("logDates")
       ]]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -302,6 +308,7 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
         .field("route", Route.self),
         .field("stop", Stop.self),
         .field("arrival", [Arrival].self),
+        .field("log", [Log].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         ShuttleTransferWidgetQuery.Data.TransferBus.self
@@ -310,6 +317,7 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
       public var route: Route { __data["route"] }
       public var stop: Stop { __data["stop"] }
       public var arrival: [Arrival] { __data["arrival"] }
+      public var log: [Log] { __data["log"] }
 
       /// TransferBus.Route
       ///
@@ -370,6 +378,27 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
 
         public var minutes: Int? { __data["minutes"] }
         public var stops: Int? { __data["stops"] }
+      }
+
+      /// TransferBus.Log
+      ///
+      /// Parent Type: `BusDepartureLog`
+      nonisolated public struct Log: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusDepartureLog }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("date", Api.Date.self),
+          .field("time", Api.LocalTime.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          ShuttleTransferWidgetQuery.Data.TransferBus.Log.self
+        ] }
+
+        public var date: Api.Date { __data["date"] }
+        public var time: Api.LocalTime { __data["time"] }
       }
     }
   }
