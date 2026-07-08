@@ -46,7 +46,7 @@ class CafeteriaMenuCellView: UITableViewCell {
     private lazy var cellStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [self.menuLabel, self.pricaLabel])
         stackView.axis = .horizontal
-        stackView.alignment = .firstBaseline
+        stackView.alignment = .center
         stackView.spacing = 14
         return stackView
     }()
