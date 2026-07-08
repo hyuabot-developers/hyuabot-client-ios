@@ -3,6 +3,7 @@ import RxSwift
 import UIKit
 
 class SubwayRealtimeTabVC: UIViewController {
+    private static let maxTransferItemsPerSection = 2
     private let tabType: SubwayTabType
     private let disposeBag = DisposeBag()
     private let refreshControl = UIRefreshControl()
@@ -163,10 +164,10 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
         } else if tabType == .transfer {
             if section == 0 {
                 guard let items = try? SubwayRealtimeData.shared.transferUp.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                return items.isEmpty ? 1 : min(items.count, Self.maxTransferItemsPerSection)
             } else if section == 1 {
                 guard let items = try? SubwayRealtimeData.shared.transferDown.value() else { return 1 }
-                return items.isEmpty ? 1 : min(items.count, 6)
+                return items.isEmpty ? 1 : min(items.count, Self.maxTransferItemsPerSection)
             }
         }
         return 1
@@ -207,12 +208,16 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
             else { return UITableViewCell() }
             if indexPath.section == 0 {
                 guard let items = try? SubwayRealtimeData.shared.transferUp.value() else { return UITableViewCell() }
-                guard items.indices.contains(indexPath.row), indexPath.row < 6 else { return emptyCell(tableView) }
-                transferCell.setupUI(item: items[indexPath.row], direction: "up")
+                guard items.indices.contains(indexPath.row), indexPath.row < Self.maxTransferItemsPerSection else {
+                    return emptyCell(tableView)
+                }
+                transferCell.setupUI(item: items[indexPath.row], direction: "down")
             } else if indexPath.section == 1 {
                 guard let items = try? SubwayRealtimeData.shared.transferDown.value() else { return UITableViewCell() }
-                guard items.indices.contains(indexPath.row), indexPath.row < 6 else { return emptyCell(tableView) }
-                transferCell.setupUI(item: items[indexPath.row], direction: "down")
+                guard items.indices.contains(indexPath.row), indexPath.row < Self.maxTransferItemsPerSection else {
+                    return emptyCell(tableView)
+                }
+                transferCell.setupUI(item: items[indexPath.row], direction: "choji")
             }
             return transferCell
         }

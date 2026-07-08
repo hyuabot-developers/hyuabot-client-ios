@@ -13513,25 +13513,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Transfer (Campus → Incheon)"
+            "value" : "Ilsan·Bucheon"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "乗り換え情報 (Station → 仁川)"
+            "value" : "一山・富川"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "환승 정보 (한대앞 → 인천)"
+            "value" : "일산·부천"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "换乘信息 (Station → 仁川)"
+            "value" : "一山·富川"
           }
         }
       }
@@ -13541,25 +13541,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Transfer (Incheon → Campus)"
+            "value" : "Incheon·Oido"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "乗り換え情報 (仁川 → Station)"
+            "value" : "仁川・烏耳島"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "환승 정보 (인천 → 한대앞)"
+            "value" : "인천·오이도"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "换乘信息 (仁川 → Station)"
+            "value" : "仁川·乌耳岛"
           }
         }
       }
@@ -14069,6 +14069,118 @@
         }
       }
     },
+    "subway.station.s07" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ilsan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一山"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일산"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一山"
+          }
+        }
+      }
+    },
+    "subway.station.s11" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daegok"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大谷"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대곡"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大谷"
+          }
+        }
+      }
+    },
+    "subway.station.s16" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sosa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "素砂"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소사"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "素砂"
+          }
+        }
+      }
+    },
+    "subway.station.choji" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choji"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "草芝"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초지"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "草芝"
+          }
+        }
+      }
+    },
     "subway.suin" : {
       "localizations" : {
         "en" : {
@@ -14130,25 +14242,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Line 4 ↭ Suin"
+            "value" : "Fast Transfers"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "4号線 ↭ 水仁線"
+            "value" : "快速乗換"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "4호선 ↭ 수인선"
+            "value" : "빠른 환승"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "4号线 ↭ 水仁线"
+            "value" : "快速换乘"
           }
         }
       }
@@ -14435,6 +14547,90 @@
         }
       }
     },
+    "subway.transfer.board.hanyang" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Board at Hanyang Univ. at Ansan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "漢大前で乗車"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한대앞 탑승"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在汉大前上车"
+          }
+        }
+      }
+    },
+    "subway.transfer.current_location.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Near %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@付近"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 부근"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@附近"
+          }
+        }
+      }
+    },
+    "subway.transfer.destination.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@行き"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@행"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开往%@"
+          }
+        }
+      }
+    },
     "subway.transfer.down.%@.%@" : {
       "localizations" : {
         "en" : {
@@ -14491,6 +14687,62 @@
         }
       }
     },
+    "subway.transfer.minutes.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld min"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld分後"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld분 후"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld分钟后"
+          }
+        }
+      }
+    },
+    "subway.transfer.station.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer at %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@で乗換"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 환승"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在%@换乘"
+          }
+        }
+      }
+    },
     "subway.transfer.timetable.%@.%@" : {
       "localizations" : {
         "en" : {
@@ -14515,6 +14767,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "(开往%1$@) %2$@"
+          }
+        }
+      }
+    },
+    "subway.transfer.wait.%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld min wait"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld分待ち"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$(minute)lld분 대기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等%1$(minute)lld分钟"
           }
         }
       }
