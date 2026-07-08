@@ -517,6 +517,8 @@ final class TodayHomeVC: UIViewController {
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
     private let destinationControl = UISegmentedControl()
+    private let noticeContainer = UIView()
+    private let noticeView = NoticeCarouselView()
     private lazy var locationManager = CLLocationManager().then {
         $0.delegate = self
         $0.desiredAccuracy = kCLLocationAccuracyHundredMeters
@@ -646,6 +648,8 @@ final class TodayHomeVC: UIViewController {
         }
 
         contentStack.addArrangedSubview(makeHeaderView())
+        contentStack.addArrangedSubview(makeNoticeView())
+        contentStack.addArrangedSubview(makeDestinationControlView())
         contentStack.addArrangedSubview(makeMovementCard())
         contentStack.addArrangedSubview(makeCafeteriaCard())
         renderLoadingState()
@@ -680,6 +684,13 @@ final class TodayHomeVC: UIViewController {
         subtitle.textColor = .secondaryLabel
         subtitle.numberOfLines = 0
 
+        stack.addArrangedSubview(topRow)
+        stack.addArrangedSubview(title)
+        stack.addArrangedSubview(subtitle)
+        return stack
+    }
+
+    private func makeDestinationControlView() -> UIView {
         destinationControl.setTitleTextAttributes([
             .font: UIFont.godo(size: 13, weight: .regular)
         ], for: .normal)
@@ -687,12 +698,29 @@ final class TodayHomeVC: UIViewController {
             .font: UIFont.godo(size: 13, weight: .bold)
         ], for: .selected)
         destinationControl.addTarget(self, action: #selector(destinationChanged), for: .valueChanged)
+        return destinationControl
+    }
 
-        stack.addArrangedSubview(topRow)
-        stack.addArrangedSubview(title)
-        stack.addArrangedSubview(subtitle)
-        stack.addArrangedSubview(destinationControl)
-        return stack
+    private func makeNoticeView() -> UIView {
+        noticeContainer.backgroundColor = UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : .hanyangBlue
+        }
+        noticeContainer.layer.cornerRadius = 20
+        noticeContainer.layer.masksToBounds = true
+        noticeContainer.isHidden = true
+        noticeView.titleColor = .white
+        noticeView.onNoticeTapped = { [weak self] urlString in
+            guard let url = URL(string: urlString) else { return }
+            self?.present(NoticeWebVC(url: url), animated: true)
+        }
+        noticeContainer.addSubview(noticeView)
+        noticeView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        noticeContainer.snp.makeConstraints { make in
+            make.height.equalTo(40)
+        }
+        return noticeContainer
     }
 
     private func makeMovementCard() -> UIView {
@@ -822,8 +850,21 @@ final class TodayHomeVC: UIViewController {
     }
 
     private func render() {
+        renderNotices()
         renderMovement()
         renderMeals()
+    }
+
+    private func renderNotices() {
+        let notices = shuttleData?.notices.flatMap(\.notices).map {
+            Notice(title: $0.title, url: $0.url)
+        } ?? []
+        noticeContainer.isHidden = notices.isEmpty
+        if notices.isEmpty {
+            noticeView.stopAutoScroll()
+        } else {
+            noticeView.setupUI(with: notices)
+        }
     }
 
     private func renderMovement() {
@@ -1556,6 +1597,7 @@ final class TodayHomeVC: UIViewController {
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: HomePageQuery(
+                    language: currentNoticeLanguage(),
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
                     weekday: weekday,
                     date: mealPeriod.queryDate.toLocalDateString(),
@@ -1578,6 +1620,14 @@ final class TodayHomeVC: UIViewController {
                 render()
             }
         }
+    }
+
+    private func currentNoticeLanguage() -> String {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "ko"
+        if languageCode.starts(with: "en") {
+            return "ENGLISH"
+        }
+        return "KOREAN"
     }
 
     private func fetchBus50TerminalLogTimes() async -> [LocalTime] {

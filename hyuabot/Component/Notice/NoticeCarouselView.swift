@@ -5,6 +5,11 @@ class NoticeCarouselView: UIView {
     private var currentIndex: Int = 0
     private var timer: Timer?
     private var manuallyScrolled: Bool = false
+    var titleColor: UIColor = .label {
+        didSet {
+            collectionView.reloadData()
+        }
+    }
     var onNoticeTapped: ((String) -> Void)?
     private let skeletonBar = UIView().then {
         $0.backgroundColor = UIColor.white.withAlphaComponent(0.36)
@@ -125,6 +130,7 @@ extension NoticeCarouselView: UICollectionViewDataSource, UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NoticeCell", for: indexPath) as! NoticeCell
         let notice = notices[indexPath.item]
+        cell.titleColor = titleColor
         cell.setupUI(with: notice)
         cell.onTap = { [weak self] in
             guard notice.url != nil, notice.url?.isEmpty == false else { return }
