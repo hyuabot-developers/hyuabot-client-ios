@@ -13,6 +13,11 @@ class NoticeCell: UICollectionViewCell {
     }
 
     var onTap: (() -> Void)?
+    var titleColor: UIColor = .label {
+        didSet {
+            titleLabel.textColor = titleColor
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -31,6 +36,7 @@ class NoticeCell: UICollectionViewCell {
     }
 
     func setupUI(with notice: Notice) {
+        titleLabel.textColor = titleColor
         if notice.title.hasPrefix("[") {
             titleLabel.setKoreanTranslatedText(notice.title)
         } else {

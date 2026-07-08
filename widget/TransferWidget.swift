@@ -14,10 +14,10 @@ struct TransferBadge: View {
         if let info = transferInfo(for: stopID) {
             HStack(spacing: 3) {
                 Image(systemName: info.icon)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.secondary)
                 Text(info.label)
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.secondary)
             }
         }
@@ -80,6 +80,8 @@ private let subwayLineMap: [String: (nameKey: String, colorKey: String)] = [
     "K251": ("subway.suin", "suin")
 ]
 
+private let transferRouteLabelFont: Font = .godoCaptionSemibold
+
 // MARK: - Provider
 
 struct TransferProvider: TimelineProvider {
@@ -106,7 +108,7 @@ struct TransferProvider: TimelineProvider {
                     downEntries: [TransitEntry(terminal: "인천", minutes: 22)]
                 ),
                 TransitArrival(
-                    name: "50번(KTX광명)",
+                    name: "50번",
                     colorKey: "bus",
                     upEntries: [TransitEntry(terminal: "", minutes: 8), TransitEntry(terminal: "", minutes: 31)],
                     downEntries: []
@@ -147,12 +149,14 @@ struct TransferProvider: TimelineProvider {
         timeFormatter.locale = Locale(identifier: "en_US_POSIX")
         timeFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
+        let logDates = busLogReferenceDates()
 
         do {
             let response = try await WidgetNetwork.shared.fetch(
                 query: ShuttleTransferWidgetQuery(
                     after: GraphQLNullable(stringLiteral: currentTimeStr),
-                    weekday: widgetWeekday()
+                    weekday: widgetWeekday(),
+                    logDates: .some(logDates)
                 )
             )
 
@@ -253,15 +257,63 @@ struct TransferProvider: TimelineProvider {
     }
 
     private func buildBus(_ buses: [ShuttleTransferWidgetQuery.Data.TransferBus], stopSeq: Int, label: String) -> [TransitArrival] {
-        let entries = buses.filter { $0.stop.seq == stopSeq }.flatMap(\.arrival).prefix(2).compactMap { arrival -> TransitEntry? in
+        let matchingBuses = buses.filter { $0.stop.seq == stopSeq }
+        let entries = matchingBuses.flatMap(\.arrival).prefix(2).compactMap { arrival -> TransitEntry? in
             guard let m = arrival.minutes else { return nil }
             let stopsStr = (arrival.stops ?? 0) > 0
                 ? String(format: String(localized: "transit.stops.format"), arrival.stops!)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "()"))
                 : ""
             return TransitEntry(terminal: stopsStr, minutes: m)
         }
-        guard !entries.isEmpty else { return [] }
-        return [TransitArrival(name: label, colorKey: "bus", upEntries: Array(entries), downEntries: [])]
+        let fallbackEntries = matchingBuses.flatMap(\.log)
+            .compactMap { minutesUntilLogTime($0.time) }
+            .filter { $0 >= 0 }
+            .sorted()
+            .prefix(2)
+            .map { TransitEntry(terminal: String(localized: "transit.estimated"), minutes: $0) }
+        let displayEntries = entries.isEmpty ? Array(fallbackEntries) : Array(entries)
+        guard !displayEntries.isEmpty else { return [] }
+        return [TransitArrival(name: label, colorKey: "bus", upEntries: displayEntries, downEntries: [])]
+    }
+
+    private func busLogReferenceDates() -> [Api.Date] {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return [
+            Foundation.Date.now.addingTimeInterval(-60 * 60 * 24 * 7),
+            Foundation.Date.now.addingTimeInterval(-60 * 60 * 24 * 2),
+            Foundation.Date.now.addingTimeInterval(-60 * 60 * 24)
+        ].map(formatter.string)
+    }
+
+    private func minutesUntilLogTime(_ time: Api.LocalTime) -> Int? {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "HH:mm:ss"
+        guard let parsedTime = formatter.date(from: time) else { return nil }
+
+        let calendar = Calendar(identifier: .iso8601)
+        let now = Foundation.Date.now
+        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: parsedTime)
+        guard let timeZone = TimeZone(identifier: "Asia/Seoul") else { return nil }
+        let todayComponents = calendar.dateComponents(in: timeZone, from: now)
+        var logComponents = DateComponents()
+        logComponents.calendar = calendar
+        logComponents.timeZone = TimeZone(identifier: "Asia/Seoul")
+        logComponents.year = todayComponents.year
+        logComponents.month = todayComponents.month
+        logComponents.day = todayComponents.day
+        logComponents.hour = timeComponents.hour
+        logComponents.minute = timeComponents.minute
+        logComponents.second = timeComponents.second
+        guard let logDate = logComponents.date else { return nil }
+        return Int(ceil(logDate.timeIntervalSince(now) / 60))
     }
 }
 
@@ -282,23 +334,22 @@ private struct TransferHeader: View {
         HStack(spacing: 4) {
             Image(systemName: "arrow.triangle.swap")
                 .foregroundStyle(Color("hanyangBlue"))
-                .font(.subheadline)
+                .font(.godoSubheadline)
             Text("widget.transfer.title")
-                .font(.subheadline)
-                .fontWeight(.bold)
+                .font(.godoSubheadlineBold)
                 .foregroundStyle(Color("hanyangBlue"))
             if !entry.stopDisplayName.isEmpty {
                 Text("· \(entry.stopDisplayName)")
-                    .font(.subheadline)
+                    .font(.godoSubheadline)
                     .foregroundStyle(.secondary)
             }
             Spacer()
             Text(entry.date, style: .time)
-                .font(.caption2)
+                .font(.godoCaption2)
                 .foregroundStyle(.tertiary)
             Button(intent: RefreshTransferIntent()) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.caption2)
+                    .font(.godoCaption2)
                     .foregroundStyle(.tertiary)
             }
             .buttonStyle(.plain)
@@ -310,7 +361,7 @@ struct TransferLargeView: View {
     let entry: TransferEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             TransferHeader(entry: entry)
             Divider()
 
@@ -319,16 +370,16 @@ struct TransferLargeView: View {
                 Spacer()
                 VStack(spacing: 8) {
                     Image(systemName: "location.slash.fill").font(.title2).foregroundStyle(.secondary)
-                    Text("shuttle.location.required").font(.subheadline).foregroundStyle(.secondary)
+                    Text("shuttle.location.required").font(.godoSubheadline).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 Spacer()
             case .noData:
                 Spacer()
-                Text("shuttle.no.data").font(.body).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
+                Text("shuttle.no.data").font(.godoBody).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
             case .none:
-                ShuttleSectionView(groups: entry.shuttleGroups)
+                ShuttleSectionView(groups: entry.shuttleGroups, maxGroups: 3, maxTimes: 3)
 
                 if !entry.transitArrivals.isEmpty {
                     Divider()
@@ -351,8 +402,9 @@ struct TransitSectionView: View {
     var body: some View {
         let subwayArrivals = arrivals.filter(\.isSubway)
         let busArrivals = arrivals.filter { !$0.isSubway }
+        let showsBusSection = !busArrivals.isEmpty || supportsBusTransfer
 
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             if !subwayArrivals.isEmpty {
                 SectionHeader(
                     icon: "tram.fill",
@@ -361,43 +413,69 @@ struct TransitSectionView: View {
                 )
                 TransitArrivalColumn(arrivals: subwayArrivals, maxRows: 4)
             }
-            if !busArrivals.isEmpty, !subwayArrivals.isEmpty {
+            if showsBusSection, !subwayArrivals.isEmpty {
                 Divider().padding(.vertical, 2)
             }
-            if !busArrivals.isEmpty {
+            if showsBusSection {
                 SectionHeader(
                     icon: "bus.doubledecker.fill",
                     title: "transit.header.bus",
                     subtitle: String(localized: "stop.terminal")
                 )
-                TransitArrivalColumn(arrivals: busArrivals, maxRows: 3)
+                if busArrivals.isEmpty {
+                    Text("transit.no.arrivals")
+                        .font(.godoCaption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                } else {
+                    TransitArrivalColumn(arrivals: busArrivals, maxRows: 3)
+                }
             }
+        }
+    }
+
+    private var supportsBusTransfer: Bool {
+        switch stopID {
+        case "dormitory_o", "shuttlecock_o", "shuttlecock_i", "terminal":
+            true
+        default:
+            false
         }
     }
 }
 
 struct ShuttleSectionView: View {
     let groups: [ShuttleDestinationGroup]
+    let maxGroups: Int
+    let maxTimes: Int
 
-    private let maxTimes = maxTimesInWidth(314)
+    init(groups: [ShuttleDestinationGroup], maxGroups: Int = 3, maxTimes: Int = 2) {
+        self.groups = groups
+        self.maxGroups = maxGroups
+        self.maxTimes = maxTimes
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             SectionHeader(icon: "bus.fill", title: "shuttle.title")
             if groups.isEmpty {
-                Text("shuttle.no.data").font(.caption).foregroundStyle(.secondary)
+                Text("shuttle.no.data").font(.godoCaption).foregroundStyle(.secondary)
             } else {
-                ForEach(groups) { group in
-                    HStack(spacing: 0) {
+                ForEach(groups.prefix(maxGroups)) { group in
+                    HStack(spacing: 8) {
                         Text(group.destination)
-                            .font(.caption)
+                            .font(transferRouteLabelFont)
                             .foregroundStyle(.secondary)
-                            .frame(maxWidth: 80, alignment: .leading)
+                            .frame(width: 86, alignment: .leading)
                             .lineLimit(1)
-                        Spacer()
+                            .minimumScaleFactor(0.75)
+                        Spacer(minLength: 8)
                         HStack(spacing: 6) {
                             ForEach(group.times.prefix(maxTimes), id: \.self) { t in
-                                Text(t).font(.caption).fontWeight(.semibold).monospacedDigit()
+                                Text(t)
+                                    .font(.godoSubheadlineSemibold)
+                                    .monospacedDigit()
+                                    .lineLimit(1)
                             }
                         }
                     }
@@ -421,15 +499,14 @@ private struct SectionHeader: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.caption2)
+                .font(.godoCaption2)
                 .foregroundStyle(Color("hanyangBlue"))
             Text(title)
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(.godoCaptionSemibold)
                 .foregroundStyle(Color("hanyangBlue"))
             if let subtitle {
                 Text("· \(subtitle)")
-                    .font(.caption)
+                    .font(.godoCaption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -445,14 +522,14 @@ struct TransitShuttleColumn: View {
     var body: some View {
         if groups.isEmpty {
             Text("shuttle.no.data")
-                .font(.caption2)
+                .font(.godoCaption2)
                 .foregroundStyle(.secondary)
         } else {
             VStack(alignment: .leading, spacing: 4) {
                 ForEach(groups.prefix(maxGroups)) { group in
                     HStack(spacing: 0) {
                         Text(group.destination)
-                            .font(.caption)
+                            .font(.godoCaption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: 80, alignment: .leading)
                             .lineLimit(1)
@@ -460,8 +537,7 @@ struct TransitShuttleColumn: View {
                         HStack(spacing: 4) {
                             ForEach(group.times.prefix(maxTimes), id: \.self) { t in
                                 Text(t)
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
+                                    .font(.godoCaptionSemibold)
                                     .monospacedDigit()
                             }
                         }
@@ -489,62 +565,135 @@ struct TransitArrivalColumn: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            ForEach(arrivals) { arrival in
-                if arrival.isSubway {
-                    let hasUp = !arrival.upEntries.isEmpty
-                    ForEach(arrival.upEntries.prefix(1)) { e in
-                        ArrivalRow(
-                            lineName: arrival.name,
-                            colorKey: arrival.colorKey,
-                            nameWidth: 65,
-                            timeLabel: "\(e.minutes)\(minSuffix)(\(e.terminal))"
-                        )
-                    }
-                    ForEach(arrival.downEntries.prefix(1)) { e in
-                        ArrivalRow(
-                            lineName: hasUp ? nil : arrival.name,
-                            colorKey: arrival.colorKey,
-                            nameWidth: 65,
-                            timeLabel: "\(e.minutes)\(minSuffix)(\(e.terminal))"
-                        )
-                    }
-                } else {
-                    ForEach(arrival.upEntries.prefix(2)) { e in
-                        ArrivalRow(
-                            lineName: arrival.name,
-                            colorKey: arrival.colorKey,
-                            nameWidth: 200,
-                            timeLabel: "\(e.minutes)\(minSuffix)\(e.terminal)"
-                        )
-                    }
-                }
+        VStack(alignment: .leading, spacing: 5) {
+            ForEach(Array(rows.prefix(maxRows).enumerated()), id: \.offset) { _, row in
+                ArrivalRow(row: row, minSuffix: minSuffix)
+            }
+        }
+    }
+
+    private var rows: [ArrivalDisplayRow] {
+        arrivals.flatMap { arrival -> [ArrivalDisplayRow] in
+            if arrival.isSubway {
+                return [
+                    ArrivalDisplayRow(
+                        lineName: arrival.name,
+                        colorKey: arrival.colorKey,
+                        subwayUp: arrival.upEntries.first,
+                        subwayDown: arrival.downEntries.first,
+                        busEntry: nil
+                    )
+                ]
+            }
+            return arrival.upEntries.prefix(2).map {
+                ArrivalDisplayRow(
+                    lineName: arrival.name,
+                    colorKey: arrival.colorKey,
+                    subwayUp: nil,
+                    subwayDown: nil,
+                    busEntry: $0
+                )
             }
         }
     }
 }
 
-private struct ArrivalRow: View {
-    let lineName: String?
+private struct ArrivalDisplayRow {
+    let lineName: String
     let colorKey: String
-    let nameWidth: CGFloat
-    let timeLabel: String
+    let subwayUp: TransitEntry?
+    let subwayDown: TransitEntry?
+    let busEntry: TransitEntry?
+
+    var isSubway: Bool {
+        busEntry == nil
+    }
+}
+
+private struct ArrivalRow: View {
+    let row: ArrivalDisplayRow
+    let minSuffix: String
+
+    var body: some View {
+        if row.isSubway {
+            HStack(spacing: 6) {
+                Text(row.lineName)
+                    .font(transferRouteLabelFont)
+                    .foregroundStyle(transitLineColor(row.colorKey))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .frame(width: 56, alignment: .leading)
+                HStack(spacing: 4) {
+                    SubwayArrivalText(entry: row.subwayUp, minSuffix: minSuffix)
+                    Text("|")
+                        .font(.godoCaption)
+                        .foregroundStyle(.tertiary)
+                    SubwayArrivalText(entry: row.subwayDown, minSuffix: minSuffix)
+                }
+                .lineLimit(1)
+                .layoutPriority(1)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .padding(.vertical, 2)
+        } else if let busEntry = row.busEntry {
+            HStack(spacing: 6) {
+                Text(row.lineName)
+                    .font(transferRouteLabelFont)
+                    .foregroundStyle(transitLineColor(row.colorKey))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .frame(width: 56, alignment: .leading)
+                Spacer(minLength: 4)
+                BusArrivalText(entry: busEntry, minSuffix: minSuffix)
+            }
+            .padding(.vertical, 2)
+        }
+    }
+}
+
+private struct SubwayArrivalText: View {
+    let entry: TransitEntry?
+    let minSuffix: String
+
+    var body: some View {
+        if let entry {
+            HStack(spacing: 4) {
+                Text("\(entry.minutes)\(minSuffix)")
+                    .font(.godoSubheadlineSemibold)
+                    .monospacedDigit()
+                Text(entry.terminal)
+                    .font(.godoCaption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .fixedSize(horizontal: true, vertical: false)
+        } else {
+            Text("-")
+                .font(.godoSubheadline)
+                .foregroundStyle(.tertiary)
+        }
+    }
+}
+
+private struct BusArrivalText: View {
+    let entry: TransitEntry
+    let minSuffix: String
 
     var body: some View {
         HStack(spacing: 4) {
-            Text(lineName ?? "")
-                .font(.caption2)
-                .fontWeight(.bold)
-                .foregroundStyle(lineName != nil ? transitLineColor(colorKey) : .clear)
-                .lineLimit(1)
-                .frame(maxWidth: nameWidth, alignment: .leading)
-            Spacer()
-            Text(timeLabel)
-                .font(.caption2)
-                .fontWeight(.semibold)
+            Text("\(entry.minutes)\(minSuffix)")
+                .font(.godoSubheadlineSemibold)
                 .monospacedDigit()
-                .lineLimit(1)
+            if !entry.terminal.isEmpty {
+                Text(entry.terminal)
+                    .font(.godoCaption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -589,7 +738,7 @@ private let transferPreviewEntry = TransferEntry(
             upEntries: [TransitEntry(terminal: "수원", minutes: 7)],
             downEntries: [TransitEntry(terminal: "인천", minutes: 22)]
         ),
-        TransitArrival(name: "50번(KTX광명)", colorKey: "bus", upEntries: [TransitEntry(terminal: "", minutes: 8)], downEntries: [])
+        TransitArrival(name: "50번", colorKey: "bus", upEntries: [TransitEntry(terminal: "(2 전)", minutes: 8)], downEntries: [])
     ],
     errorState: .none
 )

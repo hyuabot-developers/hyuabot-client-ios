@@ -13,7 +13,8 @@ class ReadingRoomVC: UIViewController {
     /// Extend alarm UI
     private lazy var alarm3HourButton: UIButton = {
         var config = UIButton.Configuration.tinted()
-        config.title = String(localized: "reading_room.alarm.3hour")
+        let title = String(localized: "reading_room.alarm.3hour")
+        config.attributedTitle = alarmButtonTitle(title)
         config.baseBackgroundColor = .hanyangBlue
         config.baseForegroundColor = .white
         config.cornerStyle = .medium
@@ -25,7 +26,8 @@ class ReadingRoomVC: UIViewController {
 
     private lazy var alarm4HourButton: UIButton = {
         var config = UIButton.Configuration.tinted()
-        config.title = String(localized: "reading_room.alarm.4hour")
+        let title = String(localized: "reading_room.alarm.4hour")
+        config.attributedTitle = alarmButtonTitle(title)
         config.baseBackgroundColor = .hanyangBlue
         config.baseForegroundColor = .white
         config.cornerStyle = .medium
@@ -37,7 +39,8 @@ class ReadingRoomVC: UIViewController {
 
     private lazy var alarmCancelButton: UIButton = {
         var config = UIButton.Configuration.filled()
-        config.title = String(localized: "reading_room.alarm.cancel")
+        let title = String(localized: "reading_room.alarm.cancel")
+        config.attributedTitle = alarmButtonTitle(title)
         config.baseBackgroundColor = .systemRed
         config.cornerStyle = .medium
         let btn = UIButton(configuration: config)
@@ -52,6 +55,12 @@ class ReadingRoomVC: UIViewController {
         $0.textColor = .plainButtonText
         $0.isHidden = true
         $0.numberOfLines = 1
+    }
+
+    private func alarmButtonTitle(_ title: String) -> AttributedString {
+        AttributedString(title, attributes: AttributeContainer([
+            .font: UIFont.godo(size: 15, weight: .medium)
+        ]))
     }
 
     private lazy var readingRoomView = UITableView().then {

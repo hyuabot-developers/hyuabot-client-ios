@@ -302,7 +302,7 @@ private final class TransferTimelineView: UIView {
         context.fillEllipse(in: rect)
         let text = type == .subway ? "M" : "B"
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 10, weight: .bold),
+            .font: UIFont.godo(size: 10, weight: .bold),
             .foregroundColor: UIColor.white
         ]
         let size = text.size(withAttributes: attributes)
@@ -358,7 +358,7 @@ private final class TransferTimelineView: UIView {
         paragraph.alignment = .center
         for (lineIndex, line) in lines.enumerated() {
             let attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: lineIndex == 0 ? 10 : 8, weight: lineIndex == 0 ? .semibold : .regular),
+                .font: UIFont.godo(size: lineIndex == 0 ? 10 : 8, weight: lineIndex == 0 ? .semibold : .regular),
                 .foregroundColor: lineIndex == 0 ? UIColor.label : UIColor.secondaryLabel,
                 .paragraphStyle: paragraph
             ]
@@ -369,7 +369,7 @@ private final class TransferTimelineView: UIView {
 
     private func bubbleWidth(for lines: [String], type: TransferVehicleType) -> CGFloat {
         let maxTextWidth = lines.enumerated().map { index, line in
-            let font = UIFont.systemFont(ofSize: index == 0 ? 10 : 8, weight: index == 0 ? .semibold : .regular)
+            let font = UIFont.godo(size: index == 0 ? 10 : 8, weight: index == 0 ? .semibold : .regular)
             return String(line.prefix(16)).size(withAttributes: [.font: font]).width
         }.max() ?? 0
         let minimumWidth: CGFloat = type == .bus ? 84 : 64
@@ -387,7 +387,7 @@ private final class TransferTimelineView: UIView {
             return
         }
 
-        let font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        let font = UIFont.godo(size: 10, weight: .bold)
         let text = String(targetName.prefix(8))
         let width = targetWidth(text: text, font: font)
         let left = clamp(targetX - width / 2, bounds.minX + 4, bounds.maxX - width - 4)
@@ -417,7 +417,7 @@ private final class TransferTimelineView: UIView {
 
     private func targetHalfWidth() -> CGFloat {
         guard let targetName = row?.targetName, !targetName.isEmpty else { return 7 }
-        let font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        let font = UIFont.godo(size: 10, weight: .bold)
         return targetWidth(text: String(targetName.prefix(8)), font: font) / 2
     }
 
@@ -447,7 +447,7 @@ private final class TransferTimelineView: UIView {
 
 private final class TransferRowView: UIView {
     private let nameLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 12, weight: .bold)
+        $0.font = .godo(size: 12, weight: .bold)
         $0.textColor = .white
         $0.textAlignment = .center
         $0.adjustsFontSizeToFitWidth = true

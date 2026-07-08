@@ -3,6 +3,8 @@ import RxSwift
 import UIKit
 
 class SubwayRealtimeVC: UIViewController {
+    private static let chojiTravelMinutes = 8
+    private static let chojiTransferBufferMinutes = 8
     private let disposeBag = DisposeBag()
     private lazy var line4VC = SubwayRealtimeTabVC(
         tabType: .line4,
@@ -104,7 +106,8 @@ class SubwayRealtimeVC: UIViewController {
                 campusBlue: data.first(where: { $0.stationID == "K449" }),
                 campusYellow: data.first(where: { $0.stationID == "K251" }),
                 oidoBlue: data.first(where: { $0.stationID == "K456" }),
-                oidoYellow: data.first(where: { $0.stationID == "K258" })
+                oidoYellow: data.first(where: { $0.stationID == "K258" }),
+                chojiSeohae: data.first(where: { $0.stationID == "S26" })
             ))
         }).disposed(by: disposeBag)
         SubwayRealtimeData.shared.combinedRealtimeData.subscribe(onNext: { [weak self] data in
@@ -112,42 +115,23 @@ class SubwayRealtimeVC: UIViewController {
                 let data,
                 let campusBlue = data.campusBlue,
                 let campusYellow = data.campusYellow,
-                let oidoBlue = data.oidoBlue,
-                let oidoYellow = data.oidoYellow else { return }
+                let oidoYellow = data.oidoYellow,
+                let chojiSeohae = data.chojiSeohae else { return }
             guard let self else { return }
-            SubwayRealtimeData.shared.transferUp.onNext(processUpDirection(oidoBlue: oidoBlue, oidoYellow: oidoYellow))
-            SubwayRealtimeData.shared.transferDown.onNext(processDownDirection(
+            SubwayRealtimeData.shared.transferUp.onNext(processIncheonDirection(
                 campusBlue: campusBlue,
                 campusYellow: campusYellow,
                 oidoYellow: oidoYellow
             ))
+            SubwayRealtimeData.shared.transferDown.onNext(processChojiDirection(
+                campusBlue: campusBlue,
+                campusYellow: campusYellow,
+                chojiSeohae: chojiSeohae
+            ))
         }).disposed(by: disposeBag)
     }
 
-    private func processUpDirection(
-        oidoBlue: SubwayRealtimePageQuery.Data.Subway,
-        oidoYellow: SubwayRealtimePageQuery.Data.Subway
-    ) -> [SubwayTransferItem] {
-        let upRealtimeWithoutTransfer: [SubwayTransferItem] = oidoYellow.arrival.first(where: { $0.direction == "up" })?.entries
-            .filter { entry in
-                entry.isRealtime && entry.terminal.stationID < "K251"
-            }.map { entry in
-                SubwayTransferItem(take: entry, transfer: nil)
-            } ?? []
-        let upTimetableToTransfer: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry] = oidoBlue.arrival
-            .first(where: { $0.direction == "up" })?.entries ?? []
-        let upRealtimeWithTransfer: [SubwayTransferItem] = oidoYellow.arrival.first(where: { $0.direction == "up" })?.entries.filter {
-            entry in entry.terminal.stationID >= "K251" && entry.isRealtime
-        }.map {
-            entry in SubwayTransferItem(
-                take: entry,
-                transfer: upTimetableToTransfer.first { transfer in transfer.minutes > entry.minutes }
-            )
-        } ?? []
-        return (upRealtimeWithoutTransfer + upRealtimeWithTransfer).sorted { $0.take.minutes < $1.take.minutes }
-    }
-
-    private func processDownDirection(
+    private func processIncheonDirection(
         campusBlue: SubwayRealtimePageQuery.Data.Subway,
         campusYellow: SubwayRealtimePageQuery.Data.Subway,
         oidoYellow: SubwayRealtimePageQuery.Data.Subway
@@ -158,7 +142,8 @@ class SubwayRealtimeVC: UIViewController {
             }.map {
                 entry in SubwayTransferItem(
                     take: entry,
-                    transfer: nil
+                    transfer: nil,
+                    transferWaitMinutes: nil
                 )
             } ?? []
         let downTimetableToTransfer: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry] = oidoYellow.arrival
@@ -171,12 +156,43 @@ class SubwayRealtimeVC: UIViewController {
             let firstItemWithOutTransfer = findTakeTrain(compare: downRealtimeWithoutTransfer, target: entry)
             return SubwayTransferItem(
                 take: entry,
-                transfer: findTransferTrain(compare: downTimetableToTransfer, entry: entry, target: firstItemWithOutTransfer)
+                transfer: findTransferTrain(compare: downTimetableToTransfer, entry: entry, target: firstItemWithOutTransfer),
+                transferWaitMinutes: nil
             )
         }.filter {
             entry in entry.transfer != nil
         } ?? []
         return (downRealtimeWithoutTransfer + downRealtimeWithTransfer).sorted { $0.take.minutes < $1.take.minutes }
+    }
+
+    private func processChojiDirection(
+        campusBlue: SubwayRealtimePageQuery.Data.Subway,
+        campusYellow: SubwayRealtimePageQuery.Data.Subway,
+        chojiSeohae: SubwayRealtimePageQuery.Data.Subway
+    ) -> [SubwayTransferItem] {
+        let firstLegs = (
+            campusBlue.arrival.first(where: { $0.direction == "down" })?.entries.filter {
+                $0.terminal.stationID >= "K452" && $0.terminal.stationID.hasPrefix("K4")
+            } ?? []
+        ) + (
+            campusYellow.arrival.first(where: { $0.direction == "down" })?.entries.filter {
+                $0.terminal.stationID >= "K254" && $0.terminal.stationID.hasPrefix("K2")
+            } ?? []
+        )
+        let secondLegs = chojiSeohae.arrival.first(where: { $0.direction == "up" })?.entries.filter {
+            $0.terminal.stationID <= "S16" && $0.terminal.stationID.hasPrefix("S")
+        } ?? []
+
+        return firstLegs.sorted { $0.minutes < $1.minutes }.compactMap { firstLeg in
+            guard let transfer = secondLegs.first(where: {
+                $0.minutes > firstLeg.minutes + Self.chojiTravelMinutes + Self.chojiTransferBufferMinutes
+            }) else { return nil }
+            return SubwayTransferItem(
+                take: firstLeg,
+                transfer: transfer,
+                transferWaitMinutes: transfer.minutes - firstLeg.minutes - Self.chojiTravelMinutes
+            )
+        }
     }
 
     private func findTakeTrain(

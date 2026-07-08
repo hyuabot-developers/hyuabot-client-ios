@@ -220,6 +220,7 @@ private struct HomeMealPeriod {
 
 private extension UIColor {
     static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
+    static let homeSubwaySeohae = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1.00)
     static let homeActionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
 }
 
@@ -270,6 +271,7 @@ private enum SubwayTransferDestination: String, CaseIterable {
     case suwonYongin
     case incheon
     case oido
+    case sosa
 
     var title: String {
         switch self {
@@ -281,6 +283,8 @@ private enum SubwayTransferDestination: String, CaseIterable {
             String(localized: "home.quick_settings.subway_destination.incheon")
         case .oido:
             String(localized: "home.quick_settings.subway_destination.oido")
+        case .sosa:
+            String(localized: "home.quick_settings.subway_destination.sosa")
         }
     }
 }
@@ -297,6 +301,8 @@ private enum SubwayTransferDestination: String, CaseIterable {
                 self = .incheon
             case "oido":
                 self = .oido
+            case "sosa":
+                self = .sosa
             default:
                 return nil
             }
@@ -513,10 +519,15 @@ private final class HomeQuickSettingsVC: UIViewController {
 final class TodayHomeVC: UIViewController {
     private static let autoRefreshIntervalSeconds = 60
     private static let subwayMinimumTransferMinutes = 5
+    private static let chojiMinimumTransferMinutes = 8
+    private static let shuttleDisplayCount = 2
+    private static let shuttleTransferLookaheadCount = 3
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
     private let destinationControl = UISegmentedControl()
+    private let noticeContainer = UIView()
+    private let noticeView = NoticeCarouselView()
     private lazy var locationManager = CLLocationManager().then {
         $0.delegate = self
         $0.desiredAccuracy = kCLLocationAccuracyHundredMeters
@@ -646,6 +657,8 @@ final class TodayHomeVC: UIViewController {
         }
 
         contentStack.addArrangedSubview(makeHeaderView())
+        contentStack.addArrangedSubview(makeNoticeView())
+        contentStack.addArrangedSubview(makeDestinationControlView())
         contentStack.addArrangedSubview(makeMovementCard())
         contentStack.addArrangedSubview(makeCafeteriaCard())
         renderLoadingState()
@@ -680,6 +693,13 @@ final class TodayHomeVC: UIViewController {
         subtitle.textColor = .secondaryLabel
         subtitle.numberOfLines = 0
 
+        stack.addArrangedSubview(topRow)
+        stack.addArrangedSubview(title)
+        stack.addArrangedSubview(subtitle)
+        return stack
+    }
+
+    private func makeDestinationControlView() -> UIView {
         destinationControl.setTitleTextAttributes([
             .font: UIFont.godo(size: 13, weight: .regular)
         ], for: .normal)
@@ -687,12 +707,29 @@ final class TodayHomeVC: UIViewController {
             .font: UIFont.godo(size: 13, weight: .bold)
         ], for: .selected)
         destinationControl.addTarget(self, action: #selector(destinationChanged), for: .valueChanged)
+        return destinationControl
+    }
 
-        stack.addArrangedSubview(topRow)
-        stack.addArrangedSubview(title)
-        stack.addArrangedSubview(subtitle)
-        stack.addArrangedSubview(destinationControl)
-        return stack
+    private func makeNoticeView() -> UIView {
+        noticeContainer.backgroundColor = UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : .hanyangBlue
+        }
+        noticeContainer.layer.cornerRadius = 20
+        noticeContainer.layer.masksToBounds = true
+        noticeContainer.isHidden = true
+        noticeView.titleColor = .white
+        noticeView.onNoticeTapped = { [weak self] urlString in
+            guard let url = URL(string: urlString) else { return }
+            self?.present(NoticeWebVC(url: url), animated: true)
+        }
+        noticeContainer.addSubview(noticeView)
+        noticeView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        noticeContainer.snp.makeConstraints { make in
+            make.height.equalTo(40)
+        }
+        return noticeContainer
     }
 
     private func makeMovementCard() -> UIView {
@@ -822,8 +859,21 @@ final class TodayHomeVC: UIViewController {
     }
 
     private func render() {
+        renderNotices()
         renderMovement()
         renderMeals()
+    }
+
+    private func renderNotices() {
+        let notices = shuttleData?.notices.flatMap(\.notices).map {
+            Notice(title: $0.title, url: $0.url)
+        } ?? []
+        noticeContainer.isHidden = notices.isEmpty
+        if notices.isEmpty {
+            noticeView.stopAutoScroll()
+        } else {
+            noticeView.setupUI(with: notices)
+        }
     }
 
     private func renderMovement() {
@@ -911,8 +961,9 @@ final class TodayHomeVC: UIViewController {
     ) -> [HomeTransitOption] {
         guard let stop = shuttleData?.shuttle.stops.first(where: { $0.name == stopName }) else { return [] }
         let candidates = shuttleCandidates(stop: stop, stopName: stopName, destination: destination, routeFilter: routeFilter)
-        let visibleCandidates = Array(candidates.prefix(2))
-        let connectionGroups = visibleCandidates.map { transferConnections(from: stopName, to: destination, candidate: $0) }
+        let transferCandidates = Array(candidates.prefix(Self.shuttleTransferLookaheadCount))
+        let visibleCandidates = Array(transferCandidates.prefix(Self.shuttleDisplayCount))
+        let connectionGroups = transferCandidates.map { transferConnections(from: stopName, to: destination, candidate: $0) }
         return visibleCandidates
             .enumerated()
             .map { index, candidate in
@@ -928,7 +979,7 @@ final class TodayHomeVC: UIViewController {
                         at: index,
                         to: destination,
                         in: connectionGroups,
-                        candidates: visibleCandidates
+                        candidates: transferCandidates
                     )
                 )
             }
@@ -1076,12 +1127,44 @@ final class TodayHomeVC: UIViewController {
         switch HomeSettings.subwayTransferDestination {
         case .incheon:
             return bestIncheonSubwayConnections(after: stationArrival)
+        case .sosa:
+            return chojiTransferSubwayConnections(after: stationArrival)
+                .min { lhs, rhs in
+                    (lhs.last?.arrivalDate ?? .distantFuture) < (rhs.last?.arrivalDate ?? .distantFuture)
+                }
         case .seoul, .suwonYongin, .oido:
             guard let subwayArrival = subwayArrivalOptions()
                 .filter({ canTransfer(to: $0.arrivalDate, after: stationArrival) })
                 .min(by: { $0.arrivalDate < $1.arrivalDate })
             else { return nil }
             return [subwayConnection(for: subwayArrival, after: stationArrival)]
+        }
+    }
+
+    private func chojiTransferSubwayConnections(after stationArrival: Foundation.Date) -> [[HomeTransferConnection]] {
+        let firstLegs = subwayArrivalOptions(for: .choji)
+            .filter { canTransfer(to: $0.arrivalDate, after: stationArrival) }
+        let secondLegs = subwayArrivalOptions(for: .sosaFromChoji)
+        return firstLegs.compactMap { firstLeg in
+            guard let secondLeg = secondLegs
+                .filter({
+                    canTransfer(
+                        to: $0.arrivalDate,
+                        after: firstLeg.arrivalDate,
+                        minimumTransferMinutes: Self.chojiMinimumTransferMinutes
+                    )
+                })
+                .min(by: { $0.arrivalDate < $1.arrivalDate })
+            else { return nil }
+            return [
+                subwayConnection(for: firstLeg, after: stationArrival),
+                subwayConnection(
+                    for: secondLeg,
+                    after: firstLeg.arrivalDate,
+                    subtitleKey: "home.transfer.subway.choji.subtitle",
+                    minimumTransferMinutes: Self.chojiMinimumTransferMinutes
+                )
+            ]
         }
     }
 
@@ -1120,7 +1203,8 @@ final class TodayHomeVC: UIViewController {
     private func subwayConnection(
         for subwayArrival: HomeSubwayArrival,
         after transferStartDate: Foundation.Date,
-        subtitleKey: String = "home.transfer.subway.subtitle"
+        subtitleKey: String = "home.transfer.subway.subtitle",
+        minimumTransferMinutes: Int = TodayHomeVC.subwayMinimumTransferMinutes
     ) -> HomeTransferConnection {
         let bufferMinutes = max(0, Int(floor(subwayArrival.arrivalDate.timeIntervalSince(transferStartDate) / 60)))
         let terminal = localizedSubwayStationName(
@@ -1134,12 +1218,16 @@ final class TodayHomeVC: UIViewController {
             trailing: String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes),
             tintColor: subwayArrival.tintColor,
             arrivalDate: subwayArrival.arrivalDate,
-            minimumTransferMinutes: Self.subwayMinimumTransferMinutes
+            minimumTransferMinutes: minimumTransferMinutes
         )
     }
 
-    private func canTransfer(to arrivalDate: Foundation.Date, after previousArrivalDate: Foundation.Date) -> Bool {
-        arrivalDate.timeIntervalSince(previousArrivalDate) >= TimeInterval(Self.subwayMinimumTransferMinutes * 60)
+    private func canTransfer(
+        to arrivalDate: Foundation.Date,
+        after previousArrivalDate: Foundation.Date,
+        minimumTransferMinutes: Int = TodayHomeVC.subwayMinimumTransferMinutes
+    ) -> Bool {
+        arrivalDate.timeIntervalSince(previousArrivalDate) >= TimeInterval(minimumTransferMinutes * 60)
     }
 
     private func subwayArrivalOptions() -> [HomeSubwayArrival] {
@@ -1152,6 +1240,8 @@ final class TodayHomeVC: UIViewController {
             subwayArrivalOptions(for: .incheonDirect)
         case .oido:
             subwayArrivalOptions(for: .oido)
+        case .sosa:
+            subwayArrivalOptions(for: .sosaFromChoji)
         }
     }
 
@@ -1160,6 +1250,8 @@ final class TodayHomeVC: UIViewController {
         case suwonYongin
         case incheonDirect
         case incheonFromOido
+        case sosaFromChoji
+        case choji
         case oido
     }
 
@@ -1168,8 +1260,10 @@ final class TodayHomeVC: UIViewController {
         let line4 = subwayList.first { $0.stationID == "K449" }
         let suin = subwayList.first { $0.stationID == "K251" }
         let oidoSuin = subwayList.first { $0.stationID == "K258" }
+        let chojiSeohae = subwayList.first { $0.stationID == "S26" }
         let blue = UIColor.subwaySkyblue
         let yellow = UIColor.homeSubwayYellow
+        let green = UIColor.homeSubwaySeohae
 
         switch target {
         case .seoul:
@@ -1200,6 +1294,27 @@ final class TodayHomeVC: UIViewController {
                 badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
                 tintColor: yellow
             ) { $0.terminal.stationID > "K258" && $0.terminal.stationID.hasPrefix("K2") }
+        case .sosaFromChoji:
+            return subwayTimetableOptions(
+                subway: chojiSeohae,
+                direction: "up",
+                badge: String(localized: "home.transfer.subway.seohae.badge"),
+                tintColor: green
+            ) { $0.terminal.stationID <= "S16" && $0.terminal.stationID.hasPrefix("S") }
+        case .choji:
+            let line4Down = subwayArrivalOptions(
+                subway: line4,
+                direction: "down",
+                badge: String(localized: "subway.line4"),
+                tintColor: blue
+            ) { $0.terminal.stationID >= "K452" && $0.terminal.stationID.hasPrefix("K4") }
+            let suinDown = subwayArrivalOptions(
+                subway: suin,
+                direction: "down",
+                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+                tintColor: yellow
+            ) { $0.terminal.stationID >= "K254" && $0.terminal.stationID.hasPrefix("K2") }
+            return line4Down + suinDown
         case .oido:
             let line4Down = subwayArrivalOptions(
                 subway: line4,
@@ -1235,6 +1350,28 @@ final class TodayHomeVC: UIViewController {
                     terminalName: $0.terminal.name,
                     tintColor: tintColor,
                     arrivalDate: Foundation.Date.now.addingTimeInterval(TimeInterval($0.minutes * 60))
+                )
+            } ?? []
+    }
+
+    private func subwayTimetableOptions(
+        subway: HomePageQuery.Data.Subway?,
+        direction: String,
+        badge: String,
+        tintColor: UIColor,
+        isEligible: (HomePageQuery.Data.Subway.Timetable) -> Bool
+    ) -> [HomeSubwayArrival] {
+        subway?.timetable
+            .filter { $0.direction == direction }
+            .filter(isEligible)
+            .compactMap { entry in
+                guard let arrivalDate = entry.time.toLocalTimeOrNil() else { return nil }
+                return HomeSubwayArrival(
+                    lineBadge: badge,
+                    terminalStationID: entry.terminal.stationID,
+                    terminalName: entry.terminal.name,
+                    tintColor: tintColor,
+                    arrivalDate: arrivalDate
                 )
             } ?? []
     }
@@ -1556,6 +1693,7 @@ final class TodayHomeVC: UIViewController {
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: HomePageQuery(
+                    language: currentNoticeLanguage(),
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
                     weekday: weekday,
                     date: mealPeriod.queryDate.toLocalDateString(),
@@ -1578,6 +1716,14 @@ final class TodayHomeVC: UIViewController {
                 render()
             }
         }
+    }
+
+    private func currentNoticeLanguage() -> String {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "ko"
+        if languageCode.starts(with: "en") {
+            return "ENGLISH"
+        }
+        return "KOREAN"
     }
 
     private func fetchBus50TerminalLogTimes() async -> [LocalTime] {

@@ -1,10 +1,18 @@
 query HomePageQuery(
+    $language: String!
     $after: LocalTime
     $weekday: String!
     $date: Date!
     $campusID: Int!
     $busInput: [BusRouteStopInput!]!
 ) {
+    notices(input: { language: $language, category: "셔틀" }) {
+        notices {
+            title
+            url
+            expiredAt
+        }
+    }
     shuttle(input: {
         stops: [
             { name: "dormitory_o", limit: { destination: 8 } },
@@ -49,7 +57,8 @@ query HomePageQuery(
     subway(input: { keys: [
         { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
         { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
-        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 }
+        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "S26", direction: ["up"], weekdays: [$weekday] }
     ]}) {
         stationID
         arrival {
@@ -60,6 +69,15 @@ query HomePageQuery(
                     stationID
                     name
                 }
+            }
+        }
+        timetable {
+            weekday
+            direction
+            time
+            terminal {
+                stationID
+                name
             }
         }
     }

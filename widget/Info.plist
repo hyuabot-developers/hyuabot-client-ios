@@ -13,5 +13,10 @@
 	<true/>
 	<key>NSWidgetWantsLocation</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>GodoB.otf</string>
+		<string>GodoM.otf</string>
+	</array>
 </dict>
 </plist>

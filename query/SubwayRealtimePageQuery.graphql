@@ -6,6 +6,7 @@ query SubwayRealtimePageQuery($weekday: String!) {
                 { stationID: "K456", direction: ["up", "down"], weekdays: [$weekday], limit: null },
                 { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 4 },
                 { stationID: "K258", direction: ["up", "down"], weekdays: [$weekday], limit: null },
+                { stationID: "S26", direction: ["up"], weekdays: [$weekday], limit: null },
             ],
         }) {
         stationID

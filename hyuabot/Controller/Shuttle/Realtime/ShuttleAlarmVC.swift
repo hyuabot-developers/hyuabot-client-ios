@@ -250,11 +250,13 @@ class ShuttleAlarmVC: UIViewController {
     }
 
     private func presentPermissionAlert() {
+        let title = String(localized: "shuttle.alarm.no.permission")
         let alert = UIAlertController(
-            title: String(localized: "shuttle.alarm.no.permission"),
+            title: title,
             message: nil,
             preferredStyle: .alert
         )
+        alert.applyGodoTypography(title: title, message: nil)
         alert.addAction(UIAlertAction(title: String(localized: "common.ok"), style: .default))
         present(alert, animated: true)
     }
