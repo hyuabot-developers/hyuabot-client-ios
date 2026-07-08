@@ -301,7 +301,8 @@ struct TransferProvider: TimelineProvider {
         let calendar = Calendar(identifier: .iso8601)
         let now = Foundation.Date.now
         let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: parsedTime)
-        let todayComponents = calendar.dateComponents(in: TimeZone(identifier: "Asia/Seoul")!, from: now)
+        guard let timeZone = TimeZone(identifier: "Asia/Seoul") else { return nil }
+        let todayComponents = calendar.dateComponents(in: timeZone, from: now)
         var logComponents = DateComponents()
         logComponents.calendar = calendar
         logComponents.timeZone = TimeZone(identifier: "Asia/Seoul")

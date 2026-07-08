@@ -2,7 +2,7 @@ import Api
 import RxSwift
 import UIKit
 
-private extension UIColor {
+extension UIColor {
     static let transferLine4 = UIColor(red: 0, green: 160 / 255, blue: 233 / 255, alpha: 1)
     static let transferSuin = UIColor(red: 250 / 255, green: 190 / 255, blue: 0, alpha: 1)
     static let transferSeohae = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1.00)
@@ -82,6 +82,7 @@ class SubwayTransferCellView: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // swiftlint:disable:next function_body_length
     func setupUI() {
         selectionStyle = .none
         contentView.addSubview(contentStack)
