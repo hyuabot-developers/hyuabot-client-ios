@@ -43,9 +43,10 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private let lastRunLabel = UILabel().then {
-        $0.font = .godo(size: 13, weight: .regular)
-        $0.textColor = .hanyangBlue
+        $0.font = .godo(size: 12, weight: .bold)
+        $0.textColor = .white
         $0.text = String(localized: "shuttle.last_run")
+        $0.textAlignment = .center
     }
 
     private lazy var lastRunView = UIView().then {
@@ -53,6 +54,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.isHidden = true
         $0.isAccessibilityElement = true
         $0.accessibilityLabel = self.lastRunLabel.text
+        $0.addSubview(self.lastRunLabel)
     }
 
     private let alarmButton = ExtendedHitAreaButton(type: .system).then {
@@ -102,7 +104,10 @@ class ShuttleRealtimeCellView: UITableViewCell {
         }
         lastRunView.snp.makeConstraints { make in
             make.leading.top.bottom.equalToSuperview()
-            make.width.equalTo(4)
+            make.width.equalTo(36)
+        }
+        lastRunLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
         shuttleTypeLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
@@ -142,7 +147,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         showAlarm: @escaping () -> Void
     ) {
         shuttleAlertView.isHidden = true
-        lastRunView.isHidden = !isLastRun(stopID: stopID, indexPath: indexPath, item: item)
+        setLastRunVisible(isLastRun(stopID: stopID, indexPath: indexPath, item: item))
         itemByDestination = nil
         self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
@@ -159,13 +164,26 @@ class ShuttleRealtimeCellView: UITableViewCell {
         showAlarm: @escaping () -> Void
     ) {
         shuttleAlertView.isHidden = true
-        lastRunView.isHidden = !isLastRun(stopID: stopID, indexPath: indexPath, item: item)
+        setLastRunVisible(isLastRun(stopID: stopID, indexPath: indexPath, item: item))
         itemByOrder = nil
         self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
         setTypeText(stopID: stopID, indexPath: indexPath, item: item)
         itemByDestination = item
         setUITimeLabel(time: item.time)
+    }
+
+    private func setLastRunVisible(_ isVisible: Bool) {
+        lastRunView.isHidden = !isVisible
+        shuttleTypeLabel.snp.remakeConstraints { make in
+            if isVisible {
+                make.leading.equalTo(self.lastRunView.snp.trailing).offset(12)
+            } else {
+                make.leading.equalToSuperview().inset(20)
+            }
+            make.centerY.equalToSuperview()
+            make.verticalEdges.equalToSuperview().inset(15)
+        }
     }
 
     func setUITimeLabel(time: LocalTime) {
