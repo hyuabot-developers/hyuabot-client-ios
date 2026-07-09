@@ -49,12 +49,10 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private lazy var lastRunView = UIView().then {
-        $0.layer.cornerRadius = 4
-        $0.layer.masksToBounds = true
-        $0.layer.borderWidth = 1
-        $0.layer.borderColor = UIColor.hanyangBlue.cgColor
+        $0.backgroundColor = .hanyangBlue
         $0.isHidden = true
-        $0.addSubview(self.lastRunLabel)
+        $0.isAccessibilityElement = true
+        $0.accessibilityLabel = self.lastRunLabel.text
     }
 
     private let alarmButton = ExtendedHitAreaButton(type: .system).then {
@@ -102,6 +100,10 @@ class ShuttleRealtimeCellView: UITableViewCell {
         shuttleAlertLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(4)
         }
+        lastRunView.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview()
+            make.width.equalTo(4)
+        }
         shuttleTypeLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
@@ -109,13 +111,6 @@ class ShuttleRealtimeCellView: UITableViewCell {
         }
         shuttleAlertView.snp.makeConstraints { make in
             make.leading.equalTo(self.shuttleTypeLabel.snp.trailing).offset(8)
-            make.centerY.equalToSuperview()
-        }
-        lastRunLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(4)
-        }
-        lastRunView.snp.makeConstraints { make in
-            make.leading.equalTo(self.shuttleAlertView.snp.trailing).offset(8)
             make.centerY.equalToSuperview()
         }
         shuttleTimeLabel.snp.makeConstraints { make in
