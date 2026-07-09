@@ -42,21 +42,6 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.addSubview(self.shuttleAlertLabel)
     }
 
-    private let lastRunLabel = UILabel().then {
-        $0.font = .godo(size: 12, weight: .bold)
-        $0.textColor = .white
-        $0.text = String(localized: "shuttle.last_run")
-        $0.textAlignment = .center
-    }
-
-    private lazy var lastRunView = UIView().then {
-        $0.backgroundColor = .hanyangBlue
-        $0.isHidden = true
-        $0.isAccessibilityElement = true
-        $0.accessibilityLabel = self.lastRunLabel.text
-        $0.addSubview(self.lastRunLabel)
-    }
-
     private let alarmButton = ExtendedHitAreaButton(type: .system).then {
         let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         $0.setImage(UIImage(systemName: "bell", withConfiguration: symbolConfiguration), for: .normal)
@@ -77,6 +62,8 @@ class ShuttleRealtimeCellView: UITableViewCell {
         }
     }
 
+    private var isLastRunItem = false
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -94,20 +81,12 @@ class ShuttleRealtimeCellView: UITableViewCell {
         contentView.addSubview(shuttleTypeLabel)
         contentView.addSubview(shuttleTimeLabel)
         contentView.addSubview(shuttleAlertView)
-        contentView.addSubview(lastRunView)
         contentView.addSubview(shuttleRemainingTimeLabel)
         contentView.addSubview(alarmButton)
         selectionStyle = .none
         alarmButton.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)
         shuttleAlertLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(4)
-        }
-        lastRunView.snp.makeConstraints { make in
-            make.leading.top.bottom.equalToSuperview()
-            make.width.equalTo(36)
-        }
-        lastRunLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
         }
         shuttleTypeLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
@@ -147,7 +126,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         showAlarm: @escaping () -> Void
     ) {
         shuttleAlertView.isHidden = true
-        setLastRunVisible(isLastRun(stopID: stopID, indexPath: indexPath, item: item))
+        isLastRunItem = isLastRun(stopID: stopID, indexPath: indexPath, item: item)
         itemByDestination = nil
         self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
@@ -164,7 +143,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         showAlarm: @escaping () -> Void
     ) {
         shuttleAlertView.isHidden = true
-        setLastRunVisible(isLastRun(stopID: stopID, indexPath: indexPath, item: item))
+        isLastRunItem = isLastRun(stopID: stopID, indexPath: indexPath, item: item)
         itemByOrder = nil
         self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
@@ -173,36 +152,29 @@ class ShuttleRealtimeCellView: UITableViewCell {
         setUITimeLabel(time: item.time)
     }
 
-    private func setLastRunVisible(_ isVisible: Bool) {
-        lastRunView.isHidden = !isVisible
-        shuttleTypeLabel.snp.remakeConstraints { make in
-            if isVisible {
-                make.leading.equalTo(self.lastRunView.snp.trailing).offset(12)
-            } else {
-                make.leading.equalToSuperview().inset(20)
-            }
-            make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
-        }
-    }
-
     func setUITimeLabel(time: LocalTime) {
         guard let date = time.toLocalTimeOrNil() else {
-            shuttleTimeLabel.text = time.substring(from: 0, to: 4)
-            shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
+            shuttleTimeLabel.text = lastRunText(time.substring(from: 0, to: 4))
+            shuttleRemainingTimeLabel.text = lastRunText(String(localized: "shuttle.time.remaining.0"))
             return
         }
         let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
         guard let hour = components.hour,
               let minute = components.minute
         else {
-            shuttleTimeLabel.text = time.substring(from: 0, to: 4)
-            shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
+            shuttleTimeLabel.text = lastRunText(time.substring(from: 0, to: 4))
+            shuttleRemainingTimeLabel.text = lastRunText(String(localized: "shuttle.time.remaining.0"))
             return
         }
-        shuttleTimeLabel.text = String(format: String(localized: "shuttle.time.%lld.%lld"), hour, minute)
+        shuttleTimeLabel.text = lastRunText(String(format: String(localized: "shuttle.time.%lld.%lld"), hour, minute))
         let remainingTime = Int(date.timeIntervalSince(Foundation.Date.now))
-        shuttleRemainingTimeLabel.text = String(format: String(localized: "shuttle.time.remaining.%lld"), remainingTime / 60)
+        shuttleRemainingTimeLabel.text = lastRunText(
+            String(format: String(localized: "shuttle.time.remaining.%lld"), remainingTime / 60)
+        )
+    }
+
+    private func lastRunText(_ text: String) -> String {
+        isLastRunItem ? "\(text) · \(String(localized: "shuttle.last_run"))" : text
     }
 
     private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
