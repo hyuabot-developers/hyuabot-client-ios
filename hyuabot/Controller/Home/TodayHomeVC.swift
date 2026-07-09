@@ -178,6 +178,7 @@ private struct HomeShuttleCandidate {
         let time: LocalTime
     }
 
+    let seq: Int
     let routeTag: String
     let routeName: String
     let time: LocalTime
@@ -186,6 +187,7 @@ private struct HomeShuttleCandidate {
 
 private extension HomeShuttleCandidate {
     init(entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+        seq = entry.seq
         routeTag = entry.route.tag
         routeName = entry.route.name
         time = entry.time
@@ -516,7 +518,7 @@ private final class HomeQuickSettingsVC: UIViewController {
     }
 }
 
-final class TodayHomeVC: UIViewController {
+final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_length
     private static let autoRefreshIntervalSeconds = 60
     private static let subwayMinimumTransferMinutes = 5
     private static let chojiMinimumTransferMinutes = 8
@@ -968,10 +970,16 @@ final class TodayHomeVC: UIViewController {
             .enumerated()
             .map { index, candidate in
                 let routeDisplay = shuttleRouteDisplay(stop: stopName, destination: destination, candidate: candidate)
+                let summary = shuttleStopSummary(from: stopName, to: destination, candidate: candidate)
+                let subtitle = if candidate.seq == transferCandidates.last?.seq {
+                    String(format: String(localized: "home.shuttle.last_run.subtitle"), summary)
+                } else {
+                    summary
+                }
                 return HomeTransitOption(
                     kind: .shuttle,
                     title: String(format: String(localized: "home.shuttle.departure.title"), compactTime(candidate.time)),
-                    subtitle: shuttleStopSummary(from: stopName, to: destination, candidate: candidate),
+                    subtitle: subtitle,
                     minutes: minutesUntil(candidate.time),
                     badge: routeDisplay.badge,
                     tintColor: routeDisplay.tintColor,
@@ -1710,6 +1718,9 @@ final class TodayHomeVC: UIViewController {
                     busAlternatives = buildBusAlternatives(data.bus)
                     self.bus50TerminalLogTimes = bus50TerminalLogTimes
                     mealSections = buildMealSections(data.cafeteria, mealPeriod: mealPeriod)
+                    Task {
+                        await ShuttleServiceNoticeScheduler.shared.sync()
+                    }
                 }
                 isLoading = false
                 refreshControl.endRefreshing()
@@ -2476,4 +2487,4 @@ extension TodayHomeVC: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         requestDepartureLocation()
     }
-}
+} // swiftlint:disable:this file_length

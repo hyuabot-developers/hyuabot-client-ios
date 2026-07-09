@@ -7194,6 +7194,34 @@
         }
       }
     },
+    "home.shuttle.last_run.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last run · %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終車 · %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차 · %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "末班 · %@"
+          }
+        }
+      }
+    },
     "home.shuttle.no_via" : {
       "localizations" : {
         "en" : {
@@ -11398,6 +11426,106 @@
             "value" : "注意乘车位置"
           }
         }
+      }
+    },
+    "shuttle.last_run" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終車"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "末班"
+          }
+        }
+      }
+    },
+    "shuttle.service_notice.generic.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check shuttle service information for %@." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@のシャトルバス運行情報を確認してください。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@ 셔틀버스 운행 정보를 확인해 주세요." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请确认%@的校车运行信息。" } }
+      }
+    },
+    "shuttle.service_notice.halt.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shuttle service will be suspended on %@." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@はシャトルバスを運休します。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@에는 셔틀버스가 운행하지 않습니다." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@校车暂停运行。" } }
+      }
+    },
+    "shuttle.service_notice.holiday.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shuttles will run on the weekend/holiday schedule on %@." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@は週末/祝日ダイヤで運行します。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@에는 주말/공휴일 시간표로 운행합니다." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@将按周末/节假日时刻表运行。" } }
+      }
+    },
+    "shuttle.service_notice.period.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "From %@, shuttle service changes to %@." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@からシャトルバスの運行期間が%@に変わります。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@부터 셔틀버스 운행 기간이 %@로 변경됩니다." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自%@起，校车运行期间将变更为%@。" } }
+      }
+    },
+    "shuttle.service_notice.period.semester" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "semester" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "学期" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "학기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "学期" } }
+      }
+    },
+    "shuttle.service_notice.period.session" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "session" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "季節学期" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "계절학기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "季节学期" } }
+      }
+    },
+    "shuttle.service_notice.period.unknown" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "a new period" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "新しい期間" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "새 기간" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "新期间" } }
+      }
+    },
+    "shuttle.service_notice.period.vacation" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "vacation" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "休暇" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "방학" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "假期" } }
+      }
+    },
+    "shuttle.service_notice.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shuttle service notice" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "シャトルバス運行案内" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "셔틀버스 운행 안내" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校车运行通知" } }
       }
     },
     "shuttle.period.custom" : {
