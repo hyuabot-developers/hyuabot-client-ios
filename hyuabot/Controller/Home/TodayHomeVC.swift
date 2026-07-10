@@ -1731,10 +1731,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private func currentNoticeLanguage() -> String {
         let languageCode = Locale.current.language.languageCode?.identifier ?? "ko"
-        if languageCode.starts(with: "en") {
-            return "ENGLISH"
-        }
-        return "KOREAN"
+        return languageCode.starts(with: "ko") ? "KOREAN" : "ENGLISH"
     }
 
     private func fetchBus50TerminalLogTimes() async -> [LocalTime] {

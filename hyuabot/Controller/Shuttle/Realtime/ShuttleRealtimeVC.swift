@@ -617,10 +617,8 @@ class ShuttleRealtimeVC: UIViewController {
         var noticeLanguage: String {
             if currentLanguage.starts(with: "ko") {
                 "KOREAN"
-            } else if currentLanguage.starts(with: "en") {
-                "ENGLISH"
             } else {
-                "KOREAN"
+                "ENGLISH"
             }
         }
         Task {
