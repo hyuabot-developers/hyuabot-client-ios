@@ -11482,9 +11482,9 @@
     },
     "shuttle.service_notice.period.body" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "From %@, shuttle service changes to %@." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "From %@, shuttles will follow the %@ schedule." } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@からシャトルバスの運行期間が%@に変わります。" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@부터 셔틀버스 운행 기간이 %@로 변경됩니다." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@부터 셔틀버스 운행이 %@ 일정으로 변경됩니다." } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自%@起，校车运行期间将变更为%@。" } }
       }
     },
@@ -11498,7 +11498,7 @@
     },
     "shuttle.service_notice.period.session" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "session" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "seasonal semester" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "季節学期" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "계절학기" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "季节学期" } }
@@ -11617,7 +11617,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vacation Session"
+            "value" : "Seasonal Semester"
           }
         },
         "ja" : {
@@ -11629,7 +11629,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "계절 학기"
+            "value" : "계절학기"
           }
         },
         "zh-Hans" : {
