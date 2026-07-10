@@ -11411,19 +11411,19 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "乗車位置に注意"
+            "value" : "乗車位置確認"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "탑승 위치 주의"
+            "value" : "탑승 위치 확인"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "注意乘车位置"
+            "value" : "确认乘车位置"
           }
         }
       }

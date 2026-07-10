@@ -10,7 +10,13 @@ import UserNotifications
 final class ShuttleServiceNoticeScheduler {
     static let shared = ShuttleServiceNoticeScheduler()
 
-    private let calendar = Calendar(identifier: .gregorian)
+    private let serviceTimeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+    private lazy var calendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = serviceTimeZone
+        return calendar
+    }()
+
     private let center = UNUserNotificationCenter.current()
     private let scheduledIDsKey = "shuttle.serviceNotice.scheduledIDs"
 
@@ -22,6 +28,7 @@ final class ShuttleServiceNoticeScheduler {
         let queryDateFormatter = DateFormatter().then {
             $0.calendar = calendar
             $0.locale = Locale(identifier: "en_US_POSIX")
+            $0.timeZone = serviceTimeZone
             $0.dateFormat = "yyyy-MM-dd"
         }
         let response = try? await Network.shared.client.fetch(
@@ -51,7 +58,8 @@ final class ShuttleServiceNoticeScheduler {
         content.sound = .default
         content.userInfo = ["url": "hyuabot://shuttle"]
 
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
+        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
+        components.timeZone = serviceTimeZone
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         center.add(UNNotificationRequest(identifier: notice.id, content: content, trigger: trigger))
     }
@@ -72,7 +80,13 @@ final class ShuttleServiceNoticeScheduler {
     }
 
     private func bodyText(for notice: ShuttleServiceNoticeQuery.Data.Shuttle.ServiceNotice, date: Foundation.Date) -> String {
-        let dateText = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none)
+        let dateText = DateFormatter().then {
+            $0.calendar = calendar
+            $0.locale = .current
+            $0.timeZone = serviceTimeZone
+            $0.dateStyle = .medium
+            $0.timeStyle = .none
+        }.string(from: date)
         switch notice.kind {
         case "period":
             return String(
