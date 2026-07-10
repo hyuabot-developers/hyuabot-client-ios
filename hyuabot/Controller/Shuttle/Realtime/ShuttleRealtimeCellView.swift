@@ -28,18 +28,43 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private let shuttleAlertLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.textColor = .hanyangOrange
+        $0.font = .godo(size: 12, weight: .bold)
+        $0.textColor = .white
         $0.text = String(localized: "shuttle.location.alert")
+        $0.textAlignment = .center
     }
 
     private lazy var shuttleAlertView = UIView().then {
-        $0.layer.cornerRadius = 4
+        $0.backgroundColor = .hanyangOrange
+        $0.layer.cornerRadius = 5
         $0.layer.masksToBounds = true
-        $0.layer.borderWidth = 1
-        $0.layer.borderColor = UIColor.hanyangOrange.cgColor
         $0.isHidden = true
+        $0.isAccessibilityElement = true
+        $0.accessibilityLabel = self.shuttleAlertLabel.text
         $0.addSubview(self.shuttleAlertLabel)
+    }
+
+    private let lastRunLabel = UILabel().then {
+        $0.font = .godo(size: 12, weight: .bold)
+        $0.textColor = .white
+        $0.text = String(localized: "shuttle.last_run")
+        $0.textAlignment = .center
+    }
+
+    private lazy var lastRunView = UIView().then {
+        $0.backgroundColor = .hanyangOrange
+        $0.layer.cornerRadius = 5
+        $0.layer.masksToBounds = true
+        $0.isHidden = true
+        $0.isAccessibilityElement = true
+        $0.accessibilityLabel = self.lastRunLabel.text
+        $0.addSubview(self.lastRunLabel)
+    }
+
+    private lazy var statusStackView = UIStackView(arrangedSubviews: [shuttleTypeLabel, lastRunView, shuttleAlertView]).then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 8
     }
 
     private let alarmButton = ExtendedHitAreaButton(type: .system).then {
@@ -76,24 +101,34 @@ class ShuttleRealtimeCellView: UITableViewCell {
     func setupUI() {
         backgroundColor = .systemBackground
         contentView.backgroundColor = .systemBackground
-        contentView.addSubview(shuttleTypeLabel)
+        contentView.addSubview(statusStackView)
         contentView.addSubview(shuttleTimeLabel)
-        contentView.addSubview(shuttleAlertView)
         contentView.addSubview(shuttleRemainingTimeLabel)
         contentView.addSubview(alarmButton)
         selectionStyle = .none
         alarmButton.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)
+        shuttleTypeLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        lastRunView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        shuttleAlertView.setContentCompressionResistancePriority(.required, for: .horizontal)
         shuttleAlertLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(4)
-        }
-        shuttleTypeLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
+            make.horizontalEdges.equalToSuperview().inset(9)
             make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
         }
         shuttleAlertView.snp.makeConstraints { make in
-            make.leading.equalTo(self.shuttleTypeLabel.snp.trailing).offset(8)
+            make.height.equalTo(24)
+        }
+        lastRunLabel.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(9)
             make.centerY.equalToSuperview()
+        }
+        lastRunView.snp.makeConstraints { make in
+            make.height.equalTo(24)
+        }
+        statusStackView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(20)
+            make.centerY.equalToSuperview()
+            make.verticalEdges.equalToSuperview().inset(13)
+            make.trailing.lessThanOrEqualTo(self.shuttleTimeLabel.snp.leading).offset(-8)
         }
         shuttleTimeLabel.snp.makeConstraints { make in
             make.trailing.equalTo(self.alarmButton.snp.leading).offset(-8)
@@ -124,6 +159,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
         showAlarm: @escaping () -> Void
     ) {
         shuttleAlertView.isHidden = true
+        lastRunView.isHidden = !isLastRun(stopID: stopID, indexPath: indexPath, item: item)
         itemByDestination = nil
         self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
@@ -140,85 +176,11 @@ class ShuttleRealtimeCellView: UITableViewCell {
         showAlarm: @escaping () -> Void
     ) {
         shuttleAlertView.isHidden = true
+        lastRunView.isHidden = !isLastRun(stopID: stopID, indexPath: indexPath, item: item)
         itemByOrder = nil
         self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
-        if stopID == .dormiotryOut || stopID == .shuttlecockOut {
-            if indexPath.section == 0 {
-                if item.route.tag == "DH" || item.route.tag == "DJ" {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                    shuttleTypeLabel.textColor = .busRed
-                } else if item.route.tag == "C" {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    // Check dark mode
-                    if UITraitCollection.current.userInterfaceStyle == .light {
-                        shuttleTypeLabel.textColor = .busBlue
-                    } else {
-                        shuttleTypeLabel.textColor = .white
-                    }
-                }
-            } else if indexPath.section == 1 {
-                if item.route.tag == "DY" {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                    shuttleTypeLabel.textColor = .busRed
-                } else if item.route.tag == "C" {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                    if UITraitCollection.current.userInterfaceStyle == .light {
-                        shuttleTypeLabel.textColor = .busBlue
-                    } else {
-                        shuttleTypeLabel.textColor = .white
-                    }
-                }
-            } else if indexPath.section == 2 {
-                shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-                shuttleTypeLabel.textColor = .hanyangGreen
-            }
-        } else if stopID == .station {
-            if indexPath.section == 0 {
-                if item.route.tag == "DH" {
-                    if item.route.name.hasSuffix("D") {
-                        shuttleTypeLabel.text = String(localized: "shuttle.type.direct.dormitory")
-                    } else if item.route.name.hasSuffix("S") {
-                        shuttleTypeLabel.text = String(localized: "shuttle.type.direct.shuttlecock")
-                    }
-                    shuttleTypeLabel.textColor = .busRed
-                } else if item.route.tag == "DJ" {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-                    shuttleTypeLabel.textColor = .hanyangGreen
-                } else if item.route.tag == "C" {
-                    if item.route.name.hasSuffix("D") {
-                        shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
-                    } else if item.route.name.hasSuffix("S") {
-                        shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
-                    }
-                    if UITraitCollection.current.userInterfaceStyle == .light {
-                        shuttleTypeLabel.textColor = .busBlue
-                    } else {
-                        shuttleTypeLabel.textColor = .white
-                    }
-                }
-            } else if indexPath.section == 1 {
-                if item.route.name.hasSuffix("D") {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
-                } else if item.route.name.hasSuffix("S") {
-                    shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
-                }
-                if UITraitCollection.current.userInterfaceStyle == .light {
-                    shuttleTypeLabel.textColor = .busBlue
-                } else {
-                    shuttleTypeLabel.textColor = .white
-                }
-            } else if indexPath.section == 2 {
-                shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-                shuttleTypeLabel.textColor = .hanyangGreen
-            }
-        } else if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
-            if item.route.name.hasSuffix("S") {
-                shuttleTypeLabel.text = String(localized: "shuttle.type.shuttlecock")
-            } else if item.route.name.hasSuffix("D") {
-                shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
-            }
-        }
+        setTypeText(stopID: stopID, indexPath: indexPath, item: item)
         itemByDestination = item
         setUITimeLabel(time: item.time)
     }
@@ -239,7 +201,10 @@ class ShuttleRealtimeCellView: UITableViewCell {
         }
         shuttleTimeLabel.text = String(format: String(localized: "shuttle.time.%lld.%lld"), hour, minute)
         let remainingTime = Int(date.timeIntervalSince(Foundation.Date.now))
-        shuttleRemainingTimeLabel.text = String(format: String(localized: "shuttle.time.remaining.%lld"), remainingTime / 60)
+        shuttleRemainingTimeLabel.text = String(
+            format: String(localized: "shuttle.time.remaining.%lld"),
+            remainingTime / 60
+        )
     }
 
     private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
@@ -309,5 +274,161 @@ class ShuttleRealtimeCellView: UITableViewCell {
         let imageName = isBoardingAlarmActive ? "bell.fill" : "bell"
         alarmButton.setImage(UIImage(systemName: imageName, withConfiguration: symbolConfiguration), for: .normal)
         alarmButton.accessibilityValue = isBoardingAlarmActive ? String(localized: "shuttle.alarm.cancel") : nil
+    }
+}
+
+extension ShuttleRealtimeCellView {
+    private func setTypeText(
+        stopID: ShuttleStopEnum,
+        indexPath: IndexPath,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) {
+        if stopID == .dormiotryOut || stopID == .shuttlecockOut {
+            setCampusDepartureTypeText(section: indexPath.section, item: item)
+        } else if stopID == .station {
+            setStationDepartureTypeText(section: indexPath.section, item: item)
+        } else if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
+            setCampusBoundTypeText(item: item)
+        }
+    }
+
+    private func setCampusDepartureTypeText(
+        section: Int,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) {
+        if section == 0 {
+            if item.route.tag == "DH" || item.route.tag == "DJ" {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
+                shuttleTypeLabel.textColor = .busRed
+            } else if item.route.tag == "C" {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                shuttleTypeLabel.textColor = circularTextColor
+            }
+        } else if section == 1 {
+            if item.route.tag == "DY" {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
+                shuttleTypeLabel.textColor = .busRed
+            } else if item.route.tag == "C" {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
+                shuttleTypeLabel.textColor = circularTextColor
+            }
+        } else if section == 2 {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
+            shuttleTypeLabel.textColor = .hanyangGreen
+        }
+    }
+
+    private func setStationDepartureTypeText(
+        section: Int,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) {
+        if section == 0 {
+            setStationCampusRouteTypeText(item: item)
+        } else if section == 1 {
+            setStationTerminalRouteTypeText(item: item)
+        } else if section == 2 {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
+            shuttleTypeLabel.textColor = .hanyangGreen
+        }
+    }
+
+    private func setStationCampusRouteTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+        if item.route.tag == "DH" {
+            if item.route.name.hasSuffix("D") {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.direct.dormitory")
+            } else if item.route.name.hasSuffix("S") {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.direct.shuttlecock")
+            }
+            shuttleTypeLabel.textColor = .busRed
+        } else if item.route.tag == "DJ" {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
+            shuttleTypeLabel.textColor = .hanyangGreen
+        } else if item.route.tag == "C" {
+            if item.route.name.hasSuffix("D") {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
+            } else if item.route.name.hasSuffix("S") {
+                shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
+            }
+            shuttleTypeLabel.textColor = circularTextColor
+        }
+    }
+
+    private func setStationTerminalRouteTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+        if item.route.name.hasSuffix("D") {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
+        } else if item.route.name.hasSuffix("S") {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
+        }
+        shuttleTypeLabel.textColor = circularTextColor
+    }
+
+    private func setCampusBoundTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+        if item.route.name.hasSuffix("S") {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.shuttlecock")
+        } else if item.route.name.hasSuffix("D") {
+            shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
+        }
+    }
+
+    private var circularTextColor: UIColor {
+        UITraitCollection.current.userInterfaceStyle == .light ? .busBlue : .white
+    }
+
+    private func isLastRun(
+        stopID: ShuttleStopEnum,
+        indexPath _: IndexPath,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
+    ) -> Bool {
+        let data: [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]? = switch stopID {
+        case .dormiotryOut:
+            try? ShuttleRealtimeData.shared.shuttleDormitoryData.value()
+        case .shuttlecockOut:
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockData.value()
+        case .station:
+            try? ShuttleRealtimeData.shared.shuttleStationData.value()
+        case .terminal:
+            try? ShuttleRealtimeData.shared.shuttleTerminalData.value()
+        case .jungangStation:
+            try? ShuttleRealtimeData.shared.shuttleJungangStationData.value()
+        case .shuttlecockIn:
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockInData.value()
+        }
+        return data?.last?.seq == item.seq
+    }
+
+    private func isLastRun(
+        stopID: ShuttleStopEnum,
+        indexPath: IndexPath,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) -> Bool {
+        let data: [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]? = switch (stopID, indexPath.section) {
+        case (.dormiotryOut, 0):
+            try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value()
+        case (.dormiotryOut, 1):
+            try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value()
+        case (.dormiotryOut, 2):
+            try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value()
+        case (.shuttlecockOut, 0):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value()
+        case (.shuttlecockOut, 1):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value()
+        case (.shuttlecockOut, 2):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value()
+        case (.station, 0):
+            try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value()
+        case (.station, 1):
+            try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value()
+        case (.station, 2):
+            try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value()
+        case (.terminal, 0):
+            try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value()
+        case (.jungangStation, 0):
+            try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value()
+        case (.shuttlecockIn, 0):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value()
+        default:
+            nil
+        }
+        return data?.last?.seq == item.seq
     }
 }

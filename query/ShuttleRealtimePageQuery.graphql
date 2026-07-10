@@ -8,12 +8,12 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: 
     },
     shuttle(input: {
         stops: [
-            { name: "dormitory_o", limit: { order: 8, destination: 3 } },
-            { name: "shuttlecock_o", limit: { order: 8, destination: 3 } },
-            { name: "station", limit: { order: 8, destination: 3 } },
-            { name: "terminal", limit: { order: 8, destination: 8 } },
-            { name: "jungang_stn", limit: { order: 8, destination: 8 } },
-            { name: "shuttlecock_i", limit: { order: 8, destination: 8 } },
+            { name: "dormitory_o", limit: { order: 100, destination: 100 } },
+            { name: "shuttlecock_o", limit: { order: 100, destination: 100 } },
+            { name: "station", limit: { order: 100, destination: 100 } },
+            { name: "terminal", limit: { order: 100, destination: 100 } },
+            { name: "jungang_stn", limit: { order: 100, destination: 100 } },
+            { name: "shuttlecock_i", limit: { order: 100, destination: 100 } },
         ],
         after: $after
     }) {
@@ -23,6 +23,7 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: 
             name
             timetable {
                 order {
+                    seq
                     route {
                         tag
                         name
@@ -36,6 +37,7 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: 
                 destination {
                     destination
                     entries {
+                        seq
                         route {
                             tag
                             name

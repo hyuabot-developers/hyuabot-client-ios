@@ -3,6 +3,7 @@ import CoreLocation
 import RxSwift
 import UIKit
 
+// swiftlint:disable:next type_body_length
 class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
     private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
 
@@ -352,10 +353,8 @@ class BusRealtimeVC: UIViewController, CLLocationManagerDelegate {
         var noticeLanguage: String {
             if currentLanguage.starts(with: "ko") {
                 "KOREAN"
-            } else if currentLanguage.starts(with: "en") {
-                "ENGLISH"
             } else {
-                "KOREAN"
+                "ENGLISH"
             }
         }
         Task {

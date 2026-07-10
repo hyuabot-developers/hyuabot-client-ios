@@ -26,6 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         configureApplicationShortcuts(application)
         UNUserNotificationCenter.current().delegate = self
         application.registerForRemoteNotifications()
+        Task {
+            await ShuttleServiceNoticeScheduler.shared.sync()
+        }
         // Global tab bar appearance
         let tabBarAppearance = UITabBarItem.appearance()
         tabBarAppearance.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.godo(size: 10, weight: .regular)], for: .normal)
