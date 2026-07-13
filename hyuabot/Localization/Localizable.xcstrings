@@ -2364,6 +2364,110 @@
         }
       }
     },
+    "campus.calendar.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Academic Calendar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "学事暦" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "학사일정" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "学事历" } }
+      }
+    },
+    "campus.calendar.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View important academic dates" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "主な学事日程を一覧で確認" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "주요 학사일정 한눈에 보기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看重要学事日程" } }
+      }
+    },
+    "campus.contact.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Campus Contacts" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "学内連絡先" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "교내 연락처" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校内联系方式" } }
+      }
+    },
+    "campus.contact.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Find campus offices and phone numbers" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "学内の部署と電話番号を検索" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "교내 부서와 전화번호 찾기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查找校内部门和电话号码" } }
+      }
+    },
+    "campus.inquiry.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Inquiries" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "お問い合わせ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "문의하기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "联系我们" } }
+      }
+    },
+    "campus.map.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Campus Map" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "キャンパスマップ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "캠퍼스 지도" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校园地图" } }
+      }
+    },
+    "campus.map.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Find buildings and classrooms" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "建物や講義室の場所を検索" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "건물과 강의실 위치 찾기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查找建筑和教室位置" } }
+      }
+    },
+    "campus.reading_room.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reading Room" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "閲覧室" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "열람실" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "阅览室" } }
+      }
+    },
+    "campus.reading_room.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check seats and vacancy alerts" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "空席確認と空席通知" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "잔여 좌석 확인과 빈자리 알림" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看剩余座位并设置空位提醒" } }
+      }
+    },
+    "campus.setting.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "設定" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "设置" } }
+      }
+    },
+    "campus.support.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Support and settings" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "サポートと設定" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지원 및 설정" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "支持与设置" } }
+      }
+    },
+    "campus.tools.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quickly find the campus services you need." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "学校生活に必要な機能をすばやく見つけられます。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "학교생활에 필요한 기능을 빠르게 찾아보세요." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "快速查找校园生活所需的功能。" } }
+      }
+    },
+    "campus.tools.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Campus tools" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "キャンパスツール" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "캠퍼스 도구" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校园工具" } }
+      }
+    },
     "campus.seoul" : {
       "localizations" : {
         "en" : {
@@ -3549,6 +3653,15 @@
             "value" : "阅览室状态"
           }
         }
+      }
+    },
+    "coach.root.campus.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Campus tools" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "キャンパスツール" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "캠퍼스 도구" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校园工具" } }
       }
     },
     "coach.root.more.message" : {
@@ -15009,6 +15122,14 @@
             "value" : "食堂"
           }
         }
+      }
+    },
+    "tabbar.campus" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Campus" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "キャンパス" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "캠퍼스" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校园" } }
       }
     },
     "tabbar.calendar" : {

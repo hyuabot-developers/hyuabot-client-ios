@@ -49,6 +49,7 @@ enum AnalyticsScreen: String, CaseIterable {
     case map
     case mapBuilding = "map_building"
     // Others
+    case campus
     case readingRoom = "reading_room"
     case contact
     case calendar
@@ -79,6 +80,7 @@ enum AnalyticsItem: String, CaseIterable {
     case tabBus = "tab_bus"
     case tabSubway = "tab_subway"
     case tabCafeteria = "tab_cafeteria"
+    case tabCampus = "tab_campus"
     case tabMap = "tab_map"
     case tabReadingRoom = "tab_reading_room"
     case tabContact = "tab_contact"
@@ -86,6 +88,9 @@ enum AnalyticsItem: String, CaseIterable {
     case tabSetting = "tab_setting"
     case tabChat = "tab_chat"
     case tabDonate = "tab_donate"
+
+    /// Campus
+    case campusSelectTool = "campus_select_tool"
 
     // Shuttle - realtime
     case shuttleArrivalByTimeSwitch = "shuttle_arrival_by_time_switch"

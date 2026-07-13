@@ -16,6 +16,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let arguments = ProcessInfo.processInfo.arguments
         let theme: Int = if arguments.contains("-UITestDarkMode") {
             2
+        } else if arguments.contains("-UITestLightMode") {
+            1
         } else {
             UserDefaults.standard.integer(forKey: "themeID")
         }
@@ -113,19 +115,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             }
 
         case "reading-room":
-            rootVC.selectedIndex = 5
+            rootVC.openCampus(.readingRoom)
 
         case "map":
-            rootVC.selectedIndex = 4
+            rootVC.openCampus(.map)
 
         case "contact":
-            rootVC.selectedViewController = rootVC.contactNC
+            rootVC.openCampus(.contact)
 
         case "calendar":
-            rootVC.selectedViewController = rootVC.calendarNC
+            rootVC.openCampus(.calendar)
 
         case "setting":
-            rootVC.selectedViewController = rootVC.settingNC
+            rootVC.openCampus(.setting)
+
+        case "campus":
+            rootVC.selectedViewController = rootVC.campusNC
 
         default:
             break

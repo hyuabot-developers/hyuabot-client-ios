@@ -27,25 +27,42 @@ final class HyuabotSmokeUITests: XCTestCase {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 10), app.debugDescription)
 
-        for tab in ["tab.shuttle", "tab.bus", "tab.subway", "tab.cafeteria"] {
+        for tab in ["tab.shuttle", "tab.bus", "tab.subway", "tab.cafeteria", "tab.campus"] {
             let button = tabBar.buttons[tab]
             XCTAssertTrue(button.waitForExistence(timeout: 5), "\(tab) should exist")
             button.tap()
         }
     }
 
-    func testMoreMenuDestinationsCanBeOpened() {
+    func testCampusToolsCanBeOpened() {
         let app = makeApp()
         app.launch()
 
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 5))
-        tabBar.buttons["More"].tap()
+        tabBar.buttons["tab.campus"].tap()
 
-        let moreTable = app.tables.firstMatch
-        XCTAssertTrue(moreTable.waitForExistence(timeout: 5))
-        XCTAssertGreaterThanOrEqual(moreTable.cells.count, 4)
+        let destinations = [
+            (tool: "map", expected: "map.search_text_field"),
+            (tool: "reading_room", expected: "reading_room.alarm_3hour"),
+            (tool: "calendar", expected: "calendar.previous_month"),
+            (tool: "contact", expected: "contact.search_text_field"),
+            (tool: "setting", expected: "setting.campus_control")
+        ]
+        for destination in destinations {
+            let tool = app.buttons["campus.tool.\(destination.tool)"]
+            XCTAssertTrue(tool.waitForExistence(timeout: 5), "\(destination.tool) should exist")
+            tool.tap()
+
+            let expected = app.descendants(matching: .any)[destination.expected]
+            XCTAssertTrue(expected.waitForExistence(timeout: 10), "\(destination.expected) should open")
+
+            let backButton = app.navigationBars.buttons.element(boundBy: 0)
+            XCTAssertTrue(backButton.waitForExistence(timeout: 5))
+            backButton.tap()
+            XCTAssertTrue(app.buttons["campus.tool.map"].waitForExistence(timeout: 5))
+        }
     }
 
     func testShuttleQuickSettingsRowsHaveMatchingHeights() {
