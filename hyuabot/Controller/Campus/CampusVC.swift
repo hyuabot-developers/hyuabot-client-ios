@@ -43,7 +43,12 @@ final class CampusVC: UIViewController {
 
     func open(_ destination: CampusDestination, animated: Bool, logSelection: Bool = true) {
         if logSelection {
-            AnalyticsManager.logSelect(.campusSelectTool, type: .listItem, name: destination.rawValue)
+            AnalyticsManager.logSelect(
+                .campusSelectTool,
+                type: .listItem,
+                name: destination.rawValue,
+                destinationID: destination.rawValue
+            )
         }
 
         let viewController: UIViewController = switch destination {

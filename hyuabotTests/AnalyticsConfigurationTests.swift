@@ -41,6 +41,20 @@ final class AnalyticsConfigurationTests: XCTestCase {
         XCTAssertEqual(AnalyticsItem.homeSelectDestination.rawValue, "home_select_destination")
     }
 
+    func testSelectionParametersIncludeReportableDimensions() {
+        let parameters = AnalyticsManager.selectionParameters(
+            .campusSelectTool,
+            type: .listItem,
+            name: "map",
+            destinationID: "map"
+        )
+
+        XCTAssertEqual(parameters[AnalyticsParameter.schemaVersion] as? String, analyticsSchemaVersion)
+        XCTAssertEqual(parameters[AnalyticsParameter.elementID] as? String, "campus_select_tool")
+        XCTAssertEqual(parameters[AnalyticsParameter.elementType] as? String, "list_item")
+        XCTAssertEqual(parameters[AnalyticsParameter.destinationID] as? String, "map")
+    }
+
     private func loadInfoPlist() throws -> [String: Any] {
         let url = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

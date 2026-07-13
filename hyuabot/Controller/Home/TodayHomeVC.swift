@@ -2260,7 +2260,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard availableDestinations.indices.contains(destinationControl.selectedSegmentIndex) else { return }
         let destination = availableDestinations[destinationControl.selectedSegmentIndex]
         selectedDestination = destination
-        AnalyticsManager.logSelect(.homeSelectDestination, type: .tab, name: destination.analyticsValue)
+        AnalyticsManager.logSelect(
+            .homeSelectDestination,
+            type: .tab,
+            name: destination.analyticsValue,
+            destinationID: destination.analyticsValue
+        )
         renderMovement()
     }
 
