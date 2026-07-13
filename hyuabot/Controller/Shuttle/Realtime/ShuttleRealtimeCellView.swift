@@ -35,7 +35,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private lazy var shuttleAlertView = UIView().then {
-        $0.backgroundColor = .hanyangOrange
+        $0.backgroundColor = .shuttleStatusBadgeBackground
         $0.layer.cornerRadius = 5
         $0.layer.masksToBounds = true
         $0.isHidden = true
@@ -52,7 +52,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private lazy var lastRunView = UIView().then {
-        $0.backgroundColor = .hanyangOrange
+        $0.backgroundColor = .shuttleStatusBadgeBackground
         $0.layer.cornerRadius = 5
         $0.layer.masksToBounds = true
         $0.isHidden = true
@@ -215,7 +215,7 @@ class ShuttleRealtimeCellView: UITableViewCell {
             } else if item.route.tag == "DY" {
                 shuttleTypeLabel.text = String(localized: "shuttle_type_school_terminal")
                 shuttleTypeLabel.textColor = .hanyangOrange
-                shuttleAlertView.isHidden = false
+                shuttleAlertView.isHidden = stopID != .shuttlecockOut
             } else if item.route.tag == "DJ" {
                 shuttleTypeLabel.text = String(localized: "shuttle_type_school_jungang_station")
                 shuttleTypeLabel.textColor = .hanyangGreen
@@ -285,6 +285,7 @@ extension ShuttleRealtimeCellView {
     ) {
         if stopID == .dormiotryOut || stopID == .shuttlecockOut {
             setCampusDepartureTypeText(section: indexPath.section, item: item)
+            shuttleAlertView.isHidden = stopID != .shuttlecockOut || item.route.tag != "DY"
         } else if stopID == .station {
             setStationDepartureTypeText(section: indexPath.section, item: item)
         } else if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
