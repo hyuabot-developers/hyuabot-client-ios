@@ -90,6 +90,13 @@ struct ContentView: View {
                             Spacer()
                         }
                     }
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            Task {
+                                await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
+                            }
+                        }
+                    )
                 }
             }
         }
