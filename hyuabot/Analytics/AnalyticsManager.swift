@@ -60,7 +60,7 @@ enum AnalyticsScreen: String, CaseIterable {
 // MARK: - Content types (GA4 `select_content` -> content_type)
 
 /// What kind of element was selected. rawValue == GA4 `content_type` (shared with Android).
-enum AnalyticsContentType: String {
+enum AnalyticsContentType: String, CaseIterable {
     case button
     case tab
     case listItem = "list_item"
@@ -72,8 +72,9 @@ enum AnalyticsContentType: String {
 // MARK: - Items (GA4 `select_content` -> item_id)
 
 /// Every tappable element. rawValue == GA4 `item_id` (shared with Android).
-enum AnalyticsItem: String {
+enum AnalyticsItem: String, CaseIterable {
     // Tab bar (RootVC)
+    case tabHome = "tab_home"
     case tabShuttle = "tab_shuttle"
     case tabBus = "tab_bus"
     case tabSubway = "tab_subway"
@@ -100,6 +101,7 @@ enum AnalyticsItem: String {
     case homeTry = "home_try"
     case homeDismissPrompt = "home_dismiss_prompt"
     case homeOpenLegacyShuttle = "home_open_legacy_shuttle"
+    case homeOpenShuttleDetail = "home_open_shuttle_detail"
     case homeOpenCafeteria = "home_open_cafeteria"
     case homeRefresh = "home_refresh"
     case homeSelectDestination = "home_select_destination"

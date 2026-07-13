@@ -164,7 +164,7 @@ class RootVC: UITabBarController {
     /// Maps a tab's view controller to its analytics item for tab-switch tracking.
     func analyticsItem(for viewController: UIViewController?) -> AnalyticsItem? {
         switch viewController {
-        case shuttleNC: .tabShuttle
+        case shuttleNC: HomeExperienceManager.isEnabled ? .tabHome : .tabShuttle
         case busNC: .tabBus
         case subwayNC: .tabSubway
         case cafeteriaNC: .tabCafeteria

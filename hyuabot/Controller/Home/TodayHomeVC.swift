@@ -99,6 +99,15 @@ private enum HomeDestination: CaseIterable {
         case .dormitory: String(localized: "shuttle.stop.dormitory.in")
         }
     }
+
+    var analyticsValue: String {
+        switch self {
+        case .station: "station"
+        case .terminal: "terminal"
+        case .jungang: "jungang"
+        case .dormitory: "dormitory"
+        }
+    }
 }
 
 #if DEBUG
@@ -2251,7 +2260,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard availableDestinations.indices.contains(destinationControl.selectedSegmentIndex) else { return }
         let destination = availableDestinations[destinationControl.selectedSegmentIndex]
         selectedDestination = destination
-        AnalyticsManager.logSelect(.homeSelectDestination, type: .tab, name: destination.title)
+        AnalyticsManager.logSelect(.homeSelectDestination, type: .tab, name: destination.analyticsValue)
         renderMovement()
     }
 
@@ -2296,7 +2305,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     @objc private func openShuttleDetail() {
-        AnalyticsManager.logSelect(.homeOpenLegacyShuttle)
+        AnalyticsManager.logSelect(.homeOpenShuttleDetail)
         (navigationController as? ShuttleNC)?.showShuttleDetailFromHome()
     }
 
