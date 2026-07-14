@@ -1,3 +1,8 @@
+//
+//  WatchLocationModel.swift
+//  hyuabot watch
+//
+
 import Combine
 import CoreLocation
 import Foundation
@@ -54,9 +59,7 @@ final class WatchLocationModel: NSObject, ObservableObject {
     }
 
     private func resolveFallback() {
-        if let stopID = defaults.string(forKey: Self.recentStopKey),
-           WatchShuttleStop.all.contains(where: { $0.id == stopID })
-        {
+        if let stopID = defaults.string(forKey: Self.recentStopKey), WatchShuttleStop.all.contains(where: { $0.id == stopID }) {
             resolution = .recent(stopID)
         } else {
             resolution = .stopList
@@ -65,7 +68,7 @@ final class WatchLocationModel: NSObject, ObservableObject {
 
     private static let recentStopKey = "watch_recent_stop_id"
     private static let maximumAccuracy: CLLocationAccuracy = 500
-    private static let maximumStopDistance: CLLocationDistance = 3_000
+    private static let maximumStopDistance: CLLocationDistance = 3000
 }
 
 extension WatchLocationModel: @preconcurrency CLLocationManagerDelegate {
@@ -76,7 +79,8 @@ extension WatchLocationModel: @preconcurrency CLLocationManagerDelegate {
               let stop = WatchShuttleStop.all.min(by: {
                   $0.location.distance(from: location) < $1.location.distance(from: location)
               }),
-              stop.location.distance(from: location) <= Self.maximumStopDistance else {
+              stop.location.distance(from: location) <= Self.maximumStopDistance
+        else {
             resolveFallback()
             return
         }
