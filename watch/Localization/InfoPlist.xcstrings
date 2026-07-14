@@ -65,25 +65,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Request location permission to find nearby shuttle stop."
+            "value" : "Allow location access to find the nearest shuttle stop."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "近くのシャトルバス停留所を探すために位置情報の使用を許可してください。"
+            "value" : "最寄りのシャトルバス停留所を探すために位置情報を使用します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "주변 셔틀 정류장을 찾기 위해 위치 권한을 요청합니다."
+            "value" : "가장 가까운 셔틀 정류장을 찾기 위해 위치를 사용합니다."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请允许使用位置权限以查找附近的校车站点。"
+            "value" : "使用位置信息查找最近的校车站点。"
           }
         }
       }
