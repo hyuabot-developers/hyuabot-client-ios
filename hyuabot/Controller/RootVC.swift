@@ -1,6 +1,4 @@
-import SafariServices
 import SwiftUI
-import Then
 import UIKit
 
 class RootVC: UITabBarController {
@@ -9,13 +7,7 @@ class RootVC: UITabBarController {
     let busNC = BusNC()
     let subwayNC = SubwayNC()
     let cafeteriaNC = CafeteriaNC()
-    let mapNC = MapNC()
-    let readingRoomNC = ReadingRoomNC()
-    let contactNC = ContactNC()
-    let calendarNC = CalendarNC()
-    let settingNC = SettingNC()
-    let chatVC = WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
-    let donateVC = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
+    let campusNC = CampusNC()
     private var translationPreparationHost: UIViewController?
     private var isWaitingForShuttleCoachMarksAfterReset = false
 
@@ -40,7 +32,7 @@ class RootVC: UITabBarController {
         if !isWaitingForShuttleCoachMarksAfterReset,
            !CoachMarkManager.shared.shouldShowPage("shuttle.realtime")
         {
-            showMoreCoachMarkIfNeeded()
+            showCampusCoachMarkIfNeeded()
         }
     }
 
@@ -49,7 +41,7 @@ class RootVC: UITabBarController {
               pageId == "shuttle.realtime" else { return }
         isWaitingForShuttleCoachMarksAfterReset = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            self?.showMoreCoachMarkIfNeeded()
+            self?.showCampusCoachMarkIfNeeded()
         }
     }
 
@@ -65,18 +57,18 @@ class RootVC: UITabBarController {
         }
     }
 
-    func showMoreCoachMarkIfNeeded() {
-        presentCoachMarks(pageId: "root.more", items: [
+    func showCampusCoachMarkIfNeeded() {
+        presentCoachMarks(pageId: "root.campus", items: [
             CoachMarkItem(
-                id: "root.more",
-                targetViewProvider: { [weak self] in self?.moreButtonView },
-                title: String(localized: "coach.root.more.title"),
+                id: "root.campus",
+                targetViewProvider: { [weak self] in self?.campusButtonView },
+                title: String(localized: "coach.root.campus.title"),
                 message: String(localized: "coach.root.more.message")
             )
         ])
     }
 
-    private var moreButtonView: UIView? {
+    private var campusButtonView: UIView? {
         guard tabBar.bounds.width > 0 else { return nil }
         let slotWidth = tabBar.bounds.width / 5
         let point = CGPoint(x: slotWidth * 4.5, y: tabBar.bounds.midY)
@@ -111,31 +103,15 @@ class RootVC: UITabBarController {
             tag: 3
         )
         cafeteriaNC.tabBarItem.accessibilityIdentifier = "tab.cafeteria"
-        mapNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.map"), image: UIImage(systemName: "map.fill"), tag: 4)
-        mapNC.tabBarItem.accessibilityIdentifier = "tab.map"
-        readingRoomNC.tabBarItem = UITabBarItem(
-            title: String(localized: "tabbar.readingroom"),
-            image: UIImage(systemName: "book.fill"),
-            tag: 5
+        campusNC.tabBarItem = UITabBarItem(
+            title: String(localized: "tabbar.campus"),
+            image: UIImage(systemName: "square.grid.2x2.fill"),
+            tag: 4
         )
-        readingRoomNC.tabBarItem.accessibilityIdentifier = "tab.readingroom"
-        contactNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.contact"), image: UIImage(systemName: "person.fill"), tag: 6)
-        contactNC.tabBarItem.accessibilityIdentifier = "tab.contact"
-        calendarNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.calendar"), image: UIImage(systemName: "calendar"), tag: 7)
-        calendarNC.tabBarItem.accessibilityIdentifier = "tab.calendar"
-        settingNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.setting"), image: UIImage(systemName: "gear"), tag: 8)
-        settingNC.tabBarItem.accessibilityIdentifier = "tab.setting"
-        chatVC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.chat"), image: UIImage(systemName: "message.fill"), tag: 9)
-        chatVC.tabBarItem.accessibilityIdentifier = "tab.chat"
-        donateVC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.donate"), image: UIImage(systemName: "heart.fill"), tag: 10)
-        donateVC.tabBarItem.accessibilityIdentifier = "tab.donate"
-        if let moreTableView = moreNavigationController.viewControllers.first?.view as? UITableView {
-            moreTableView.delegate = self
-            moreTableView.tintColor = .plainButtonText
-        }
+        campusNC.tabBarItem.accessibilityIdentifier = "tab.campus"
         delegate = self
         setViewControllers(
-            [shuttleNC, busNC, subwayNC, cafeteriaNC, mapNC, readingRoomNC, contactNC, calendarNC, settingNC, chatVC, donateVC],
+            [shuttleNC, busNC, subwayNC, cafeteriaNC, campusNC],
             animated: true
         )
         // Appearance
@@ -164,19 +140,18 @@ class RootVC: UITabBarController {
     /// Maps a tab's view controller to its analytics item for tab-switch tracking.
     func analyticsItem(for viewController: UIViewController?) -> AnalyticsItem? {
         switch viewController {
-        case shuttleNC: .tabShuttle
+        case shuttleNC: HomeExperienceManager.isEnabled ? .tabHome : .tabShuttle
         case busNC: .tabBus
         case subwayNC: .tabSubway
         case cafeteriaNC: .tabCafeteria
-        case mapNC: .tabMap
-        case readingRoomNC: .tabReadingRoom
-        case contactNC: .tabContact
-        case calendarNC: .tabCalendar
-        case settingNC: .tabSetting
-        case chatVC: .tabChat
-        case donateVC: .tabDonate
+        case campusNC: .tabCampus
         default: nil
         }
+    }
+
+    func openCampus(_ destination: CampusDestination, animated: Bool = false) {
+        selectedViewController = campusNC
+        campusNC.open(destination, animated: animated)
     }
 }
 
@@ -188,49 +163,6 @@ extension RootVC: UITabBarControllerDelegate {
         setNeedsStatusBarAppearanceUpdate()
         if viewController === shuttleNC {
             retryShuttleCoachMarksIfNeeded()
-        }
-    }
-}
-
-extension RootVC: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.textLabel?.font = UIFont.godo(size: 16, weight: .regular)
-        cell.textLabel?.textColor = .label
-        cell.imageView?.tintColor = .plainButtonText
-        cell.tintColor = .plainButtonText
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.cellForRow(at: indexPath)
-        switch cell?.textLabel?.text {
-        case String(localized: "tabbar.shuttle"):
-            selectedViewController = shuttleNC
-            retryShuttleCoachMarksIfNeeded()
-        case String(localized: "tabbar.bus"):
-            selectedViewController = busNC
-        case String(localized: "tabbar.subway"):
-            selectedViewController = subwayNC
-        case String(localized: "tabbar.cafeteria"):
-            selectedViewController = cafeteriaNC
-        case String(localized: "tabbar.map"):
-            selectedViewController = mapNC
-        case String(localized: "tabbar.readingroom"):
-            selectedViewController = readingRoomNC
-        case String(localized: "tabbar.contact"):
-            selectedViewController = contactNC
-        case String(localized: "tabbar.calendar"):
-            selectedViewController = calendarNC
-        case String(localized: "tabbar.setting"):
-            selectedViewController = settingNC
-        case String(localized: "tabbar.chat"):
-            selectedViewController = chatVC
-        case String(localized: "tabbar.donate"):
-            selectedViewController = donateVC
-        default:
-            break
-        }
-        if let item = analyticsItem(for: selectedViewController) {
-            AnalyticsManager.logSelect(item, type: .tab)
         }
     }
 }

@@ -109,7 +109,7 @@ class ReadingRoomVC: UIViewController {
                 let alarmTime = Foundation.Date().addingTimeInterval(TimeInterval(triggerMinutes * 60))
                 UserDefaults.standard.set(alarmTime.timeIntervalSince1970, forKey: "readingRoomExtendAlarmTime")
                 self?.updateAlarmUI(alarmTime: alarmTime)
-                AnalyticsManager.logSelect(.readingRoomAlarmToggle)
+                AnalyticsManager.logSelect(.readingRoomAlarmToggle, type: .toggle)
             }
         }
     }
@@ -118,7 +118,7 @@ class ReadingRoomVC: UIViewController {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["reading_room_extend_alarm"])
         UserDefaults.standard.removeObject(forKey: "readingRoomExtendAlarmTime")
         updateAlarmUI(alarmTime: nil)
-        AnalyticsManager.logSelect(.readingRoomAlarmToggle)
+        AnalyticsManager.logSelect(.readingRoomAlarmToggle, type: .toggle)
     }
 
     private func updateAlarmUI(alarmTime: Foundation.Date?) {

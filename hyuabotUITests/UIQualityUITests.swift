@@ -25,7 +25,8 @@ final class UIQualityUITests: XCTestCase {
             Page(name: "shuttle", tabIdentifier: "tab.shuttle", expectedElementIdentifier: nil),
             Page(name: "bus", tabIdentifier: "tab.bus", expectedElementIdentifier: nil),
             Page(name: "subway", tabIdentifier: "tab.subway", expectedElementIdentifier: nil),
-            Page(name: "cafeteria", tabIdentifier: "tab.cafeteria", expectedElementIdentifier: "cafeteria_share_button")
+            Page(name: "cafeteria", tabIdentifier: "tab.cafeteria", expectedElementIdentifier: "cafeteria_share_button"),
+            Page(name: "campus", tabIdentifier: "tab.campus", expectedElementIdentifier: "campus.tool.map")
         ]
 
         for page in pages {
@@ -70,17 +71,21 @@ final class UIQualityUITests: XCTestCase {
         XCTAssertTrue(issues.isEmpty, issues.joined(separator: "\n"))
     }
 
-    func testMoreDestinationsVisualQuality() {
+    func testCampusDestinationsVisualQuality() {
         let app = makeApp()
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
 
-        tapMoreButton(in: app)
-        let moreTable = app.tables.firstMatch
-        XCTAssertTrue(moreTable.waitForExistence(timeout: 5))
-        capture("more", app: app)
+        open(
+            Page(name: "campus", tabIdentifier: "tab.campus", expectedElementIdentifier: "campus.tool.map"),
+            in: app
+        )
+        for tool in ["map", "reading_room", "calendar", "contact", "setting", "inquiry", "donate"] {
+            XCTAssertTrue(app.buttons["campus.tool.\(tool)"].waitForExistence(timeout: 5), "\(tool) should exist")
+        }
+        capture("campus", app: app)
 
-        let issues = auditVisibleLayout(app: app, pageName: "more")
+        let issues = auditVisibleLayout(app: app, pageName: "campus")
         XCTAssertTrue(issues.isEmpty, issues.joined(separator: "\n"))
     }
 
@@ -231,6 +236,8 @@ final class UIQualityUITests: XCTestCase {
         ]
         if style == "dark" {
             app.launchArguments += ["-UITestDarkMode"]
+        } else if style == "light" {
+            app.launchArguments += ["-UITestLightMode"]
         }
         if let initialRoute {
             app.launchArguments += ["-UITestInitialRoute", initialRoute]
@@ -251,27 +258,6 @@ final class UIQualityUITests: XCTestCase {
         } else {
             sleep(1)
         }
-    }
-
-    private func tapMoreButton(in app: XCUIApplication) {
-        let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
-
-        let englishMore = tabBar.buttons["More"]
-        if englishMore.exists {
-            englishMore.tap()
-            return
-        }
-
-        let koreanMore = tabBar.buttons["더 보기"]
-        if koreanMore.exists {
-            koreanMore.tap()
-            return
-        }
-
-        let buttons = tabBar.buttons.allElementsBoundByIndex
-        XCTAssertFalse(buttons.isEmpty)
-        buttons.last?.tap()
     }
 
     private func capture(_ name: String, app: XCUIApplication) {

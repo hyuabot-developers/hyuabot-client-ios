@@ -49,6 +49,7 @@ enum AnalyticsScreen: String, CaseIterable {
     case map
     case mapBuilding = "map_building"
     // Others
+    case campus
     case readingRoom = "reading_room"
     case contact
     case calendar
@@ -60,7 +61,7 @@ enum AnalyticsScreen: String, CaseIterable {
 // MARK: - Content types (GA4 `select_content` -> content_type)
 
 /// What kind of element was selected. rawValue == GA4 `content_type` (shared with Android).
-enum AnalyticsContentType: String {
+enum AnalyticsContentType: String, CaseIterable {
     case button
     case tab
     case listItem = "list_item"
@@ -69,15 +70,26 @@ enum AnalyticsContentType: String {
     case dateControl = "date_control"
 }
 
+enum AnalyticsParameter {
+    static let schemaVersion = "analytics_schema_version"
+    static let elementID = "element_id"
+    static let elementType = "element_type"
+    static let destinationID = "destination_id"
+}
+
+let analyticsSchemaVersion = "2"
+
 // MARK: - Items (GA4 `select_content` -> item_id)
 
 /// Every tappable element. rawValue == GA4 `item_id` (shared with Android).
-enum AnalyticsItem: String {
+enum AnalyticsItem: String, CaseIterable {
     // Tab bar (RootVC)
+    case tabHome = "tab_home"
     case tabShuttle = "tab_shuttle"
     case tabBus = "tab_bus"
     case tabSubway = "tab_subway"
     case tabCafeteria = "tab_cafeteria"
+    case tabCampus = "tab_campus"
     case tabMap = "tab_map"
     case tabReadingRoom = "tab_reading_room"
     case tabContact = "tab_contact"
@@ -85,6 +97,9 @@ enum AnalyticsItem: String {
     case tabSetting = "tab_setting"
     case tabChat = "tab_chat"
     case tabDonate = "tab_donate"
+
+    /// Campus
+    case campusSelectTool = "campus_select_tool"
 
     // Shuttle - realtime
     case shuttleArrivalByTimeSwitch = "shuttle_arrival_by_time_switch"
@@ -100,6 +115,7 @@ enum AnalyticsItem: String {
     case homeTry = "home_try"
     case homeDismissPrompt = "home_dismiss_prompt"
     case homeOpenLegacyShuttle = "home_open_legacy_shuttle"
+    case homeOpenShuttleDetail = "home_open_shuttle_detail"
     case homeOpenCafeteria = "home_open_cafeteria"
     case homeRefresh = "home_refresh"
     case homeSelectDestination = "home_select_destination"
@@ -177,7 +193,8 @@ enum AnalyticsManager {
         guard isCollectionEnabled else { return }
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
             AnalyticsParameterScreenName: screen.rawValue,
-            AnalyticsParameterScreenClass: String(describing: type(of: screenClass))
+            AnalyticsParameterScreenClass: String(describing: type(of: screenClass)),
+            AnalyticsParameter.schemaVersion: analyticsSchemaVersion
         ])
     }
 
@@ -187,20 +204,44 @@ enum AnalyticsManager {
     ///   - type: the kind of element (becomes `content_type`).
     ///   - name: optional human/contextual label (becomes `item_name`), e.g. the
     ///           selected stop, contact name, or building name.
+    ///   - destinationID: optional low-cardinality destination identifier for
+    ///                    funnel analysis. Unlike `name`, this is reportable.
     static func logSelect(
         _ item: AnalyticsItem,
         type: AnalyticsContentType = .button,
-        name: String? = nil
+        name: String? = nil,
+        destinationID: String? = nil
     ) {
         guard isCollectionEnabled else { return }
+        let params = selectionParameters(
+            item,
+            type: type,
+            name: name,
+            destinationID: destinationID
+        )
+        Analytics.logEvent(AnalyticsEventSelectContent, parameters: params)
+    }
+
+    static func selectionParameters(
+        _ item: AnalyticsItem,
+        type: AnalyticsContentType,
+        name: String?,
+        destinationID: String?
+    ) -> [String: Any] {
         var params: [String: Any] = [
             AnalyticsParameterContentType: type.rawValue,
-            AnalyticsParameterItemID: item.rawValue
+            AnalyticsParameterItemID: item.rawValue,
+            AnalyticsParameter.schemaVersion: analyticsSchemaVersion,
+            AnalyticsParameter.elementID: item.rawValue,
+            AnalyticsParameter.elementType: type.rawValue
         ]
         if let name {
             params[AnalyticsParameterItemName] = name
         }
-        Analytics.logEvent(AnalyticsEventSelectContent, parameters: params)
+        if let destinationID {
+            params[AnalyticsParameter.destinationID] = destinationID
+        }
+        return params
     }
 }
 
