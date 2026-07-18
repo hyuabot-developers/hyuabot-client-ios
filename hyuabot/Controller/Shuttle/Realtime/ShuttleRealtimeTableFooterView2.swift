@@ -1,9 +1,9 @@
 import UIKit
 
 class ShuttleRealtimeTableFooterView2: UIView {
-    private let showStopModal: (_ stop: ShuttleStopEnum) -> Void
+    private let showStopModal: @MainActor (_ stop: ShuttleStopEnum) -> Void
     private let stopID: ShuttleStopEnum
-    private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
+    private var showEntireTimetable: (@MainActor (_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
     private var section: Int?
     let showEntireTimeTableButton1 = UIButton().then {
         var conf = UIButton.Configuration.plain()
@@ -53,8 +53,8 @@ class ShuttleRealtimeTableFooterView2: UIView {
     init(
         parentView: UIView,
         stopID: ShuttleStopEnum,
-        showStopModal: @escaping (_ stop: ShuttleStopEnum) -> Void,
-        showEntireTimetable: @escaping (_ stop: ShuttleStopEnum, _ section: Int) -> Void
+        showStopModal: @escaping @MainActor (_ stop: ShuttleStopEnum) -> Void,
+        showEntireTimetable: @escaping @MainActor (_ stop: ShuttleStopEnum, _ section: Int) -> Void
     ) {
         self.showEntireTimetable = showEntireTimetable
         self.showStopModal = showStopModal

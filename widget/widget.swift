@@ -145,6 +145,7 @@ struct CafeteriaProvider: TimelineProvider {
             completion(placeholder(in: context))
             return
         }
+        let completion = WidgetCompletion(completion)
         Task {
             let entry = await fetchEntry(for: .now)
             completion(entry)
@@ -152,6 +153,7 @@ struct CafeteriaProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<CafeteriaEntry>) -> Void) {
+        let completion = WidgetCompletion(completion)
         Task {
             let now = Foundation.Date.now
             let entry = await fetchEntry(for: now)

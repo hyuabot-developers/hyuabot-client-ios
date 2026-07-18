@@ -1,16 +1,18 @@
 import Api
 import UIKit
 
+@MainActor
 class ShuttleRealtimeTimeTableDelegate: NSObject {
-    let showViaVC: (_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
-    let showAlarmVC: (_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
+    let showViaVC: @MainActor (_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
+    let showAlarmVC: @MainActor (_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
     let stopID: ShuttleStopEnum
     var activeBoardingAlarmKeys: Set<String> = []
     var showsInitialSkeleton = true
 
     required init(
-        showViaVC: @escaping (_: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
-        showAlarmVC: @escaping (_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
+        showViaVC: @escaping @MainActor (_: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
+        showAlarmVC: @escaping @MainActor (_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order)
+            -> Void,
         stopID: ShuttleStopEnum
     ) {
         self.showViaVC = showViaVC

@@ -36,7 +36,7 @@ A campus companion app for **Hanyang University (ERICA campus)** students and st
 ### iOS App (`hyuabot/`)
 - **UIKit** with MVC/MVVM patterns
 - **RxSwift** for reactive data streams and polling
-- **GraphQL** (Apollo iOS SDK v2.1.0) for all API calls
+- **GraphQL** (Apollo iOS SDK v2.2.0) for all API calls
 - **RealmSwift** for local persistence (Calendar events, Contacts)
 - **Firebase Cloud Messaging** for push notifications
 
@@ -69,7 +69,7 @@ Managed via **Swift Package Manager**:
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| [apollo-ios](https://github.com/apollographql/apollo-ios) | 2.1.0 (exact) | GraphQL client & codegen |
+| [apollo-ios](https://github.com/apollographql/apollo-ios) | 2.2.0 (exact) | GraphQL client & codegen |
 | Firebase iOS SDK | latest | Push notifications (FCM) |
 | RealmSwift | latest | Local database |
 | RxSwift | latest | Reactive programming |

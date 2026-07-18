@@ -7,6 +7,7 @@ import Api
 import Foundation
 import UserNotifications
 
+@MainActor
 final class ShuttleServiceNoticeScheduler {
     static let shared = ShuttleServiceNoticeScheduler()
 

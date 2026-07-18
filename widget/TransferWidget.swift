@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import Api
 import Apollo
 import AppIntents
@@ -120,10 +122,12 @@ struct TransferProvider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (TransferEntry) -> Void) {
         if context.isPreview { completion(placeholder(in: context)); return }
+        let completion = WidgetCompletion(completion)
         Task { await completion(fetchEntry()) }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TransferEntry>) -> Void) {
+        let completion = WidgetCompletion(completion)
         Task {
             let entry = await fetchEntry()
             let next = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)!

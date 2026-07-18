@@ -2,7 +2,7 @@ import Apollo
 import ApolloAPI
 import Foundation
 
-final class WidgetNetwork {
+final class WidgetNetwork: @unchecked Sendable {
     static let shared = WidgetNetwork()
     private(set) lazy var client = ApolloClient(url: URL(string: "https://backend.hyuabot.app/graphql")!)
 

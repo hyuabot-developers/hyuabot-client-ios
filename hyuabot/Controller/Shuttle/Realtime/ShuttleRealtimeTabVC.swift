@@ -12,13 +12,13 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let destinationRefreshControl = UIRefreshControl()
     private let timetableRefreshControl = UIRefreshControl()
     private let shuttleRealtimeSection: [String.LocalizationValue]
-    private let refreshMethod: () -> Void
-    private let showEntireTimetable: (ShuttleStopEnum, Int) -> Void
-    private let showViaVCByOrder: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
-    private let showViaVCByDestination: (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void
-    private let showStopVC: (ShuttleStopEnum) -> Void
-    private let showBusAlternativeStop: (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void
-    private let showAlarmVC: (ShuttleStopEnum, ShuttleAlarmContext) -> Void
+    private let refreshMethod: @MainActor () -> Void
+    private let showEntireTimetable: @MainActor (ShuttleStopEnum, Int) -> Void
+    private let showViaVCByOrder: @MainActor (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
+    private let showViaVCByDestination: @MainActor (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void
+    private let showStopVC: @MainActor (ShuttleStopEnum) -> Void
+    private let showBusAlternativeStop: @MainActor (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void
+    private let showAlarmVC: @MainActor (ShuttleStopEnum, ShuttleAlarmContext) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
@@ -72,13 +72,13 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     required init(
         stopID: ShuttleStopEnum,
-        refreshMethod: @escaping () -> Void,
-        showEntireTimetable: @escaping (ShuttleStopEnum, Int) -> Void,
-        showViaVCByOrder: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
-        showViaVCByDestination: @escaping (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void,
-        showStopVC: @escaping (ShuttleStopEnum) -> Void,
-        showBusAlternativeStop: @escaping (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void,
-        showAlarmVC: @escaping (ShuttleStopEnum, ShuttleAlarmContext) -> Void
+        refreshMethod: @escaping @MainActor () -> Void,
+        showEntireTimetable: @escaping @MainActor (ShuttleStopEnum, Int) -> Void,
+        showViaVCByOrder: @escaping @MainActor (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void,
+        showViaVCByDestination: @escaping @MainActor (ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Void,
+        showStopVC: @escaping @MainActor (ShuttleStopEnum) -> Void,
+        showBusAlternativeStop: @escaping @MainActor (ShuttleStopEnum, ShuttleBusAlternativeDisplayData) -> Void,
+        showAlarmVC: @escaping @MainActor (ShuttleStopEnum, ShuttleAlarmContext) -> Void
     ) {
         self.stopID = stopID
         if self.stopID == .dormiotryOut || self.stopID == .shuttlecockOut {

@@ -5,7 +5,7 @@
 
 import Foundation
 import OSLog
-import Translation
+@preconcurrency import Translation
 import UIKit
 
 @MainActor

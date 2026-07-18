@@ -1,7 +1,7 @@
 import UIKit
 
 class ShuttleRealtimeTableFooterView: UIView {
-    private let showStopModal: (_ stop: ShuttleStopEnum) -> Void
+    private let showStopModal: @MainActor (_ stop: ShuttleStopEnum) -> Void
     private let stopID: ShuttleStopEnum
     private var bottomInset: CGFloat = 40
     let showStopModalButton = UIButton().then {
@@ -13,7 +13,7 @@ class ShuttleRealtimeTableFooterView: UIView {
         $0.tintColor = .plainButtonText
     }
 
-    init(parentView: UIView, stopID: ShuttleStopEnum, showStopModal: @escaping (_ stop: ShuttleStopEnum) -> Void) {
+    init(parentView: UIView, stopID: ShuttleStopEnum, showStopModal: @escaping @MainActor (_ stop: ShuttleStopEnum) -> Void) {
         self.showStopModal = showStopModal
         self.stopID = stopID
         super.init(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: 90))

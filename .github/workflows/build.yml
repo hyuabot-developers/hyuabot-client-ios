@@ -69,7 +69,7 @@ jobs:
           set -euo pipefail
           rm -f apollo-ios-cli
           curl -L \
-            https://github.com/apollographql/apollo-ios/releases/download/2.1.0/apollo-ios-cli.tar.gz \
+            https://github.com/apollographql/apollo-ios/releases/download/2.2.0/apollo-ios-cli.tar.gz \
             -o apollo-ios-cli.tar.gz
           tar -xzf apollo-ios-cli.tar.gz
           rm apollo-ios-cli.tar.gz

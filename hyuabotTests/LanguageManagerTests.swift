@@ -20,11 +20,15 @@ final class LanguageManagerTests: XCTestCase {
         super.tearDown()
     }
 
+    @MainActor
     func testIsFirstLaunchOnlyReturnsTrueOnce() {
-        XCTAssertTrue(LanguageManager.shared.isFirstLaunch)
-        XCTAssertFalse(LanguageManager.shared.isFirstLaunch)
+        let firstLaunch = LanguageManager.shared.isFirstLaunch
+        let secondLaunch = LanguageManager.shared.isFirstLaunch
+        XCTAssertTrue(firstLaunch)
+        XCTAssertFalse(secondLaunch)
     }
 
+    @MainActor
     func testMarkSuggestionShownPersistsFlag() {
         XCTAssertFalse(UserDefaults.standard.bool(forKey: suggestionShownKey))
 

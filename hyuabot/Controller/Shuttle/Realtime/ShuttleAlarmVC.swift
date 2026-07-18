@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import CoreLocation
 import SnapKit
 import Then
@@ -228,7 +230,9 @@ class ShuttleAlarmVC: UIViewController {
         return components.url?.absoluteString ?? "hyuabot://shuttle?stop=\(context.boardingStop.id)"
     }
 
-    private func requestNotificationAndLocationAuthorization(completion: @escaping (Bool) -> Void) {
+    private func requestNotificationAndLocationAuthorization(
+        completion: @escaping @MainActor @Sendable (Bool) -> Void
+    ) {
         requestNotificationAuthorization { [weak self] granted in
             guard let self else { return }
             guard granted else {
@@ -241,7 +245,7 @@ class ShuttleAlarmVC: UIViewController {
         }
     }
 
-    private func requestNotificationAuthorization(completion: @escaping (Bool) -> Void) {
+    private func requestNotificationAuthorization(completion: @escaping @MainActor @Sendable (Bool) -> Void) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
             DispatchQueue.main.async {
                 completion(granted)
@@ -321,9 +325,10 @@ class ShuttleAlarmVC: UIViewController {
     }
 }
 
-private final class ShuttleAlarmLocationPermissionRequester: NSObject, CLLocationManagerDelegate {
+@MainActor
+private final class ShuttleAlarmLocationPermissionRequester: NSObject, @preconcurrency CLLocationManagerDelegate {
     private let manager = CLLocationManager()
-    private var completion: (() -> Void)?
+    private var completion: (@MainActor @Sendable () -> Void)?
     private var shouldRequestAlways = false
 
     override init() {
@@ -331,7 +336,7 @@ private final class ShuttleAlarmLocationPermissionRequester: NSObject, CLLocatio
         manager.delegate = self
     }
 
-    func requestIfNeeded(completion: @escaping () -> Void) {
+    func requestIfNeeded(completion: @escaping @MainActor @Sendable () -> Void) {
         shouldRequestAlways = true
         switch manager.authorizationStatus {
         case .notDetermined:
@@ -516,12 +521,15 @@ extension Notification.Name {
     static let shuttleBoardingAlarmStateDidChange = Notification.Name("shuttleBoardingAlarmStateDidChange")
 }
 
-final class ShuttleAlarmNotificationService {
+final class ShuttleAlarmNotificationService: @unchecked Sendable {
     static let shared = ShuttleAlarmNotificationService()
 
     private init() {}
 
-    func activeStates(for key: String, completion: @escaping (_ boarding: Bool, _ alighting: Bool) -> Void) {
+    func activeStates(
+        for key: String,
+        completion: @escaping @MainActor @Sendable (_ boarding: Bool, _ alighting: Bool) -> Void
+    ) {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let ids = Set(requests.map(\.identifier))
             DispatchQueue.main.async {
@@ -530,7 +538,7 @@ final class ShuttleAlarmNotificationService {
         }
     }
 
-    func activeAlarmKeys(completion: @escaping (Set<String>) -> Void) {
+    func activeAlarmKeys(completion: @escaping @MainActor @Sendable (Set<String>) -> Void) {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let keys = requests.compactMap { request -> String? in
                 guard self.isShuttleAlarmIdentifier(request.identifier) else { return nil }
@@ -547,11 +555,11 @@ final class ShuttleAlarmNotificationService {
         }
     }
 
-    func activeBoardingKeys(completion: @escaping (Set<String>) -> Void) {
+    func activeBoardingKeys(completion: @escaping @MainActor @Sendable (Set<String>) -> Void) {
         activeAlarmKeys(completion: completion)
     }
 
-    func activeBoardingAlarm(completion: @escaping (ShuttleActiveBoardingAlarm?) -> Void) {
+    func activeBoardingAlarm(completion: @escaping @MainActor @Sendable (ShuttleActiveBoardingAlarm?) -> Void) {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let alarm = requests.compactMap { request -> ShuttleActiveBoardingAlarm? in
                 guard request.identifier.hasSuffix(".boarding"),
@@ -576,6 +584,7 @@ final class ShuttleAlarmNotificationService {
         }
     }
 
+    @MainActor
     func scheduleBoardingAlarm(context: ShuttleAlarmContext) {
         let content = UNMutableNotificationContent()
         content.title = String(format: String(localized: "shuttle.alarm.boarding.notification.title"), context.boardingStop.name)
@@ -601,6 +610,7 @@ final class ShuttleAlarmNotificationService {
         }
     }
 
+    @MainActor
     func scheduleAlightingAlarm(context: ShuttleAlarmContext, destination: ShuttleAlarmStop) {
         let content = UNMutableNotificationContent()
         content.title = String(format: String(localized: "shuttle.alarm.alighting.notification.title"), destination.name)
@@ -623,6 +633,7 @@ final class ShuttleAlarmNotificationService {
         }
     }
 
+    @MainActor
     func fireAlightingProximityAlert(context: ShuttleAlarmContext, destination: ShuttleAlarmStop, distance: Int) {
         cancelAlightingAlarm(for: context.key)
         let content = UNMutableNotificationContent()
@@ -647,19 +658,27 @@ final class ShuttleAlarmNotificationService {
         NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
     }
 
+    @MainActor
     func cancelBoardingAlarm(for key: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [boardingIdentifier(key)])
         ShuttleBoardingLiveActivityManager.shared.end(for: key)
         NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
     }
 
+    @MainActor
     func cancelAlightingAlarm(for key: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [alightingIdentifier(key)])
         ShuttleBoardingLiveActivityManager.shared.end(for: key)
         NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
     }
 
-    private func schedule(identifier: String, content: UNNotificationContent, date: Date, completion: (() -> Void)? = nil) {
+    @MainActor
+    private func schedule(
+        identifier: String,
+        content: UNNotificationContent,
+        date: Date,
+        completion: (@MainActor () -> Void)? = nil
+    ) {
         guard date > Date.now else { return }
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
@@ -671,7 +690,8 @@ final class ShuttleAlarmNotificationService {
         }
     }
 
-    private func replaceShuttleAlarm(scheduleNewAlarm: @escaping () -> Void) {
+    @MainActor
+    private func replaceShuttleAlarm(scheduleNewAlarm: @escaping @MainActor () -> Void) {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let identifiers = requests
                 .map(\.identifier)

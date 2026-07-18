@@ -1,6 +1,7 @@
 import Api
 import RxSwift
 
+@MainActor
 class SubwayTimetableData {
     static let shared = SubwayTimetableData()
     let isLoading = BehaviorSubject<Bool>(value: false)

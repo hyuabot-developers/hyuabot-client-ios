@@ -1,6 +1,7 @@
 import SnapKit
 import UIKit
 
+@MainActor
 protocol TabViewDelegate: AnyObject {
     func didMoveToTab(index: Int)
 }

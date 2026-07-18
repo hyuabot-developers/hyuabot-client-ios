@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 protocol ContentViewDelegate: AnyObject {
     func didMoveToPage(index: Int)
 }

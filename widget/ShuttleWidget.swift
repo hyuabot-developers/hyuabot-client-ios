@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import Api
 import Apollo
 import AppIntents
@@ -28,6 +30,18 @@ enum ShuttleErrorState {
 }
 
 // MARK: - Helpers
+
+final class WidgetCompletion<Value>: @unchecked Sendable {
+    private let completion: (Value) -> Void
+
+    init(_ completion: @escaping (Value) -> Void) {
+        self.completion = completion
+    }
+
+    func callAsFunction(_ value: Value) {
+        completion(value)
+    }
+}
 
 func maxTimesInWidth(_ width: CGFloat) -> Int {
     let destWidth: CGFloat = 80
@@ -141,6 +155,7 @@ struct ShuttleProvider: TimelineProvider {
             completion(placeholder(in: context))
             return
         }
+        let completion = WidgetCompletion(completion)
         Task {
             let entry = await fetchEntry()
             completion(entry)
@@ -148,6 +163,7 @@ struct ShuttleProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<ShuttleEntry>) -> Void) {
+        let completion = WidgetCompletion(completion)
         Task {
             let entry = await fetchEntry()
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)!

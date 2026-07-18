@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 protocol TabItemProtocol {
     func onSelected()
     func onDeselected()

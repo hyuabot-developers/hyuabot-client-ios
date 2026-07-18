@@ -583,7 +583,8 @@ final class UIQualityUITests: XCTestCase {
 
             let overlaps = app.staticTexts.allElementsBoundByIndex
                 .filter { $0.exists && !$0.frame.isEmpty && $0.frame.intersects(frame.insetBy(dx: -4, dy: -4)) }
-                .map(\.debugLabel)
+                // swiftformat:disable:next preferKeyPath
+                .map { $0.debugLabel }
 
             if !overlaps.isEmpty {
                 let overlapText = overlaps.joined(separator: ", ")

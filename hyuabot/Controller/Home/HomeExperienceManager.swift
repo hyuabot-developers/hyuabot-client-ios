@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 enum HomeExperienceManager {
     private static let enabledKey = "homeExperienceEnabled"
     private static let promptDecisionKey = "homeExperiencePromptDecision"

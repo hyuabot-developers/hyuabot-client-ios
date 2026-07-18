@@ -9,6 +9,7 @@ struct SubwayCombinedRealtimeData {
     let chojiSeohae: SubwayRealtimePageQuery.Data.Subway?
 }
 
+@MainActor
 class SubwayRealtimeData {
     static let shared = SubwayRealtimeData()
     // Subway Realtime Data

@@ -1,6 +1,7 @@
 import Api
 import RxSwift
 
+@MainActor
 class BusTimetableData {
     static let shared = BusTimetableData()
     // Bus Timetable Query

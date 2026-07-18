@@ -6,11 +6,11 @@ class BusRealtimeTabVC: UIViewController {
     let tabType: BusRealtimeType
     private let disposeBag = DisposeBag()
     private let refreshControl = UIRefreshControl()
-    private let refreshMethod: () -> Void
+    private let refreshMethod: @MainActor () -> Void
     private let busRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (Int32, [Int32], String.LocalizationValue) -> Void
-    private let showDepartureLog: (Int32, [Int32]) -> Void
-    private let showStopVC: (Int32, [Int32]) -> Void
+    private let showEntireTimetable: @MainActor (Int32, [Int32], String.LocalizationValue) -> Void
+    private let showDepartureLog: @MainActor (Int32, [Int32]) -> Void
+    private let showStopVC: @MainActor (Int32, [Int32]) -> Void
     private var showsSkeleton = true
     private lazy var busRealtimeTableView: UITableView = .init().then {
         $0.delegate = self
@@ -38,10 +38,10 @@ class BusRealtimeTabVC: UIViewController {
 
     required init(
         tabType: BusRealtimeType,
-        refreshMethod: @escaping () -> Void,
-        showEntireTimetable: @escaping (Int32, [Int32], String.LocalizationValue) -> Void,
-        showDepartureLog: @escaping (Int32, [Int32]) -> Void,
-        showStopVC: @escaping (Int32, [Int32]) -> Void
+        refreshMethod: @escaping @MainActor () -> Void,
+        showEntireTimetable: @escaping @MainActor (Int32, [Int32], String.LocalizationValue) -> Void,
+        showDepartureLog: @escaping @MainActor (Int32, [Int32]) -> Void,
+        showStopVC: @escaping @MainActor (Int32, [Int32]) -> Void
     ) {
         self.tabType = tabType
         self.refreshMethod = refreshMethod
