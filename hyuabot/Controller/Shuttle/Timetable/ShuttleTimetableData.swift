@@ -1,6 +1,7 @@
 import Api
 import RxSwift
 
+@MainActor
 class ShuttleTimetableData {
     static let shared = ShuttleTimetableData()
     private init() {}

@@ -1,19 +1,13 @@
 import Foundation
 
 #if canImport(ActivityKit)
-    import ActivityKit
+    @preconcurrency import ActivityKit
 
     @available(iOS 16.1, *)
-    final class ShuttleLiveActivityRemotePushService {
+    final class ShuttleLiveActivityRemotePushService: Sendable {
         static let shared = ShuttleLiveActivityRemotePushService()
 
         private let endpoint = URL(string: "https://backend.hyuabot.app/api/v1/live-activity/shuttle")!
-        private let encoder: JSONEncoder = {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            return encoder
-        }()
-
         private init() {}
 
         func register(
@@ -45,6 +39,8 @@ import Foundation
             )
 
             do {
+                let encoder = JSONEncoder()
+                encoder.dateEncodingStrategy = .iso8601
                 var request = URLRequest(url: endpoint)
                 request.httpMethod = "POST"
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")

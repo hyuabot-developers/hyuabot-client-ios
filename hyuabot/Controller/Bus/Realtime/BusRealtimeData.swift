@@ -2,6 +2,7 @@ import Api
 import Foundation
 import RxSwift
 
+@MainActor
 class BusRealtimeData {
     static let shared = BusRealtimeData()
     private init() {}

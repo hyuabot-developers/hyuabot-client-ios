@@ -1,6 +1,7 @@
 import StoreKit
 import UIKit
 
+@MainActor
 final class ReviewRequestManager {
     static let shared = ReviewRequestManager()
     private init() {}

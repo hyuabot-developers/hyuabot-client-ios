@@ -2,6 +2,7 @@ import Api
 import Foundation
 import RxSwift
 
+@MainActor
 class CafeteriaData {
     static let shared = CafeteriaData()
     private init() {}

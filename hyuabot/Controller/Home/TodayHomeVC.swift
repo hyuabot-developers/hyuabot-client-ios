@@ -2484,7 +2484,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 }
 
-extension TodayHomeVC: CLLocationManagerDelegate {
+extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last,
               let nearestDeparture = HomeDeparture.allCases.min(by: {

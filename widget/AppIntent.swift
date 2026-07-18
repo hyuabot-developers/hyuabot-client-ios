@@ -2,7 +2,7 @@ import AppIntents
 import WidgetKit
 
 struct RefreshCafeteriaIntent: AppIntent {
-    static var title: LocalizedStringResource = "Refresh Cafeteria Widget"
+    static let title: LocalizedStringResource = "Refresh Cafeteria Widget"
     func perform() async throws -> some IntentResult {
         WidgetCenter.shared.reloadTimelines(ofKind: "CafeteriaWidget")
         return .result()
@@ -10,7 +10,7 @@ struct RefreshCafeteriaIntent: AppIntent {
 }
 
 struct RefreshShuttleIntent: AppIntent {
-    static var title: LocalizedStringResource = "Refresh Shuttle Widget"
+    static let title: LocalizedStringResource = "Refresh Shuttle Widget"
     func perform() async throws -> some IntentResult {
         WidgetCenter.shared.reloadTimelines(ofKind: "ShuttleWidget")
         return .result()
@@ -18,7 +18,7 @@ struct RefreshShuttleIntent: AppIntent {
 }
 
 struct RefreshTransferIntent: AppIntent {
-    static var title: LocalizedStringResource = "Refresh Transfer Widget"
+    static let title: LocalizedStringResource = "Refresh Transfer Widget"
     func perform() async throws -> some IntentResult {
         WidgetCenter.shared.reloadTimelines(ofKind: "TransferWidget")
         return .result()

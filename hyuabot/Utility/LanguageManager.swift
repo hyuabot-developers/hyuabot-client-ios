@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class LanguageManager {
     static let shared = LanguageManager()
     private init() {}

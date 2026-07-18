@@ -7,9 +7,9 @@ class SubwayRealtimeTabVC: UIViewController {
     private let tabType: SubwayTabType
     private let disposeBag = DisposeBag()
     private let refreshControl = UIRefreshControl()
-    private let refreshMethod: () -> Void
+    private let refreshMethod: @MainActor () -> Void
     private let subwayRealtimeSection: [String.LocalizationValue]
-    private let showEntireTimetable: (String.LocalizationValue, SubwayHeadingEnum) -> Void
+    private let showEntireTimetable: @MainActor (String.LocalizationValue, SubwayHeadingEnum) -> Void
     private var showsSkeleton = true
     private lazy var subwayRealtimeTableView: UITableView = .init().then {
         $0.delegate = self
@@ -39,8 +39,8 @@ class SubwayRealtimeTabVC: UIViewController {
 
     required init(
         tabType: SubwayTabType,
-        refreshMethod: @escaping () -> Void,
-        showEntireTimetable: @escaping (String.LocalizationValue, SubwayHeadingEnum) -> Void
+        refreshMethod: @escaping @MainActor () -> Void,
+        showEntireTimetable: @escaping @MainActor (String.LocalizationValue, SubwayHeadingEnum) -> Void
     ) {
         self.tabType = tabType
         self.refreshMethod = refreshMethod

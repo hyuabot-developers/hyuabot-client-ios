@@ -1,11 +1,15 @@
+// swiftlint:disable file_length
+
 import CoreLocation
 import Foundation
 import UIKit
 
 #if canImport(ActivityKit)
-    import ActivityKit
+    @preconcurrency import ActivityKit
 
-    final class ShuttleBoardingLiveActivityManager: NSObject, CLLocationManagerDelegate {
+    // swiftlint:disable type_body_length
+    @MainActor
+    final class ShuttleBoardingLiveActivityManager: NSObject, @preconcurrency CLLocationManagerDelegate {
         static let shared = ShuttleBoardingLiveActivityManager()
 
         private var updateTasks: [String: Task<Void, Never>] = [:]
@@ -667,6 +671,8 @@ import UIKit
             }
         }
     }
+
+    // swiftlint:enable type_body_length
 
     private extension Comparable {
         func clamped(to limits: ClosedRange<Self>) -> Self {

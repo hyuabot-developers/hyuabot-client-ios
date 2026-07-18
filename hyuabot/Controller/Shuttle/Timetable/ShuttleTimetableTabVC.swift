@@ -4,7 +4,7 @@ import UIKit
 
 class ShuttleTimetableTabVC: UIViewController {
     private let isWeekdays: Bool
-    private let showViaVC: (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
+    private let showViaVC: @MainActor (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
     private let disposeBag = DisposeBag()
     private var showsSkeleton = false
     private lazy var shuttleTimetableTableView: UITableView = .init().then {
@@ -17,7 +17,10 @@ class ShuttleTimetableTabVC: UIViewController {
         $0.register(ShuttleTimetableSkeletonCellView.self, forCellReuseIdentifier: ShuttleTimetableSkeletonCellView.reuseIdentifier)
     }
 
-    init(isWeekdays: Bool, showViaVC: @escaping (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void) {
+    init(
+        isWeekdays: Bool,
+        showViaVC: @escaping @MainActor (ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
+    ) {
         self.isWeekdays = isWeekdays
         self.showViaVC = showViaVC
         super.init(nibName: nil, bundle: nil)

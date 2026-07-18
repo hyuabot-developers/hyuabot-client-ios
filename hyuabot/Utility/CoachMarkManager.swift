@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class CoachMarkManager {
     static let shared = CoachMarkManager()
     private init() {}

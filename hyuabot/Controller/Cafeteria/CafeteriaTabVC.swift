@@ -5,7 +5,7 @@ import UIKit
 class CafeteriaTabVC: UIViewController {
     private let disposeBag = DisposeBag()
     private let cafeteriaType: CafeteriaType
-    private let showCafeteriaInfoVC: (Int) -> Void
+    private let showCafeteriaInfoVC: @MainActor (Int) -> Void
     private var showsSkeleton = true
     private let noDataLabel = UILabel().then {
         $0.text = String(localized: "cafeteria.no.data")
@@ -28,7 +28,7 @@ class CafeteriaTabVC: UIViewController {
         $0.register(CafeteriaSkeletonCellView.self, forCellReuseIdentifier: CafeteriaSkeletonCellView.reuseIdentifier)
     }
 
-    required init(cafeteriaType: CafeteriaType, showCafeteriaInfoVC: @escaping (Int) -> Void) {
+    required init(cafeteriaType: CafeteriaType, showCafeteriaInfoVC: @escaping @MainActor (Int) -> Void) {
         self.cafeteriaType = cafeteriaType
         self.showCafeteriaInfoVC = showCafeteriaInfoVC
         super.init(nibName: nil, bundle: nil)

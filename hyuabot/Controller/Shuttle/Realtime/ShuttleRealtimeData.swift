@@ -45,6 +45,7 @@ struct ShuttleAlarmContext: Equatable {
     }
 }
 
+@MainActor
 class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
     private init() {}

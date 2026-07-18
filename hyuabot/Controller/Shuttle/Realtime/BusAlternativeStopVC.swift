@@ -110,15 +110,17 @@ class BusAlternativeStopVC: UIViewController {
         request.requestsAlternateRoutes = false
 
         MKDirections(request: request).calculate { [weak self] response, _ in
-            guard let self else { return }
-            DispatchQueue.main.async {
-                guard let route = response?.routes.first else {
-                    self.drawFallbackRoute()
-                    return
+            guard let route = response?.routes.first else {
+                DispatchQueue.main.async { [weak self] in
+                    self?.drawFallbackRoute()
                 }
-                let coordinates = route.polyline.coordinates
-                Self.routeCache.set(coordinates, for: self.routeCacheKey)
-                self.drawRoute(with: coordinates)
+                return
+            }
+            let coordinates = route.polyline.coordinates
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                Self.routeCache.set(coordinates, for: routeCacheKey)
+                drawRoute(with: coordinates)
             }
         }
     }

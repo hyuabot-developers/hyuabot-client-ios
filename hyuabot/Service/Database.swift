@@ -1,7 +1,7 @@
 import RealmSwift
 import UIKit
 
-final class Database {
+final class Database: @unchecked Sendable {
     static let shared = Database()
     let database: Realm
     private init() {

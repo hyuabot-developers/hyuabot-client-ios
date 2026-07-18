@@ -5,7 +5,7 @@
 
 import OSLog
 import SwiftUI
-import Translation
+@preconcurrency import Translation
 
 @available(iOS 26.0, *)
 struct TranslationPreparationView: View {

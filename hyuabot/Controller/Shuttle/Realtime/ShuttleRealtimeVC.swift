@@ -1055,7 +1055,7 @@ extension ShuttleRealtimeVC {
     }
 }
 
-extension ShuttleRealtimeVC: CLLocationManagerDelegate {
+extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let currentLocation = locations.last else { return }
         var distances = [CLLocationDistance]()
