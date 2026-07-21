@@ -9126,6 +9126,38 @@
         }
       }
     },
+    "licenses.empty" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "License information is unavailable." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライセンス情報を表示できません。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "라이선스 정보를 불러올 수 없습니다." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法显示许可信息。" } }
+      }
+    },
+    "licenses.no_results" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No matching libraries." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "一致するライブラリはありません。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "일치하는 라이브러리가 없습니다." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "没有匹配的库。" } }
+      }
+    },
+    "licenses.search" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search libraries" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライブラリを検索" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "라이브러리 검색" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索库" } }
+      }
+    },
+    "licenses.source" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Source" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ソース" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "소스" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "源代码" } }
+      }
+    },
     "setting.analytics" : {
       "localizations" : {
         "en" : {
@@ -9292,6 +9324,22 @@
             "value" : "语言设置"
           }
         }
+      }
+    },
+    "setting.open_source_licenses" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Source Licenses" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "オープンソースライセンス" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "오픈소스 라이선스" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开源许可" } }
+      }
+    },
+    "setting.privacy_policy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy Policy" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "プライバシーポリシー" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "개인정보처리방침" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "隐私政策" } }
       }
     },
     "setting.theme" : {

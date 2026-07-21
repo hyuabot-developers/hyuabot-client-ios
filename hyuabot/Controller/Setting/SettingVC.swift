@@ -1,3 +1,4 @@
+import SafariServices
 import UIKit
 
 class SettingVC: UIViewController {
@@ -7,6 +8,8 @@ class SettingVC: UIViewController {
         "globe",
         "chart.bar.fill",
         "questionmark.circle",
+        "hand.raised.fill",
+        "doc.text.fill",
         "person.circle",
         "info.circle.fill"
     ]
@@ -16,6 +19,8 @@ class SettingVC: UIViewController {
         "setting.language",
         "setting.analytics",
         "setting.coachmark.reset",
+        "setting.privacy_policy",
+        "setting.open_source_licenses",
         "setting.developer",
         "setting.version"
     ]
@@ -25,6 +30,8 @@ class SettingVC: UIViewController {
         "setting.language",
         "setting.analytics",
         "setting.coachmark.reset",
+        "setting.privacy_policy",
+        "setting.open_source_licenses",
         "setting.developer",
         "setting.version"
     ]
@@ -126,7 +133,20 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
             openAppSetting()
         } else if titles[indexPath.row] == "setting.coachmark.reset" {
             resetCoachMarks()
+        } else if titles[indexPath.row] == "setting.privacy_policy" {
+            openPrivacyPolicy()
+        } else if titles[indexPath.row] == "setting.open_source_licenses" {
+            let viewController = OpenSourceLicensesVC()
+            viewController.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(viewController, animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    private func openPrivacyPolicy() {
+        guard let url = URL(string: "https://jil8885.github.io/privacy_policy") else { return }
+        let viewController = SFSafariViewController(url: url)
+        viewController.dismissButtonStyle = .close
+        present(viewController, animated: true)
     }
 }
