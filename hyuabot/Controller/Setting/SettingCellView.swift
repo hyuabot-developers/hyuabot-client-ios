@@ -128,6 +128,7 @@ class SettingCellView: UITableViewCell {
     }
 
     func setupUI(imageName: String, title: String.LocalizationValue, onAnalyticsConsentChanged: ((Bool) -> Void)? = nil) {
+        selectionStyle = .none
         iconImageView.image = UIImage(systemName: imageName)
         titleLabel.text = String(localized: title)
         self.onAnalyticsConsentChanged = nil
@@ -151,6 +152,10 @@ class SettingCellView: UITableViewCell {
             }
         } else if title == "setting.language" {
             arrowImageView.isHidden = false
+            selectionStyle = .default
+        } else if title == "setting.privacy_policy" || title == "setting.open_source_licenses" {
+            arrowImageView.isHidden = false
+            selectionStyle = .default
         } else if title == "setting.analytics" {
             analyticsSwitch.isHidden = false
             analyticsSwitch.isOn = AnalyticsManager.isCollectionEnabled
