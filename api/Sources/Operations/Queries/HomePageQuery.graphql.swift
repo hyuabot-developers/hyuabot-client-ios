@@ -8,7 +8,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
   public static let operationName: String = "HomePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HomePageQuery($language: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes } } subway( input: { keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
+      #"query HomePageQuery($language: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt currentTemperature minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationType primaryCondition } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes } } subway( input: { keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
     ))
 
   public var language: String
@@ -49,6 +49,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
     @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.Query }
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+      .field("homeWeather", HomeWeather?.self),
       .field("notices", [Notice].self, arguments: ["input": [
         "language": .variable("language"),
         "category": "셔틀"
@@ -110,12 +111,48 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
       HomePageQuery.Data.self
     ] }
 
+    public var homeWeather: HomeWeather? { __data["homeWeather"] }
     public var notices: [Notice] { __data["notices"] }
     public var shuttle: Shuttle { __data["shuttle"] }
     public var transferBus: [TransferBus] { __data["transferBus"] }
     public var subway: [Subway] { __data["subway"] }
     public var bus: [Bus] { __data["bus"] }
     public var cafeteria: [Cafeterium] { __data["cafeteria"] }
+
+    /// HomeWeather
+    ///
+    /// Parent Type: `HomeWeather`
+    nonisolated public struct HomeWeather: Api.SelectionSet {
+      @_spi(Unsafe) public let __data: DataDict
+      @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+      @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.HomeWeather }
+      @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+        .field("__typename", String.self),
+        .field("issuedAt", Api.DateTime.self),
+        .field("expiresAt", Api.DateTime.self),
+        .field("currentTemperature", Double?.self),
+        .field("minimumTemperature", Double?.self),
+        .field("maximumTemperature", Double?.self),
+        .field("precipitationProbabilityMax", Int.self),
+        .field("precipitationStartAt", Api.DateTime?.self),
+        .field("precipitationType", String.self),
+        .field("primaryCondition", String.self),
+      ] }
+      @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+        HomePageQuery.Data.HomeWeather.self
+      ] }
+
+      public var issuedAt: Api.DateTime { __data["issuedAt"] }
+      public var expiresAt: Api.DateTime { __data["expiresAt"] }
+      public var currentTemperature: Double? { __data["currentTemperature"] }
+      public var minimumTemperature: Double? { __data["minimumTemperature"] }
+      public var maximumTemperature: Double? { __data["maximumTemperature"] }
+      public var precipitationProbabilityMax: Int { __data["precipitationProbabilityMax"] }
+      public var precipitationStartAt: Api.DateTime? { __data["precipitationStartAt"] }
+      public var precipitationType: String { __data["precipitationType"] }
+      public var primaryCondition: String { __data["primaryCondition"] }
+    }
 
     /// Notice
     ///

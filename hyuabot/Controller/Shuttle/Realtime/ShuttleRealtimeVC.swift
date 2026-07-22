@@ -6,6 +6,14 @@ import UIKit
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeVC: UIViewController {
     private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+    private static let presenceStopIds = [
+        "dormitory_o",
+        "shuttlecock_o",
+        "station",
+        "terminal",
+        "jungang_stn",
+        "shuttlecock_i"
+    ]
 
     private let returnsToHome: Bool
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -188,9 +196,13 @@ class ShuttleRealtimeVC: UIViewController {
     private var hasLoadedInitialBusAlternativeData = false
     private var hasLoadedInitialNotices = false
     private var subscription: Disposable?
+    private var presenceSubscription: Disposable?
+    private let presenceBanner = ShuttlePresenceBannerView()
+    private var selectedPresenceIndex = 0
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
             sizeConfiguration: .fixed(width: 125, height: 52, spacing: 0),
+            optionView: self.presenceBanner,
             noticeView: self.noticeView,
             navigationBarEnabled: self.returnsToHome
         )
@@ -212,6 +224,11 @@ class ShuttleRealtimeVC: UIViewController {
             TabItem(title: String(localized: "shuttle.stop.jungang.station")),
             TabItem(title: String(localized: "shuttle.stop.shuttlecock.in"))
         ]
+        viewPager.onPageChanged = { [weak self] index in
+            self?.selectedPresenceIndex = index
+            self?.presenceBanner.update(viewerCount: nil)
+            self?.reportPresence()
+        }
         return viewPager
     }()
 
@@ -446,6 +463,7 @@ class ShuttleRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         startPolling()
+        startPresenceUpdates()
         noticeView.resumeAutoScroll()
         navigationController?.setNavigationBarHidden(!returnsToHome, animated: false)
         // Detect if the app is in the background
@@ -468,15 +486,54 @@ class ShuttleRealtimeVC: UIViewController {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
         stopPolling()
+        stopPresenceUpdates()
         noticeView.stopAutoScroll()
     }
 
     @objc func appDidEnterBackground() {
         stopPolling()
+        stopPresenceUpdates()
     }
 
     @objc func appWillEnterForeground() {
         startPolling()
+        startPresenceUpdates()
+    }
+
+    private func startPresenceUpdates() {
+        stopPresenceUpdates()
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            let previewCount = arguments.firstIndex(of: "-shuttlePresencePreview").flatMap { index in
+                arguments.indices.contains(index + 1) ? Int(arguments[index + 1]) : nil
+            }
+            if let count = previewCount {
+                presenceBanner.update(viewerCount: count)
+                return
+            }
+        #endif
+        reportPresence()
+        presenceSubscription = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.reportPresence() })
+    }
+
+    private func stopPresenceUpdates() {
+        presenceSubscription?.dispose()
+        presenceSubscription = nil
+        presenceBanner.update(viewerCount: nil)
+    }
+
+    private func reportPresence() {
+        guard view.window != nil, Self.presenceStopIds.indices.contains(selectedPresenceIndex) else { return }
+        let requestedIndex = selectedPresenceIndex
+        let stopId = Self.presenceStopIds[requestedIndex]
+        Task { [weak self] in
+            let count = await ShuttlePresenceService.shared.heartbeat(stopId: stopId)
+            await MainActor.run {
+                guard let self, self.selectedPresenceIndex == requestedIndex else { return }
+                self.presenceBanner.update(viewerCount: count)
+            }
+        }
     }
 
     @objc private func coachMarksDidReset() {

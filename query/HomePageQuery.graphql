@@ -6,6 +6,17 @@ query HomePageQuery(
     $campusID: Int!
     $busInput: [BusRouteStopInput!]!
 ) {
+    homeWeather {
+        issuedAt
+        expiresAt
+        currentTemperature
+        minimumTemperature
+        maximumTemperature
+        precipitationProbabilityMax
+        precipitationStartAt
+        precipitationType
+        primaryCondition
+    }
     notices(input: { language: $language, category: "셔틀" }) {
         notices {
             title

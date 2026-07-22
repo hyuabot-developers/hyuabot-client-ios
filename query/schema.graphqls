@@ -573,7 +573,8 @@ input PhonebookInput {
 }
 
 type Query {
-  notices(input: NoticeInput): [NoticeCategory!]!
+    homeWeather: HomeWeather
+    notices(input: NoticeInput): [NoticeCategory!]!
   calendar(input: AcademicCalendarInput): AcademicCalendar!
   phonebook(input: PhonebookInput): Phonebook!
   readingRoom: [ReadingRoom!]!
@@ -584,6 +585,18 @@ type Query {
   subway(input: SubwayInput!): [SubwayStation!]!
   shuttle(input: ShuttleInput!): Shuttle!
   _service: _Service!
+}
+
+type HomeWeather {
+    issuedAt: DateTime!
+    expiresAt: DateTime!
+    currentTemperature: Float
+    minimumTemperature: Float
+    maximumTemperature: Float
+    precipitationProbabilityMax: Int!
+    precipitationStartAt: DateTime
+    precipitationType: String!
+    primaryCondition: String!
 }
 
 """ 열람실 정보와 열람실 좌석 정보를 반환하는 쿼리입니다."""

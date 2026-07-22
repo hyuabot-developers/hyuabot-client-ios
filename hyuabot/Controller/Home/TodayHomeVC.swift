@@ -553,6 +553,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private let cafeteriaTitleLabel = UILabel()
     private let mealStack = UIStackView()
     private let refreshControl = UIRefreshControl()
+    private let homeHeroTitleLabel = UILabel()
+    private let homeHeroSubtitleLabel = UILabel()
+    private let homeWeatherIconView = UIImageView()
     private lazy var legacyBar = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.layer.borderWidth = 1 / UIScreen.main.scale
@@ -676,6 +679,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func makeHeaderView() -> UIView {
+        let container = UIView()
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = 12
@@ -693,21 +697,38 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         topRow.addArrangedSubview(eyebrow)
         topRow.addArrangedSubview(UIView())
 
-        let title = UILabel()
-        title.text = String(localized: "home.hero.title")
-        title.font = .godo(size: 28, weight: .bold)
-        title.textColor = .label
+        homeHeroTitleLabel.text = String(localized: "home.hero.title")
+        homeHeroTitleLabel.font = .godo(size: 28, weight: .bold)
+        homeHeroTitleLabel.textColor = .label
 
-        let subtitle = UILabel()
-        subtitle.text = String(localized: "home.hero.subtitle")
-        subtitle.font = .godo(size: 15, weight: .regular)
-        subtitle.textColor = .secondaryLabel
-        subtitle.numberOfLines = 0
+        homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+        homeHeroSubtitleLabel.font = .godo(size: 15, weight: .regular)
+        homeHeroSubtitleLabel.textColor = .secondaryLabel
+        homeHeroSubtitleLabel.numberOfLines = 0
+
+        homeWeatherIconView.tintColor = .hanyangBlue
+        homeWeatherIconView.alpha = 0.09
+        homeWeatherIconView.contentMode = .scaleAspectFit
+        homeWeatherIconView.isHidden = true
+        homeWeatherIconView.isAccessibilityElement = false
 
         stack.addArrangedSubview(topRow)
-        stack.addArrangedSubview(title)
-        stack.addArrangedSubview(subtitle)
-        return stack
+        stack.addArrangedSubview(homeHeroTitleLabel)
+        stack.addArrangedSubview(homeHeroSubtitleLabel)
+        container.addSubview(homeWeatherIconView)
+        container.addSubview(stack)
+        homeWeatherIconView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview()
+            make.centerY.equalToSuperview().offset(8)
+            make.width.height.equalTo(104)
+        }
+        stack.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        container.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(112)
+        }
+        return container
     }
 
     private func makeDestinationControlView() -> UIView {
@@ -870,9 +891,102 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func render() {
+        renderWeather()
         renderNotices()
         renderMovement()
         renderMeals()
+    }
+
+    private func renderWeather() {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if let condition = argumentValue(named: "-homeWeatherPreview", in: arguments)?.uppercased() {
+                renderWeather(
+                    condition: condition,
+                    currentTemperature: 28,
+                    minimumTemperature: 23,
+                    maximumTemperature: 31,
+                    precipitationProbabilityMax: 70,
+                    precipitationType: condition == "RAIN" ? "RAIN" : "NONE"
+                )
+                return
+            }
+        #endif
+        guard let weather = shuttleData?.homeWeather else {
+            homeHeroTitleLabel.text = String(localized: "home.hero.title")
+            homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+            homeWeatherIconView.isHidden = true
+            return
+        }
+
+        renderWeather(
+            condition: weather.primaryCondition,
+            currentTemperature: weather.currentTemperature,
+            minimumTemperature: weather.minimumTemperature,
+            maximumTemperature: weather.maximumTemperature,
+            precipitationProbabilityMax: weather.precipitationProbabilityMax,
+            precipitationType: weather.precipitationType
+        )
+    }
+
+    private func renderWeather(
+        condition: String,
+        currentTemperature: Double?,
+        minimumTemperature: Double?,
+        maximumTemperature: Double?,
+        precipitationProbabilityMax: Int,
+        precipitationType: String
+    ) {
+        let titleKey: String.LocalizationValue = if condition == "RAIN" {
+            "home.weather.rain.title"
+        } else if condition == "SLEET" {
+            "home.weather.sleet.title"
+        } else if condition == "SNOW" {
+            "home.weather.snow.title"
+        } else if let maximumTemperature, maximumTemperature >= 32 {
+            "home.weather.hot.title"
+        } else if let currentTemperature, currentTemperature <= -5 {
+            "home.weather.cold.title"
+        } else if condition == "CLEAR" {
+            "home.weather.clear.title"
+        } else {
+            "home.weather.cloudy.title"
+        }
+
+        let symbolName = switch condition {
+        case "RAIN": "cloud.rain.fill"
+        case "SLEET": "cloud.sleet.fill"
+        case "SNOW": "snowflake"
+        case "CLEAR": "sun.max.fill"
+        default: "cloud.fill"
+        }
+        homeHeroTitleLabel.text = String(localized: titleKey)
+        homeWeatherIconView.image = UIImage(systemName: symbolName)
+        homeWeatherIconView.isHidden = false
+
+        if let minimumTemperature, let maximumTemperature {
+            if precipitationType != "NONE" {
+                homeHeroSubtitleLabel.text = String(
+                    format: String(localized: "home.weather.precipitation.subtitle"),
+                    locale: Locale.current,
+                    precipitationProbabilityMax,
+                    minimumTemperature,
+                    maximumTemperature
+                )
+            } else if let currentTemperature {
+                homeHeroSubtitleLabel.text = String(
+                    format: String(localized: "home.weather.temperature.subtitle"),
+                    locale: Locale.current,
+                    currentTemperature,
+                    minimumTemperature,
+                    maximumTemperature
+                )
+            } else {
+                homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+            }
+        } else {
+            homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+        }
     }
 
     private func renderNotices() {
