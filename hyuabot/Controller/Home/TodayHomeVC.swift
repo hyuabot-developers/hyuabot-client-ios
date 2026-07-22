@@ -728,8 +728,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         homeHeroSubtitleLabel.textColor = .secondaryLabel
         homeHeroSubtitleLabel.numberOfLines = 0
 
-        homeWeatherIconView.tintColor = .hanyangBlue
-        homeWeatherIconView.alpha = 0.09
+        homeWeatherIconView.tintColor = traitCollection.userInterfaceStyle == .dark ? .white : .hanyangBlue
+        homeWeatherIconView.alpha = traitCollection.userInterfaceStyle == .dark ? 0.42 : 0.22
         homeWeatherIconView.contentMode = .scaleAspectFit
         homeWeatherIconView.isHidden = true
         homeWeatherIconView.isAccessibilityElement = false
@@ -741,7 +741,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         container.addSubview(stack)
         homeWeatherIconView.snp.makeConstraints { make in
             make.trailing.equalToSuperview()
-            make.centerY.equalToSuperview().offset(8)
+            make.bottom.equalTo(homeHeroSubtitleLabel.snp.bottom)
             make.width.height.equalTo(104)
         }
         stack.snp.makeConstraints { make in
@@ -751,6 +751,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.height.greaterThanOrEqualTo(112)
         }
         return container
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
+        homeWeatherIconView.tintColor = traitCollection.userInterfaceStyle == .dark ? .white : .hanyangBlue
+        homeWeatherIconView.alpha = traitCollection.userInterfaceStyle == .dark ? 0.42 : 0.22
     }
 
     private func makeDestinationControlView() -> UIView {

@@ -6382,10 +6382,10 @@
     },
     "home.weather.precipitation.subtitle" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$d%% chance of precipitation · %2$.0f°–%3$.0f° today" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "降水確率 %1$d%%・今日 %2$.0f°〜%3$.0f°" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "강수 확률 %1$d%% · 오늘 %2$.0f°~%3$.0f°" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "降水概率 %1$d%% · 今日 %2$.0f°～%3$.0f°" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$d%% chance of precipitation · %2$.0f°C–%3$.0f°C today" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "降水確率 %1$d%%・今日 %2$.0f°C〜%3$.0f°C" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "강수 확률 %1$d%% · 오늘 %2$.0f°C~%3$.0f°C" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "降水概率 %1$d%% · 今日 %2$.0f°C～%3$.0f°C" } }
       }
     },
     "home.weather.rain.title" : {
@@ -6414,10 +6414,10 @@
     },
     "home.weather.temperature.subtitle" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$.0f° now · %2$.0f°–%3$.0f° today" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°・今日 %2$.0f°〜%3$.0f°" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f° · 오늘 %2$.0f°~%3$.0f°" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f° · 今日 %2$.0f°～%3$.0f°" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$.0f°C now · %2$.0f°C–%3$.0f°C today" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C・今日 %2$.0f°C〜%3$.0f°C" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C · 오늘 %2$.0f°C~%3$.0f°C" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C · 今日 %2$.0f°C～%3$.0f°C" } }
       }
     },
     "shuttle.presence.viewers" : {
