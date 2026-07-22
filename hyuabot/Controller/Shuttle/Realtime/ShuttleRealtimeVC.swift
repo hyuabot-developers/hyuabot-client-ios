@@ -16,6 +16,7 @@ class ShuttleRealtimeVC: UIViewController {
     ]
 
     private let returnsToHome: Bool
+    private let initialStopID: String?
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
     private lazy var locationManager = CLLocationManager().then {
@@ -232,8 +233,9 @@ class ShuttleRealtimeVC: UIViewController {
         return viewPager
     }()
 
-    init(returnsToHome: Bool = false) {
+    init(returnsToHome: Bool = false, initialStopID: String? = nil) {
         self.returnsToHome = returnsToHome
+        self.initialStopID = initialStopID
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -244,6 +246,9 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        if let initialStopID {
+            scrollToStop(initialStopID)
+        }
         logScreenView(.shuttleRealtime)
         scheduleCoachMarksIfNeeded()
         promptHomeExperienceIfNeeded()

@@ -17,9 +17,9 @@ class ShuttleNC: UINavigationController {
         setViewControllers([ShuttleRealtimeVC()], animated: true)
     }
 
-    func showShuttleDetailFromHome() {
+    func showShuttleDetailFromHome(stopID: String? = nil) {
         updateTabBarItemForCurrentExperience()
-        pushViewController(ShuttleRealtimeVC(returnsToHome: true), animated: true)
+        pushViewController(ShuttleRealtimeVC(returnsToHome: true, initialStopID: stopID), animated: true)
     }
 
     func updateTabBarItemForCurrentExperience() {

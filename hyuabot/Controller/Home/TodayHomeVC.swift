@@ -2425,7 +2425,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     @objc private func openShuttleDetail() {
         AnalyticsManager.logSelect(.homeOpenShuttleDetail)
-        (navigationController as? ShuttleNC)?.showShuttleDetailFromHome()
+        let stopID = shuttleRoute(from: selectedDeparture, to: selectedDestination)?.stop
+        (navigationController as? ShuttleNC)?.showShuttleDetailFromHome(stopID: stopID)
     }
 
     @objc private func openCafeteria() {
