@@ -990,25 +990,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sangnoksu"
+            "value" : "City Bus"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "常緑樹"
+            "value" : "市内バス"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "상록수역"
+            "value" : "시내버스"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "常绿树站"
+            "value" : "市内公交"
           }
         }
       }
