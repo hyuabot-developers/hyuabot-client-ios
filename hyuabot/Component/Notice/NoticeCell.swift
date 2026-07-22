@@ -37,11 +37,7 @@ class NoticeCell: UICollectionViewCell {
 
     func setupUI(with notice: Notice) {
         titleLabel.textColor = titleColor
-        if notice.title.hasPrefix("[") {
-            titleLabel.setKoreanTranslatedText(notice.title)
-        } else {
-            titleLabel.setKoreanTranslatedText(String(format: String(localized: "notice.title.%@"), notice.title))
-        }
+        titleLabel.setKoreanTranslatedText(notice.title)
         contentView.isUserInteractionEnabled = notice.url != nil
     }
 
