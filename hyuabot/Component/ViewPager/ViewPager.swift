@@ -48,7 +48,7 @@ class ViewPager: UIView {
             if optionView != nil {
                 addSubview(optionView!)
                 noticeView!.snp.makeConstraints { make in
-                    make.top.equalToSuperview()
+                    make.top.equalToSuperview().inset(10)
                     make.bottom.equalToSuperview().inset(5)
                     make.leading.trailing.equalToSuperview().inset(10)
                 }
@@ -59,7 +59,7 @@ class ViewPager: UIView {
                 noticeContainer.snp.makeConstraints { make in
                     make.top.equalTo(self.optionView!.snp.bottom)
                     make.leading.trailing.equalToSuperview()
-                    make.height.equalTo(30)
+                    make.height.equalTo(40)
                 }
                 contentView.snp.makeConstraints { make in
                     make.leading.trailing.bottom.equalToSuperview()
