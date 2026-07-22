@@ -62,6 +62,19 @@ private enum HomeDeparture: CaseIterable {
         case .terminal, .jungang: [.dormitory]
         }
     }
+
+    func timetableStart(for destination: HomeDestination) -> String.LocalizationValue {
+        if case (.shuttlecock, .dormitory) = (self, destination) {
+            return "shuttle.stop.shuttlecock.in"
+        }
+        return switch self {
+        case .dormitory: "shuttle.stop.dormitory.out"
+        case .shuttlecock: "shuttle.stop.shuttlecock.out"
+        case .station: "shuttle.stop.station"
+        case .terminal: "shuttle.stop.terminal"
+        case .jungang: "shuttle.stop.jungang.station"
+        }
+    }
 }
 
 #if DEBUG
@@ -106,6 +119,15 @@ private enum HomeDestination: CaseIterable {
         case .terminal: "terminal"
         case .jungang: "jungang"
         case .dormitory: "dormitory"
+        }
+    }
+
+    var timetableDestination: String.LocalizationValue {
+        switch self {
+        case .station: "shuttle.destination.shorten.station"
+        case .terminal: "shuttle.destination.shorten.terminal"
+        case .jungang: "shuttle.destination.shorten.jungang_station"
+        case .dormitory: "shuttle.destination.shorten.campus"
         }
     }
 }
@@ -774,8 +796,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let header = makeSectionHeader(
             icon: "bus.fill",
             title: String(localized: "home.movement.title"),
-            buttonTitle: String(localized: "home.movement.detail"),
-            action: #selector(openShuttleDetail)
+            buttonTitle: String(localized: "home.movement.timetable"),
+            action: #selector(openShuttleTimetable)
         )
         movementStateLabel.font = .godo(size: 15, weight: .regular)
         movementStateLabel.textColor = .secondaryLabel
@@ -830,13 +852,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         iconView providedIconView: UIImageView? = nil,
         title: String,
         titleLabel providedTitleLabel: UILabel? = nil,
-        buttonTitle: String,
-        action: Selector
+        buttonTitle: String? = nil,
+        action: Selector? = nil,
+        showsChevron: Bool = true
     ) -> UIView {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 10
+        let titleRow = UIStackView()
+        titleRow.axis = .horizontal
+        titleRow.alignment = .center
+        titleRow.spacing = 10
 
         let imageView = providedIconView ?? UIImageView()
         imageView.image = UIImage(systemName: icon)
@@ -851,27 +874,41 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         label.font = .godo(size: 20, weight: .bold)
         label.textColor = .label
 
+        titleRow.addArrangedSubview(imageView)
+        titleRow.addArrangedSubview(label)
+        titleRow.addArrangedSubview(UIView())
+        if let buttonTitle, let action {
+            titleRow.addArrangedSubview(makeHeaderButton(
+                title: buttonTitle,
+                action: action,
+                showsChevron: showsChevron
+            ))
+        }
+        return titleRow
+    }
+
+    private func makeHeaderButton(title: String, action: Selector, showsChevron: Bool) -> UIButton {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
         config.baseForegroundColor = .plainButtonText
-        config.attributedTitle = AttributedString(buttonTitle, attributes: AttributeContainer([
+        config.attributedTitle = AttributedString(title, attributes: AttributeContainer([
             .font: UIFont.godo(size: 13, weight: .bold)
         ]))
-        config.image = UIImage(systemName: "chevron.right")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 13,
-            weight: .bold
-        ))
-        config.imagePlacement = .trailing
-        config.imagePadding = 3
-        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 4)
+        if showsChevron {
+            config.image = UIImage(systemName: "chevron.right")?.withConfiguration(UIImage.SymbolConfiguration(
+                pointSize: 13,
+                weight: .bold
+            ))
+            config.imagePlacement = .trailing
+            config.imagePadding = 3
+        }
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8)
         button.configuration = config
         button.addTarget(self, action: action, for: .touchUpInside)
-
-        stack.addArrangedSubview(imageView)
-        stack.addArrangedSubview(label)
-        stack.addArrangedSubview(UIView())
-        stack.addArrangedSubview(button)
-        return stack
+        button.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(44)
+        }
+        return button
     }
 
     private func cardView() -> UIView {
@@ -2423,10 +2460,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         (navigationController as? ShuttleNC)?.showLegacyShuttle()
     }
 
-    @objc private func openShuttleDetail() {
-        AnalyticsManager.logSelect(.homeOpenShuttleDetail)
-        let stopID = shuttleRoute(from: selectedDeparture, to: selectedDestination)?.stop
-        (navigationController as? ShuttleNC)?.showShuttleDetailFromHome(stopID: stopID)
+    @objc private func openShuttleTimetable() {
+        AnalyticsManager.logSelect(.homeOpenShuttleTimetable)
+        (navigationController as? ShuttleNC)?.showShuttleTimetableFromHome(
+            stopID: selectedDeparture.timetableStart(for: selectedDestination),
+            destination: selectedDestination.timetableDestination
+        )
     }
 
     @objc private func openCafeteria() {

@@ -116,6 +116,7 @@ enum AnalyticsItem: String, CaseIterable {
     case homeDismissPrompt = "home_dismiss_prompt"
     case homeOpenLegacyShuttle = "home_open_legacy_shuttle"
     case homeOpenShuttleDetail = "home_open_shuttle_detail"
+    case homeOpenShuttleTimetable = "home_open_shuttle_timetable"
     case homeOpenCafeteria = "home_open_cafeteria"
     case homeRefresh = "home_refresh"
     case homeSelectDestination = "home_select_destination"
