@@ -6,7 +6,6 @@ import UIKit
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeVC: UIViewController {
     private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
-    private static let showPresenceStatusKey = "showShuttlePresenceStatus"
     private static let presenceStopIds = [
         "dormitory_o",
         "shuttlecock_o",
@@ -1164,13 +1163,11 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private var showsPresenceStatus: Bool {
-        let defaults = UserDefaults.standard
-        guard defaults.object(forKey: Self.showPresenceStatusKey) != nil else { return true }
-        return defaults.bool(forKey: Self.showPresenceStatusKey)
+        ShuttlePresenceSettings.showsStatus
     }
 
     private func applyShowPresenceStatus(_ isOn: Bool) {
-        UserDefaults.standard.set(isOn, forKey: Self.showPresenceStatusKey)
+        ShuttlePresenceSettings.showsStatus = isOn
         if isOn {
             startPresenceUpdates()
         } else {

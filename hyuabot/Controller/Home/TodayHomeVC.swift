@@ -54,6 +54,19 @@ private enum HomeDeparture: CaseIterable {
         }
     }
 
+    func presenceStopID(for destination: HomeDestination) -> String {
+        if self == .shuttlecock, destination == .dormitory {
+            return "shuttlecock_i"
+        }
+        return switch self {
+        case .dormitory: "dormitory_o"
+        case .shuttlecock: "shuttlecock_o"
+        case .station: "station"
+        case .terminal: "terminal"
+        case .jungang: "jungang_stn"
+        }
+    }
+
     var destinations: [HomeDestination] {
         switch self {
         case .dormitory: [.station, .terminal, .jungang]
@@ -345,21 +358,25 @@ private enum SubwayTransferDestination: String, CaseIterable {
 
 private final class HomeQuickSettingsVC: UIViewController {
     var openLegacyShuttle: (() -> Void)?
+    var updateShowPresenceStatus: ((Bool) -> Void)?
     var updateShowBus50Transfer: ((Bool) -> Void)?
     var updateShowSubwayTransfer: ((Bool) -> Void)?
     var updateSubwayTransferDestination: ((SubwayTransferDestination) -> Void)?
-    let preferredSheetHeight: CGFloat = 370
+    let preferredSheetHeight: CGFloat = 460
 
     private let contentStack = UIStackView()
+    private let showPresenceStatusSwitch = UISwitch()
     private let showBus50TransferSwitch = UISwitch()
     private let showSubwayTransferSwitch = UISwitch()
     private let subwayDestinationControl = UISegmentedControl()
 
     init(
+        showPresenceStatus: Bool,
         showBus50Transfer: Bool,
         showSubwayTransfer: Bool,
         subwayTransferDestination: SubwayTransferDestination
     ) {
+        showPresenceStatusSwitch.isOn = showPresenceStatus
         showBus50TransferSwitch.isOn = showBus50Transfer
         showSubwayTransferSwitch.isOn = showSubwayTransfer
         super.init(nibName: nil, bundle: nil)
@@ -398,11 +415,18 @@ private final class HomeQuickSettingsVC: UIViewController {
         title.font = .godo(size: 20, weight: .bold)
         title.textColor = .label
 
+        showPresenceStatusSwitch.addTarget(self, action: #selector(onChangeShowPresenceStatus), for: .valueChanged)
         showBus50TransferSwitch.addTarget(self, action: #selector(onChangeShowBus50Transfer), for: .valueChanged)
         showSubwayTransferSwitch.addTarget(self, action: #selector(onChangeShowSubwayTransfer), for: .valueChanged)
         subwayDestinationControl.addTarget(self, action: #selector(onChangeSubwayTransferDestination), for: .valueChanged)
 
         contentStack.addArrangedSubview(title)
+        contentStack.addArrangedSubview(settingRow(
+            title: String(localized: "shuttle.quick_settings.presence.title"),
+            subtitle: String(localized: "shuttle.quick_settings.presence.subtitle"),
+            control: showPresenceStatusSwitch,
+            identifier: "home.quick_settings.presence_row"
+        ))
         contentStack.addArrangedSubview(settingRow(
             title: String(localized: "home.quick_settings.bus50_transfer.title"),
             subtitle: String(localized: "home.quick_settings.bus50_transfer.subtitle"),
@@ -532,6 +556,10 @@ private final class HomeQuickSettingsVC: UIViewController {
         updateShowBus50Transfer?(showBus50TransferSwitch.isOn)
     }
 
+    @objc private func onChangeShowPresenceStatus() {
+        updateShowPresenceStatus?(showPresenceStatusSwitch.isOn)
+    }
+
     @objc private func onChangeShowSubwayTransfer() {
         subwayDestinationControl.isEnabled = showSubwayTransferSwitch.isOn
         updateShowSubwayTransfer?(showSubwayTransferSwitch.isOn)
@@ -567,7 +595,37 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private let movementCard = UIStackView()
+    private let movementStateRow = UIStackView()
     private let movementStateLabel = UILabel()
+    private let presenceStatusPill = UIView().then {
+        $0.backgroundColor = .homeActionButtonBackground
+        $0.layer.cornerRadius = 15
+        $0.isAccessibilityElement = true
+        $0.accessibilityTraits = .staticText
+        $0.isHidden = true
+    }
+
+    private let presenceStatusIconView = UIImageView().then {
+        $0.image = UIImage(systemName: "person.2.fill")
+        $0.tintColor = .hanyangBlue
+        $0.contentMode = .scaleAspectFit
+        $0.isAccessibilityElement = false
+    }
+
+    private let presenceStatusLabel = UILabel().then {
+        $0.textColor = .hanyangBlue
+        $0.font = .godo(size: 12, weight: .bold)
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.75
+        $0.lineBreakMode = .byTruncatingTail
+    }
+
+    private lazy var presenceStatusRow = UIStackView(arrangedSubviews: [presenceStatusIconView, presenceStatusLabel]).then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 4
+    }
+
     private let shuttleOptionStack = UIStackView()
     private let supportingOptionStack = UIStackView()
     private let cafeteriaCard = UIStackView()
@@ -623,6 +681,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var displayedMealPeriod: HomeMealPeriod?
     private var isLoading = false
     private var autoRefreshSubscription: Disposable?
+    private var presenceSubscription: Disposable?
     #if DEBUG
         private var usesDebugDeparture = false
     #endif
@@ -640,6 +699,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         logScreenView(.home)
+        startPresenceUpdates()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -651,6 +711,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopAutoRefresh()
+        stopPresenceUpdates()
     }
 
     private func setupUI() {
@@ -809,6 +870,26 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         movementStateLabel.font = .godo(size: 15, weight: .regular)
         movementStateLabel.textColor = .secondaryLabel
         movementStateLabel.numberOfLines = 0
+        movementStateLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        movementStateRow.axis = .horizontal
+        movementStateRow.alignment = .center
+        movementStateRow.spacing = 10
+        movementStateRow.addArrangedSubview(movementStateLabel)
+        movementStateRow.addArrangedSubview(UIView())
+        movementStateRow.addArrangedSubview(presenceStatusPill)
+        presenceStatusPill.addSubview(presenceStatusRow)
+        presenceStatusIconView.snp.makeConstraints { make in
+            make.width.equalTo(15)
+            make.height.equalTo(12)
+        }
+        presenceStatusPill.snp.makeConstraints { make in
+            make.height.equalTo(30)
+        }
+        presenceStatusRow.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(10)
+            make.centerY.equalToSuperview()
+        }
 
         shuttleOptionStack.axis = .vertical
         shuttleOptionStack.spacing = 10
@@ -816,7 +897,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         supportingOptionStack.spacing = 8
 
         movementCard.addArrangedSubview(header)
-        movementCard.addArrangedSubview(movementStateLabel)
+        movementCard.addArrangedSubview(movementStateRow)
         movementCard.addArrangedSubview(shuttleOptionStack)
         movementCard.addArrangedSubview(supportingOptionStack)
 
@@ -1072,6 +1153,82 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         let rows = supportOptions.prefix(shouldEmphasizeSupport ? 4 : 2).map { makeTransitRow($0, emphasized: true) }
         replaceSubviews(in: supportingOptionStack, with: rows.isEmpty ? [] : [supportHeader] + rows)
+    }
+
+    private var presencePreviewCount: Int? {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            return arguments.firstIndex(of: "-shuttlePresencePreview").flatMap { index in
+                arguments.indices.contains(index + 1) ? Int(arguments[index + 1]) : nil
+            }
+        #else
+            return nil
+        #endif
+    }
+
+    private var currentPresenceStopID: String {
+        selectedDeparture.presenceStopID(for: selectedDestination)
+    }
+
+    private func startPresenceUpdates() {
+        stopPresenceUpdates()
+        guard ShuttlePresenceSettings.showsStatus else { return }
+        refreshPresenceStatus()
+        guard presencePreviewCount == nil else { return }
+        presenceSubscription = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.reportPresence() })
+    }
+
+    private func stopPresenceUpdates() {
+        presenceSubscription?.dispose()
+        presenceSubscription = nil
+        updatePresenceStatus(viewerCount: nil)
+    }
+
+    private func refreshPresenceStatus() {
+        if let presencePreviewCount {
+            updatePresenceStatus(viewerCount: presencePreviewCount)
+        } else {
+            updatePresenceStatus(viewerCount: nil)
+            reportPresence()
+        }
+    }
+
+    private func reportPresence() {
+        guard ShuttlePresenceSettings.showsStatus, view.window != nil else { return }
+        let requestedStopID = currentPresenceStopID
+        Task { [weak self] in
+            let count = await ShuttlePresenceService.shared.heartbeat(stopId: requestedStopID)
+            await MainActor.run {
+                guard let self, self.currentPresenceStopID == requestedStopID else { return }
+                self.updatePresenceStatus(viewerCount: count)
+            }
+        }
+    }
+
+    private func updatePresenceStatus(viewerCount: Int?) {
+        guard ShuttlePresenceSettings.showsStatus, let viewerCount else {
+            presenceStatusLabel.text = nil
+            presenceStatusPill.accessibilityLabel = nil
+            presenceStatusPill.isHidden = true
+            return
+        }
+        presenceStatusLabel.text = viewerCount.formatted()
+        presenceStatusPill.accessibilityLabel = String(
+            format: String(localized: "shuttle.presence.viewer.count"),
+            locale: Locale.current,
+            viewerCount
+        )
+        presenceStatusPill.isHidden = false
+    }
+
+    private func applyShowPresenceStatus(_ isOn: Bool) {
+        ShuttlePresenceSettings.showsStatus = isOn
+        if isOn {
+            startPresenceUpdates()
+        } else {
+            stopPresenceUpdates()
+        }
     }
 
     private func renderMeals() {
@@ -2401,6 +2558,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         selectedDeparture = departure
         updateDestinationControl()
         renderMovement()
+        refreshPresenceStatus()
     }
 
     private func requestDepartureLocation() {
@@ -2425,6 +2583,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             destinationID: destination.analyticsValue
         )
         renderMovement()
+        refreshPresenceStatus()
     }
 
     @objc private func refresh() {
@@ -2434,12 +2593,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     @objc private func openQuickSettings() {
         let vc = HomeQuickSettingsVC(
+            showPresenceStatus: ShuttlePresenceSettings.showsStatus,
             showBus50Transfer: HomeSettings.showBus50Transfer,
             showSubwayTransfer: HomeSettings.showSubwayTransfer,
             subwayTransferDestination: HomeSettings.subwayTransferDestination
         )
         vc.openLegacyShuttle = { [weak self] in
             self?.openLegacyShuttle()
+        }
+        vc.updateShowPresenceStatus = { [weak self] isOn in
+            self?.applyShowPresenceStatus(isOn)
         }
         vc.updateShowBus50Transfer = { [weak self] isOn in
             HomeSettings.showBus50Transfer = isOn

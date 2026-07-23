@@ -5,6 +5,20 @@
 
 import Foundation
 
+enum ShuttlePresenceSettings {
+    private static let showStatusKey = "showShuttlePresenceStatus"
+
+    static var showsStatus: Bool {
+        get {
+            guard UserDefaults.standard.object(forKey: showStatusKey) != nil else { return true }
+            return UserDefaults.standard.bool(forKey: showStatusKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: showStatusKey)
+        }
+    }
+}
+
 private struct ShuttlePresenceRequest: Encodable {
     let stopId: String
     let sessionId: String
