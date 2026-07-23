@@ -222,6 +222,8 @@ class ShuttleRealtimeVC: UIViewController {
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
+    private var hasCompletedInitialLocationSelection = false
+    private var hasManualStopSelection = false
     private var hasLoadedInitialShuttlePageData = false
     private var hasLoadedInitialBusAlternativeData = false
     private var hasLoadedInitialNotices = false
@@ -253,9 +255,14 @@ class ShuttleRealtimeVC: UIViewController {
             TabItem(title: String(localized: "shuttle.stop.shuttlecock.in"))
         ]
         viewPager.onPageChanged = { [weak self] index in
-            self?.selectedPresenceIndex = index
-            self?.updatePresenceStatus(viewerCount: nil)
-            self?.reportPresence()
+            guard let self else { return }
+            hasManualStopSelection = true
+            hasCompletedInitialLocationSelection = true
+            pendingGPSTabIndex = nil
+            locationManager.stopUpdatingLocation()
+            selectedPresenceIndex = index
+            updatePresenceStatus(viewerCount: nil)
+            reportPresence()
         }
         return viewPager
     }()
@@ -263,6 +270,8 @@ class ShuttleRealtimeVC: UIViewController {
     init(returnsToHome: Bool = false, initialStopID: String? = nil) {
         self.returnsToHome = returnsToHome
         self.initialStopID = initialStopID
+        self.hasManualStopSelection = initialStopID != nil
+        self.selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -467,10 +476,9 @@ class ShuttleRealtimeVC: UIViewController {
         dormitoryOutTabVC.forceShowBusAlternative = false
         dormitoryOutTabVC.reloadSection0()
         isShowingCoachMarks = false
-        if let pendingIndex = pendingGPSTabIndex {
+        if let pendingIndex = pendingGPSTabIndex, !hasManualStopSelection {
             pendingGPSTabIndex = nil
-            viewPager.tabView.moveToTab(index: pendingIndex)
-            viewPager.contentView.moveToPage(index: pendingIndex)
+            selectStop(at: pendingIndex)
             showToastMessage(
                 image: UIImage(systemName: "checkmark.circle.fill"),
                 message: String(
@@ -1037,7 +1045,10 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func checkUserDeviceLocationServiceAuthorization() {
-        if locationManager.authorizationStatus == .authorizedWhenInUse {
+        guard !hasCompletedInitialLocationSelection, !hasManualStopSelection else { return }
+        if locationManager.authorizationStatus == .authorizedWhenInUse ||
+            locationManager.authorizationStatus == .authorizedAlways
+        {
             locationManager.startUpdatingLocation()
         } else if locationManager.authorizationStatus == .denied || locationManager.authorizationStatus == .restricted {
             showToastMessage(
@@ -1201,19 +1212,36 @@ extension ShuttleRealtimeVC {
         case "shuttlecock_i": index = 5
         default: return
         }
+        hasManualStopSelection = true
+        hasCompletedInitialLocationSelection = true
+        pendingGPSTabIndex = nil
+        locationManager.stopUpdatingLocation()
+        selectStop(at: index)
+    }
+
+    private func selectStop(at index: Int) {
+        guard viewPager.tabView.tabs.indices.contains(index) else { return }
+        selectedPresenceIndex = index
         viewPager.tabView.moveToTab(index: index)
         viewPager.contentView.moveToPage(index: index)
+        updatePresenceStatus(viewerCount: nil)
+        reportPresence()
     }
 }
 
 extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let currentLocation = locations.last else { return }
-        var distances = [CLLocationDistance]()
-        for location in stopLocation {
-            distances.append(currentLocation.distance(from: location))
+        guard !hasCompletedInitialLocationSelection,
+              !hasManualStopSelection,
+              let currentLocation = locations.last,
+              let position = stopLocation.indices.dropLast().min(by: {
+                  currentLocation.distance(from: stopLocation[$0]) < currentLocation.distance(from: stopLocation[$1])
+              })
+        else {
+            locationManager.stopUpdatingLocation()
+            return
         }
-        let position = distances.firstIndex(of: distances.min()!)!
+        hasCompletedInitialLocationSelection = true
         if isShowingCoachMarks {
             pendingGPSTabIndex = position
             locationManager.stopUpdatingLocation()
@@ -1226,12 +1254,13 @@ extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
                 viewPager.tabView.tabs[position].title
             )
         )
-        viewPager.tabView.moveToTab(index: position)
-        viewPager.contentView.moveToPage(index: position)
+        selectStop(at: position)
         locationManager.stopUpdatingLocation()
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        hasCompletedInitialLocationSelection = true
+        locationManager.stopUpdatingLocation()
         showToastMessage(
             image: UIImage(systemName: "exclamationmark.triangle.fill"),
             message: String(localized: "toast.error.shuttle.realtime.location")

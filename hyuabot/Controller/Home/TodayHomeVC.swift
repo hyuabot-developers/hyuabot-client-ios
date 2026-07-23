@@ -579,6 +579,7 @@ private final class HomeQuickSettingsVC: UIViewController {
 
 final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_length
     private static let autoRefreshIntervalSeconds = 60
+    private static let departureSwitchHysteresisMeters: CLLocationDistance = 75
     private static let subwayMinimumTransferMinutes = 5
     private static let chojiMinimumTransferMinutes = 8
     private static let shuttleDisplayCount = 2
@@ -669,6 +670,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private var selectedDeparture: HomeDeparture = .dormitory
+    private var hasResolvedInitialDepartureLocation = false
     private var selectedDestination: HomeDestination = .station
     private var availableDestinations: [HomeDestination] {
         selectedDeparture.destinations
@@ -2813,7 +2815,16 @@ extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
         guard let location = locations.last,
               let nearestDeparture = HomeDeparture.allCases.min(by: {
                   $0.location.distance(from: location) < $1.location.distance(from: location)
-              }) else { return }
+              })
+        else { return }
+        let shouldApplyHysteresis = hasResolvedInitialDepartureLocation
+        hasResolvedInitialDepartureLocation = true
+        let currentDistance = selectedDeparture.location.distance(from: location)
+        let nearestDistance = nearestDeparture.location.distance(from: location)
+        guard nearestDeparture != selectedDeparture else { return }
+        guard !shouldApplyHysteresis ||
+            nearestDistance + Self.departureSwitchHysteresisMeters < currentDistance
+        else { return }
         updateDeparture(nearestDeparture)
     }
 
