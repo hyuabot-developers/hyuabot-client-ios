@@ -7,6 +7,7 @@ import UIKit
 
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeTabVC: UIViewController {
+    private static let floatingStatusClearance: CGFloat = 48
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
     private let destinationRefreshControl = UIRefreshControl()
@@ -45,6 +46,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.tableFooterView = self.tableFooterView1
         $0.showsVerticalScrollIndicator = false
+        $0.contentInset.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
+        $0.verticalScrollIndicatorInsets.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
         // Register the view
         $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
         $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
@@ -62,6 +65,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.refreshControl = timetableRefreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.showsVerticalScrollIndicator = false
+        $0.contentInset.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
+        $0.verticalScrollIndicatorInsets.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
         // Register the view
         $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
         $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)

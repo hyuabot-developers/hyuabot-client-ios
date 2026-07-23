@@ -6,6 +6,7 @@ import UIKit
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeVC: UIViewController {
     private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+    private static let showPresenceStatusKey = "showShuttlePresenceStatus"
     private static let presenceStopIds = [
         "dormitory_o",
         "shuttlecock_o",
@@ -190,6 +191,35 @@ class ShuttleRealtimeVC: UIViewController {
         $0.font = .godo(size: 13, weight: .bold)
     }
 
+    private let presenceStatusPill = UIView().then {
+        $0.backgroundColor = ShuttleRealtimeVC.actionButtonBackground
+        $0.layer.cornerRadius = 15
+        $0.isAccessibilityElement = true
+        $0.accessibilityTraits = .staticText
+        $0.isHidden = true
+    }
+
+    private let presenceStatusIconView = UIImageView().then {
+        $0.image = UIImage(systemName: "person.2.fill")
+        $0.tintColor = .hanyangBlue
+        $0.contentMode = .scaleAspectFit
+        $0.isAccessibilityElement = false
+    }
+
+    private let presenceStatusLabel = UILabel().then {
+        $0.textColor = .hanyangBlue
+        $0.font = .godo(size: 12, weight: .bold)
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.75
+        $0.lineBreakMode = .byTruncatingTail
+    }
+
+    private lazy var presenceStatusRow = UIStackView(arrangedSubviews: [presenceStatusIconView, presenceStatusLabel]).then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 4
+    }
+
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
@@ -198,12 +228,10 @@ class ShuttleRealtimeVC: UIViewController {
     private var hasLoadedInitialNotices = false
     private var subscription: Disposable?
     private var presenceSubscription: Disposable?
-    private let presenceBanner = ShuttlePresenceBannerView()
     private var selectedPresenceIndex = 0
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
             sizeConfiguration: .fixed(width: 125, height: 52, spacing: 0),
-            optionView: self.presenceBanner,
             noticeView: self.noticeView,
             navigationBarEnabled: self.returnsToHome
         )
@@ -227,7 +255,7 @@ class ShuttleRealtimeVC: UIViewController {
         ]
         viewPager.onPageChanged = { [weak self] index in
             self?.selectedPresenceIndex = index
-            self?.presenceBanner.update(viewerCount: nil)
+            self?.updatePresenceStatus(viewerCount: nil)
             self?.reportPresence()
         }
         return viewPager
@@ -507,13 +535,14 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func startPresenceUpdates() {
         stopPresenceUpdates()
+        guard showsPresenceStatus else { return }
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
             let previewCount = arguments.firstIndex(of: "-shuttlePresencePreview").flatMap { index in
                 arguments.indices.contains(index + 1) ? Int(arguments[index + 1]) : nil
             }
             if let count = previewCount {
-                presenceBanner.update(viewerCount: count)
+                updatePresenceStatus(viewerCount: count)
                 return
             }
         #endif
@@ -525,20 +554,47 @@ class ShuttleRealtimeVC: UIViewController {
     private func stopPresenceUpdates() {
         presenceSubscription?.dispose()
         presenceSubscription = nil
-        presenceBanner.update(viewerCount: nil)
+        updatePresenceStatus(viewerCount: nil)
     }
 
     private func reportPresence() {
-        guard view.window != nil, Self.presenceStopIds.indices.contains(selectedPresenceIndex) else { return }
+        guard showsPresenceStatus,
+              view.window != nil,
+              Self.presenceStopIds.indices.contains(selectedPresenceIndex)
+        else { return }
         let requestedIndex = selectedPresenceIndex
         let stopId = Self.presenceStopIds[requestedIndex]
         Task { [weak self] in
             let count = await ShuttlePresenceService.shared.heartbeat(stopId: stopId)
             await MainActor.run {
                 guard let self, self.selectedPresenceIndex == requestedIndex else { return }
-                self.presenceBanner.update(viewerCount: count)
+                self.updatePresenceStatus(viewerCount: count)
             }
         }
+    }
+
+    private func updatePresenceStatus(viewerCount: Int?) {
+        guard showsPresenceStatus,
+              viewPager.tabView.tabs.indices.contains(selectedPresenceIndex)
+        else {
+            presenceStatusLabel.text = nil
+            presenceStatusPill.accessibilityLabel = nil
+            presenceStatusPill.isHidden = true
+            return
+        }
+        guard let viewerCount else {
+            presenceStatusLabel.text = nil
+            presenceStatusPill.accessibilityLabel = nil
+            presenceStatusPill.isHidden = true
+            return
+        }
+        presenceStatusLabel.text = viewerCount.formatted()
+        presenceStatusPill.accessibilityLabel = String(
+            format: String(localized: "shuttle.presence.viewer.count"),
+            locale: Locale.current,
+            viewerCount
+        )
+        presenceStatusPill.isHidden = false
     }
 
     @objc private func coachMarksDidReset() {
@@ -550,6 +606,8 @@ class ShuttleRealtimeVC: UIViewController {
     private func setupUI() {
         view.addSubview(viewPager)
         view.addSubview(quickSettingsBar)
+        view.addSubview(presenceStatusPill)
+        presenceStatusPill.addSubview(presenceStatusRow)
         quickSettingsBar.addSubview(quickSettingsBarLabel)
         quickSettingsBar.addSubview(homeButton)
         viewPager.snp.makeConstraints { make in
@@ -566,15 +624,30 @@ class ShuttleRealtimeVC: UIViewController {
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
         }
+        presenceStatusIconView.snp.makeConstraints { make in
+            make.width.equalTo(15)
+            make.height.equalTo(12)
+        }
+        presenceStatusPill.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(self.quickSettingsBar.snp.top).offset(-10)
+            make.height.equalTo(30)
+        }
+        presenceStatusRow.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(10)
+            make.centerY.equalToSuperview()
+        }
         quickSettingsBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(homeButton.snp.leading).offset(-12)
         }
         homeButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
             make.height.equalTo(36)
         }
+        updatePresenceStatus(viewerCount: nil)
         // Option Switch
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
         shuttleShowDepartureTime.isOn = !showRemainingTime
@@ -1017,7 +1090,8 @@ class ShuttleRealtimeVC: UIViewController {
         let showArrivalByTime = UserDefaults.standard.bool(forKey: "showArrivalByTime")
         let vc = ShuttleQuickSettingsVC(
             showArrivalByTime: showArrivalByTime,
-            showDepartureTime: !showRemainingTime
+            showDepartureTime: !showRemainingTime,
+            showPresenceStatus: showsPresenceStatus
         )
         vc.openHome = { [weak self] in
             self?.openHomeExperience()
@@ -1027,6 +1101,9 @@ class ShuttleRealtimeVC: UIViewController {
         }
         vc.updateShowDepartureTime = { [weak self] isOn in
             self?.applyShowDepartureTime(isOn)
+        }
+        vc.updateShowPresenceStatus = { [weak self] isOn in
+            self?.applyShowPresenceStatus(isOn)
         }
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom { context in
@@ -1084,6 +1161,21 @@ class ShuttleRealtimeVC: UIViewController {
         shuttleShowByDestination.isOn = isOn
         ShuttleRealtimeData.shared.showArrivalByTime.onNext(isOn)
         UserDefaults.standard.set(isOn, forKey: "showArrivalByTime")
+    }
+
+    private var showsPresenceStatus: Bool {
+        let defaults = UserDefaults.standard
+        guard defaults.object(forKey: Self.showPresenceStatusKey) != nil else { return true }
+        return defaults.bool(forKey: Self.showPresenceStatusKey)
+    }
+
+    private func applyShowPresenceStatus(_ isOn: Bool) {
+        UserDefaults.standard.set(isOn, forKey: Self.showPresenceStatusKey)
+        if isOn {
+            startPresenceUpdates()
+        } else {
+            stopPresenceUpdates()
+        }
     }
 }
 

@@ -8,15 +8,18 @@ final class ShuttleQuickSettingsVC: UIViewController {
     var openHome: (() -> Void)?
     var updateShowArrivalByTime: ((Bool) -> Void)?
     var updateShowDepartureTime: ((Bool) -> Void)?
-    let preferredSheetHeight: CGFloat = 330
+    var updateShowPresenceStatus: ((Bool) -> Void)?
+    let preferredSheetHeight: CGFloat = 420
 
     private let contentStack = UIStackView()
     private let showArrivalByTimeSwitch = UISwitch()
     private let showDepartureTimeSwitch = UISwitch()
+    private let showPresenceStatusSwitch = UISwitch()
 
-    init(showArrivalByTime: Bool, showDepartureTime: Bool) {
+    init(showArrivalByTime: Bool, showDepartureTime: Bool, showPresenceStatus: Bool) {
         showArrivalByTimeSwitch.isOn = showArrivalByTime
         showDepartureTimeSwitch.isOn = showDepartureTime
+        showPresenceStatusSwitch.isOn = showPresenceStatus
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -50,6 +53,7 @@ final class ShuttleQuickSettingsVC: UIViewController {
 
         showArrivalByTimeSwitch.addTarget(self, action: #selector(onChangeArrivalByTime), for: .valueChanged)
         showDepartureTimeSwitch.addTarget(self, action: #selector(onChangeDepartureTime), for: .valueChanged)
+        showPresenceStatusSwitch.addTarget(self, action: #selector(onChangePresenceStatus), for: .valueChanged)
 
         contentStack.addArrangedSubview(title)
         contentStack.addArrangedSubview(settingRow(
@@ -64,6 +68,12 @@ final class ShuttleQuickSettingsVC: UIViewController {
             control: showDepartureTimeSwitch,
             identifier: "shuttle.quick_settings.departure_time_row"
         ))
+        contentStack.addArrangedSubview(settingRow(
+            title: String(localized: "shuttle.quick_settings.presence.title"),
+            subtitle: String(localized: "shuttle.quick_settings.presence.subtitle"),
+            control: showPresenceStatusSwitch,
+            identifier: "shuttle.quick_settings.presence_row"
+        ))
         contentStack.addArrangedSubview(homeActionRow())
     }
 
@@ -73,7 +83,7 @@ final class ShuttleQuickSettingsVC: UIViewController {
         row.alignment = .center
         row.spacing = 12
         row.accessibilityIdentifier = identifier
-        row.isAccessibilityElement = true
+        row.isAccessibilityElement = false
         row.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
         row.isLayoutMarginsRelativeArrangement = true
         row.backgroundColor = .secondarySystemBackground
@@ -93,6 +103,9 @@ final class ShuttleQuickSettingsVC: UIViewController {
         subtitleLabel.font = .godo(size: 13, weight: .regular)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.numberOfLines = 0
+
+        control.accessibilityLabel = title
+        control.accessibilityIdentifier = "\(identifier).switch"
 
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(subtitleLabel)
@@ -142,5 +155,9 @@ final class ShuttleQuickSettingsVC: UIViewController {
 
     @objc private func onChangeDepartureTime() {
         updateShowDepartureTime?(showDepartureTimeSwitch.isOn)
+    }
+
+    @objc private func onChangePresenceStatus() {
+        updateShowPresenceStatus?(showPresenceStatusSwitch.isOn)
     }
 }
