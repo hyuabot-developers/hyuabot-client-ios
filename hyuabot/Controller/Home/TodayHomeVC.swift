@@ -268,6 +268,9 @@ private extension UIColor {
     static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
     static let homeSubwaySeohae = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1.00)
     static let homeActionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+    static let homeSelectorIconTint = UIColor { traitCollection in
+        traitCollection.userInterfaceStyle == .dark ? .white : .hanyangBlue
+    }
 }
 
 private enum HomeSettings {
@@ -584,6 +587,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private static let chojiMinimumTransferMinutes = 8
     private static let shuttleDisplayCount = 2
     private static let shuttleTransferLookaheadCount = 3
+    private static let selectorTitleFontSize: CGFloat = 18
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -598,6 +602,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private let movementCard = UIStackView()
     private let movementStateRow = UIStackView()
     private let movementStateLabel = UILabel()
+    private lazy var departureSelectorButton = UIButton(type: .system).then {
+        $0.showsMenuAsPrimaryAction = true
+        $0.titleLabel?.adjustsFontSizeToFitWidth = true
+        $0.titleLabel?.minimumScaleFactor = 0.75
+        $0.titleLabel?.lineBreakMode = .byTruncatingTail
+        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        $0.accessibilityLabel = String(localized: "home.movement.departure.selector")
+    }
     private let presenceStatusPill = UIView().then {
         $0.backgroundColor = .homeActionButtonBackground
         $0.layer.cornerRadius = 15
@@ -631,7 +643,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private let supportingOptionStack = UIStackView()
     private let cafeteriaCard = UIStackView()
     private let cafeteriaIconView = UIImageView()
-    private let cafeteriaTitleLabel = UILabel()
+    private lazy var cafeteriaPeriodSelectorButton = UIButton(type: .system).then {
+        $0.showsMenuAsPrimaryAction = true
+        $0.titleLabel?.adjustsFontSizeToFitWidth = true
+        $0.titleLabel?.minimumScaleFactor = 0.75
+        $0.titleLabel?.lineBreakMode = .byTruncatingTail
+        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        $0.accessibilityLabel = String(localized: "home.meal.period.selector")
+    }
     private let mealStack = UIStackView()
     private let refreshControl = UIRefreshControl()
     private let homeHeroTitleLabel = UILabel()
@@ -671,6 +690,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private var selectedDeparture: HomeDeparture = .dormitory
     private var hasResolvedInitialDepartureLocation = false
+    private var isDepartureManuallySelected = false
+    private var shouldRestoreAutomaticDepartureOnActivation = false
     private var selectedDestination: HomeDestination = .station
     private var availableDestinations: [HomeDestination] {
         selectedDeparture.destinations
@@ -681,6 +702,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var bus50TerminalLogTimes: [LocalTime] = []
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
+    private var isMealPeriodManuallySelected = false
     private var isLoading = false
     private var autoRefreshSubscription: Disposable?
     private var presenceSubscription: Disposable?
@@ -695,6 +717,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             applyDebugRouteOverride()
         #endif
         updateDestinationControl()
+        updateDepartureSelector()
+        updateMealPeriodSelector()
+        observeApplicationActivation()
         refreshHomeContext()
     }
 
@@ -714,6 +739,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         super.viewWillDisappear(animated)
         stopAutoRefresh()
         stopPresenceUpdates()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func setupUI() {
@@ -831,6 +860,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             .font: UIFont.godo(size: 13, weight: .bold)
         ], for: .selected)
         destinationControl.addTarget(self, action: #selector(destinationChanged), for: .valueChanged)
+
         return destinationControl
     }
 
@@ -863,12 +893,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         movementCard.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 16, right: 16)
         movementCard.isLayoutMarginsRelativeArrangement = true
 
-        let header = makeSectionHeader(
-            icon: "bus.fill",
-            title: String(localized: "home.movement.title"),
-            buttonTitle: String(localized: "home.movement.timetable"),
-            action: #selector(openShuttleTimetable)
-        )
+        let header = makeMovementHeader()
         movementStateLabel.font = .godo(size: 15, weight: .regular)
         movementStateLabel.textColor = .secondaryLabel
         movementStateLabel.numberOfLines = 0
@@ -910,6 +935,34 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return card
     }
 
+    private func makeMovementHeader() -> UIView {
+        let header = UIStackView()
+        header.axis = .horizontal
+        header.alignment = .center
+        header.spacing = 10
+
+        let imageView = UIImageView(image: UIImage(systemName: "bus.fill"))
+        imageView.tintColor = .homeSelectorIconTint
+        imageView.contentMode = .scaleAspectFit
+        imageView.snp.makeConstraints { make in
+            make.width.height.equalTo(22)
+        }
+
+        departureSelectorButton.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(44)
+        }
+
+        header.addArrangedSubview(imageView)
+        header.addArrangedSubview(departureSelectorButton)
+        header.addArrangedSubview(UIView())
+        header.addArrangedSubview(makeHeaderButton(
+            title: String(localized: "home.movement.timetable"),
+            action: #selector(openShuttleTimetable),
+            showsChevron: true
+        ))
+        return header
+    }
+
     private func makeCafeteriaCard() -> UIView {
         let card = cardView()
         cafeteriaCard.axis = .vertical
@@ -917,14 +970,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         cafeteriaCard.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 16, right: 16)
         cafeteriaCard.isLayoutMarginsRelativeArrangement = true
 
-        cafeteriaCard.addArrangedSubview(makeSectionHeader(
-            icon: activeMealPeriod().iconName,
-            iconView: cafeteriaIconView,
-            title: activeMealPeriod().title,
-            titleLabel: cafeteriaTitleLabel,
-            buttonTitle: String(localized: "home.cafeteria.detail"),
-            action: #selector(openCafeteria)
-        ))
+        cafeteriaCard.addArrangedSubview(makeCafeteriaHeader())
 
         mealStack.axis = .vertical
         mealStack.spacing = 10
@@ -935,6 +981,32 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.edges.equalToSuperview()
         }
         return card
+    }
+
+    private func makeCafeteriaHeader() -> UIView {
+        let header = UIStackView()
+        header.axis = .horizontal
+        header.alignment = .center
+        header.spacing = 10
+
+        cafeteriaIconView.tintColor = .homeSelectorIconTint
+        cafeteriaIconView.contentMode = .scaleAspectFit
+        cafeteriaIconView.snp.makeConstraints { make in
+            make.width.height.equalTo(22)
+        }
+        cafeteriaPeriodSelectorButton.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(44)
+        }
+
+        header.addArrangedSubview(cafeteriaIconView)
+        header.addArrangedSubview(cafeteriaPeriodSelectorButton)
+        header.addArrangedSubview(UIView())
+        header.addArrangedSubview(makeHeaderButton(
+            title: String(localized: "home.cafeteria.detail"),
+            action: #selector(openCafeteria),
+            showsChevron: true
+        ))
+        return header
     }
 
     private func makeSectionHeader(
@@ -1012,6 +1084,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private func renderLoadingState() {
         movementStateLabel.text = String(localized: "home.loading")
+        updateDepartureSelector()
+        updateMealPeriodSelector()
         replaceSubviews(in: shuttleOptionStack, with: [makeSkeletonRow(widthRatio: 0.72), makeSkeletonRow(widthRatio: 0.54)])
         replaceSubviews(in: supportingOptionStack, with: [])
         replaceSubviews(in: mealStack, with: [makeSkeletonRow(widthRatio: 0.82), makeSkeletonRow(widthRatio: 0.64)])
@@ -1135,7 +1209,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let nextShuttleMinutes = shuttleOptions.first?.minutes
         let shouldEmphasizeSupport = nextShuttleMinutes.map { $0 > 20 } ?? true
 
-        movementStateLabel.text = "\(selectedDeparture.title) → \(selectedDestination.title)"
+        movementStateLabel.text = String(
+            format: String(localized: "home.movement.destination.summary"),
+            selectedDestination.title
+        )
+        updateDepartureSelector()
         if shuttleOptions.isEmpty {
             replaceSubviews(in: shuttleOptionStack, with: [
                 makeEmptyView(
@@ -1236,7 +1314,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func renderMeals() {
         let mealPeriod = activeMealPeriod()
         cafeteriaIconView.image = UIImage(systemName: mealPeriod.iconName)
-        cafeteriaTitleLabel.text = mealPeriod.title
+        updateMealPeriodSelector()
         if mealSections.isEmpty {
             replaceSubviews(in: mealStack, with: [
                 makeEmptyView(
@@ -2018,7 +2096,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             renderLoadingState()
         }
 
-        let mealPeriod = currentMealPeriod()
+        let mealPeriod = isMealPeriodManuallySelected ? activeMealPeriod() : currentMealPeriod()
         displayedMealPeriod = mealPeriod
         let weekday = currentSubwayWeekday()
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
@@ -2043,7 +2121,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     shuttleData = data
                     busAlternatives = buildBusAlternatives(data.bus)
                     self.bus50TerminalLogTimes = bus50TerminalLogTimes
-                    mealSections = buildMealSections(data.cafeteria, mealPeriod: mealPeriod)
+                    mealSections = buildMealSections(data.cafeteria, mealPeriod: activeMealPeriod())
                     Task {
                         await ShuttleServiceNoticeScheduler.shared.sync()
                     }
@@ -2544,6 +2622,87 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         views.forEach(stack.addArrangedSubview)
     }
 
+    private func observeApplicationActivation() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    private func updateDepartureSelector() {
+        let displayedTitle = selectedDeparture.title
+        var configuration = UIButton.Configuration.plain()
+        configuration.baseForegroundColor = .label
+        configuration.image = UIImage(systemName: "chevron.down")?.withConfiguration(
+            UIImage.SymbolConfiguration(pointSize: 10, weight: .semibold)
+        )
+        configuration.imagePlacement = .trailing
+        configuration.imagePadding = 5
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 2)
+        configuration.attributedTitle = AttributedString(displayedTitle, attributes: AttributeContainer([
+            .font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)
+        ]))
+        departureSelectorButton.configuration = configuration
+        departureSelectorButton.accessibilityValue = displayedTitle
+        departureSelectorButton.menu = UIMenu(
+            options: .singleSelection,
+            children: HomeDeparture.allCases.map { departure in
+                UIAction(
+                    title: departure.title,
+                    state: departure == selectedDeparture ? .on : .off
+                ) { [weak self] _ in
+                    self?.selectDepartureManually(departure)
+                }
+            }
+        )
+    }
+
+    private func updateMealPeriodSelector() {
+        let selectedPeriod = activeMealPeriod()
+        cafeteriaIconView.image = UIImage(systemName: selectedPeriod.iconName)
+        var configuration = UIButton.Configuration.plain()
+        configuration.baseForegroundColor = .label
+        configuration.image = UIImage(systemName: "chevron.down")?.withConfiguration(
+            UIImage.SymbolConfiguration(pointSize: 10, weight: .semibold)
+        )
+        configuration.imagePlacement = .trailing
+        configuration.imagePadding = 5
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 2)
+        configuration.attributedTitle = AttributedString(selectedPeriod.title, attributes: AttributeContainer([
+            .font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)
+        ]))
+        cafeteriaPeriodSelectorButton.configuration = configuration
+        cafeteriaPeriodSelectorButton.accessibilityValue = selectedPeriod.title
+        cafeteriaPeriodSelectorButton.menu = UIMenu(
+            options: .singleSelection,
+            children: mealPeriods(for: selectedPeriod.queryDate).map { period in
+                UIAction(
+                    title: period.title,
+                    state: period.mealIndex == selectedPeriod.mealIndex ? .on : .off
+                ) { [weak self] _ in
+                    self?.selectMealPeriodManually(period)
+                }
+            }
+        )
+    }
+
+    private func selectMealPeriodManually(_ mealPeriod: HomeMealPeriod) {
+        isMealPeriodManuallySelected = true
+        displayedMealPeriod = mealPeriod
+        if let cafeterias = shuttleData?.cafeteria {
+            mealSections = buildMealSections(cafeterias, mealPeriod: mealPeriod)
+        }
+        renderMeals()
+    }
+
     private func updateDestinationControl() {
         destinationControl.removeAllSegments()
         for (index, destination) in availableDestinations.enumerated() {
@@ -2561,6 +2720,32 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         updateDestinationControl()
         renderMovement()
         refreshPresenceStatus()
+    }
+
+    private func selectDepartureManually(_ departure: HomeDeparture) {
+        isDepartureManuallySelected = true
+        shouldRestoreAutomaticDepartureOnActivation = false
+        hasResolvedInitialDepartureLocation = true
+        guard selectedDeparture != departure else {
+            updateDepartureSelector()
+            return
+        }
+        updateDeparture(departure)
+    }
+
+    @objc private func applicationDidEnterBackground() {
+        shouldRestoreAutomaticDepartureOnActivation = isDepartureManuallySelected
+    }
+
+    @objc private func applicationDidBecomeActive() {
+        guard shouldRestoreAutomaticDepartureOnActivation else { return }
+        shouldRestoreAutomaticDepartureOnActivation = false
+        isDepartureManuallySelected = false
+        hasResolvedInitialDepartureLocation = false
+        #if DEBUG
+            guard !usesDebugDeparture else { return }
+        #endif
+        requestDepartureLocation()
     }
 
     private func requestDepartureLocation() {
@@ -2699,41 +2884,59 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private func currentMealPeriod() -> HomeMealPeriod {
         let hour = Calendar.current.component(.hour, from: Foundation.Date.now)
+        let date: Foundation.Date
+        let mealIndex: Int
         if hour < 10 {
-            return HomeMealPeriod(
+            date = Foundation.Date.now
+            mealIndex = 0
+        } else if hour < 15 {
+            date = Foundation.Date.now
+            mealIndex = 1
+        } else if hour < 20 {
+            date = Foundation.Date.now
+            mealIndex = 2
+        } else {
+            date = Calendar.current.date(
+                byAdding: .day,
+                value: 1,
+                to: Foundation.Date.now
+            ) ?? Foundation.Date.now
+            mealIndex = 0
+        }
+        return mealPeriods(for: date)[mealIndex]
+    }
+
+    private func mealPeriods(for date: Foundation.Date) -> [HomeMealPeriod] {
+        let isTomorrow = Calendar.current.isDateInTomorrow(date)
+        let periods = [
+            (
                 marker: "조식",
                 title: String(localized: "home.meal.breakfast"),
-                queryDate: Foundation.Date.now,
-                iconName: "sunrise.fill",
-                mealIndex: 0
-            )
-        }
-        if hour < 15 {
-            return HomeMealPeriod(
+                iconName: "sunrise.fill"
+            ),
+            (
                 marker: "중식",
                 title: String(localized: "home.meal.lunch"),
-                queryDate: Foundation.Date.now,
-                iconName: "sun.max.fill",
-                mealIndex: 1
-            )
-        }
-        if hour < 20 {
-            return HomeMealPeriod(
+                iconName: "sun.max.fill"
+            ),
+            (
                 marker: "석식",
                 title: String(localized: "home.meal.dinner"),
-                queryDate: Foundation.Date.now,
-                iconName: "moon.fill",
-                mealIndex: 2
+                iconName: "moon.fill"
+            )
+        ]
+        return periods.enumerated().map { index, period in
+            let title = isTomorrow
+                ? String(format: String(localized: "home.meal.tomorrow.format"), period.title)
+                : period.title
+            return HomeMealPeriod(
+                marker: period.marker,
+                title: title,
+                queryDate: date,
+                iconName: period.iconName,
+                mealIndex: index
             )
         }
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Foundation.Date.now) ?? Foundation.Date.now
-        return HomeMealPeriod(
-            marker: "조식",
-            title: String(localized: "home.meal.tomorrow_breakfast"),
-            queryDate: tomorrow,
-            iconName: "sunrise.fill",
-            mealIndex: 0
-        )
     }
 
     private func currentMealTitle() -> String {
@@ -2812,7 +3015,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
 extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last,
+        guard !isDepartureManuallySelected,
+              let location = locations.last,
               let nearestDeparture = HomeDeparture.allCases.min(by: {
                   $0.location.distance(from: location) < $1.location.distance(from: location)
               })
