@@ -64,6 +64,8 @@ query HomePageQuery(
         }
         arrival {
             minutes
+            stops
+            isRealtime
         }
     }
     subway(input: { keys: [
@@ -77,6 +79,10 @@ query HomePageQuery(
             direction
             entries {
                 minutes
+                isRealtime
+                location
+                stops
+                status
                 terminal {
                     stationID
                     name

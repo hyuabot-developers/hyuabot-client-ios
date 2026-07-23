@@ -202,10 +202,84 @@ private struct HomeTransferConnection {
     let badge: String
     let title: String
     let subtitle: String
+    let connectorTitle: String
+    let connectorTravelMinutes: Int?
     let trailing: String
     let tintColor: UIColor
     let arrivalDate: Foundation.Date
     let minimumTransferMinutes: Int
+}
+
+private final class HomeTransferConnectorView: UIStackView {
+    private let connectorTintColor: UIColor
+    private let linkIcon = UIImageView(image: UIImage(systemName: "link"))
+    private let titleLabel = UILabel()
+
+    init(title: String, travelMinutes: Int?, tintColor: UIColor) {
+        connectorTintColor = tintColor
+        super.init(frame: .zero)
+
+        axis = .horizontal
+        alignment = .center
+        spacing = 4
+        layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
+        isLayoutMarginsRelativeArrangement = true
+        layer.cornerRadius = 12
+        layer.borderWidth = 1
+
+        linkIcon.contentMode = .scaleAspectFit
+        linkIcon.isAccessibilityElement = false
+        titleLabel.text = if let travelMinutes {
+            String(
+                format: String(localized: "home.transfer.connector.travel_time"),
+                locale: Locale.current,
+                title,
+                travelMinutes
+            )
+        } else {
+            title
+        }
+        isAccessibilityElement = true
+        accessibilityLabel = titleLabel.text
+        accessibilityTraits = .staticText
+        titleLabel.font = .godo(size: 10, weight: .bold)
+        titleLabel.numberOfLines = 1
+        titleLabel.isAccessibilityElement = false
+
+        addArrangedSubview(linkIcon)
+        addArrangedSubview(titleLabel)
+        linkIcon.snp.makeConstraints { make in
+            make.width.height.equalTo(11)
+        }
+        updateAppearance()
+    }
+
+    @available(*, unavailable)
+    required init(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateAppearance()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
+        updateAppearance()
+    }
+
+    private func updateAppearance() {
+        let isDarkMode = traitCollection.userInterfaceStyle == .dark
+        backgroundColor = isDarkMode ? .secondarySystemBackground : .systemBackground
+        layer.borderColor = connectorTintColor
+            .withAlphaComponent(isDarkMode ? 0.60 : 0.18)
+            .resolvedColor(with: traitCollection)
+            .cgColor
+        linkIcon.tintColor = isDarkMode ? .white : connectorTintColor.withAlphaComponent(0.72)
+        titleLabel.textColor = isDarkMode ? .white : connectorTintColor
+    }
 }
 
 private struct HomeSubwayArrival {
@@ -214,6 +288,10 @@ private struct HomeSubwayArrival {
     let terminalName: String
     let tintColor: UIColor
     let arrivalDate: Foundation.Date
+    let isRealtime: Bool
+    let location: String?
+    let stops: Int?
+    let status: Int?
 }
 
 private struct HomeShuttleCandidate {
@@ -1840,23 +1918,28 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let busArrivals = shuttleData?.transferBus
             .filter { $0.stop.seq == 216_000_759 }
             .flatMap(\.arrival)
-            .compactMap { arrival -> Foundation.Date? in
-                guard let minutes = arrival.minutes else { return nil }
-                return Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60))
+            .compactMap { arrival -> (date: Foundation.Date, minutes: Int, stops: Int?)? in
+                guard arrival.isRealtime, let minutes = arrival.minutes else { return nil }
+                return (
+                    Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60)),
+                    minutes,
+                    arrival.stops
+                )
             }
-            .sorted() ?? []
-        guard let busArrival = busArrivals.first(where: { $0 >= terminalArrival }) else { return nil }
+            .sorted { $0.date < $1.date } ?? []
+        guard let busArrival = busArrivals.first(where: { $0.date >= terminalArrival }) else { return nil }
 
-        let bufferMinutes = max(0, Int(floor(busArrival.timeIntervalSince(terminalArrival) / 60)))
-        let title = String(format: String(localized: "home.transfer.bus50.realtime.title"), compactTime(busArrival))
-        let trailing = String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes)
+        let bufferMinutes = max(0, Int(floor(busArrival.date.timeIntervalSince(terminalArrival) / 60)))
+        let arrivalText = busRealtimeArrivalText(stops: busArrival.stops, minutes: busArrival.minutes)
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
-            title: title,
-            subtitle: String(localized: "home.transfer.bus50.subtitle"),
-            trailing: trailing,
+            title: bus50DestinationTitle(),
+            subtitle: arrivalText,
+            connectorTitle: String(localized: "home.transfer.bus50.connector"),
+            connectorTravelMinutes: nil,
+            trailing: transferWaitingText(bufferMinutes: bufferMinutes, travelMinutes: nil),
             tintColor: bufferMinutes >= 3 ? .hanyangGreen : .systemOrange,
-            arrivalDate: busArrival,
+            arrivalDate: busArrival.date,
             minimumTransferMinutes: 0
         )
     }
@@ -1869,16 +1952,116 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard let busArrival = logDates.first else { return nil }
 
         let bufferMinutes = max(0, Int(floor(busArrival.timeIntervalSince(terminalArrival) / 60)))
-        let title = String(format: String(localized: "home.transfer.bus50.log.title"), compactTime(busArrival))
-        let trailing = String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes)
+        let arrivalText = arrivalClockText(busArrival, key: "home.transfer.bus50.log.arrival_record")
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
-            title: title,
-            subtitle: String(localized: "home.transfer.bus50.subtitle"),
-            trailing: trailing,
+            title: bus50DestinationTitle(),
+            subtitle: arrivalText,
+            connectorTitle: String(localized: "home.transfer.bus50.connector"),
+            connectorTravelMinutes: nil,
+            trailing: transferWaitingText(bufferMinutes: bufferMinutes, travelMinutes: nil),
             tintColor: UIColor(named: "busGreen") ?? .systemGreen,
             arrivalDate: busArrival,
             minimumTransferMinutes: 0
+        )
+    }
+
+    private func busRealtimeArrivalText(stops: Int?, minutes: Int) -> String {
+        if let stops, stops > 0 {
+            return String(
+                format: String(localized: "home.transfer.bus50.realtime.stops"),
+                locale: Locale.current,
+                stops
+            )
+        }
+        if stops == 0 {
+            return String(localized: "home.transfer.realtime.arriving")
+        }
+        return String(
+            format: String(localized: "home.transfer.realtime.minutes"),
+            locale: Locale.current,
+            minutes
+        )
+    }
+
+    private func bus50DestinationTitle() -> String {
+        String(
+            format: String(localized: "subway.terminal.%@"),
+            String(localized: "home.destination.gwangmyeong")
+        )
+    }
+
+    private func transferWaitingText(bufferMinutes: Int, travelMinutes: Int?) -> String {
+        let waitingMinutes = max(0, bufferMinutes - (travelMinutes ?? 0))
+        guard waitingMinutes > 0 else {
+            return String(localized: "home.transfer.wait.immediate")
+        }
+        return String(
+            format: String(localized: "home.transfer.wait.minutes"),
+            locale: Locale.current,
+            waitingMinutes
+        )
+    }
+
+    private func subwayArrivalText(_ arrival: HomeSubwayArrival) -> String {
+        guard arrival.isRealtime else {
+            return arrivalClockText(arrival.arrivalDate, key: "home.transfer.subway.timetable.arrival")
+        }
+        guard let stops = arrival.stops, stops > 0 else {
+            return String(localized: "home.transfer.realtime.arriving")
+        }
+
+        let isKorean = (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
+        if isKorean, arrival.status == 3 {
+            return String(
+                format: String(localized: "home.transfer.subway.realtime.previous_departure"),
+                locale: Locale.current,
+                stops
+            )
+        }
+        if isKorean,
+           let location = arrival.location,
+           !location.isEmpty,
+           let status = subwayRealtimeStatusText(arrival.status)
+        {
+            return String(
+                format: String(localized: "home.transfer.subway.realtime.status"),
+                locale: Locale.current,
+                stops,
+                location,
+                status
+            )
+        }
+        return String(
+            format: String(localized: "home.transfer.subway.realtime.stops"),
+            locale: Locale.current,
+            stops
+        )
+    }
+
+    private func subwayRealtimeStatusText(_ status: Int?) -> String? {
+        switch status {
+        case 0:
+            String(localized: "home.transfer.subway.status.entering")
+        case 1:
+            String(localized: "home.transfer.subway.status.arrived")
+        case 2:
+            String(localized: "home.transfer.subway.status.departed")
+        default:
+            nil
+        }
+    }
+
+    private func arrivalClockText(_ date: Foundation.Date, key: String) -> String {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        guard let hour = components.hour, let minute = components.minute else {
+            return compactTime(date)
+        }
+        return String(
+            format: String(localized: String.LocalizationValue(key)),
+            locale: Locale.current,
+            hour,
+            minute
         )
     }
 
@@ -1934,7 +2117,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 subwayConnection(
                     for: secondLeg,
                     after: firstLeg.arrivalDate,
-                    subtitleKey: "home.transfer.subway.choji.subtitle",
+                    connectorKey: "home.transfer.subway.choji.connector",
+                    connectorTravelMinutes: Self.chojiMinimumTransferMinutes,
                     minimumTransferMinutes: Self.chojiMinimumTransferMinutes
                 )
             ]
@@ -1967,7 +2151,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 subwayConnection(
                     for: secondLeg,
                     after: firstLeg.arrivalDate,
-                    subtitleKey: "home.transfer.subway.oido.subtitle"
+                    connectorKey: "home.transfer.subway.oido.connector",
+                    connectorTravelMinutes: nil
                 )
             ]
         }
@@ -1976,7 +2161,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func subwayConnection(
         for subwayArrival: HomeSubwayArrival,
         after transferStartDate: Foundation.Date,
-        subtitleKey: String = "home.transfer.subway.subtitle",
+        connectorKey: String = "home.transfer.subway.connector",
+        connectorTravelMinutes: Int? = TodayHomeVC.subwayMinimumTransferMinutes,
         minimumTransferMinutes: Int = TodayHomeVC.subwayMinimumTransferMinutes
     ) -> HomeTransferConnection {
         let bufferMinutes = max(0, Int(floor(subwayArrival.arrivalDate.timeIntervalSince(transferStartDate) / 60)))
@@ -1987,8 +2173,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return HomeTransferConnection(
             badge: subwayArrival.lineBadge,
             title: String(format: String(localized: "subway.terminal.%@"), terminal),
-            subtitle: String(localized: String.LocalizationValue(subtitleKey)),
-            trailing: String(format: String(localized: "home.transfer.bus50.buffer"), bufferMinutes),
+            subtitle: subwayArrivalText(subwayArrival),
+            connectorTitle: String(localized: String.LocalizationValue(connectorKey)),
+            connectorTravelMinutes: connectorTravelMinutes,
+            trailing: transferWaitingText(
+                bufferMinutes: bufferMinutes,
+                travelMinutes: connectorTravelMinutes
+            ),
             tintColor: subwayArrival.tintColor,
             arrivalDate: subwayArrival.arrivalDate,
             minimumTransferMinutes: minimumTransferMinutes
@@ -2122,7 +2313,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     terminalStationID: $0.terminal.stationID,
                     terminalName: $0.terminal.name,
                     tintColor: tintColor,
-                    arrivalDate: Foundation.Date.now.addingTimeInterval(TimeInterval($0.minutes * 60))
+                    arrivalDate: Foundation.Date.now.addingTimeInterval(TimeInterval($0.minutes * 60)),
+                    isRealtime: $0.isRealtime,
+                    location: $0.location,
+                    stops: $0.stops,
+                    status: $0.status
                 )
             } ?? []
     }
@@ -2144,7 +2339,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     terminalStationID: entry.terminal.stationID,
                     terminalName: entry.terminal.name,
                     tintColor: tintColor,
-                    arrivalDate: arrivalDate
+                    arrivalDate: arrivalDate,
+                    isRealtime: false,
+                    location: nil,
+                    stops: nil,
+                    status: nil
                 )
             } ?? []
     }
@@ -2758,7 +2957,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         stack.spacing = 8
 
         let shuttleRow = makeTransitRow(option, emphasized: true)
-        let transferRows = option.connections.map(makeTransferConnectionRow)
+        let transferRows = option.connections.enumerated().map { index, connection in
+            makeTransferConnectionRow(
+                connection,
+                hasFollowingConnection: option.connections.indices.contains(index + 1)
+            )
+        }
 
         container.addSubview(stack)
         stack.addArrangedSubview(shuttleRow)
@@ -2769,39 +2973,36 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         let linkUpperRows = [shuttleRow] + Array(transferRows.dropLast())
         for (upperRow, connection) in zip(linkUpperRows, option.connections) {
-            let linkBadge = UIView()
-            linkBadge.backgroundColor = .systemBackground
-            linkBadge.layer.cornerRadius = 11
-            linkBadge.layer.borderWidth = 1
-            linkBadge.layer.borderColor = connection.tintColor.withAlphaComponent(0.18).cgColor
-            linkBadge.isAccessibilityElement = false
-
-            let linkIcon = UIImageView(image: UIImage(systemName: "link"))
-            linkIcon.tintColor = connection.tintColor.withAlphaComponent(0.72)
-            linkIcon.contentMode = .scaleAspectFit
-            linkIcon.isAccessibilityElement = false
+            let linkBadge = HomeTransferConnectorView(
+                title: connection.connectorTitle,
+                travelMinutes: connection.connectorTravelMinutes,
+                tintColor: connection.tintColor
+            )
 
             container.addSubview(linkBadge)
-            linkBadge.addSubview(linkIcon)
             linkBadge.snp.makeConstraints { make in
-                make.width.height.equalTo(22)
+                make.height.equalTo(24)
                 make.centerX.equalToSuperview()
                 make.centerY.equalTo(upperRow.snp.bottom).offset(4)
-            }
-            linkIcon.snp.makeConstraints { make in
-                make.center.equalToSuperview()
-                make.width.height.equalTo(12)
             }
         }
         return container
     }
 
-    private func makeTransferConnectionRow(_ connection: HomeTransferConnection) -> UIView {
+    private func makeTransferConnectionRow(
+        _ connection: HomeTransferConnection,
+        hasFollowingConnection: Bool
+    ) -> UIView {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .center
         row.spacing = 10
-        row.layoutMargins = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        row.layoutMargins = UIEdgeInsets(
+            top: 14,
+            left: 12,
+            bottom: hasFollowingConnection ? 14 : 8,
+            right: 12
+        )
         row.isLayoutMarginsRelativeArrangement = true
         row.backgroundColor = connection.tintColor.withAlphaComponent(0.08)
         row.layer.cornerRadius = 8
