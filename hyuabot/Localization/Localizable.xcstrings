@@ -6364,6 +6364,14 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天云量较多" } }
       }
     },
+    "home.weather.current.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Now %1$.0f°C" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C" } }
+      }
+    },
     "home.weather.cold.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "It will be very cold today" } },
@@ -6388,12 +6396,52 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "降水概率 %1$d%% · 今日 %2$.0f°C～%3$.0f°C" } }
       }
     },
+    "home.weather.precipitation.current.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Now %1$.0f°C · %2$d%% chance of precipitation" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C・降水確率 %2$d%%" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C · 강수 확률 %2$d%%" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C · 降水概率 %2$d%%" } }
+      }
+    },
+    "home.weather.precipitation.probability.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$d%% chance of precipitation" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "降水確率 %1$d%%" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "강수 확률 %1$d%%" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "降水概率 %1$d%%" } }
+      }
+    },
     "home.weather.rain.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Rain is expected today" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "今日は雨が降る予報です" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘 비 소식이 있어요" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天有雨" } }
+      }
+    },
+    "home.weather.rain.now.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "It's raining now" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在、雨が降っています" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 비가 내리고 있어요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "现在正在下雨" } }
+      }
+    },
+    "home.weather.rain.start.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rain starts at %1$@" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%1$@から雨が降る予報です" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%1$@부터 비가 와요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预计%1$@开始下雨" } }
+      }
+    },
+    "home.weather.range.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$.0f°C–%2$.0f°C today" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "今日 %1$.0f°C〜%2$.0f°C" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘 %1$.0f°C~%2$.0f°C" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日 %1$.0f°C～%2$.0f°C" } }
       }
     },
     "home.weather.sleet.title" : {
@@ -6404,6 +6452,22 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天有雨夹雪" } }
       }
     },
+    "home.weather.sleet.now.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "It's sleeting now" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在、みぞれが降っています" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 비와 눈이 섞여 내려요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "现在正在下雨夹雪" } }
+      }
+    },
+    "home.weather.sleet.start.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sleet starts at %1$@" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%1$@からみぞれが降る予報です" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%1$@부터 비와 눈이 섞여 내려요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预计%1$@开始下雨夹雪" } }
+      }
+    },
     "home.weather.snow.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Snow is expected today" } },
@@ -6412,12 +6476,28 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天有雪" } }
       }
     },
+    "home.weather.snow.now.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "It's snowing now" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在、雪が降っています" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 눈이 내리고 있어요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "现在正在下雪" } }
+      }
+    },
+    "home.weather.snow.start.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Snow starts at %1$@" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%1$@から雪が降る予報です" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%1$@부터 눈이 와요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预计%1$@开始下雪" } }
+      }
+    },
     "home.weather.temperature.subtitle" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$.0f°C now · %2$.0f°C–%3$.0f°C today" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C・今日 %2$.0f°C〜%3$.0f°C" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C · 오늘 %2$.0f°C~%3$.0f°C" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C · 今日 %2$.0f°C～%3$.0f°C" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Now %1$.0f°C · %2$.0f°–%3$.0f°" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C・%2$.0f°〜%3$.0f°" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C · %2$.0f°~%3$.0f°" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C · %2$.0f°～%3$.0f°" } }
       }
     },
     "shuttle.presence.viewer.count" : {

@@ -6,6 +6,72 @@
 import Foundation
 import UIKit
 
+enum HomeWeatherPrecipitationKind: String, Equatable {
+    case rain = "RAIN"
+    case sleet = "SLEET"
+    case snow = "SNOW"
+}
+
+enum HomeWeatherTitleStyle: Equatable {
+    case clear
+    case cloudy
+    case hot
+    case cold
+    case precipitationNow(HomeWeatherPrecipitationKind)
+    case precipitationLater(HomeWeatherPrecipitationKind)
+    case precipitationToday(HomeWeatherPrecipitationKind)
+
+    var localizationKey: String.LocalizationValue {
+        switch self {
+        case .clear: "home.weather.clear.title"
+        case .cloudy: "home.weather.cloudy.title"
+        case .hot: "home.weather.hot.title"
+        case .cold: "home.weather.cold.title"
+        case let .precipitationNow(kind):
+            switch kind {
+            case .rain: "home.weather.rain.now.title"
+            case .sleet: "home.weather.sleet.now.title"
+            case .snow: "home.weather.snow.now.title"
+            }
+        case let .precipitationLater(kind):
+            switch kind {
+            case .rain: "home.weather.rain.start.title"
+            case .sleet: "home.weather.sleet.start.title"
+            case .snow: "home.weather.snow.start.title"
+            }
+        case let .precipitationToday(kind):
+            switch kind {
+            case .rain: "home.weather.rain.title"
+            case .sleet: "home.weather.sleet.title"
+            case .snow: "home.weather.snow.title"
+            }
+        }
+    }
+}
+
+enum HomeWeatherDisplayLogic {
+    static func titleStyle(
+        condition: String,
+        currentTemperature: Double?,
+        maximumTemperature: Double?,
+        precipitationType: String,
+        precipitationStartAt: Date?,
+        now: Date = .now
+    ) -> HomeWeatherTitleStyle {
+        if let kind = HomeWeatherPrecipitationKind(rawValue: precipitationType) {
+            guard let precipitationStartAt else { return .precipitationToday(kind) }
+            return precipitationStartAt <= now ? .precipitationNow(kind) : .precipitationLater(kind)
+        }
+        if let maximumTemperature, maximumTemperature >= 32 {
+            return .hot
+        }
+        if let currentTemperature, currentTemperature <= -5 {
+            return .cold
+        }
+        return condition == "CLEAR" ? .clear : .cloudy
+    }
+}
+
 enum CafeteriaStatus: Equatable {
     case noMenu
     case soon

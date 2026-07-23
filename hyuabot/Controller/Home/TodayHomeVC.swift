@@ -1549,7 +1549,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     minimumTemperature: 23,
                     maximumTemperature: 31,
                     precipitationProbabilityMax: 70,
-                    precipitationType: condition == "RAIN" ? "RAIN" : "NONE"
+                    precipitationType: ["RAIN", "SLEET", "SNOW"].contains(condition) ? condition : "NONE",
+                    precipitationStartAt: ["RAIN", "SLEET", "SNOW"].contains(condition)
+                        ? Date.now.addingTimeInterval(60 * 60).toZonedDateTimeString()
+                        : nil
                 )
                 return
             }
@@ -1567,7 +1570,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             minimumTemperature: weather.minimumTemperature,
             maximumTemperature: weather.maximumTemperature,
             precipitationProbabilityMax: weather.precipitationProbabilityMax,
-            precipitationType: weather.precipitationType
+            precipitationType: weather.precipitationType,
+            precipitationStartAt: weather.precipitationStartAt
         )
     }
 
@@ -1577,50 +1581,75 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         minimumTemperature: Double?,
         maximumTemperature: Double?,
         precipitationProbabilityMax: Int,
-        precipitationType: String
+        precipitationType: String,
+        precipitationStartAt: String?
     ) {
-        let titleKey: String.LocalizationValue = if condition == "RAIN" {
-            "home.weather.rain.title"
-        } else if condition == "SLEET" {
-            "home.weather.sleet.title"
-        } else if condition == "SNOW" {
-            "home.weather.snow.title"
-        } else if let maximumTemperature, maximumTemperature >= 32 {
-            "home.weather.hot.title"
-        } else if let currentTemperature, currentTemperature <= -5 {
-            "home.weather.cold.title"
-        } else if condition == "CLEAR" {
-            "home.weather.clear.title"
+        let precipitationStartDate = precipitationStartAt?.toZonedDateTimeOrNil()
+        let titleStyle = HomeWeatherDisplayLogic.titleStyle(
+            condition: condition,
+            currentTemperature: currentTemperature,
+            maximumTemperature: maximumTemperature,
+            precipitationType: precipitationType,
+            precipitationStartAt: precipitationStartDate
+        )
+        if case .precipitationLater = titleStyle, let precipitationStartDate {
+            homeHeroTitleLabel.text = String(
+                format: String(localized: titleStyle.localizationKey),
+                locale: Locale.current,
+                weatherTimeFormatter.string(from: precipitationStartDate)
+            )
         } else {
-            "home.weather.cloudy.title"
+            homeHeroTitleLabel.text = String(localized: titleStyle.localizationKey)
         }
-
-        homeHeroTitleLabel.text = String(localized: titleKey)
         homeWeatherIconView.setWeatherCondition(condition)
         setHomeWeatherIconHidden(false)
 
-        if let minimumTemperature, let maximumTemperature {
-            if precipitationType != "NONE" {
+        if precipitationType != "NONE" {
+            if let currentTemperature {
                 homeHeroSubtitleLabel.text = String(
-                    format: String(localized: "home.weather.precipitation.subtitle"),
-                    locale: Locale.current,
-                    precipitationProbabilityMax,
-                    minimumTemperature,
-                    maximumTemperature
-                )
-            } else if let currentTemperature {
-                homeHeroSubtitleLabel.text = String(
-                    format: String(localized: "home.weather.temperature.subtitle"),
+                    format: String(localized: "home.weather.precipitation.current.subtitle"),
                     locale: Locale.current,
                     currentTemperature,
-                    minimumTemperature,
-                    maximumTemperature
+                    precipitationProbabilityMax
                 )
             } else {
-                homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+                homeHeroSubtitleLabel.text = String(
+                    format: String(localized: "home.weather.precipitation.probability.subtitle"),
+                    locale: Locale.current,
+                    precipitationProbabilityMax
+                )
             }
+        } else if let currentTemperature, let minimumTemperature, let maximumTemperature {
+            homeHeroSubtitleLabel.text = String(
+                format: String(localized: "home.weather.temperature.subtitle"),
+                locale: Locale.current,
+                currentTemperature,
+                minimumTemperature,
+                maximumTemperature
+            )
+        } else if let currentTemperature {
+            homeHeroSubtitleLabel.text = String(
+                format: String(localized: "home.weather.current.subtitle"),
+                locale: Locale.current,
+                currentTemperature
+            )
+        } else if let minimumTemperature, let maximumTemperature {
+            homeHeroSubtitleLabel.text = String(
+                format: String(localized: "home.weather.range.subtitle"),
+                locale: Locale.current,
+                minimumTemperature,
+                maximumTemperature
+            )
         } else {
             homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+        }
+    }
+
+    private var weatherTimeFormatter: DateFormatter {
+        DateFormatter().then {
+            $0.locale = Locale.current
+            $0.timeZone = TimeZone(identifier: "Asia/Seoul")
+            $0.setLocalizedDateFormatFromTemplate("j")
         }
     }
 

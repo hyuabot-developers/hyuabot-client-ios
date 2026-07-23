@@ -44,10 +44,19 @@ extension String {
     }
 
     func toZonedDateTimeOrNil() -> Foundation.Date? {
-        let formatter = ISO8601DateFormatter().then {
-            $0.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let formatOptions: [ISO8601DateFormatter.Options] = [
+            [.withInternetDateTime, .withFractionalSeconds],
+            [.withInternetDateTime]
+        ]
+        for options in formatOptions {
+            let formatter = ISO8601DateFormatter().then {
+                $0.formatOptions = options
+            }
+            if let date = formatter.date(from: self) {
+                return date
+            }
         }
-        return formatter.date(from: self)
+        return nil
     }
 }
 

@@ -7,6 +7,95 @@
 import XCTest
 
 final class DomainLogicTests: XCTestCase {
+    func testHomeWeatherTitlePrioritizesUpcomingPrecipitation() throws {
+        let now = try XCTUnwrap("2026-07-21T05:35:00Z".toZonedDateTimeOrNil())
+        let future = try XCTUnwrap("2026-07-21T07:00:00Z".toZonedDateTimeOrNil())
+        let currentHour = try XCTUnwrap("2026-07-21T05:00:00Z".toZonedDateTimeOrNil())
+
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "RAIN",
+                currentTemperature: 29,
+                maximumTemperature: 31,
+                precipitationType: "RAIN",
+                precipitationStartAt: future,
+                now: now
+            ),
+            .precipitationLater(.rain)
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "SNOW",
+                currentTemperature: -3,
+                maximumTemperature: 1,
+                precipitationType: "SNOW",
+                precipitationStartAt: currentHour,
+                now: now
+            ),
+            .precipitationNow(.snow)
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "SLEET",
+                currentTemperature: 1,
+                maximumTemperature: 3,
+                precipitationType: "SLEET",
+                precipitationStartAt: nil,
+                now: now
+            ),
+            .precipitationToday(.sleet)
+        )
+    }
+
+    func testHomeWeatherTitleFallsBackToTemperatureAndSkyCondition() {
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "CLEAR",
+                currentTemperature: 32,
+                maximumTemperature: 35,
+                precipitationType: "NONE",
+                precipitationStartAt: nil
+            ),
+            .hot
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "CLEAR",
+                currentTemperature: -6,
+                maximumTemperature: 1,
+                precipitationType: "NONE",
+                precipitationStartAt: nil
+            ),
+            .cold
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "CLEAR",
+                currentTemperature: 20,
+                maximumTemperature: 25,
+                precipitationType: "NONE",
+                precipitationStartAt: nil
+            ),
+            .clear
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "CLOUDY",
+                currentTemperature: 20,
+                maximumTemperature: 25,
+                precipitationType: "NONE",
+                precipitationStartAt: nil
+            ),
+            .cloudy
+        )
+    }
+
+    func testZonedDateTimeParsesWithAndWithoutFractionalSeconds() {
+        XCTAssertNotNil("2026-07-21T16:00:00+09:00".toZonedDateTimeOrNil())
+        XCTAssertNotNil("2026-07-21T16:00:00.123+09:00".toZonedDateTimeOrNil())
+        XCTAssertNil("invalid".toZonedDateTimeOrNil())
+    }
+
     func testCafeteriaStatusResolvesAroundRunningTime() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
