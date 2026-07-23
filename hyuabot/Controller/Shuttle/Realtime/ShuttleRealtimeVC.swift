@@ -17,6 +17,7 @@ class ShuttleRealtimeVC: UIViewController {
 
     private let returnsToHome: Bool
     private let initialStopID: String?
+    private let initialDestinationID: String?
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     private let disposeBag = DisposeBag()
     private lazy var locationManager = CLLocationManager().then {
@@ -267,9 +268,14 @@ class ShuttleRealtimeVC: UIViewController {
         return viewPager
     }()
 
-    init(returnsToHome: Bool = false, initialStopID: String? = nil) {
+    init(
+        returnsToHome: Bool = false,
+        initialStopID: String? = nil,
+        initialDestinationID: String? = nil
+    ) {
         self.returnsToHome = returnsToHome
         self.initialStopID = initialStopID
+        self.initialDestinationID = initialDestinationID
         self.hasManualStopSelection = initialStopID != nil
         self.selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
         super.init(nibName: nil, bundle: nil)
@@ -284,6 +290,9 @@ class ShuttleRealtimeVC: UIViewController {
         super.viewDidAppear(animated)
         if let initialStopID {
             scrollToStop(initialStopID)
+        }
+        if let initialDestinationID {
+            selectedStopTabVC.scrollToDestination(initialDestinationID)
         }
         logScreenView(.shuttleRealtime)
         scheduleCoachMarksIfNeeded()
@@ -1201,6 +1210,17 @@ private func currentWeekdayString() -> String {
 }
 
 extension ShuttleRealtimeVC {
+    private var selectedStopTabVC: ShuttleRealtimeTabVC {
+        switch selectedPresenceIndex {
+        case 1: shuttlecockOutTabVC
+        case 2: stationTabVC
+        case 3: terminalTabVC
+        case 4: jungangStationTabVC
+        case 5: shuttlecockInTabVC
+        default: dormitoryOutTabVC
+        }
+    }
+
     func scrollToStop(_ stopID: String) {
         let index: Int
         switch stopID {

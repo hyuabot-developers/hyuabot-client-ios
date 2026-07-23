@@ -415,6 +415,35 @@ class ShuttleRealtimeTabVC: UIViewController {
         visibleTableView.layoutIfNeeded()
     }
 
+    func scrollToDestination(_ destinationID: String) {
+        let normalizedID = destinationID
+            .lowercased()
+            .replacingOccurrences(of: "-", with: "_")
+        let section: Int? = switch normalizedID {
+        case "station", "subway":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.subway")
+        case "terminal":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.terminal")
+        case "jungang", "jungang_stn", "jungang_station":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.jungang_station")
+        case "campus", "dormitory", "dormitory_i":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.dormitory")
+        default:
+            nil
+        }
+        guard let section else { return }
+        loadViewIfNeeded()
+        view.layoutIfNeeded()
+        [shuttleRealtimeTableView, shuttleRealtimeTableTimeView].forEach { tableView in
+            tableView.layoutIfNeeded()
+            guard tableView.numberOfSections > section else { return }
+            let headerRect = tableView.rectForHeader(inSection: section)
+            guard !headerRect.isNull else { return }
+            let y = max(-tableView.adjustedContentInset.top, headerRect.minY - tableView.adjustedContentInset.top)
+            tableView.setContentOffset(CGPoint(x: 0, y: y), animated: false)
+        }
+    }
+
     private func showStopModal(_ stop: ShuttleStopEnum) {
         showStopVC(stop)
     }

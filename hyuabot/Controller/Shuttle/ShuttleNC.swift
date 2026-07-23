@@ -5,10 +5,14 @@ class ShuttleNC: UINavigationController {
         self.init(rootViewController: HomeExperienceManager.isEnabled ? TodayHomeVC() : ShuttleRealtimeVC())
     }
 
-    func showHome() {
+    func showHome(animated: Bool = true) {
         HomeExperienceManager.enable()
         updateTabBarItemForCurrentExperience()
-        setViewControllers([TodayHomeVC()], animated: true)
+        if let homeVC = viewControllers.first as? TodayHomeVC {
+            popToViewController(homeVC, animated: animated)
+        } else {
+            setViewControllers([TodayHomeVC()], animated: animated)
+        }
     }
 
     func showLegacyShuttle() {
@@ -20,6 +24,21 @@ class ShuttleNC: UINavigationController {
     func showShuttleDetailFromHome(stopID: String? = nil) {
         updateTabBarItemForCurrentExperience()
         pushViewController(ShuttleRealtimeVC(returnsToHome: true, initialStopID: stopID), animated: true)
+    }
+
+    func openShuttle(stopID: String?, destinationID: String?, animated: Bool = false) {
+        updateTabBarItemForCurrentExperience()
+        let shuttleVC = ShuttleRealtimeVC(
+            returnsToHome: HomeExperienceManager.isEnabled,
+            initialStopID: stopID,
+            initialDestinationID: destinationID
+        )
+        if HomeExperienceManager.isEnabled {
+            let homeVC = (viewControllers.first as? TodayHomeVC) ?? TodayHomeVC()
+            setViewControllers([homeVC, shuttleVC], animated: animated)
+        } else {
+            setViewControllers([shuttleVC], animated: animated)
+        }
     }
 
     func showShuttleTimetableFromHome(
