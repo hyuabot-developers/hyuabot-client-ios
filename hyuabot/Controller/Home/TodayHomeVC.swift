@@ -580,6 +580,332 @@ private final class HomeQuickSettingsVC: UIViewController {
     }
 }
 
+private final class HomeWeatherIconView: UIView {
+    private enum Condition {
+        case clear
+        case cloud
+        case rain
+        case sleet
+        case snow
+    }
+
+    private struct Palette {
+        let sunCore: UIColor
+        let sunEdge: UIColor
+        let sunRay: UIColor
+        let cloudBack: UIColor
+        let cloudFrontTop: UIColor
+        let cloudFrontBottom: UIColor
+        let rain: UIColor
+        let snow: UIColor
+        let shadow: UIColor
+    }
+
+    private let artLayer = CALayer()
+    private let sunRaysLayer = CAShapeLayer()
+    private let sunCoreLayer = CAShapeLayer()
+    private let sunHighlightLayer = CAShapeLayer()
+    private let cloudBackLayer = CAShapeLayer()
+    private let cloudShadowLayer = CAShapeLayer()
+    private let cloudGradientLayer = CAGradientLayer()
+    private let cloudMaskLayer = CAShapeLayer()
+    private let particleLayers = (0..<4).map { _ in CAShapeLayer() }
+    private var condition = Condition.cloud
+
+    override var isHidden: Bool {
+        didSet {
+            updateAnimationState()
+        }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupLayers()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupLayers()
+    }
+
+    func setWeatherCondition(_ value: String) {
+        let nextCondition: Condition = switch value {
+        case "CLEAR": .clear
+        case "RAIN": .rain
+        case "SLEET": .sleet
+        case "SNOW": .snow
+        default: .cloud
+        }
+        guard condition != nextCondition else { return }
+        condition = nextCondition
+        configureArtwork()
+        updateAnimationState()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let artworkScale = min(bounds.width, bounds.height) / 100
+        artLayer.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        artLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
+        artLayer.setAffineTransform(CGAffineTransform(scaleX: artworkScale, y: artworkScale))
+        configureArtwork()
+        updateAnimationState()
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateAnimationState()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
+        updateColors()
+    }
+
+    private func setupLayers() {
+        isAccessibilityElement = false
+        isUserInteractionEnabled = false
+        layer.addSublayer(artLayer)
+
+        [
+            sunRaysLayer,
+            sunCoreLayer,
+            sunHighlightLayer,
+            cloudBackLayer,
+            cloudShadowLayer,
+            cloudGradientLayer
+        ].forEach(artLayer.addSublayer)
+        particleLayers.forEach(artLayer.addSublayer)
+
+        sunRaysLayer.fillColor = UIColor.clear.cgColor
+        sunRaysLayer.lineCap = .round
+        sunRaysLayer.lineJoin = .round
+        cloudGradientLayer.startPoint = CGPoint(x: 0.28, y: 0.18)
+        cloudGradientLayer.endPoint = CGPoint(x: 0.72, y: 0.88)
+        cloudGradientLayer.mask = cloudMaskLayer
+        particleLayers.forEach {
+            $0.fillColor = UIColor.clear.cgColor
+            $0.lineCap = .round
+            $0.lineJoin = .round
+        }
+        configureArtwork()
+    }
+
+    private func configureArtwork() {
+        guard !artLayer.bounds.isEmpty else { return }
+        let usesSun = condition == .clear || condition == .cloud
+        let usesCloud = condition != .clear
+        sunRaysLayer.isHidden = !usesSun
+        sunCoreLayer.isHidden = !usesSun
+        sunHighlightLayer.isHidden = !usesSun
+        cloudBackLayer.isHidden = !usesCloud
+        cloudShadowLayer.isHidden = !usesCloud
+        cloudGradientLayer.isHidden = !usesCloud
+
+        let sunCenter = condition == .clear ? CGPoint(x: 53, y: 50) : CGPoint(x: 35, y: 35)
+        let sunRadius: CGFloat = condition == .clear ? 22 : 13
+        configureSun(center: sunCenter, radius: sunRadius)
+
+        let cloudPath = makeCloudPath()
+        cloudBackLayer.path = makeCloudPath(offsetX: 5, offsetY: -5, scale: 0.9).cgPath
+        cloudShadowLayer.path = cloudPath.cgPath
+        cloudShadowLayer.setAffineTransform(CGAffineTransform(translationX: 0, y: 2.2))
+        cloudMaskLayer.path = cloudPath.cgPath
+        cloudGradientLayer.frame = artLayer.bounds
+        cloudMaskLayer.frame = cloudGradientLayer.bounds
+
+        configureParticles()
+        updateColors()
+    }
+
+    private func configureSun(center: CGPoint, radius: CGFloat) {
+        let rays = UIBezierPath()
+        let inner = radius + (condition == .clear ? 7 : 4.5)
+        let outer = inner + (condition == .clear ? 7 : 4)
+        for index in 0..<8 {
+            let angle = CGFloat(index) * .pi / 4
+            rays.move(to: CGPoint(
+                x: center.x + cos(angle) * inner,
+                y: center.y + sin(angle) * inner
+            ))
+            rays.addLine(to: CGPoint(
+                x: center.x + cos(angle) * outer,
+                y: center.y + sin(angle) * outer
+            ))
+        }
+        sunRaysLayer.path = rays.cgPath
+        sunRaysLayer.lineWidth = condition == .clear ? 4.2 : 3
+
+        sunCoreLayer.path = UIBezierPath(
+            ovalIn: CGRect(
+                x: center.x - radius,
+                y: center.y - radius,
+                width: radius * 2,
+                height: radius * 2
+            )
+        ).cgPath
+        let highlightRadius = radius * 0.22
+        sunHighlightLayer.path = UIBezierPath(
+            ovalIn: CGRect(
+                x: center.x - radius * 0.28 - highlightRadius,
+                y: center.y - radius * 0.32 - highlightRadius,
+                width: highlightRadius * 2,
+                height: highlightRadius * 2
+            )
+        ).cgPath
+    }
+
+    private func makeCloudPath(
+        offsetX: CGFloat = 0,
+        offsetY: CGFloat = 0,
+        scale: CGFloat = 1
+    ) -> UIBezierPath {
+        func x(_ value: CGFloat) -> CGFloat { 50 + (value - 50) * scale + offsetX }
+        func y(_ value: CGFloat) -> CGFloat { 53 + (value - 53) * scale + offsetY }
+        func size(_ value: CGFloat) -> CGFloat { value * scale }
+
+        let path = UIBezierPath()
+        path.append(UIBezierPath(
+            ovalIn: CGRect(x: x(35) - size(17), y: y(54) - size(17), width: size(34), height: size(34))
+        ))
+        path.append(UIBezierPath(
+            ovalIn: CGRect(x: x(55) - size(22), y: y(43) - size(22), width: size(44), height: size(44))
+        ))
+        path.append(UIBezierPath(
+            ovalIn: CGRect(x: x(75) - size(15), y: y(56) - size(15), width: size(30), height: size(30))
+        ))
+        path.append(UIBezierPath(
+            roundedRect: CGRect(x: x(18), y: y(52), width: x(90) - x(18), height: y(75) - y(52)),
+            cornerRadius: size(11.5)
+        ))
+        return path
+    }
+
+    private func configureParticles() {
+        let positions: [CGFloat] = [31, 46, 61, 76]
+        for (index, particleLayer) in particleLayers.enumerated() {
+            let isVisible = switch condition {
+            case .rain, .sleet, .snow: true
+            default: false
+            }
+            particleLayer.isHidden = !isVisible
+            guard isVisible else { continue }
+
+            let isSnowParticle = condition == .snow || (condition == .sleet && index.isMultiple(of: 2))
+            let path = UIBezierPath()
+            if isSnowParticle {
+                let radius: CGFloat = index.isMultiple(of: 2) ? 3.2 : 2.6
+                path.move(to: CGPoint(x: positions[index] - radius, y: 79))
+                path.addLine(to: CGPoint(x: positions[index] + radius, y: 79))
+                path.move(to: CGPoint(x: positions[index], y: 79 - radius))
+                path.addLine(to: CGPoint(x: positions[index], y: 79 + radius))
+                particleLayer.lineWidth = 1.9
+            } else {
+                path.move(to: CGPoint(x: positions[index] + 2, y: 76))
+                path.addLine(to: CGPoint(x: positions[index] - 1.5, y: 82.5))
+                particleLayer.lineWidth = 3.6
+            }
+            particleLayer.path = path.cgPath
+        }
+    }
+
+    private func updateColors() {
+        let palette = palette()
+        sunRaysLayer.strokeColor = palette.sunRay.cgColor
+        sunCoreLayer.fillColor = palette.sunCore.cgColor
+        sunCoreLayer.shadowColor = palette.sunEdge.cgColor
+        sunCoreLayer.shadowOpacity = 0.34
+        sunCoreLayer.shadowRadius = 5
+        sunCoreLayer.shadowOffset = CGSize(width: 0, height: 2)
+        sunHighlightLayer.fillColor = UIColor.white.withAlphaComponent(0.38).cgColor
+        cloudBackLayer.fillColor = palette.cloudBack.cgColor
+        cloudShadowLayer.fillColor = palette.shadow.cgColor
+        cloudGradientLayer.colors = [palette.cloudFrontTop.cgColor, palette.cloudFrontBottom.cgColor]
+
+        for (index, particleLayer) in particleLayers.enumerated() {
+            let isSnowParticle = condition == .snow || (condition == .sleet && index.isMultiple(of: 2))
+            particleLayer.strokeColor = (isSnowParticle ? palette.snow : palette.rain).cgColor
+        }
+    }
+
+    private func palette() -> Palette {
+        if traitCollection.userInterfaceStyle == .dark {
+            return Palette(
+                sunCore: UIColor(red: 1, green: 0.855, blue: 0.388, alpha: 1),
+                sunEdge: UIColor(red: 1, green: 0.631, blue: 0.188, alpha: 1),
+                sunRay: UIColor(red: 1, green: 0.722, blue: 0.251, alpha: 1),
+                cloudBack: UIColor(red: 0.314, green: 0.545, blue: 0.761, alpha: 1),
+                cloudFrontTop: UIColor(red: 0.812, green: 0.902, blue: 0.976, alpha: 1),
+                cloudFrontBottom: UIColor(red: 0.561, green: 0.706, blue: 0.827, alpha: 1),
+                rain: UIColor(red: 0.329, green: 0.788, blue: 1, alpha: 1),
+                snow: UIColor(red: 0.745, green: 0.937, blue: 1, alpha: 1),
+                shadow: UIColor(red: 0, green: 0.078, blue: 0.141, alpha: 0.28)
+            )
+        }
+        return Palette(
+            sunCore: UIColor(red: 1, green: 0.867, blue: 0.396, alpha: 1),
+            sunEdge: UIColor(red: 1, green: 0.631, blue: 0.137, alpha: 1),
+            sunRay: UIColor(red: 1, green: 0.682, blue: 0.165, alpha: 1),
+            cloudBack: UIColor(red: 0.4, green: 0.682, blue: 0.937, alpha: 1),
+            cloudFrontTop: UIColor(red: 0.945, green: 0.973, blue: 1, alpha: 1),
+            cloudFrontBottom: UIColor(red: 0.706, green: 0.835, blue: 0.941, alpha: 1),
+            rain: UIColor(red: 0.11, green: 0.659, blue: 0.91, alpha: 1),
+            snow: UIColor(red: 0.259, green: 0.706, blue: 0.898, alpha: 1),
+            shadow: UIColor(red: 0.047, green: 0.204, blue: 0.322, alpha: 0.12)
+        )
+    }
+
+    private func updateAnimationState() {
+        stopAnimating()
+        guard window != nil, !isHidden, !UIAccessibility.isReduceMotionEnabled else { return }
+
+        let floatingAnimation = CAKeyframeAnimation(keyPath: "transform.translation.y")
+        floatingAnimation.values = [-1.35, 1.35, -1.35]
+        floatingAnimation.keyTimes = [0, 0.5, 1]
+        floatingAnimation.duration = 3.6
+        floatingAnimation.repeatCount = .infinity
+        floatingAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        artLayer.add(floatingAnimation, forKey: "weather.float")
+
+        let sunPulse = CABasicAnimation(keyPath: "opacity")
+        sunPulse.fromValue = 0.72
+        sunPulse.toValue = 1
+        sunPulse.duration = 1.8
+        sunPulse.autoreverses = true
+        sunPulse.repeatCount = .infinity
+        sunRaysLayer.add(sunPulse, forKey: "weather.sunPulse")
+
+        let baseTime = CACurrentMediaTime()
+        for (index, particleLayer) in particleLayers.enumerated() where !particleLayer.isHidden {
+            let isSnowParticle = condition == .snow || (condition == .sleet && index.isMultiple(of: 2))
+            let duration = isSnowParticle ? 2.6 : 1.2
+
+            let fall = CABasicAnimation(keyPath: "transform.translation.y")
+            fall.fromValue = -2
+            fall.toValue = isSnowParticle ? 12 : 10
+            fall.duration = duration
+            fall.repeatCount = .infinity
+            fall.beginTime = baseTime + Double(index) * duration * 0.23
+            particleLayer.add(fall, forKey: "weather.fall")
+
+            let fade = CAKeyframeAnimation(keyPath: "opacity")
+            fade.values = [0, 1, 1, 0]
+            fade.keyTimes = [0, 0.22, 0.72, 1]
+            fade.duration = duration
+            fade.repeatCount = .infinity
+            fade.beginTime = fall.beginTime
+            particleLayer.add(fade, forKey: "weather.fade")
+        }
+    }
+
+    private func stopAnimating() {
+        artLayer.removeAllAnimations()
+        sunRaysLayer.removeAllAnimations()
+        particleLayers.forEach { $0.removeAllAnimations() }
+    }
+}
+
 final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_length
     private static let autoRefreshIntervalSeconds = 60
     private static let departureSwitchHysteresisMeters: CLLocationDistance = 75
@@ -655,7 +981,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private let refreshControl = UIRefreshControl()
     private let homeHeroTitleLabel = UILabel()
     private let homeHeroSubtitleLabel = UILabel()
-    private let homeWeatherIconView = UIImageView()
+    private let homeWeatherIconView = HomeWeatherIconView()
+    private var homeWeatherIconSizeConstraints: [NSLayoutConstraint] = []
+    private var homeWeatherTextTrailingConstraints: [NSLayoutConstraint] = []
     private lazy var legacyBar = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.layer.borderWidth = 1 / UIScreen.main.scale
@@ -723,6 +1051,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         refreshHomeContext()
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let iconSize: CGFloat = view.bounds.width <= 375 ? 88 : 96
+        homeWeatherIconSizeConstraints.forEach { constraint in
+            if constraint.constant != iconSize {
+                constraint.constant = iconSize
+            }
+        }
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         logScreenView(.home)
@@ -776,7 +1114,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         scrollView.addSubview(contentStack)
         contentStack.axis = .vertical
-        contentStack.spacing = 14
+        contentStack.spacing = 12
         contentStack.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 30, right: 16)
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.snp.makeConstraints { make in
@@ -814,42 +1152,67 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         homeHeroTitleLabel.text = String(localized: "home.hero.title")
         homeHeroTitleLabel.font = .godo(size: 28, weight: .bold)
         homeHeroTitleLabel.textColor = .label
+        homeHeroTitleLabel.numberOfLines = 0
 
         homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
         homeHeroSubtitleLabel.font = .godo(size: 15, weight: .regular)
         homeHeroSubtitleLabel.textColor = .secondaryLabel
         homeHeroSubtitleLabel.numberOfLines = 0
 
-        homeWeatherIconView.tintColor = traitCollection.userInterfaceStyle == .dark ? .white : .hanyangBlue
-        homeWeatherIconView.alpha = traitCollection.userInterfaceStyle == .dark ? 0.42 : 0.22
-        homeWeatherIconView.contentMode = .scaleAspectFit
         homeWeatherIconView.isHidden = true
         homeWeatherIconView.isAccessibilityElement = false
 
+        let titleRow = UIView()
+        titleRow.addSubview(homeHeroTitleLabel)
+        let subtitleRow = UIView()
+        subtitleRow.addSubview(homeHeroSubtitleLabel)
+
         stack.addArrangedSubview(topRow)
-        stack.addArrangedSubview(homeHeroTitleLabel)
-        stack.addArrangedSubview(homeHeroSubtitleLabel)
+        stack.addArrangedSubview(titleRow)
+        stack.addArrangedSubview(subtitleRow)
+        stack.setCustomSpacing(16, after: topRow)
+        stack.setCustomSpacing(4, after: titleRow)
         container.addSubview(homeWeatherIconView)
         container.addSubview(stack)
-        homeWeatherIconView.snp.makeConstraints { make in
-            make.trailing.equalToSuperview()
-            make.bottom.equalTo(homeHeroSubtitleLabel.snp.bottom)
-            make.width.height.equalTo(104)
-        }
-        stack.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        container.snp.makeConstraints { make in
-            make.height.greaterThanOrEqualTo(112)
-        }
-        return container
-    }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
-        homeWeatherIconView.tintColor = traitCollection.userInterfaceStyle == .dark ? .white : .hanyangBlue
-        homeWeatherIconView.alpha = traitCollection.userInterfaceStyle == .dark ? 0.42 : 0.22
+        stack.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.top.greaterThanOrEqualToSuperview()
+        }
+        homeHeroTitleLabel.snp.makeConstraints { make in
+            make.top.bottom.leading.equalToSuperview()
+            make.trailing.lessThanOrEqualToSuperview()
+        }
+        homeHeroSubtitleLabel.snp.makeConstraints { make in
+            make.top.bottom.leading.equalToSuperview()
+            make.trailing.lessThanOrEqualToSuperview()
+        }
+
+        homeWeatherIconView.translatesAutoresizingMaskIntoConstraints = false
+        let initialIconSize: CGFloat = view.bounds.width <= 375 ? 88 : 96
+        homeWeatherIconSizeConstraints = [
+            homeWeatherIconView.widthAnchor.constraint(equalToConstant: initialIconSize),
+            homeWeatherIconView.heightAnchor.constraint(equalToConstant: initialIconSize)
+        ]
+        NSLayoutConstraint.activate(homeWeatherIconSizeConstraints + [
+            homeWeatherIconView.topAnchor.constraint(greaterThanOrEqualTo: container.topAnchor),
+            homeWeatherIconView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleLabel.bottomAnchor)
+        ])
+
+        // The artwork starts about 16% inside its canvas. Allowing text 3pt into
+        // that transparent area keeps about 12pt of visible space on compact screens.
+        homeWeatherTextTrailingConstraints = [
+            homeHeroTitleLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
+                constant: 3
+            ),
+            homeHeroSubtitleLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
+                constant: 3
+            )
+        ]
+        return container
     }
 
     private func makeDestinationControlView() -> UIView {
@@ -1116,7 +1479,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard let weather = shuttleData?.homeWeather else {
             homeHeroTitleLabel.text = String(localized: "home.hero.title")
             homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
-            homeWeatherIconView.isHidden = true
+            setHomeWeatherIconHidden(true)
             return
         }
 
@@ -1154,16 +1517,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             "home.weather.cloudy.title"
         }
 
-        let symbolName = switch condition {
-        case "RAIN": "cloud.rain.fill"
-        case "SLEET": "cloud.sleet.fill"
-        case "SNOW": "snowflake"
-        case "CLEAR": "sun.max.fill"
-        default: "cloud.fill"
-        }
         homeHeroTitleLabel.text = String(localized: titleKey)
-        homeWeatherIconView.image = UIImage(systemName: symbolName)
-        homeWeatherIconView.isHidden = false
+        homeWeatherIconView.setWeatherCondition(condition)
+        setHomeWeatherIconHidden(false)
 
         if let minimumTemperature, let maximumTemperature {
             if precipitationType != "NONE" {
@@ -1188,6 +1544,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         } else {
             homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
         }
+    }
+
+    private func setHomeWeatherIconHidden(_ isHidden: Bool) {
+        homeWeatherTextTrailingConstraints.forEach { $0.isActive = !isHidden }
+        homeWeatherIconView.isHidden = isHidden
     }
 
     private func renderNotices() {
