@@ -140,7 +140,7 @@ class ShuttleNC: UINavigationController {
         } else {
             fatalError("Invalid stop")
         }
-        pushViewController(vc, animated: false)
+        pushViewController(vc, animated: true)
     }
 
     func openBirthdayDialog() {
