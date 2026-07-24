@@ -1088,6 +1088,27 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private let refreshControl = UIRefreshControl()
     private let homeHeroTitleLabel = UILabel()
     private let homeHeroSubtitleLabel = UILabel()
+    private lazy var homeWeatherAttributionButton = UIButton(type: .system).then {
+        var configuration = UIButton.Configuration.plain()
+        var title = AttributedString(String(localized: "home.weather.attribution"))
+        title.font = .godo(size: 12, weight: .regular)
+        configuration.attributedTitle = title
+        configuration.baseForegroundColor = .secondaryLabel
+        configuration.contentInsets = .zero
+        $0.configuration = configuration
+        $0.isHidden = true
+        $0.accessibilityTraits.insert(.link)
+        $0.addTarget(self, action: #selector(openWeatherAttribution), for: .touchUpInside)
+    }
+
+    private lazy var homeHeroSubtitleStack = UIStackView(
+        arrangedSubviews: [homeHeroSubtitleLabel, homeWeatherAttributionButton]
+    ).then {
+        $0.axis = .horizontal
+        $0.alignment = .firstBaseline
+        $0.spacing = 5
+    }
+
     private let homeWeatherIconView = HomeWeatherIconView()
     private var homeWeatherIconSizeConstraints: [NSLayoutConstraint] = []
     private var homeWeatherTextTrailingConstraints: [NSLayoutConstraint] = []
@@ -1270,7 +1291,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let titleRow = UIView()
         titleRow.addSubview(homeHeroTitleLabel)
         let subtitleRow = UIView()
-        subtitleRow.addSubview(homeHeroSubtitleLabel)
+        subtitleRow.addSubview(homeHeroSubtitleStack)
 
         stack.addArrangedSubview(topRow)
         stack.addArrangedSubview(titleRow)
@@ -1288,7 +1309,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.top.bottom.leading.equalToSuperview()
             make.trailing.lessThanOrEqualToSuperview()
         }
-        homeHeroSubtitleLabel.snp.makeConstraints { make in
+        homeHeroSubtitleStack.snp.makeConstraints { make in
             make.top.bottom.leading.equalToSuperview()
             make.trailing.lessThanOrEqualToSuperview()
         }
@@ -1307,7 +1328,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         NSLayoutConstraint.activate(homeWeatherIconSizeConstraints + [
             homeWeatherIconView.topAnchor.constraint(greaterThanOrEqualTo: container.topAnchor),
             homeWeatherIconView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleLabel.bottomAnchor)
+            homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleStack.bottomAnchor)
         ])
 
         homeWeatherTextTrailingConstraints = [
@@ -1315,7 +1336,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
                 constant: 3
             ),
-            homeHeroSubtitleLabel.trailingAnchor.constraint(
+            homeHeroSubtitleStack.trailingAnchor.constraint(
                 lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
                 constant: 3
             )
@@ -1593,6 +1614,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard let weather = shuttleData?.homeWeather else {
             homeHeroTitleLabel.text = String(localized: "home.hero.title")
             homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+            homeWeatherAttributionButton.isHidden = true
             setHomeWeatherIconHidden(true)
             return
         }
@@ -1634,6 +1656,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         homeWeatherIconView.setWeatherCondition(weather.condition)
         setHomeWeatherIconHidden(false)
         homeHeroSubtitleLabel.text = weatherSubtitle(for: weather)
+        homeWeatherAttributionButton.isHidden = weather.attribution == nil
     }
 
     private func weatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
@@ -1641,10 +1664,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         if weather.precipitationConfidence == "LOW" {
             parts.append(String(localized: "home.weather.confidence.low"))
         }
-        if weather.attribution != nil {
-            parts.append(String(localized: "home.weather.attribution"))
-        }
         return parts.joined(separator: " · ")
+    }
+
+    @objc
+    private func openWeatherAttribution() {
+        guard let url = URL(string: "https://open-meteo.com/") else { return }
+        UIApplication.shared.open(url)
     }
 
     private func baseWeatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
