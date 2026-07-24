@@ -7,6 +7,7 @@ import UIKit
 
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeTabVC: UIViewController {
+    private static let floatingStatusClearance: CGFloat = 48
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
     private let destinationRefreshControl = UIRefreshControl()
@@ -45,6 +46,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.tableFooterView = self.tableFooterView1
         $0.showsVerticalScrollIndicator = false
+        $0.contentInset.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
+        $0.verticalScrollIndicatorInsets.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
         // Register the view
         $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
         $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
@@ -62,6 +65,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.refreshControl = timetableRefreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.showsVerticalScrollIndicator = false
+        $0.contentInset.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
+        $0.verticalScrollIndicatorInsets.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
         // Register the view
         $0.register(ShuttleRealtimeHeaderView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeHeaderView.reuseIdentifier)
         $0.register(ShuttleRealtimeFooterView.self, forHeaderFooterViewReuseIdentifier: ShuttleRealtimeFooterView.reuseIdentifier)
@@ -408,6 +413,35 @@ class ShuttleRealtimeTabVC: UIViewController {
     func scrollToTop() {
         visibleTableView.setContentOffset(.zero, animated: false)
         visibleTableView.layoutIfNeeded()
+    }
+
+    func scrollToDestination(_ destinationID: String) {
+        let normalizedID = destinationID
+            .lowercased()
+            .replacingOccurrences(of: "-", with: "_")
+        let section: Int? = switch normalizedID {
+        case "station", "subway":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.subway")
+        case "terminal":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.terminal")
+        case "jungang", "jungang_stn", "jungang_station":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.jungang_station")
+        case "campus", "dormitory", "dormitory_i":
+            shuttleRealtimeSection.firstIndex(of: "shuttle.desination.dormitory")
+        default:
+            nil
+        }
+        guard let section else { return }
+        loadViewIfNeeded()
+        view.layoutIfNeeded()
+        for tableView in [shuttleRealtimeTableView, shuttleRealtimeTableTimeView] {
+            tableView.layoutIfNeeded()
+            guard tableView.numberOfSections > section else { continue }
+            let headerRect = tableView.rectForHeader(inSection: section)
+            guard !headerRect.isNull else { continue }
+            let y = max(-tableView.adjustedContentInset.top, headerRect.minY - tableView.adjustedContentInset.top)
+            tableView.setContentOffset(CGPoint(x: 0, y: y), animated: false)
+        }
     }
 
     private func showStopModal(_ stop: ShuttleStopEnum) {

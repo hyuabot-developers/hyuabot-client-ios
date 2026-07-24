@@ -6,6 +6,26 @@ query HomePageQuery(
     $campusID: Int!
     $busInput: [BusRouteStopInput!]!
 ) {
+    homeWeather {
+        issuedAt
+        expiresAt
+        observedAt
+        forecastUpdatedAt
+        currentTemperature
+        currentPrecipitationType
+        currentPrecipitationAmount
+        minimumTemperature
+        maximumTemperature
+        precipitationProbabilityMax
+        precipitationStartAt
+        precipitationEndAt
+        precipitationType
+        precipitationConfidence
+        availableModelCount
+        agreeingModelCount
+        primaryCondition
+        attribution
+    }
     notices(input: { language: $language, category: "셔틀" }) {
         notices {
             title
@@ -53,6 +73,8 @@ query HomePageQuery(
         }
         arrival {
             minutes
+            stops
+            isRealtime
         }
     }
     subway(input: { keys: [
@@ -66,6 +88,10 @@ query HomePageQuery(
             direction
             entries {
                 minutes
+                isRealtime
+                location
+                stops
+                status
                 terminal {
                     stationID
                     name

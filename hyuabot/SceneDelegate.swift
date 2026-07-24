@@ -76,14 +76,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
 
         switch route {
+        case "home":
+            rootVC.selectedViewController = rootVC.shuttleNC
+            rootVC.shuttleNC.showHome(animated: false)
+
         case "bus":
+            rootVC.busNC.popToRootViewController(animated: false)
             rootVC.selectedViewController = rootVC.busNC
 
         case "subway":
+            rootVC.subwayNC.popToRootViewController(animated: false)
             rootVC.selectedViewController = rootVC.subwayNC
 
         case "cafeteria":
-            rootVC.selectedIndex = 3
+            rootVC.selectedViewController = rootVC.cafeteriaNC
             let tab = params?.first(where: { $0.name == "tab" })?.value
             let tabIndex: Int? = switch tab {
             case "breakfast": 0
@@ -92,27 +98,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             default: nil
             }
             if let index = tabIndex {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    if let nc = rootVC.viewControllers?[3] as? UINavigationController,
-                       let vc = nc.viewControllers.first as? CafeteriaVC
-                    {
-                        vc.scrollToMealTab(index)
-                    }
-                }
+                rootVC.cafeteriaNC.showMeal(date: .now, mealIndex: index)
+            } else {
+                rootVC.cafeteriaNC.popToRootViewController(animated: false)
             }
 
         case "shuttle":
-            rootVC.selectedIndex = 0
             let stop = params?.first(where: { $0.name == "stop" })?.value
-            if let stop {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    if let nc = rootVC.viewControllers?[0] as? UINavigationController,
-                       let vc = nc.viewControllers.first as? ShuttleRealtimeVC
-                    {
-                        vc.scrollToStop(stop)
-                    }
-                }
-            }
+            let destination = params?.first(where: { $0.name == "to" })?.value
+            rootVC.selectedViewController = rootVC.shuttleNC
+            rootVC.shuttleNC.openShuttle(stopID: stop, destinationID: destination)
 
         case "reading-room":
             rootVC.openCampus(.readingRoom)
@@ -130,6 +125,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             rootVC.openCampus(.setting)
 
         case "campus":
+            rootVC.campusNC.popToRootViewController(animated: false)
             rootVC.selectedViewController = rootVC.campusNC
 
         default:

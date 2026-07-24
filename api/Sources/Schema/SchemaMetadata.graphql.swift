@@ -33,6 +33,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "BusTimetable": Api.Objects.BusTimetable,
     "Cafeteria": Api.Objects.Cafeteria,
     "CafeteriaRunningTime": Api.Objects.CafeteriaRunningTime,
+    "HomeWeather": Api.Objects.HomeWeather,
     "Menu": Api.Objects.Menu,
     "Notice": Api.Objects.Notice,
     "NoticeCategory": Api.Objects.NoticeCategory,

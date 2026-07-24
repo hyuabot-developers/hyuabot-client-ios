@@ -156,6 +156,18 @@ class RootVC: UITabBarController {
 }
 
 extension RootVC: UITabBarControllerDelegate {
+    func tabBarController(
+        _ tabBarController: UITabBarController,
+        shouldSelect viewController: UIViewController
+    ) -> Bool {
+        guard tabBarController.selectedViewController === viewController,
+              let navigationController = viewController as? UINavigationController,
+              navigationController.viewControllers.count > 1
+        else { return true }
+        navigationController.popToRootViewController(animated: true)
+        return false
+    }
+
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         if let item = analyticsItem(for: viewController) {
             AnalyticsManager.logSelect(item, type: .tab)
