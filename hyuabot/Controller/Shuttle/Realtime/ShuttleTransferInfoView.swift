@@ -2,15 +2,24 @@ import Api
 import SnapKit
 import UIKit
 
+// swiftlint:disable file_length
+
 private extension UIColor {
     static let line4Color = UIColor(red: 0, green: 160 / 255, blue: 233 / 255, alpha: 1)
-    static let suinColor = UIColor(red: 250 / 255, green: 190 / 255, blue: 0, alpha: 1)
+    static let suinColor = UIColor(red: 0.72, green: 0.48, blue: 0, alpha: 1)
+    static let seohaeColor = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1)
     static let transferBusColor = UIColor(named: "busGreen") ?? .systemGreen
 }
 
-private enum TransferVehicleType {
+enum TransferVehicleType {
     case subway
     case bus
+}
+
+enum TransferTimelineSource: Equatable {
+    case realtime
+    case timetable
+    case arrivalLog
 }
 
 private func localizedTransferMinuteText(_ minutes: Int) -> String {
@@ -21,20 +30,76 @@ private func localizedTransferMinuteText(_ minutes: Int) -> String {
     return "\(minutes)m"
 }
 
-private struct TransferTimelineEntry: Equatable {
+struct TransferTimelineEntry: Equatable {
     let destination: String
     let minutes: Int?
     let stops: Int?
     let locationLabel: String?
     let direction: Int
+    let source: TransferTimelineSource
+    let clockTime: Foundation.Date?
+    let waitingMinutes: Int?
+
+    var scheduledArrivalText: String? {
+        guard let clockTime else { return nil }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: clockTime)
+        guard let hour = components.hour, let minute = components.minute else { return nil }
+        let key: String
+        switch source {
+        case .realtime:
+            return nil
+        case .timetable:
+            key = "home.transfer.subway.timetable.arrival"
+        case .arrivalLog:
+            key = "home.transfer.bus50.log.arrival_record"
+        }
+        return String(
+            format: String(localized: String.LocalizationValue(key)),
+            locale: Locale.current,
+            hour,
+            minute
+        )
+    }
+
+    var waitingText: String? {
+        guard let waitingMinutes else { return nil }
+        guard waitingMinutes > 0 else {
+            return String(localized: "home.transfer.wait.immediate")
+        }
+        return String(
+            format: String(localized: "home.transfer.wait.minutes"),
+            locale: Locale.current,
+            waitingMinutes
+        )
+    }
 }
 
-private struct TransferRow: Equatable {
+struct TransferRow: Equatable {
     let name: String
     let targetName: String
     let color: UIColor
     let vehicleType: TransferVehicleType
     let timeline: [TransferTimelineEntry]
+    let connectorTitle: String?
+    let connectorTravelMinutes: Int?
+
+    init(
+        name: String,
+        targetName: String,
+        color: UIColor,
+        vehicleType: TransferVehicleType,
+        timeline: [TransferTimelineEntry],
+        connectorTitle: String? = nil,
+        connectorTravelMinutes: Int? = nil
+    ) {
+        self.name = name
+        self.targetName = targetName
+        self.color = color
+        self.vehicleType = vehicleType
+        self.timeline = timeline
+        self.connectorTitle = connectorTitle
+        self.connectorTravelMinutes = connectorTravelMinutes
+    }
 
     var preferredHeight: CGFloat {
         switch vehicleType {
@@ -49,10 +114,42 @@ private struct TransferRow: Equatable {
         lhs.name == rhs.name &&
             lhs.targetName == rhs.targetName &&
             lhs.vehicleType == rhs.vehicleType &&
-            lhs.timeline == rhs.timeline
+            lhs.timeline == rhs.timeline &&
+            lhs.connectorTitle == rhs.connectorTitle &&
+            lhs.connectorTravelMinutes == rhs.connectorTravelMinutes
     }
 }
 
+private struct TransferLine {
+    let stationID: String
+    let name: String
+    let color: UIColor
+}
+
+private struct SubwayTransferCandidate {
+    let line: TransferLine
+    let terminalStationID: String
+    let terminalName: String
+    let arrivalDate: Foundation.Date
+    let minutes: Int?
+    let stops: Int?
+    let direction: Int
+    let source: TransferTimelineSource
+}
+
+enum ShuttleTransferDestination {
+    case all
+    case station
+    case terminal
+    case jungangStation
+}
+
+enum ShuttleTransferPresentation {
+    case summary
+    case inline
+}
+
+// swiftlint:disable:next type_body_length
 private final class TransferTimelineView: UIView {
     private let sideStations = 3
     private let visibleBusStops = 7
@@ -312,7 +409,9 @@ private final class TransferTimelineView: UIView {
     private func drawBubble(entry: TransferTimelineEntry, type: TransferVehicleType, x: CGFloat, y: CGFloat, index: Int, total: Int) {
         let primary: String
         if type == .bus {
-            let minuteText = entry.minutes.map { localizedTransferMinuteText($0) } ?? entry.destination
+            let minuteText = entry.scheduledArrivalText
+                ?? entry.minutes.map { localizedTransferMinuteText($0) }
+                ?? entry.destination
             let stopsText = entry.stops
                 .map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) }
             primary = [minuteText, stopsText].compactMap { $0 }.joined(separator: " ")
@@ -321,6 +420,9 @@ private final class TransferTimelineView: UIView {
         }
         let secondary: String? = {
             guard type != .bus else { return nil }
+            if let scheduledArrivalText = entry.scheduledArrivalText {
+                return scheduledArrivalText
+            }
             if let minutes = entry.minutes, let stops = entry.stops {
                 return localizedTransferMinuteText(minutes) +
                     String(format: String(localized: "transfer.bus.stops.suffix"), stops)
@@ -484,20 +586,22 @@ private final class TransferRowView: UIView {
     }
 }
 
+// swiftlint:disable:next type_body_length
 final class ShuttleTransferInfoView: UIView {
     var onHeightChange: (() -> Void)?
 
     private let emptyRowsGraceInterval: TimeInterval = 60
     private let stopID: ShuttleStopEnum
+    private let destination: ShuttleTransferDestination
+    private let presentation: ShuttleTransferPresentation
     private var rows: [TransferRow] = []
     private var emptyRowsSince: Foundation.Date?
+    private var latestData: ShuttleRealtimePageQuery.Data?
+    private var selectedShuttle: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
+    private var inlineConnectorViews: [TransferConnectorView] = []
 
     private let titleLabel = UILabel().then {
         $0.text = String(localized: "shuttle.transfer.section.title")
-        $0.textColor = .white
-        $0.textAlignment = .center
-        $0.font = .godo(size: 16, weight: .bold)
-        $0.backgroundColor = .hanyangBlue
     }
 
     private let rowStackView = UIStackView().then {
@@ -509,11 +613,57 @@ final class ShuttleTransferInfoView: UIView {
 
     var preferredHeight: CGFloat {
         guard !rows.isEmpty else { return 0 }
-        return 40 + rows.reduce(CGFloat(0)) { $0 + $1.preferredHeight } + 4
+        if presentation == .inline {
+            return CGFloat(rows.count) * ShuttleRealtimeCellView.informationRowHeight
+        }
+        return titleHeight + rows.reduce(CGFloat(0)) { $0 + $1.preferredHeight } + 4
     }
 
-    init(stopID: ShuttleStopEnum) {
+    var inlineConnectorTitle: String? {
+        guard presentation == .inline, !rows.isEmpty else { return nil }
+        let location = switch destination {
+        case .station:
+            String(localized: "home.transfer.subway.connector")
+        case .terminal:
+            String(localized: "home.transfer.bus50.connector")
+        case .jungangStation:
+            String(localized: "shuttle.stop.jungang.station")
+        case .all:
+            rows[0].targetName
+        }
+        return String(
+            format: String(localized: "shuttle.connection.transfer.%@"),
+            locale: Locale.current,
+            location
+        )
+    }
+
+    var inlineConnectorTintColor: UIColor? {
+        guard presentation == .inline else { return nil }
+        return rows.first?.color
+    }
+
+    var inlineConnectorTravelMinutes: Int? {
+        switch destination {
+        case .station:
+            5
+        case .terminal, .jungangStation, .all:
+            nil
+        }
+    }
+
+    private var titleHeight: CGFloat {
+        presentation == .summary ? 40 : 34
+    }
+
+    init(
+        stopID: ShuttleStopEnum,
+        destination: ShuttleTransferDestination = .all,
+        presentation: ShuttleTransferPresentation = .summary
+    ) {
         self.stopID = stopID
+        self.destination = destination
+        self.presentation = presentation
         super.init(frame: .zero)
         setupUI()
     }
@@ -525,39 +675,64 @@ final class ShuttleTransferInfoView: UIView {
 
     private func setupUI() {
         backgroundColor = .systemBackground
-        addSubview(titleLabel)
-        addSubview(rowStackView)
-        titleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(40)
+        if presentation == .summary {
+            titleLabel.textColor = .white
+            titleLabel.textAlignment = .center
+            titleLabel.font = .godo(size: 16, weight: .bold)
+            titleLabel.backgroundColor = .hanyangBlue
+            addSubview(titleLabel)
+            titleLabel.snp.makeConstraints { make in
+                make.top.leading.trailing.equalToSuperview()
+                make.height.equalTo(titleHeight)
+            }
         }
+        addSubview(rowStackView)
         rowStackView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(2)
+            if presentation == .summary {
+                make.top.equalTo(titleLabel.snp.bottom).offset(2)
+            } else {
+                make.top.equalToSuperview()
+            }
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalToSuperview().inset(2)
+            make.bottom.equalToSuperview().inset(presentation == .summary ? 2 : 0)
         }
     }
 
     func setup(data: ShuttleRealtimePageQuery.Data?) {
+        latestData = data
         guard let data else {
             handleEmptyRows()
             return
         }
-        let rows: [TransferRow] = switch stopID {
-        case .dormiotryOut, .shuttlecockOut:
-            buildSubwayRows(data: data.subway) + buildBusRows(
+        guard stopID == .dormiotryOut || stopID == .shuttlecockOut else {
+            render(rows: [])
+            return
+        }
+        let stationRows = ShuttleTransferDisplaySettings.showsSubwayTransfer
+            ? buildStationSubwayRows(data: data.subway)
+            : []
+        let terminalRows = ShuttleTransferDisplaySettings.showsBusTransfer
+            ? buildBusRows(
                 data: data.transferBus,
-                stopSeq: 216_000_759,
-                label: String(localized: "shuttle.transfer.bus50.to.kwangmyeong")
+                stopSeq: 216_000_759
             )
+            : []
+        let jungangStationRows = ShuttleTransferDisplaySettings.showsSubwayTransfer
+            ? buildSubwayRows(
+                data: data.subway,
+                lines: [TransferLine(stationID: "K450", name: String(localized: "subway.line4"), color: .line4Color)],
+                targetName: String(localized: "shuttle.stop.jungang.station")
+            )
+            : []
+        let rows: [TransferRow] = switch destination {
+        case .all:
+            stationRows + terminalRows + jungangStationRows
+        case .station:
+            stationRows
         case .terminal:
-            buildBusRows(
-                data: data.transferBus,
-                stopSeq: 216_000_117,
-                label: String(localized: "shuttle.transfer.bus50.to.ansan")
-            )
-        default:
-            []
+            terminalRows
+        case .jungangStation:
+            jungangStationRows
         }
 
         guard !rows.isEmpty else {
@@ -567,6 +742,18 @@ final class ShuttleTransferInfoView: UIView {
 
         emptyRowsSince = nil
         render(rows: rows)
+    }
+
+    func selectShuttle(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?) {
+        guard selectedShuttle?.seq != item?.seq else { return }
+        selectedShuttle = item
+        emptyRowsSince = nil
+        render(rows: [])
+        setup(data: latestData)
+    }
+
+    func reloadDisplaySettings() {
+        setup(data: latestData)
     }
 
     private func handleEmptyRows(now: Foundation.Date = Foundation.Date()) {
@@ -592,42 +779,421 @@ final class ShuttleTransferInfoView: UIView {
             rowStackView.removeArrangedSubview(arrangedSubview)
             arrangedSubview.removeFromSuperview()
         }
+        inlineConnectorViews.forEach { $0.removeFromSuperview() }
+        inlineConnectorViews = []
         for row in rows {
-            let rowView = TransferRowView(row: row)
+            let rowView: UIView
+            let rowHeight: CGFloat
+            if presentation == .inline {
+                rowView = ShuttleCompactTransferRowView(row: row)
+                rowHeight = ShuttleRealtimeCellView.informationRowHeight
+            } else {
+                rowView = TransferRowView(row: row)
+                rowHeight = row.preferredHeight
+            }
             rowStackView.addArrangedSubview(rowView)
             rowView.snp.makeConstraints { make in
-                make.height.equalTo(row.preferredHeight)
+                make.height.equalTo(rowHeight)
+            }
+            if presentation == .inline, let connectorTitle = row.connectorTitle {
+                let connectorView = TransferConnectorView(
+                    title: connectorTitle,
+                    travelMinutes: row.connectorTravelMinutes,
+                    tintColor: row.color
+                )
+                connectorView.alpha = 0
+                connectorView.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
+                addSubview(connectorView)
+                connectorView.snp.makeConstraints { make in
+                    make.height.equalTo(24)
+                    make.centerX.equalToSuperview()
+                    make.centerY.equalTo(rowView.snp.top)
+                }
+                inlineConnectorViews.append(connectorView)
             }
         }
         isHidden = rows.isEmpty
         onHeightChange?()
     }
 
-    private func buildSubwayRows(data: [ShuttleRealtimePageQuery.Data.Subway]) -> [TransferRow] {
-        let lineInfo: [(stationID: String, name: String, color: UIColor)] = [
-            ("K449", String(localized: "subway.line4"), .line4Color),
-            ("K251", String(localized: "subway.suin"), .suinColor)
+    func showInlineConnectors(animated: Bool) {
+        guard !inlineConnectorViews.isEmpty else { return }
+        let changes = {
+            self.inlineConnectorViews.forEach {
+                $0.alpha = 1
+                $0.transform = .identity
+            }
+        }
+        guard animated else {
+            changes()
+            return
+        }
+        UIView.animate(
+            withDuration: 0.18,
+            delay: 0,
+            options: [.curveEaseOut, .beginFromCurrentState],
+            animations: changes
+        )
+    }
+
+    func hideInlineConnectors(animated: Bool) {
+        guard !inlineConnectorViews.isEmpty else { return }
+        let changes = {
+            self.inlineConnectorViews.forEach {
+                $0.alpha = 0
+                $0.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
+            }
+        }
+        guard animated else {
+            changes()
+            return
+        }
+        UIView.animate(
+            withDuration: 0.12,
+            delay: 0,
+            options: [.curveEaseIn, .beginFromCurrentState],
+            animations: changes
+        )
+    }
+
+    private func buildStationSubwayRows(data: [ShuttleRealtimePageQuery.Data.Subway]) -> [TransferRow] {
+        let targetName = String(localized: "shuttle.transfer.target.station")
+        let line4 = TransferLine(stationID: "K449", name: String(localized: "subway.line4"), color: .line4Color)
+        let suinBadge = String(localized: "home.transfer.subway.suin_bundang.badge")
+        let suin = TransferLine(stationID: "K251", name: suinBadge, color: .suinColor)
+        let oidoSuin = TransferLine(stationID: "K258", name: suinBadge, color: .suinColor)
+        let seohaeBadge = String(localized: "home.transfer.subway.seohae.badge")
+        let chojiSeohae = TransferLine(stationID: "S26", name: seohaeBadge, color: .seohaeColor)
+        let transferStartDate = selectedTransferStartDate
+
+        switch ShuttleTransferDisplaySettings.subwayDestination {
+        case .seoul:
+            return earliestRows(
+                candidates: subwayArrivalCandidates(data: data, line: line4, direction: "up"),
+                after: transferStartDate,
+                minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0,
+                targetName: targetName
+            )
+        case .suwonYongin:
+            return earliestRows(
+                candidates: subwayArrivalCandidates(data: data, line: suin, direction: "up"),
+                after: transferStartDate,
+                minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0,
+                targetName: targetName
+            )
+        case .oido:
+            let candidates = oidoFirstLegCandidates(data: data, line4: line4, suin: suin)
+            return earliestRows(
+                candidates: candidates,
+                after: transferStartDate,
+                minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0,
+                targetName: targetName
+            )
+        case .sosa:
+            return sosaTransferRows(
+                data: data,
+                line4: line4,
+                suin: suin,
+                seohae: chojiSeohae,
+                after: transferStartDate,
+                targetName: targetName
+            )
+        case .incheon:
+            return incheonTransferRows(
+                data: data,
+                line4: line4,
+                suin: suin,
+                oidoSuin: oidoSuin,
+                after: transferStartDate,
+                targetName: targetName
+            )
+        }
+    }
+
+    private func sosaTransferRows(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        line4: TransferLine,
+        suin: TransferLine,
+        seohae: TransferLine,
+        after transferStartDate: Foundation.Date?,
+        targetName: String
+    ) -> [TransferRow] {
+        let firstLegs = eligibleCandidates(
+            chojiFirstLegCandidates(data: data, line4: line4, suin: suin),
+            after: transferStartDate,
+            minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0
+        )
+        let secondLegs = subwayTimetableCandidates(
+            data: data,
+            line: seohae,
+            direction: "up"
+        ) {
+            $0.terminal.stationID <= "S16" && $0.terminal.stationID.hasPrefix("S")
+        }
+        let paths = firstLegs.compactMap { firstLeg -> [SubwayTransferCandidate]? in
+            guard let secondLeg = eligibleCandidates(
+                secondLegs,
+                after: firstLeg.arrivalDate,
+                minimumTransferMinutes: 8
+            ).min(by: { $0.arrivalDate < $1.arrivalDate }) else { return nil }
+            return [firstLeg, secondLeg]
+        }
+        guard let path = paths.min(by: {
+            ($0.last?.arrivalDate ?? .distantFuture) < ($1.last?.arrivalDate ?? .distantFuture)
+        }) else { return [] }
+        return [
+            subwayRow(
+                candidate: path[0],
+                targetName: targetName,
+                after: transferStartDate,
+                travelMinutes: inlineConnectorTravelMinutes
+            ),
+            subwayRow(
+                candidate: path[1],
+                targetName: targetName,
+                after: path[0].arrivalDate,
+                travelMinutes: 8,
+                connectorTitle: String(localized: "home.transfer.subway.choji.connector"),
+                connectorTravelMinutes: 8
+            )
         ]
-        return lineInfo.compactMap { info in
+    }
+
+    private func incheonTransferRows(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        line4: TransferLine,
+        suin: TransferLine,
+        oidoSuin: TransferLine,
+        after transferStartDate: Foundation.Date?,
+        targetName: String
+    ) -> [TransferRow] {
+        let directPaths = eligibleCandidates(
+            subwayArrivalCandidates(data: data, line: suin, direction: "down") {
+                $0.terminal.stationID > "K258" && $0.terminal.stationID.hasPrefix("K2")
+            },
+            after: transferStartDate,
+            minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0
+        ).map { [$0] }
+
+        let firstLegs = eligibleCandidates(
+            oidoFirstLegCandidates(data: data, line4: line4, suin: suin),
+            after: transferStartDate,
+            minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0
+        )
+        let secondLegs = subwayArrivalCandidates(data: data, line: oidoSuin, direction: "down") {
+            $0.terminal.stationID > "K258" && $0.terminal.stationID.hasPrefix("K2")
+        }
+        let transferPaths = firstLegs.compactMap { firstLeg -> [SubwayTransferCandidate]? in
+            guard let secondLeg = eligibleCandidates(
+                secondLegs,
+                after: firstLeg.arrivalDate,
+                minimumTransferMinutes: 5
+            ).min(by: { $0.arrivalDate < $1.arrivalDate }) else { return nil }
+            return [firstLeg, secondLeg]
+        }
+        guard let path = (directPaths + transferPaths).min(by: {
+            ($0.last?.arrivalDate ?? .distantFuture) < ($1.last?.arrivalDate ?? .distantFuture)
+        }) else { return [] }
+        return path.enumerated().map { index, candidate in
+            subwayRow(
+                candidate: candidate,
+                targetName: targetName,
+                after: index == 0 ? transferStartDate : path[index - 1].arrivalDate,
+                travelMinutes: index == 0 ? inlineConnectorTravelMinutes : nil,
+                connectorTitle: index == 0 ? nil : String(localized: "home.transfer.subway.oido.connector"),
+                connectorTravelMinutes: nil
+            )
+        }
+    }
+
+    private func earliestRows(
+        candidates: [SubwayTransferCandidate],
+        after transferStartDate: Foundation.Date?,
+        minimumTransferMinutes: Int,
+        targetName: String
+    ) -> [TransferRow] {
+        guard let candidate = eligibleCandidates(
+            candidates,
+            after: transferStartDate,
+            minimumTransferMinutes: minimumTransferMinutes
+        ).min(by: { $0.arrivalDate < $1.arrivalDate }) else { return [] }
+        return [
+            subwayRow(
+                candidate: candidate,
+                targetName: targetName,
+                after: transferStartDate,
+                travelMinutes: inlineConnectorTravelMinutes
+            )
+        ]
+    }
+
+    private func chojiFirstLegCandidates(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        line4: TransferLine,
+        suin: TransferLine
+    ) -> [SubwayTransferCandidate] {
+        let line4Down = subwayArrivalCandidates(data: data, line: line4, direction: "down") {
+            $0.terminal.stationID >= "K452" && $0.terminal.stationID.hasPrefix("K4")
+        }
+        let suinDown = subwayArrivalCandidates(data: data, line: suin, direction: "down") {
+            $0.terminal.stationID >= "K254" && $0.terminal.stationID.hasPrefix("K2")
+        }
+        return line4Down + suinDown
+    }
+
+    private func oidoFirstLegCandidates(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        line4: TransferLine,
+        suin: TransferLine
+    ) -> [SubwayTransferCandidate] {
+        let line4Down = subwayArrivalCandidates(data: data, line: line4, direction: "down") {
+            $0.terminal.stationID == "K456"
+        }
+        let suinDown = subwayArrivalCandidates(data: data, line: suin, direction: "down") {
+            $0.terminal.stationID >= "K258" && $0.terminal.stationID.hasPrefix("K2")
+        }
+        return line4Down + suinDown
+    }
+
+    private func subwayArrivalCandidates(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        line: TransferLine,
+        direction: String,
+        isEligible: (ShuttleRealtimePageQuery.Data.Subway.Arrival.Entry) -> Bool = { _ in true }
+    ) -> [SubwayTransferCandidate] {
+        guard let station = data.first(where: { $0.stationID == line.stationID }),
+              let arrival = station.arrival.first(where: { $0.direction == direction })
+        else { return [] }
+        let now = Foundation.Date.now
+        return arrival.entries
+            .filter(isEligible)
+            .map {
+                SubwayTransferCandidate(
+                    line: line,
+                    terminalStationID: $0.terminal.stationID,
+                    terminalName: $0.terminal.name,
+                    arrivalDate: now.addingTimeInterval(TimeInterval($0.minutes * 60)),
+                    minutes: $0.minutes,
+                    stops: $0.stops,
+                    direction: subwayDirection(direction),
+                    source: $0.isRealtime ? .realtime : .timetable
+                )
+            }
+    }
+
+    private func subwayTimetableCandidates(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        line: TransferLine,
+        direction: String,
+        isEligible: (ShuttleRealtimePageQuery.Data.Subway.Timetable) -> Bool
+    ) -> [SubwayTransferCandidate] {
+        guard let station = data.first(where: { $0.stationID == line.stationID }) else { return [] }
+        let now = Foundation.Date.now
+        return station.timetable
+            .filter { $0.direction == direction }
+            .filter(isEligible)
+            .compactMap {
+                guard let arrivalDate = $0.time.toLocalTimeOrNil() else { return nil }
+                return SubwayTransferCandidate(
+                    line: line,
+                    terminalStationID: $0.terminal.stationID,
+                    terminalName: $0.terminal.name,
+                    arrivalDate: arrivalDate,
+                    minutes: max(0, Int(ceil(arrivalDate.timeIntervalSince(now) / 60))),
+                    stops: nil,
+                    direction: subwayDirection(direction),
+                    source: .timetable
+                )
+            }
+    }
+
+    private func eligibleCandidates(
+        _ candidates: [SubwayTransferCandidate],
+        after transferStartDate: Foundation.Date?,
+        minimumTransferMinutes: Int
+    ) -> [SubwayTransferCandidate] {
+        guard let transferStartDate else { return candidates }
+        return candidates.filter {
+            $0.arrivalDate.timeIntervalSince(transferStartDate) >= TimeInterval(minimumTransferMinutes * 60)
+        }
+    }
+
+    private func subwayRow(
+        candidate: SubwayTransferCandidate,
+        targetName: String,
+        after transferStartDate: Foundation.Date?,
+        travelMinutes: Int?,
+        connectorTitle: String? = nil,
+        connectorTravelMinutes: Int? = nil
+    ) -> TransferRow {
+        let terminal = localizedStationName(
+            stationID: candidate.terminalStationID,
+            fallback: candidate.terminalName
+        )
+        let entry = TransferTimelineEntry(
+            destination: terminal,
+            minutes: candidate.minutes,
+            stops: candidate.stops,
+            locationLabel: nil,
+            direction: candidate.direction,
+            source: candidate.source,
+            clockTime: candidate.source == .realtime ? nil : candidate.arrivalDate,
+            waitingMinutes: transferWaitingMinutes(
+                until: candidate.arrivalDate,
+                after: transferStartDate,
+                travelMinutes: travelMinutes
+            )
+        )
+        return TransferRow(
+            name: candidate.line.name,
+            targetName: targetName,
+            color: candidate.line.color,
+            vehicleType: .subway,
+            timeline: [entry],
+            connectorTitle: connectorTitle,
+            connectorTravelMinutes: connectorTravelMinutes
+        )
+    }
+
+    private func buildSubwayRows(
+        data: [ShuttleRealtimePageQuery.Data.Subway],
+        lines: [TransferLine],
+        targetName: String
+    ) -> [TransferRow] {
+        let earliestArrival = selectedTransferArrivalDate
+        return lines.compactMap { info in
             guard let station = data.first(where: { $0.stationID == info.stationID }) else { return nil }
-            let timeline = station.arrival.flatMap { group in
-                group.entries
-                    .filter(\.isRealtime)
+            let timeline: [TransferTimelineEntry] = station.arrival.flatMap { group -> [TransferTimelineEntry] in
+                let direction = subwayDirection(group.direction)
+                guard ShuttleTransferDisplaySettings.subwayDestination.includes(
+                    stationID: info.stationID,
+                    direction: direction
+                ) else { return [] }
+                return group.entries
+                    .filter {
+                        guard let earliestArrival else { return true }
+                        return Foundation.Date.now.addingTimeInterval(TimeInterval($0.minutes * 60)) >= earliestArrival
+                    }
+                    .sorted { $0.minutes < $1.minutes }
                     .prefix(1)
                     .map {
-                        TransferTimelineEntry(
+                        let arrivalDate = Foundation.Date.now.addingTimeInterval(TimeInterval($0.minutes * 60))
+                        return TransferTimelineEntry(
                             destination: localizedStationName(stationID: $0.terminal.stationID, fallback: $0.terminal.name),
                             minutes: $0.minutes,
                             stops: $0.stops,
                             locationLabel: nil,
-                            direction: subwayDirection(group.direction)
+                            direction: direction,
+                            source: $0.isRealtime ? .realtime : .timetable,
+                            clockTime: $0.isRealtime ? nil : arrivalDate,
+                            waitingMinutes: transferWaitingMinutes(until: arrivalDate)
                         )
                     }
             }
             guard !timeline.isEmpty else { return nil }
             return TransferRow(
                 name: info.name,
-                targetName: String(localized: "shuttle.transfer.target.station"),
+                targetName: targetName,
                 color: info.color,
                 vehicleType: .subway,
                 timeline: timeline
@@ -635,23 +1201,53 @@ final class ShuttleTransferInfoView: UIView {
         }
     }
 
-    private func buildBusRows(data: [ShuttleRealtimePageQuery.Data.TransferBus], stopSeq: Int, label: String) -> [TransferRow] {
-        let displayLabel = transferBusDisplayLabel(koreanLabel: label)
-        let timeline = data
-            .filter { $0.stop.seq == stopSeq }
+    private func buildBusRows(data: [ShuttleRealtimePageQuery.Data.TransferBus], stopSeq: Int) -> [TransferRow] {
+        let displayLabel = String(localized: "home.transfer.bus50.badge")
+        let earliestArrival = selectedTransferArrivalDate
+        let matchingBuses = data.filter { $0.stop.seq == stopSeq }
+        let realtimeTimeline = matchingBuses
             .flatMap(\.arrival)
-            .filter { $0.minutes != nil }
+            .filter(\.isRealtime)
+            .compactMap { arrival -> TransferTimelineEntry? in
+                guard let minutes = arrival.minutes else { return nil }
+                let arrivalDate = Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60))
+                guard earliestArrival.map({ arrivalDate >= $0 }) ?? true else { return nil }
+                return TransferTimelineEntry(
+                    destination: displayLabel,
+                    minutes: minutes,
+                    stops: arrival.stops,
+                    locationLabel: arrival.stops
+                        .map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) },
+                    direction: -1,
+                    source: .realtime,
+                    clockTime: nil,
+                    waitingMinutes: transferWaitingMinutes(until: arrivalDate)
+                )
+            }
+            .sorted { ($0.minutes ?? .max) < ($1.minutes ?? .max) }
+            .prefix(2)
+        let logTimes = Set(matchingBuses
+            .flatMap(\.log)
+            .compactMap { $0.time.toLocalTimeOrNil() })
+        let logTimeline = logTimes
+            .filter { logDate in
+                earliestArrival.map { logDate >= $0 } ?? true
+            }
+            .sorted()
             .prefix(2)
             .map {
                 TransferTimelineEntry(
                     destination: displayLabel,
-                    minutes: $0.minutes,
-                    stops: $0.stops,
-                    locationLabel: $0.stops
-                        .map { String(format: String(localized: "transfer.bus.stops.suffix"), $0).trimmingCharacters(in: .whitespaces) },
-                    direction: -1
+                    minutes: nil,
+                    stops: nil,
+                    locationLabel: nil,
+                    direction: -1,
+                    source: .arrivalLog,
+                    clockTime: $0,
+                    waitingMinutes: transferWaitingMinutes(until: $0)
                 )
             }
+        let timeline = realtimeTimeline.isEmpty ? Array(logTimeline) : Array(realtimeTimeline)
         guard !timeline.isEmpty else { return [] }
         return [
             TransferRow(
@@ -659,14 +1255,9 @@ final class ShuttleTransferInfoView: UIView {
                 targetName: String(localized: "shuttle.transfer.target.terminal"),
                 color: .transferBusColor,
                 vehicleType: .bus,
-                timeline: Array(timeline)
+                timeline: timeline
             )
         ]
-    }
-
-    private func transferBusDisplayLabel(koreanLabel: String) -> String {
-        let language = Locale.current.language.languageCode?.identifier ?? "ko"
-        return language.hasPrefix("ko") ? koreanLabel : "50"
     }
 
     private func localizedStationName(stationID: String, fallback: String) -> String {
@@ -682,5 +1273,53 @@ final class ShuttleTransferInfoView: UIView {
         default:
             -1
         }
+    }
+}
+
+extension ShuttleTransferInfoView {
+    private var selectedTransferStartDate: Foundation.Date? {
+        guard let selectedShuttle else { return nil }
+        let stopName: String
+        switch destination {
+        case .station:
+            stopName = "station"
+        case .terminal:
+            stopName = "terminal"
+        case .jungangStation:
+            stopName = "jungang_stn"
+        case .all:
+            return nil
+        }
+        return selectedShuttle.stops
+            .first(where: { $0.stop == stopName })?
+            .time
+            .toLocalTimeOrNil()
+    }
+
+    private var selectedTransferArrivalDate: Foundation.Date? {
+        selectedTransferStartDate?.addingTimeInterval(
+            TimeInterval((inlineConnectorTravelMinutes ?? 0) * 60)
+        )
+    }
+
+    private func transferWaitingMinutes(until arrivalDate: Foundation.Date) -> Int? {
+        transferWaitingMinutes(
+            until: arrivalDate,
+            after: selectedTransferStartDate,
+            travelMinutes: inlineConnectorTravelMinutes
+        )
+    }
+
+    private func transferWaitingMinutes(
+        until arrivalDate: Foundation.Date,
+        after transferStartDate: Foundation.Date?,
+        travelMinutes: Int?
+    ) -> Int? {
+        guard let transferStartDate else { return nil }
+        let bufferMinutes = max(
+            0,
+            Int(floor(arrivalDate.timeIntervalSince(transferStartDate) / 60))
+        )
+        return max(0, bufferMinutes - (travelMinutes ?? 0))
     }
 }

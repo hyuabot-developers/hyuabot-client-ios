@@ -1,4 +1,9 @@
-query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: String!) {
+query ShuttleRealtimePageQuery(
+    $language: String!
+    $after: LocalTime
+    $weekday: String!
+    $logDates: [Date!]
+) {
     notices(input: {language: $language, category: "셔틀,날씨"}) {
         notices {
             title
@@ -53,8 +58,11 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: 
         }
     }
     subway(input: { keys: [
-        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 2 },
-        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 2 },
+        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "K450", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 },
+        { stationID: "S26", direction: ["up"], weekdays: [$weekday] },
     ]}) {
         stationID
         arrival {
@@ -70,10 +78,19 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: 
                 }
             }
         }
+        timetable {
+            weekday
+            direction
+            time
+            terminal {
+                stationID
+                name
+            }
+        }
     }
     transferBus: bus(input: [
-        { route: 216000075, stop: 216000759, limit: 2 },
-        { route: 216000075, stop: 216000117, limit: 2 },
+        { route: 216000075, stop: 216000759, limit: 12, dates: $logDates },
+        { route: 216000075, stop: 216000117, limit: 12, dates: $logDates },
     ]) {
         route {
             seq
@@ -86,6 +103,10 @@ query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: 
             minutes
             stops
             isRealtime
+        }
+        log {
+            date
+            time
         }
     }
 }

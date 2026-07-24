@@ -2,6 +2,8 @@ import Api
 import RxSwift
 import UIKit
 
+// swiftlint:disable file_length
+
 private final class ExtendedHitAreaButton: UIButton {
     var minimumHitArea = CGSize(width: 44, height: 44)
 
@@ -12,9 +14,18 @@ private final class ExtendedHitAreaButton: UIButton {
     }
 }
 
+// swiftlint:disable:next type_body_length
 class ShuttleRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleRealtimeCellView"
+    static let informationRowHeight: CGFloat = 44
     private let disposeBag = DisposeBag()
+    private var transferConnectorView: TransferConnectorView?
+    private var standardSeparatorInset: UIEdgeInsets?
+    private let transferSelectionAccentView = UIView().then {
+        $0.backgroundColor = .hanyangBlue
+        $0.isHidden = true
+    }
+
     private let shuttleTypeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
@@ -98,9 +109,17 @@ class ShuttleRealtimeCellView: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        setTransferSelectionState(false)
+    }
+
     func setupUI() {
         backgroundColor = .systemBackground
         contentView.backgroundColor = .systemBackground
+        clipsToBounds = false
+        contentView.clipsToBounds = false
+        contentView.addSubview(transferSelectionAccentView)
         contentView.addSubview(statusStackView)
         contentView.addSubview(shuttleTimeLabel)
         contentView.addSubview(shuttleRemainingTimeLabel)
@@ -127,7 +146,6 @@ class ShuttleRealtimeCellView: UITableViewCell {
         statusStackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(13)
             make.trailing.lessThanOrEqualTo(self.shuttleTimeLabel.snp.leading).offset(-8)
         }
         shuttleTimeLabel.snp.makeConstraints { make in
@@ -143,12 +161,99 @@ class ShuttleRealtimeCellView: UITableViewCell {
             make.centerY.equalToSuperview()
             make.width.height.equalTo(20)
         }
+        transferSelectionAccentView.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview()
+            make.width.equalTo(4)
+        }
         if UITraitCollection.current.userInterfaceStyle == .dark {
             alarmButton.tintColor = .white
         } else {
             alarmButton.tintColor = .hanyangBlue
         }
         updateAlarmButtonAppearance()
+    }
+
+    func setTransferSelectionState(_ isSelected: Bool) {
+        if !isSelected {
+            removeTransferConnector()
+        }
+        if standardSeparatorInset == nil {
+            standardSeparatorInset = separatorInset
+        }
+        transferSelectionAccentView.isHidden = !isSelected
+        contentView.backgroundColor = isSelected
+            ? UIColor.hanyangBlue.withAlphaComponent(traitCollection.userInterfaceStyle == .dark ? 0.16 : 0.07)
+            : .systemBackground
+        separatorInset = isSelected
+            ? UIEdgeInsets(top: 0, left: bounds.width + 1, bottom: 0, right: 0)
+            : standardSeparatorInset ?? .zero
+        layer.zPosition = isSelected ? 1 : 0
+    }
+
+    func prepareTransferConnector(title: String, travelMinutes: Int?, tintColor: UIColor) {
+        removeTransferConnector()
+        let connector = TransferConnectorView(
+            title: title,
+            travelMinutes: travelMinutes,
+            tintColor: tintColor
+        )
+        connector.alpha = 0
+        connector.transform = CGAffineTransform(scaleX: 0.92, y: 0.92)
+        addSubview(connector)
+        connector.snp.makeConstraints { make in
+            make.height.equalTo(24)
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(contentView.snp.bottom)
+        }
+        bringSubviewToFront(connector)
+        transferConnectorView = connector
+    }
+
+    func showTransferConnector(animated: Bool) {
+        guard let connector = transferConnectorView else { return }
+        let animations = {
+            connector.alpha = 1
+            connector.transform = .identity
+        }
+        if animated {
+            UIView.animate(
+                withDuration: 0.18,
+                delay: 0,
+                options: [.curveEaseOut, .beginFromCurrentState],
+                animations: animations
+            )
+        } else {
+            animations()
+        }
+    }
+
+    func hideTransferConnector(animated: Bool) {
+        guard let connector = transferConnectorView else { return }
+        let animations = {
+            connector.alpha = 0
+            connector.transform = CGAffineTransform(scaleX: 0.92, y: 0.92)
+        }
+        let completion: (Bool) -> Void = { [weak self, weak connector] _ in
+            guard let self, let connector, transferConnectorView === connector else { return }
+            removeTransferConnector()
+        }
+        if animated {
+            UIView.animate(
+                withDuration: 0.16,
+                delay: 0,
+                options: [.curveEaseIn, .beginFromCurrentState],
+                animations: animations,
+                completion: completion
+            )
+        } else {
+            animations()
+            completion(true)
+        }
+    }
+
+    private func removeTransferConnector() {
+        transferConnectorView?.removeFromSuperview()
+        transferConnectorView = nil
     }
 
     func setupUI(
@@ -265,7 +370,8 @@ class ShuttleRealtimeCellView: UITableViewCell {
         }).disposed(by: disposeBag)
     }
 
-    @objc private func alarmButtonTapped() {
+    @objc
+    private func alarmButtonTapped() {
         showAlarm?()
     }
 

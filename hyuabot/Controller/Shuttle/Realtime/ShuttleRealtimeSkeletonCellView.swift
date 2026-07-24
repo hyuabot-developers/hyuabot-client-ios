@@ -39,7 +39,6 @@ class ShuttleRealtimeSkeletonCellView: UITableViewCell {
             make.centerY.equalToSuperview()
             make.width.equalTo(82)
             make.height.equalTo(18)
-            make.verticalEdges.equalToSuperview().inset(15)
         }
         alarmPlaceholder.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
