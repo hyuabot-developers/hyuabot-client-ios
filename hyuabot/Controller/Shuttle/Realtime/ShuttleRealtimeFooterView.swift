@@ -26,7 +26,6 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
 
     private let transferContainer = UIView()
     let busAlternativeContainer = UIView()
-    private let alternativeSpacingView = UIView()
     private let transferConnectorSpacer = UIView()
     private let busAlternativeStackView = UIStackView().then {
         $0.axis = .vertical
@@ -68,15 +67,11 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         showEntireTimeTableButton.snp.makeConstraints { make in
             make.height.equalTo(Self.timetableButtonHeight)
         }
-        alternativeSpacingView.snp.makeConstraints { make in
-            make.height.equalTo(Self.connectorSpacing)
-        }
         transferConnectorSpacer.snp.makeConstraints { make in
             make.height.equalTo(Self.connectorSpacing)
         }
 
         let stackView = UIStackView(arrangedSubviews: [
-            alternativeSpacingView,
             busAlternativeContainer,
             transferConnectorSpacer,
             transferContainer,
@@ -93,7 +88,6 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         showEntireTimeTableButton.addTarget(self, action: #selector(showEntireTimeTable), for: .touchUpInside)
         transferContainer.isHidden = true
         busAlternativeContainer.isHidden = true
-        alternativeSpacingView.isHidden = true
         transferConnectorSpacer.isHidden = true
     }
 
@@ -123,7 +117,6 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
                 busStopLongitude: 0
             )]
             : busAlternatives
-        alternativeSpacingView.isHidden = alternatives.isEmpty
         if self.stopID == stopID,
            self.section == section,
            self.alternatives == alternatives,

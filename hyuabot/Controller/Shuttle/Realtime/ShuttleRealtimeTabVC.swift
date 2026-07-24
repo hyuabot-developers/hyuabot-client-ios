@@ -549,10 +549,12 @@ class ShuttleRealtimeTabVC: UIViewController {
         let previousIndexPath = expandedShuttleIndexPath
         let isCollapsing = previousIndexPath == indexPath
         var previousCell: ShuttleRealtimeCellView?
-        if let previousIndexPath,
-           let visiblePreviousCell = shuttleRealtimeTableView.cellForRow(
-               at: IndexPath(row: previousIndexPath.row, section: previousIndexPath.section)
-           ) as? ShuttleRealtimeCellView {
+        let visiblePreviousCell = previousIndexPath.flatMap {
+            shuttleRealtimeTableView.cellForRow(
+                at: IndexPath(row: $0.row, section: $0.section)
+            ) as? ShuttleRealtimeCellView
+        }
+        if let visiblePreviousCell {
             previousCell = visiblePreviousCell
             visiblePreviousCell.hideTransferConnector(animated: true)
         }
@@ -561,9 +563,9 @@ class ShuttleRealtimeTabVC: UIViewController {
         }
         expandedShuttleIndexPath = isCollapsing ? nil : indexPath
 
-        if !isCollapsing,
-           let connectorTitle = transferView?.inlineConnectorTitle,
-           let connectorTintColor = transferView?.inlineConnectorTintColor {
+        let connectorTitle = transferView?.inlineConnectorTitle
+        let connectorTintColor = transferView?.inlineConnectorTintColor
+        if !isCollapsing, let connectorTitle, let connectorTintColor {
             selectedCell.setTransferSelectionState(true)
             selectedCell.prepareTransferConnector(
                 title: connectorTitle,
@@ -1442,12 +1444,8 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         } else {
             0
         }
-        var height = ShuttleRealtimeFooterView.timetableButtonHeight
+        return ShuttleRealtimeFooterView.timetableButtonHeight
             + ShuttleRealtimeCellView.informationRowHeight * CGFloat(effectiveAlternativesCount)
-        if effectiveAlternativesCount > 0 {
-            height += ShuttleRealtimeFooterView.connectorSpacing
-        }
-        return height
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -1470,11 +1468,11 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if tableView === shuttleRealtimeTableView,
-           isTransferExpansionRow(indexPath),
-           !isAnimatingShuttleExpansion,
-           let expandedRow = expandedDataRow(section: indexPath.section)
-        {
+        let isExpandedTransferRow =
+            tableView === shuttleRealtimeTableView &&
+            isTransferExpansionRow(indexPath) &&
+            !isAnimatingShuttleExpansion
+        if isExpandedTransferRow, let expandedRow = expandedDataRow(section: indexPath.section) {
             transferInfoViewsByIndexPath[
                 IndexPath(row: expandedRow, section: indexPath.section)
             ]?.showInlineConnectors(animated: false)
@@ -1493,8 +1491,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             return
         }
         shuttleCell.setTransferSelectionState(true)
-        if let connectorTitle = transferView.inlineConnectorTitle,
-           let connectorTintColor = transferView.inlineConnectorTintColor {
+        let connectorTitle = transferView.inlineConnectorTitle
+        let connectorTintColor = transferView.inlineConnectorTintColor
+        if let connectorTitle, let connectorTintColor {
             shuttleCell.prepareTransferConnector(
                 title: connectorTitle,
                 travelMinutes: transferView.inlineConnectorTravelMinutes,

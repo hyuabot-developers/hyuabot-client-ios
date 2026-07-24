@@ -44,6 +44,15 @@ query HomePageQuery(
         ],
         after: $after
     }) {
+        initialStopRules {
+            seq
+            stopName
+            priority
+            polygon {
+                latitude
+                longitude
+            }
+        }
         stops {
             name
             timetable {

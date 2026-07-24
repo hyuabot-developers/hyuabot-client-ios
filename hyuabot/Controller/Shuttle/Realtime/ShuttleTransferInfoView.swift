@@ -819,9 +819,9 @@ final class ShuttleTransferInfoView: UIView {
     func showInlineConnectors(animated: Bool) {
         guard !inlineConnectorViews.isEmpty else { return }
         let changes = {
-            self.inlineConnectorViews.forEach {
-                $0.alpha = 1
-                $0.transform = .identity
+            for inlineConnectorView in self.inlineConnectorViews {
+                inlineConnectorView.alpha = 1
+                inlineConnectorView.transform = .identity
             }
         }
         guard animated else {
@@ -839,9 +839,9 @@ final class ShuttleTransferInfoView: UIView {
     func hideInlineConnectors(animated: Bool) {
         guard !inlineConnectorViews.isEmpty else { return }
         let changes = {
-            self.inlineConnectorViews.forEach {
-                $0.alpha = 0
-                $0.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
+            for inlineConnectorView in self.inlineConnectorViews {
+                inlineConnectorView.alpha = 0
+                inlineConnectorView.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
             }
         }
         guard animated else {

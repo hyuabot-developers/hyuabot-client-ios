@@ -22,6 +22,15 @@ query ShuttleRealtimePageQuery(
         ],
         after: $after
     }) {
+        initialStopRules {
+            seq
+            stopName
+            priority
+            polygon {
+                latitude
+                longitude
+            }
+        }
         stops {
             latitude
             longitude

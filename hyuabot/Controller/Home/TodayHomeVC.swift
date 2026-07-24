@@ -76,6 +76,17 @@ private enum HomeDeparture: CaseIterable {
         }
     }
 
+    init?(shuttleStopName: String) {
+        switch shuttleStopName {
+        case "dormitory_o": self = .dormitory
+        case "shuttlecock_o", "shuttlecock_i": self = .shuttlecock
+        case "station": self = .station
+        case "terminal": self = .terminal
+        case "jungang_stn": self = .jungang
+        default: return nil
+        }
+    }
+
     func timetableStart(for destination: HomeDestination) -> String.LocalizationValue {
         if case (.shuttlecock, .dormitory) = (self, destination) {
             return "shuttle.stop.shuttlecock.in"
@@ -1069,6 +1080,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private var selectedDeparture: HomeDeparture = .dormitory
     private var hasResolvedInitialDepartureLocation = false
+    private var pendingDepartureLocation: CLLocation?
+    private var initialStopRules: [ShuttleInitialStopRuleCandidate]?
     private var isDepartureManuallySelected = false
     private var shouldRestoreAutomaticDepartureOnActivation = false
     private var selectedDestination: HomeDestination = .station
@@ -2713,6 +2726,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func fetchHomeData(showsLoadingState: Bool = true) {
         guard !isLoading else { return }
         isLoading = true
+        initialStopRules = nil
         if showsLoadingState || shuttleData == nil {
             renderLoadingState()
         }
@@ -2738,6 +2752,17 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             let bus50TerminalLogTimes = await fetchBus50TerminalLogTimes()
 
             await MainActor.run {
+                initialStopRules =
+                    response?.data?.shuttle.initialStopRules.map { rule in
+                        ShuttleInitialStopRuleCandidate(
+                            sequence: rule.seq,
+                            stopName: rule.stopName,
+                            priority: rule.priority,
+                            polygon: rule.polygon.map {
+                                ShuttleGeoCoordinate(latitude: $0.latitude, longitude: $0.longitude)
+                            }
+                        )
+                    } ?? []
                 if let data = response?.data {
                     shuttleData = data
                     busAlternatives = buildBusAlternatives(data.bus)
@@ -2749,6 +2774,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 }
                 isLoading = false
                 refreshControl.endRefreshing()
+                if let pendingDepartureLocation {
+                    self.pendingDepartureLocation = nil
+                    applyAutomaticDeparture(for: pendingDepartureLocation)
+                }
                 render()
             }
         }
@@ -2792,6 +2821,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func refreshHomeContext(showsLoadingState: Bool = true) {
+        fetchHomeData(showsLoadingState: showsLoadingState)
         #if DEBUG
             if !usesDebugDeparture {
                 requestDepartureLocation()
@@ -2799,7 +2829,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         #else
             requestDepartureLocation()
         #endif
-        fetchHomeData(showsLoadingState: showsLoadingState)
     }
 
     #if DEBUG
@@ -3354,6 +3383,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         isDepartureManuallySelected = true
         shouldRestoreAutomaticDepartureOnActivation = false
         hasResolvedInitialDepartureLocation = true
+        pendingDepartureLocation = nil
         guard selectedDeparture != departure else {
             updateDepartureSelector()
             return
@@ -3375,7 +3405,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         #if DEBUG
             guard !usesDebugDeparture else { return }
         #endif
-        requestDepartureLocation()
+        refreshHomeContext(showsLoadingState: false)
     }
 
     private func requestDepartureLocation() {
@@ -3647,23 +3677,55 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard !isDepartureManuallySelected,
-              let location = locations.last,
-              let nearestDeparture = HomeDeparture.allCases.min(by: {
-                  $0.location.distance(from: location) < $1.location.distance(from: location)
-              })
+              let location = locations.last
         else { return }
+        pendingDepartureLocation = location
+        guard initialStopRules != nil else { return }
+        pendingDepartureLocation = nil
+        applyAutomaticDeparture(for: location)
+    }
+
+    private func applyAutomaticDeparture(for location: CLLocation) {
+        guard !isDepartureManuallySelected, let initialStopRules else { return }
+        let configuredStopName = ShuttleInitialStopResolver.resolve(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            rules: initialStopRules
+        )
+        let configuredDeparture = configuredStopName.flatMap { HomeDeparture(shuttleStopName: $0) }
+        guard let initialDeparture = configuredDeparture ?? HomeDeparture.allCases.min(by: {
+            $0.location.distance(from: location) < $1.location.distance(from: location)
+        }) else { return }
+        let initialDestination: HomeDestination = switch configuredStopName {
+        case "shuttlecock_i": .dormitory
+        case "shuttlecock_o": selectedDestination == .dormitory ? .station : selectedDestination
+        default: initialDeparture.destinations.contains(selectedDestination)
+            ? selectedDestination
+            : initialDeparture.destinations[0]
+        }
         let shouldApplyHysteresis = hasResolvedInitialDepartureLocation
         hasResolvedInitialDepartureLocation = true
         let currentDistance = selectedDeparture.location.distance(from: location)
-        let nearestDistance = nearestDeparture.location.distance(from: location)
-        guard nearestDeparture != selectedDeparture else { return }
-        guard !shouldApplyHysteresis ||
-            nearestDistance + Self.departureSwitchHysteresisMeters < currentDistance
+        let initialDistance = initialDeparture.location.distance(from: location)
+        guard initialDeparture != selectedDeparture || initialDestination != selectedDestination else { return }
+        guard initialDeparture == selectedDeparture ||
+            configuredDeparture != nil ||
+            !shouldApplyHysteresis ||
+            initialDistance + Self.departureSwitchHysteresisMeters < currentDistance
         else { return }
-        updateDeparture(nearestDeparture)
+        selectedDestination = initialDestination
+        if initialDeparture == selectedDeparture {
+            updateDestinationControl()
+            renderMovement()
+            refreshPresenceStatus()
+        } else {
+            updateDeparture(initialDeparture)
+        }
     }
 
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {}
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        pendingDepartureLocation = nil
+    }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         requestDepartureLocation()

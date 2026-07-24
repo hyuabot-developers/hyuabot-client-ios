@@ -246,6 +246,8 @@ class ShuttleRealtimeVC: UIViewController {
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
+    private var pendingInitialStopLocation: CLLocation?
+    private var initialStopRules: [ShuttleInitialStopRuleCandidate]?
     private var hasCompletedInitialLocationSelection = false
     private var hasManualStopSelection = false
     private var hasLoadedInitialShuttlePageData = false
@@ -814,6 +816,21 @@ class ShuttleRealtimeVC: UIViewController {
                 cachePolicy: .networkOnly
             )
             await MainActor.run {
+                initialStopRules =
+                    response?.data?.shuttle.initialStopRules.map { rule in
+                        ShuttleInitialStopRuleCandidate(
+                            sequence: rule.seq,
+                            stopName: rule.stopName,
+                            priority: rule.priority,
+                            polygon: rule.polygon.map {
+                                ShuttleGeoCoordinate(latitude: $0.latitude, longitude: $0.longitude)
+                            }
+                        )
+                    } ?? []
+                if let pendingInitialStopLocation {
+                    self.pendingInitialStopLocation = nil
+                    applyInitialStop(for: pendingInitialStopLocation)
+                }
                 if let data = response?.data {
                     dataDelegate.transferData.onNext(data)
                     self.hasLoadedInitialNotices = true
@@ -1302,6 +1319,7 @@ extension ShuttleRealtimeVC {
         hasManualStopSelection = true
         hasCompletedInitialLocationSelection = true
         pendingGPSTabIndex = nil
+        pendingInitialStopLocation = nil
         locationManager.stopUpdatingLocation()
         selectStop(at: index)
     }
@@ -1314,20 +1332,23 @@ extension ShuttleRealtimeVC {
         updatePresenceStatus(viewerCount: nil)
         reportPresence()
     }
-}
 
-extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    private func applyInitialStop(for location: CLLocation) {
         guard !hasCompletedInitialLocationSelection,
               !hasManualStopSelection,
-              let currentLocation = locations.last,
-              let position = stopLocation.indices.dropLast().min(by: {
-                  currentLocation.distance(from: stopLocation[$0]) < currentLocation.distance(from: stopLocation[$1])
-              })
-        else {
-            locationManager.stopUpdatingLocation()
-            return
+              let initialStopRules
+        else { return }
+        let configuredStopID = ShuttleInitialStopResolver.resolve(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            rules: initialStopRules
+        )
+        let configuredIndex = configuredStopID.flatMap(Self.presenceStopIds.firstIndex)
+        let nearestIndex = stopLocation.indices.dropLast().min {
+            location.distance(from: stopLocation[$0]) < location.distance(from: stopLocation[$1])
         }
+        guard let position = configuredIndex ?? nearestIndex else { return }
+
         hasCompletedInitialLocationSelection = true
         if isShowingCoachMarks {
             pendingGPSTabIndex = position
@@ -1344,9 +1365,28 @@ extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
         selectStop(at: position)
         locationManager.stopUpdatingLocation()
     }
+}
+
+extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard !hasCompletedInitialLocationSelection,
+              !hasManualStopSelection,
+              let currentLocation = locations.last
+        else {
+            locationManager.stopUpdatingLocation()
+            return
+        }
+        guard initialStopRules != nil else {
+            pendingInitialStopLocation = currentLocation
+            locationManager.stopUpdatingLocation()
+            return
+        }
+        applyInitialStop(for: currentLocation)
+    }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         hasCompletedInitialLocationSelection = true
+        pendingInitialStopLocation = nil
         locationManager.stopUpdatingLocation()
         showToastMessage(
             image: UIImage(systemName: "exclamationmark.triangle.fill"),
