@@ -512,6 +512,27 @@ enum ErrorType {
   FAILED_PRECONDITION
 }
 
+type HomeWeather {
+  issuedAt: DateTime!
+  expiresAt: DateTime!
+  observedAt: DateTime
+  forecastUpdatedAt: DateTime
+  currentTemperature: Float
+  currentPrecipitationType: String
+  currentPrecipitationAmount: Float
+  minimumTemperature: Float
+  maximumTemperature: Float
+  precipitationProbabilityMax: Int!
+  precipitationStartAt: DateTime
+  precipitationEndAt: DateTime
+  precipitationType: String!
+  precipitationConfidence: String
+  availableModelCount: Int
+  agreeingModelCount: Int
+  primaryCondition: String!
+  attribution: String
+}
+
 """
 24-hour clock time value string in the format `hh:mm:ss` or `hh:mm:ss.sss`.
 """
@@ -573,8 +594,8 @@ input PhonebookInput {
 }
 
 type Query {
-    homeWeather: HomeWeather
-    notices(input: NoticeInput): [NoticeCategory!]!
+  homeWeather: HomeWeather
+  notices(input: NoticeInput): [NoticeCategory!]!
   calendar(input: AcademicCalendarInput): AcademicCalendar!
   phonebook(input: PhonebookInput): Phonebook!
   readingRoom: [ReadingRoom!]!
@@ -585,18 +606,6 @@ type Query {
   subway(input: SubwayInput!): [SubwayStation!]!
   shuttle(input: ShuttleInput!): Shuttle!
   _service: _Service!
-}
-
-type HomeWeather {
-    issuedAt: DateTime!
-    expiresAt: DateTime!
-    currentTemperature: Float
-    minimumTemperature: Float
-    maximumTemperature: Float
-    precipitationProbabilityMax: Int!
-    precipitationStartAt: DateTime
-    precipitationType: String!
-    primaryCondition: String!
 }
 
 """ 열람실 정보와 열람실 좌석 정보를 반환하는 쿼리입니다."""
@@ -630,16 +639,8 @@ input RoomInput {
 type Shuttle {
   period: ShuttlePeriod
   holiday: ShuttleHoliday
-  serviceNotices(end: Date!, start: Date!): [ShuttleServiceNotice!]!
+  serviceNotices(start: Date!, end: Date!): [ShuttleServiceNotice!]!
   stops: [ShuttleStop!]!
-}
-
-type ShuttleServiceNotice {
-  id: String!
-  kind: String!
-  date: Date!
-  period: ShuttlePeriod
-  holiday: ShuttleHoliday
 }
 
 type ShuttleArrival {
@@ -678,6 +679,14 @@ type ShuttlePeriod {
 type ShuttleRoute {
   name: String!
   tag: String!
+}
+
+type ShuttleServiceNotice {
+  id: String!
+  kind: String!
+  date: Date!
+  period: ShuttlePeriod
+  holiday: ShuttleHoliday
 }
 
 type ShuttleStop {

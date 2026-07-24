@@ -342,6 +342,26 @@ private struct HomeMealPeriod {
     let mealIndex: Int
 }
 
+private struct HomeWeatherRenderInput {
+    let condition: String
+    let currentTemperature: Double?
+    let minimumTemperature: Double?
+    let maximumTemperature: Double?
+    let precipitationProbabilityMax: Int
+    let precipitationType: String
+    let currentPrecipitationType: String?
+    let currentPrecipitationAmount: Double?
+    let precipitationConfidence: String?
+    let precipitationStartAt: String?
+    let attribution: String?
+}
+
+private struct HomeBusArrival {
+    let date: Foundation.Date
+    let minutes: Int
+    let stops: Int?
+}
+
 private extension UIColor {
     static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
     static let homeSubwaySeohae = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1.00)
@@ -637,7 +657,8 @@ private final class HomeQuickSettingsVC: UIViewController {
         updateShowBus50Transfer?(showBus50TransferSwitch.isOn)
     }
 
-    @objc private func onChangeShowPresenceStatus() {
+    @objc
+    private func onChangeShowPresenceStatus() {
         updateShowPresenceStatus?(showPresenceStatusSwitch.isOn)
     }
 
@@ -687,7 +708,7 @@ private final class HomeWeatherIconView: UIView {
     private let cloudShadowLayer = CAShapeLayer()
     private let cloudGradientLayer = CAGradientLayer()
     private let cloudMaskLayer = CAShapeLayer()
-    private let particleLayers = (0..<4).map { _ in CAShapeLayer() }
+    private let particleLayers = (0 ..< 4).map { _ in CAShapeLayer() }
     private var condition = Condition.cloud
 
     override var isHidden: Bool {
@@ -762,10 +783,10 @@ private final class HomeWeatherIconView: UIView {
         cloudGradientLayer.startPoint = CGPoint(x: 0.28, y: 0.18)
         cloudGradientLayer.endPoint = CGPoint(x: 0.72, y: 0.88)
         cloudGradientLayer.mask = cloudMaskLayer
-        particleLayers.forEach {
-            $0.fillColor = UIColor.clear.cgColor
-            $0.lineCap = .round
-            $0.lineJoin = .round
+        for particleLayer in particleLayers {
+            particleLayer.fillColor = UIColor.clear.cgColor
+            particleLayer.lineCap = .round
+            particleLayer.lineJoin = .round
         }
         configureArtwork()
     }
@@ -801,7 +822,7 @@ private final class HomeWeatherIconView: UIView {
         let rays = UIBezierPath()
         let inner = radius + (condition == .clear ? 7 : 4.5)
         let outer = inner + (condition == .clear ? 7 : 4)
-        for index in 0..<8 {
+        for index in 0 ..< 8 {
             let angle = CGFloat(index) * .pi / 4
             rays.move(to: CGPoint(
                 x: center.x + cos(angle) * inner,
@@ -839,9 +860,15 @@ private final class HomeWeatherIconView: UIView {
         offsetY: CGFloat = 0,
         scale: CGFloat = 1
     ) -> UIBezierPath {
-        func x(_ value: CGFloat) -> CGFloat { 50 + (value - 50) * scale + offsetX }
-        func y(_ value: CGFloat) -> CGFloat { 53 + (value - 53) * scale + offsetY }
-        func size(_ value: CGFloat) -> CGFloat { value * scale }
+        func x(_ value: CGFloat) -> CGFloat {
+            50 + (value - 50) * scale + offsetX
+        }
+        func y(_ value: CGFloat) -> CGFloat {
+            53 + (value - 53) * scale + offsetY
+        }
+        func size(_ value: CGFloat) -> CGFloat {
+            value * scale
+        }
 
         let path = UIBezierPath()
         path.append(UIBezierPath(
@@ -1014,6 +1041,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         $0.accessibilityLabel = String(localized: "home.movement.departure.selector")
     }
+
     private let presenceStatusPill = UIView().then {
         $0.backgroundColor = .homeActionButtonBackground
         $0.layer.cornerRadius = 15
@@ -1055,6 +1083,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         $0.accessibilityLabel = String(localized: "home.meal.period.selector")
     }
+
     private let mealStack = UIStackView()
     private let refreshControl = UIRefreshControl()
     private let homeHeroTitleLabel = UILabel()
@@ -1132,10 +1161,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         let iconSize: CGFloat = view.bounds.width <= 375 ? 88 : 96
-        homeWeatherIconSizeConstraints.forEach { constraint in
-            if constraint.constant != iconSize {
-                constraint.constant = iconSize
-            }
+        for constraint in homeWeatherIconSizeConstraints where constraint.constant != iconSize {
+            constraint.constant = iconSize
         }
     }
 
@@ -1266,6 +1293,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.trailing.lessThanOrEqualToSuperview()
         }
 
+        constrainWeatherIcon(in: container)
+        return container
+    }
+
+    private func constrainWeatherIcon(in container: UIView) {
         homeWeatherIconView.translatesAutoresizingMaskIntoConstraints = false
         let initialIconSize: CGFloat = view.bounds.width <= 375 ? 88 : 96
         homeWeatherIconSizeConstraints = [
@@ -1278,8 +1310,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleLabel.bottomAnchor)
         ])
 
-        // The artwork starts about 16% inside its canvas. Allowing text 3pt into
-        // that transparent area keeps about 12pt of visible space on compact screens.
         homeWeatherTextTrailingConstraints = [
             homeHeroTitleLabel.trailingAnchor.constraint(
                 lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
@@ -1290,7 +1320,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 constant: 3
             )
         ]
-        return container
     }
 
     private func makeDestinationControlView() -> UIView {
@@ -1543,17 +1572,21 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
             if let condition = argumentValue(named: "-homeWeatherPreview", in: arguments)?.uppercased() {
-                renderWeather(
+                renderWeather(HomeWeatherRenderInput(
                     condition: condition,
                     currentTemperature: 28,
                     minimumTemperature: 23,
                     maximumTemperature: 31,
                     precipitationProbabilityMax: 70,
                     precipitationType: ["RAIN", "SLEET", "SNOW"].contains(condition) ? condition : "NONE",
+                    currentPrecipitationType: "NONE",
+                    currentPrecipitationAmount: nil,
+                    precipitationConfidence: "MEDIUM",
                     precipitationStartAt: ["RAIN", "SLEET", "SNOW"].contains(condition)
                         ? Date.now.addingTimeInterval(60 * 60).toZonedDateTimeString()
-                        : nil
-                )
+                        : nil,
+                    attribution: "Weather forecast data by Open-Meteo.com"
+                ))
                 return
             }
         #endif
@@ -1564,32 +1597,29 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             return
         }
 
-        renderWeather(
+        renderWeather(HomeWeatherRenderInput(
             condition: weather.primaryCondition,
             currentTemperature: weather.currentTemperature,
             minimumTemperature: weather.minimumTemperature,
             maximumTemperature: weather.maximumTemperature,
             precipitationProbabilityMax: weather.precipitationProbabilityMax,
             precipitationType: weather.precipitationType,
-            precipitationStartAt: weather.precipitationStartAt
-        )
+            currentPrecipitationType: weather.currentPrecipitationType,
+            currentPrecipitationAmount: weather.currentPrecipitationAmount,
+            precipitationConfidence: weather.precipitationConfidence,
+            precipitationStartAt: weather.precipitationStartAt,
+            attribution: weather.attribution
+        ))
     }
 
-    private func renderWeather(
-        condition: String,
-        currentTemperature: Double?,
-        minimumTemperature: Double?,
-        maximumTemperature: Double?,
-        precipitationProbabilityMax: Int,
-        precipitationType: String,
-        precipitationStartAt: String?
-    ) {
-        let precipitationStartDate = precipitationStartAt?.toZonedDateTimeOrNil()
+    private func renderWeather(_ weather: HomeWeatherRenderInput) {
+        let precipitationStartDate = weather.precipitationStartAt?.toZonedDateTimeOrNil()
         let titleStyle = HomeWeatherDisplayLogic.titleStyle(
-            condition: condition,
-            currentTemperature: currentTemperature,
-            maximumTemperature: maximumTemperature,
-            precipitationType: precipitationType,
+            condition: weather.condition,
+            currentTemperature: weather.currentTemperature,
+            maximumTemperature: weather.maximumTemperature,
+            precipitationType: weather.precipitationType,
+            currentPrecipitationType: weather.currentPrecipitationType,
             precipitationStartAt: precipitationStartDate
         )
         if case .precipitationLater = titleStyle, let precipitationStartDate {
@@ -1601,48 +1631,90 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         } else {
             homeHeroTitleLabel.text = String(localized: titleStyle.localizationKey)
         }
-        homeWeatherIconView.setWeatherCondition(condition)
+        homeWeatherIconView.setWeatherCondition(weather.condition)
         setHomeWeatherIconHidden(false)
+        homeHeroSubtitleLabel.text = weatherSubtitle(for: weather)
+    }
 
-        if precipitationType != "NONE" {
-            if let currentTemperature {
-                homeHeroSubtitleLabel.text = String(
+    private func weatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
+        var parts = [baseWeatherSubtitle(for: weather)]
+        if weather.precipitationConfidence == "LOW" {
+            parts.append(String(localized: "home.weather.confidence.low"))
+        }
+        if weather.attribution != nil {
+            parts.append(String(localized: "home.weather.attribution"))
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private func baseWeatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
+        let isCurrentlyPrecipitating = weather.currentPrecipitationType
+            .flatMap(HomeWeatherPrecipitationKind.init(rawValue:)) != nil
+        if isCurrentlyPrecipitating, let subtitle = currentPrecipitationSubtitle(for: weather) {
+            return subtitle
+        } else if weather.precipitationType != "NONE" {
+            if let temperature = weather.currentTemperature {
+                return String(
                     format: String(localized: "home.weather.precipitation.current.subtitle"),
                     locale: Locale.current,
-                    currentTemperature,
-                    precipitationProbabilityMax
-                )
-            } else {
-                homeHeroSubtitleLabel.text = String(
-                    format: String(localized: "home.weather.precipitation.probability.subtitle"),
-                    locale: Locale.current,
-                    precipitationProbabilityMax
+                    temperature,
+                    weather.precipitationProbabilityMax
                 )
             }
-        } else if let currentTemperature, let minimumTemperature, let maximumTemperature {
-            homeHeroSubtitleLabel.text = String(
+            return String(
+                format: String(localized: "home.weather.precipitation.probability.subtitle"),
+                locale: Locale.current,
+                weather.precipitationProbabilityMax
+            )
+        } else if let subtitle = temperatureSubtitle(for: weather) {
+            return subtitle
+        }
+        return String(localized: "home.hero.subtitle")
+    }
+
+    private func temperatureSubtitle(for weather: HomeWeatherRenderInput) -> String? {
+        if let current = weather.currentTemperature {
+            guard let minimum = weather.minimumTemperature, let maximum = weather.maximumTemperature else {
+                return String(
+                    format: String(localized: "home.weather.current.subtitle"),
+                    locale: Locale.current,
+                    current
+                )
+            }
+            return String(
                 format: String(localized: "home.weather.temperature.subtitle"),
                 locale: Locale.current,
-                currentTemperature,
-                minimumTemperature,
-                maximumTemperature
+                current,
+                minimum,
+                maximum
             )
-        } else if let currentTemperature {
-            homeHeroSubtitleLabel.text = String(
-                format: String(localized: "home.weather.current.subtitle"),
-                locale: Locale.current,
-                currentTemperature
-            )
-        } else if let minimumTemperature, let maximumTemperature {
-            homeHeroSubtitleLabel.text = String(
+        }
+        if let minimum = weather.minimumTemperature, let maximum = weather.maximumTemperature {
+            return String(
                 format: String(localized: "home.weather.range.subtitle"),
                 locale: Locale.current,
-                minimumTemperature,
-                maximumTemperature
+                minimum,
+                maximum
             )
-        } else {
-            homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
         }
+        return nil
+    }
+
+    private func currentPrecipitationSubtitle(for weather: HomeWeatherRenderInput) -> String? {
+        guard let temperature = weather.currentTemperature else { return nil }
+        if let amount = weather.currentPrecipitationAmount, amount > 0 {
+            return String(
+                format: String(localized: "home.weather.precipitation.amount.subtitle"),
+                locale: Locale.current,
+                temperature,
+                amount
+            )
+        }
+        return String(
+            format: String(localized: "home.weather.current.subtitle"),
+            locale: Locale.current,
+            temperature
+        )
     }
 
     private var weatherTimeFormatter: DateFormatter {
@@ -1916,10 +1988,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         to destination: String,
         candidate: HomeShuttleCandidate
     ) -> [HomeTransferConnection] {
-        if HomeSettings.showBus50Transfer,
-           let busConnection = bus50TransferConnection(from: stopName, to: destination, candidate: candidate)
-        {
-            return [busConnection]
+        if HomeSettings.showBus50Transfer {
+            if let busConnection = bus50TransferConnection(from: stopName, to: destination, candidate: candidate) {
+                return [busConnection]
+            }
         }
         if HomeSettings.showSubwayTransfer {
             return subwayTransferConnection(from: stopName, to: destination, candidate: candidate)
@@ -1947,12 +2019,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let busArrivals = shuttleData?.transferBus
             .filter { $0.stop.seq == 216_000_759 }
             .flatMap(\.arrival)
-            .compactMap { arrival -> (date: Foundation.Date, minutes: Int, stops: Int?)? in
+            .compactMap { arrival -> HomeBusArrival? in
                 guard arrival.isRealtime, let minutes = arrival.minutes else { return nil }
-                return (
-                    Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60)),
-                    minutes,
-                    arrival.stops
+                return HomeBusArrival(
+                    date: Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60)),
+                    minutes: minutes,
+                    stops: arrival.stops
                 )
             }
             .sorted { $0.date < $1.date } ?? []
@@ -2048,18 +2120,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 stops
             )
         }
-        if isKorean,
-           let location = arrival.location,
-           !location.isEmpty,
-           let status = subwayRealtimeStatusText(arrival.status)
-        {
-            return String(
-                format: String(localized: "home.transfer.subway.realtime.status"),
-                locale: Locale.current,
-                stops,
-                location,
-                status
-            )
+        if isKorean, let location = arrival.location, !location.isEmpty {
+            if let status = subwayRealtimeStatusText(arrival.status) {
+                return String(
+                    format: String(localized: "home.transfer.subway.realtime.status"),
+                    locale: Locale.current,
+                    stops,
+                    location,
+                    status
+                )
+            }
         }
         return String(
             format: String(localized: "home.transfer.subway.realtime.stops"),
@@ -3038,24 +3108,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         row.layer.borderWidth = 1
         row.layer.borderColor = connection.tintColor.withAlphaComponent(0.12).cgColor
 
-        let badge = HomePaddedLabel()
-        badge.text = connection.badge
-        badge.font = .godo(size: 12, weight: .bold)
-        badge.textColor = .white
-        badge.textAlignment = .center
-        badge.backgroundColor = connection.tintColor
-        badge.contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
-        badge.layer.cornerRadius = 13
-        badge.clipsToBounds = true
-        badge.adjustsFontSizeToFitWidth = true
-        badge.minimumScaleFactor = 0.75
-        badge.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(48)
-            make.width.lessThanOrEqualTo(72)
-            make.height.equalTo(26)
-        }
-        badge.setContentHuggingPriority(.required, for: .horizontal)
-        badge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let badge = makeTransferBadge(connection)
 
         let title = UILabel()
         title.text = connection.title
@@ -3090,6 +3143,28 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         row.addArrangedSubview(textStack)
         row.addArrangedSubview(trailing)
         return row
+    }
+
+    private func makeTransferBadge(_ connection: HomeTransferConnection) -> UILabel {
+        let badge = HomePaddedLabel()
+        badge.text = connection.badge
+        badge.font = .godo(size: 12, weight: .bold)
+        badge.textColor = .white
+        badge.textAlignment = .center
+        badge.backgroundColor = connection.tintColor
+        badge.contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
+        badge.layer.cornerRadius = 13
+        badge.clipsToBounds = true
+        badge.adjustsFontSizeToFitWidth = true
+        badge.minimumScaleFactor = 0.75
+        badge.snp.makeConstraints { make in
+            make.width.greaterThanOrEqualTo(48)
+            make.width.lessThanOrEqualTo(72)
+            make.height.equalTo(26)
+        }
+        badge.setContentHuggingPriority(.required, for: .horizontal)
+        badge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        return badge
     }
 
     private func makeMealSection(_ section: HomeMealSection) -> UIView {
@@ -3324,11 +3399,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         updateDeparture(departure)
     }
 
-    @objc private func applicationDidEnterBackground() {
+    @objc
+    private func applicationDidEnterBackground() {
         shouldRestoreAutomaticDepartureOnActivation = isDepartureManuallySelected
     }
 
-    @objc private func applicationDidBecomeActive() {
+    @objc
+    private func applicationDidBecomeActive() {
         guard shouldRestoreAutomaticDepartureOnActivation else { return }
         shouldRestoreAutomaticDepartureOnActivation = false
         isDepartureManuallySelected = false
@@ -3408,7 +3485,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         (navigationController as? ShuttleNC)?.showLegacyShuttle()
     }
 
-    @objc private func openShuttleTimetable() {
+    @objc
+    private func openShuttleTimetable() {
         AnalyticsManager.logSelect(.homeOpenShuttleTimetable)
         (navigationController as? ShuttleNC)?.showShuttleTimetableFromHome(
             stopID: selectedDeparture.timetableStart(for: selectedDestination),

@@ -6364,12 +6364,36 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天云量较多" } }
       }
     },
+    "home.weather.attribution" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Forecast by Open-Meteo" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "予報：Open-Meteo" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "예보 Open-Meteo" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预报由 Open-Meteo 提供" } }
+      }
+    },
+    "home.weather.confidence.low" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Forecast may change" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "予報が変わる可能性があります" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "예보가 달라질 수 있어요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预报可能会变化" } }
+      }
+    },
     "home.weather.current.subtitle" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Now %1$.0f°C" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C" } }
+      }
+    },
+    "home.weather.precipitation.amount.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Now %1$.0f°C · %2$.1f mm in the last hour" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "現在 %1$.0f°C・直近1時間 %2$.1f mm" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "현재 %1$.0f°C · 최근 1시간 %2$.1fmm" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前 %1$.0f°C · 近1小时 %2$.1f毫米" } }
       }
     },
     "home.weather.cold.title" : {

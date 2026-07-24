@@ -434,11 +434,11 @@ class ShuttleRealtimeTabVC: UIViewController {
         guard let section else { return }
         loadViewIfNeeded()
         view.layoutIfNeeded()
-        [shuttleRealtimeTableView, shuttleRealtimeTableTimeView].forEach { tableView in
+        for tableView in [shuttleRealtimeTableView, shuttleRealtimeTableTimeView] {
             tableView.layoutIfNeeded()
-            guard tableView.numberOfSections > section else { return }
+            guard tableView.numberOfSections > section else { continue }
             let headerRect = tableView.rectForHeader(inSection: section)
-            guard !headerRect.isNull else { return }
+            guard !headerRect.isNull else { continue }
             let y = max(-tableView.adjustedContentInset.top, headerRect.minY - tableView.adjustedContentInset.top)
             tableView.setContentOffset(CGPoint(x: 0, y: y), animated: false)
         }

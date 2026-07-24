@@ -90,6 +90,49 @@ final class DomainLogicTests: XCTestCase {
         )
     }
 
+    func testHomeWeatherTitleUsesObservationBeforeUpcomingForecast() throws {
+        let now = try XCTUnwrap("2026-07-21T05:35:00Z".toZonedDateTimeOrNil())
+        let earlierForecast = try XCTUnwrap("2026-07-21T05:00:00Z".toZonedDateTimeOrNil())
+        let laterForecast = try XCTUnwrap("2026-07-21T07:00:00Z".toZonedDateTimeOrNil())
+
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "RAIN",
+                currentTemperature: 24,
+                maximumTemperature: 28,
+                precipitationType: "RAIN",
+                currentPrecipitationType: "RAIN",
+                precipitationStartAt: laterForecast,
+                now: now
+            ),
+            .precipitationNow(.rain)
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "RAIN",
+                currentTemperature: 24,
+                maximumTemperature: 28,
+                precipitationType: "RAIN",
+                currentPrecipitationType: "NONE",
+                precipitationStartAt: earlierForecast,
+                now: now
+            ),
+            .precipitationToday(.rain)
+        )
+        XCTAssertEqual(
+            HomeWeatherDisplayLogic.titleStyle(
+                condition: "RAIN",
+                currentTemperature: 24,
+                maximumTemperature: 28,
+                precipitationType: "RAIN",
+                currentPrecipitationType: "NONE",
+                precipitationStartAt: laterForecast,
+                now: now
+            ),
+            .precipitationLater(.rain)
+        )
+    }
+
     func testZonedDateTimeParsesWithAndWithoutFractionalSeconds() {
         XCTAssertNotNil("2026-07-21T16:00:00+09:00".toZonedDateTimeOrNil())
         XCTAssertNotNil("2026-07-21T16:00:00.123+09:00".toZonedDateTimeOrNil())

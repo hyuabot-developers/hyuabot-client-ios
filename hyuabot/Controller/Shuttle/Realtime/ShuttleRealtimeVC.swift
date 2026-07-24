@@ -3,6 +3,12 @@ import CoreLocation
 import RxSwift
 import UIKit
 
+private struct ShuttleBusRouteOption {
+    let bus: ShuttleBusAlternativeQuery.Data.Bus?
+    let routeName: String
+    let color: UIColor
+}
+
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeVC: UIViewController {
     private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
@@ -276,8 +282,8 @@ class ShuttleRealtimeVC: UIViewController {
         self.returnsToHome = returnsToHome
         self.initialStopID = initialStopID
         self.initialDestinationID = initialDestinationID
-        self.hasManualStopSelection = initialStopID != nil
-        self.selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
+        hasManualStopSelection = initialStopID != nil
+        selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -822,9 +828,7 @@ class ShuttleRealtimeVC: UIViewController {
             )
         }
 
-        func bestRoute(_ options: [(bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor)])
-            -> ShuttleBusAlternativeDisplayData?
-        {
+        func bestRoute(_ options: [ShuttleBusRouteOption]) -> ShuttleBusAlternativeDisplayData? {
             options.compactMap { option in
                 display(option.bus, routeName: option.routeName, color: option.color)
             }.min { lhs, rhs in
@@ -848,18 +852,18 @@ class ShuttleRealtimeVC: UIViewController {
         let shuttlecock10 = display(item(routeSeq: 216_000_068, stopSeq: 216_000_379), routeName: route10ToSangnoksu, color: green)
         let station10 = display(item(routeSeq: 216_000_068, stopSeq: 216_000_138), routeName: route10FromSangnoksu, color: green)
         let dormitory80 = bestRoute([
-            (item(routeSeq: 216_000_081, stopSeq: 216_000_028), route80A, blue),
-            (item(routeSeq: 216_000_101, stopSeq: 216_000_028), routeN80A, blue)
+            ShuttleBusRouteOption(bus: item(routeSeq: 216_000_081, stopSeq: 216_000_028), routeName: route80A, color: blue),
+            ShuttleBusRouteOption(bus: item(routeSeq: 216_000_101, stopSeq: 216_000_028), routeName: routeN80A, color: blue)
         ])
         let shuttlecock62 = display(item(routeSeq: 216_000_016, stopSeq: 216_000_152), routeName: route62Terminal, color: green)
         let terminal80 = bestRoute([
-            (item(routeSeq: 216_000_082, stopSeq: 216_000_077), route80B, blue),
-            (item(routeSeq: 216_000_102, stopSeq: 216_000_077), routeN80B, blue)
+            ShuttleBusRouteOption(bus: item(routeSeq: 216_000_082, stopSeq: 216_000_077), routeName: route80B, color: blue),
+            ShuttleBusRouteOption(bus: item(routeSeq: 216_000_102, stopSeq: 216_000_077), routeName: routeN80B, color: blue)
         ])
         let terminal62 = display(item(routeSeq: 216_000_016, stopSeq: 216_000_074), routeName: route62Dormitory, color: green)
         let jungang80 = bestRoute([
-            (item(routeSeq: 216_000_082, stopSeq: 217_000_140), route80B, blue),
-            (item(routeSeq: 216_000_102, stopSeq: 217_000_140), routeN80B, blue)
+            ShuttleBusRouteOption(bus: item(routeSeq: 216_000_082, stopSeq: 217_000_140), routeName: route80B, color: blue),
+            ShuttleBusRouteOption(bus: item(routeSeq: 216_000_102, stopSeq: 217_000_140), routeName: routeN80B, color: blue)
         ])
         let jungang62 = display(item(routeSeq: 216_000_016, stopSeq: 217_000_264), routeName: route62Dormitory, color: green)
 
@@ -1055,9 +1059,9 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func checkUserDeviceLocationServiceAuthorization() {
         guard !hasCompletedInitialLocationSelection, !hasManualStopSelection else { return }
-        if locationManager.authorizationStatus == .authorizedWhenInUse ||
+        let isAuthorized = locationManager.authorizationStatus == .authorizedWhenInUse ||
             locationManager.authorizationStatus == .authorizedAlways
-        {
+        if isAuthorized {
             locationManager.startUpdatingLocation()
         } else if locationManager.authorizationStatus == .denied || locationManager.authorizationStatus == .restricted {
             showToastMessage(

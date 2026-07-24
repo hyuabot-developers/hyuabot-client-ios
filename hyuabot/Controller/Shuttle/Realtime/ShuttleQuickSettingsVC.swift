@@ -157,7 +157,8 @@ final class ShuttleQuickSettingsVC: UIViewController {
         updateShowDepartureTime?(showDepartureTimeSwitch.isOn)
     }
 
-    @objc private func onChangePresenceStatus() {
+    @objc
+    private func onChangePresenceStatus() {
         updateShowPresenceStatus?(showPresenceStatusSwitch.isOn)
     }
 }

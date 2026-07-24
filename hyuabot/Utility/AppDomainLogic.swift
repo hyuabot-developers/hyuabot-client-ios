@@ -55,9 +55,19 @@ enum HomeWeatherDisplayLogic {
         currentTemperature: Double?,
         maximumTemperature: Double?,
         precipitationType: String,
+        currentPrecipitationType: String? = nil,
         precipitationStartAt: Date?,
         now: Date = .now
     ) -> HomeWeatherTitleStyle {
+        if let currentPrecipitationType {
+            if let kind = HomeWeatherPrecipitationKind(rawValue: currentPrecipitationType) {
+                return .precipitationNow(kind)
+            }
+            if let kind = HomeWeatherPrecipitationKind(rawValue: precipitationType) {
+                guard let precipitationStartAt else { return .precipitationToday(kind) }
+                return precipitationStartAt > now ? .precipitationLater(kind) : .precipitationToday(kind)
+            }
+        }
         if let kind = HomeWeatherPrecipitationKind(rawValue: precipitationType) {
             guard let precipitationStartAt else { return .precipitationToday(kind) }
             return precipitationStartAt <= now ? .precipitationNow(kind) : .precipitationLater(kind)

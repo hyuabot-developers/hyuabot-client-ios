@@ -8,7 +8,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
   public static let operationName: String = "HomePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HomePageQuery($language: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt currentTemperature minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationType primaryCondition } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
+      #"query HomePageQuery($language: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
     ))
 
   public var language: String
@@ -131,13 +131,22 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         .field("__typename", String.self),
         .field("issuedAt", Api.DateTime.self),
         .field("expiresAt", Api.DateTime.self),
+        .field("observedAt", Api.DateTime?.self),
+        .field("forecastUpdatedAt", Api.DateTime?.self),
         .field("currentTemperature", Double?.self),
+        .field("currentPrecipitationType", String?.self),
+        .field("currentPrecipitationAmount", Double?.self),
         .field("minimumTemperature", Double?.self),
         .field("maximumTemperature", Double?.self),
         .field("precipitationProbabilityMax", Int.self),
         .field("precipitationStartAt", Api.DateTime?.self),
+        .field("precipitationEndAt", Api.DateTime?.self),
         .field("precipitationType", String.self),
+        .field("precipitationConfidence", String?.self),
+        .field("availableModelCount", Int?.self),
+        .field("agreeingModelCount", Int?.self),
         .field("primaryCondition", String.self),
+        .field("attribution", String?.self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         HomePageQuery.Data.HomeWeather.self
@@ -145,13 +154,22 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
       public var issuedAt: Api.DateTime { __data["issuedAt"] }
       public var expiresAt: Api.DateTime { __data["expiresAt"] }
+      public var observedAt: Api.DateTime? { __data["observedAt"] }
+      public var forecastUpdatedAt: Api.DateTime? { __data["forecastUpdatedAt"] }
       public var currentTemperature: Double? { __data["currentTemperature"] }
+      public var currentPrecipitationType: String? { __data["currentPrecipitationType"] }
+      public var currentPrecipitationAmount: Double? { __data["currentPrecipitationAmount"] }
       public var minimumTemperature: Double? { __data["minimumTemperature"] }
       public var maximumTemperature: Double? { __data["maximumTemperature"] }
       public var precipitationProbabilityMax: Int { __data["precipitationProbabilityMax"] }
       public var precipitationStartAt: Api.DateTime? { __data["precipitationStartAt"] }
+      public var precipitationEndAt: Api.DateTime? { __data["precipitationEndAt"] }
       public var precipitationType: String { __data["precipitationType"] }
+      public var precipitationConfidence: String? { __data["precipitationConfidence"] }
+      public var availableModelCount: Int? { __data["availableModelCount"] }
+      public var agreeingModelCount: Int? { __data["agreeingModelCount"] }
       public var primaryCondition: String { __data["primaryCondition"] }
+      public var attribution: String? { __data["attribution"] }
     }
 
     /// Notice
