@@ -6366,10 +6366,10 @@
     },
     "home.weather.attribution" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Forecast by Open-Meteo" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "予報：Open-Meteo" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "예보 Open-Meteo" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预报由 Open-Meteo 提供" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } }
       }
     },
     "home.weather.confidence.low" : {
