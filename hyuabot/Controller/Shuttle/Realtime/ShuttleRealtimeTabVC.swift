@@ -8,6 +8,7 @@ import UIKit
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeTabVC: UIViewController {
     private static let floatingStatusClearance: CGFloat = 48
+    private static let automaticAlternativeThresholdMinutes = 20
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
     private let destinationRefreshControl = UIRefreshControl()
@@ -24,6 +25,10 @@ class ShuttleRealtimeTabVC: UIViewController {
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
     private var transferInfoTimeView: ShuttleTransferInfoView?
+    private var transferInfoViewsByIndexPath: [IndexPath: ShuttleTransferInfoView] = [:]
+    private var expandedShuttleIndexPath: IndexPath?
+    private var isAnimatingShuttleExpansion = false
+    private var latestTransferData: ShuttleRealtimePageQuery.Data?
     private var busAlternatives: [String: [ShuttleBusAlternativeDisplayData]] = [:]
     private var busAlternativeLastNonEmptyAt: [String: Foundation.Date] = [:]
     private let busAlternativeEmptyGraceInterval: TimeInterval = 60
@@ -45,6 +50,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.refreshControl = destinationRefreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.tableFooterView = self.tableFooterView1
+        $0.rowHeight = ShuttleRealtimeCellView.informationRowHeight
         $0.showsVerticalScrollIndicator = false
         $0.contentInset.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
         $0.verticalScrollIndicatorInsets.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
@@ -54,6 +60,10 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.register(ShuttleRealtimeEmptyCellView.self, forCellReuseIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier)
         $0.register(ShuttleRealtimeSkeletonCellView.self, forCellReuseIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier)
         $0.register(ShuttleRealtimeCellView.self, forCellReuseIdentifier: ShuttleRealtimeCellView.reuseIdentifier)
+        $0.register(
+            ShuttleExpandedTransferCellView.self,
+            forCellReuseIdentifier: ShuttleExpandedTransferCellView.reuseIdentifier
+        )
     }
 
     private lazy var shuttleRealtimeTableTimeView: UITableView = .init(frame: .zero, style: .grouped).then {
@@ -62,6 +72,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.sectionHeaderTopPadding = 0
         $0.backgroundColor = .systemBackground
         $0.tableFooterView = self.tableFooterView2
+        $0.rowHeight = ShuttleRealtimeCellView.informationRowHeight
         $0.refreshControl = timetableRefreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.showsVerticalScrollIndicator = false
@@ -131,9 +142,6 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        if let transferInfoView {
-            updateTableFooter(tableView: shuttleRealtimeTableView, transferView: transferInfoView, actionFooter: tableFooterView1)
-        }
         if let transferInfoTimeView {
             updateTableFooter(tableView: shuttleRealtimeTableTimeView, transferView: transferInfoTimeView, actionFooter: tableFooterView2)
         }
@@ -158,26 +166,20 @@ class ShuttleRealtimeTabVC: UIViewController {
     private func setupTransferFootersIfNeeded() {
         guard shouldShowTransferSection else { return }
 
-        let transferView = ShuttleTransferInfoView(stopID: stopID)
         let transferTimeView = ShuttleTransferInfoView(stopID: stopID)
-        transferInfoView = transferView
         transferInfoTimeView = transferTimeView
 
-        transferView.onHeightChange = { [weak self, weak transferView] in
-            guard let self, let transferView else { return }
-            updateTableFooter(tableView: shuttleRealtimeTableView, transferView: transferView, actionFooter: tableFooterView1)
-        }
         transferTimeView.onHeightChange = { [weak self, weak transferTimeView] in
             guard let self, let transferTimeView else { return }
             updateTableFooter(tableView: shuttleRealtimeTableTimeView, transferView: transferTimeView, actionFooter: tableFooterView2)
         }
 
-        updateTableFooter(tableView: shuttleRealtimeTableView, transferView: transferView, actionFooter: tableFooterView1)
+        shuttleRealtimeTableView.tableFooterView = tableFooterView1
         updateTableFooter(tableView: shuttleRealtimeTableTimeView, transferView: transferTimeView, actionFooter: tableFooterView2)
     }
 
     private var shouldShowTransferSection: Bool {
-        stopID == .dormiotryOut || stopID == .shuttlecockOut || stopID == .terminal
+        stopID == .dormiotryOut || stopID == .shuttlecockOut
     }
 
     private func updateTableFooter(tableView: UITableView, transferView: ShuttleTransferInfoView, actionFooter: UIView) {
@@ -188,6 +190,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         let actionHeight = actionFooter.frame.height
         let transferHeight = transferView.preferredHeight
         let desiredSize = CGSize(width: width, height: transferHeight + actionHeight)
+        // swiftlint:disable opening_brace
         if let currentFooter = tableView.tableFooterView,
            currentFooter.bounds.size == desiredSize,
            transferView.superview === currentFooter,
@@ -195,6 +198,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         {
             return
         }
+        // swiftlint:enable opening_brace
 
         let footer = UIView(frame: CGRect(origin: .zero, size: desiredSize))
         footer.backgroundColor = .systemBackground
@@ -240,8 +244,14 @@ class ShuttleRealtimeTabVC: UIViewController {
         ShuttleRealtimeData.shared.transferData
             .subscribe(onNext: { [weak self] data in
                 guard let self else { return }
-                transferInfoView?.setup(data: data)
+                latestTransferData = data
+                for transferView in transferInfoViewsByIndexPath.values {
+                    transferView.setup(data: data)
+                }
                 transferInfoTimeView?.setup(data: data)
+                UIView.performWithoutAnimation {
+                    shuttleRealtimeTableView.reloadData()
+                }
                 debugScrollToTransferFooterIfNeeded()
             }).disposed(by: disposeBag)
     }
@@ -341,8 +351,8 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     private func footerAlternativeCounts(_ alternatives: [String: [ShuttleBusAlternativeDisplayData]]) -> [Int] {
         shuttleRealtimeSection.indices.map { section in
-            let count = alternatives[busAlternativeKey(section: section)]?.count ?? 0
-            if section == 0, forceShowBusAlternative, count == 0 {
+            let count = displayedBusAlternatives(from: alternatives, section: section).count
+            if section == 0, canForceShowBusAlternative, count == 0 {
                 return 1
             }
             return count
@@ -354,11 +364,12 @@ class ShuttleRealtimeTabVC: UIViewController {
             for section in self.shuttleRealtimeSection.indices {
                 guard let footerView = self.shuttleRealtimeTableView.footerView(forSection: section) as? ShuttleRealtimeFooterView
                 else { continue }
-                let alternatives = self.busAlternatives[self.busAlternativeKey(section: section)] ?? []
-                let forceShow = section == 0 && self.forceShowBusAlternative
+                let alternatives = self.displayedBusAlternatives(from: self.busAlternatives, section: section)
+                let forceShow = section == 0 && self.canForceShowBusAlternative
                 footerView.setupUI(
                     stopID: self.stopID,
                     section: section,
+                    transferView: nil,
                     busAlternatives: alternatives,
                     forceShow: forceShow,
                     showEntireTimetable: self.showEntireTimetable
@@ -366,6 +377,226 @@ class ShuttleRealtimeTabVC: UIViewController {
                     guard let self else { return }
                     showBusAlternativeStop(stopID, alternative)
                 }
+            }
+        }
+    }
+
+    private var canForceShowBusAlternative: Bool {
+        forceShowBusAlternative && ShuttleTransferDisplaySettings.alternativeDisplayMode != .hidden
+    }
+
+    private func displayedBusAlternatives(
+        from alternatives: [String: [ShuttleBusAlternativeDisplayData]],
+        section: Int
+    ) -> [ShuttleBusAlternativeDisplayData] {
+        let values = alternatives[busAlternativeKey(section: section)] ?? []
+        switch ShuttleTransferDisplaySettings.alternativeDisplayMode {
+        case .always:
+            return values
+        case .hidden:
+            return []
+        case .automatic:
+            if section == 0, canForceShowBusAlternative {
+                return values
+            }
+            return shouldAutomaticallyShowBusAlternatives(section: section) ? values : []
+        }
+    }
+
+    private func shouldAutomaticallyShowBusAlternatives(section: Int) -> Bool {
+        guard let time = nextShuttleTime(section: section),
+              let departureDate = time.toLocalTimeOrNil()
+        else { return true }
+        let minutes = Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60))
+        return minutes >= Self.automaticAlternativeThresholdMinutes
+    }
+
+    private func nextShuttleTime(section: Int) -> LocalTime? {
+        switch (stopID, section) {
+        case (.dormiotryOut, 0):
+            try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value().first?.time
+        case (.dormiotryOut, 1):
+            try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value().first?.time
+        case (.dormiotryOut, 2):
+            try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value().first?.time
+        case (.shuttlecockOut, 0):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value().first?.time
+        case (.shuttlecockOut, 1):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value().first?.time
+        case (.shuttlecockOut, 2):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value().first?.time
+        case (.station, 0):
+            try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value().first?.time
+        case (.station, 1):
+            try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value().first?.time
+        case (.station, 2):
+            try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value().first?.time
+        case (.terminal, 0):
+            try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value().first?.time
+        case (.jungangStation, 0):
+            try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value().first?.time
+        case (.shuttlecockIn, 0):
+            try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value().first?.time
+        default:
+            nil
+        }
+    }
+
+    private func destinationEntries(
+        section: Int
+    ) -> [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry] {
+        switch (stopID, section) {
+        case (.dormiotryOut, 0):
+            (try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value()) ?? []
+        case (.dormiotryOut, 1):
+            (try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value()) ?? []
+        case (.dormiotryOut, 2):
+            (try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value()) ?? []
+        case (.shuttlecockOut, 0):
+            (try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value()) ?? []
+        case (.shuttlecockOut, 1):
+            (try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value()) ?? []
+        case (.shuttlecockOut, 2):
+            (try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value()) ?? []
+        case (.station, 0):
+            (try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value()) ?? []
+        case (.station, 1):
+            (try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value()) ?? []
+        case (.station, 2):
+            (try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value()) ?? []
+        case (.terminal, 0):
+            (try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value()) ?? []
+        case (.jungangStation, 0):
+            (try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value()) ?? []
+        case (.shuttlecockIn, 0):
+            (try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value()) ?? []
+        default:
+            []
+        }
+    }
+
+    private func transferDestination(section: Int) -> ShuttleTransferDestination? {
+        switch section {
+        case 0: .station
+        case 1: .terminal
+        case 2: .jungangStation
+        default: nil
+        }
+    }
+
+    private func transferView(
+        at indexPath: IndexPath,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
+    ) -> ShuttleTransferInfoView? {
+        guard shouldShowTransferSection,
+              let destination = transferDestination(section: indexPath.section)
+        else { return nil }
+        let transferView: ShuttleTransferInfoView
+        if let cachedView = transferInfoViewsByIndexPath[indexPath] {
+            transferView = cachedView
+        } else {
+            transferView = ShuttleTransferInfoView(
+                stopID: stopID,
+                destination: destination,
+                presentation: .inline
+            )
+            transferInfoViewsByIndexPath[indexPath] = transferView
+        }
+        transferView.selectShuttle(item)
+        transferView.setup(data: latestTransferData)
+        if indexPath == IndexPath(row: 0, section: 0) {
+            transferInfoView = transferView
+        }
+        return transferView
+    }
+
+    private func expandedDataRow(section: Int) -> Int? {
+        guard let expandedShuttleIndexPath,
+              expandedShuttleIndexPath.section == section
+        else { return nil }
+        let row = expandedShuttleIndexPath.row
+        let entries = destinationEntries(section: section)
+        return entries.indices.contains(row) ? row : nil
+    }
+
+    private func displayedRowCount(baseCount: Int, section: Int) -> Int {
+        baseCount + (expandedDataRow(section: section) == nil ? 0 : 1)
+    }
+
+    private func isTransferExpansionRow(_ indexPath: IndexPath) -> Bool {
+        guard let expandedRow = expandedDataRow(section: indexPath.section) else { return false }
+        return indexPath.row == expandedRow + 1
+    }
+
+    private func dataIndexPath(for displayedIndexPath: IndexPath) -> IndexPath? {
+        guard let expandedRow = expandedDataRow(section: displayedIndexPath.section) else {
+            return displayedIndexPath
+        }
+        if displayedIndexPath.row == expandedRow + 1 {
+            return nil
+        }
+        let row = displayedIndexPath.row > expandedRow + 1
+            ? displayedIndexPath.row - 1
+            : displayedIndexPath.row
+        return IndexPath(row: row, section: displayedIndexPath.section)
+    }
+
+    private func toggleShuttleExpansion(
+        at indexPath: IndexPath,
+        selectedCell: ShuttleRealtimeCellView,
+        transferView: ShuttleTransferInfoView?
+    ) {
+        let previousIndexPath = expandedShuttleIndexPath
+        let isCollapsing = previousIndexPath == indexPath
+        var previousCell: ShuttleRealtimeCellView?
+        let visiblePreviousCell = previousIndexPath.flatMap {
+            shuttleRealtimeTableView.cellForRow(
+                at: IndexPath(row: $0.row, section: $0.section)
+            ) as? ShuttleRealtimeCellView
+        }
+        if let visiblePreviousCell {
+            previousCell = visiblePreviousCell
+            visiblePreviousCell.hideTransferConnector(animated: true)
+        }
+        if let previousIndexPath {
+            transferInfoViewsByIndexPath[previousIndexPath]?.hideInlineConnectors(animated: true)
+        }
+        expandedShuttleIndexPath = isCollapsing ? nil : indexPath
+
+        let connectorTitle = transferView?.inlineConnectorTitle
+        let connectorTintColor = transferView?.inlineConnectorTintColor
+        if !isCollapsing, let connectorTitle, let connectorTintColor {
+            selectedCell.setTransferSelectionState(true)
+            selectedCell.prepareTransferConnector(
+                title: connectorTitle,
+                travelMinutes: transferView?.inlineConnectorTravelMinutes,
+                tintColor: connectorTintColor
+            )
+        }
+
+        let deletedRow = previousIndexPath.map {
+            IndexPath(row: $0.row + 1, section: $0.section)
+        }
+        let insertedRow = isCollapsing
+            ? nil
+            : IndexPath(row: indexPath.row + 1, section: indexPath.section)
+
+        isAnimatingShuttleExpansion = true
+        shuttleRealtimeTableView.performBatchUpdates {
+            if let deletedRow {
+                shuttleRealtimeTableView.deleteRows(at: [deletedRow], with: .fade)
+            }
+            if let insertedRow {
+                shuttleRealtimeTableView.insertRows(at: [insertedRow], with: .fade)
+            }
+        } completion: { _ in
+            self.isAnimatingShuttleExpansion = false
+            if let previousCell, previousCell !== selectedCell || isCollapsing {
+                previousCell.setTransferSelectionState(false)
+            }
+            if !isCollapsing {
+                selectedCell.showTransferConnector(animated: true)
+                transferView?.showInlineConnectors(animated: true)
             }
         }
     }
@@ -383,6 +614,15 @@ class ShuttleRealtimeTabVC: UIViewController {
         shuttleRealtimeTableTimeView.reloadData()
         destinationRefreshControl.endRefreshing()
         timetableRefreshControl.endRefreshing()
+    }
+
+    func reloadTransferDisplaySettings() {
+        transferInfoViewsByIndexPath.values.forEach { $0.reloadDisplaySettings() }
+        transferInfoTimeView?.reloadDisplaySettings()
+        UIView.performWithoutAnimation {
+            shuttleRealtimeTableView.reloadData()
+            shuttleRealtimeTableTimeView.reloadData()
+        }
     }
 
     func scrollToFooter() {
@@ -502,6 +742,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         )
         var normalizedStops = routeStops
         normalizedStops[boardingRouteStopIndex] = boardingStop
+        // swiftlint:disable opening_brace
         if let fallbackDestination = fallbackDestinationStop(
             stopID: stopID,
             routeName: routeName,
@@ -511,6 +752,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         {
             normalizedStops.append(fallbackDestination)
         }
+        // swiftlint:enable opening_brace
         let orderedStops = normalizedStops
         let key = ["shuttle", boardingStopID, routeName, departureTime.replacingOccurrences(of: ":", with: "")].joined(separator: "_")
         let minutes = max(Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60)), 0)
@@ -745,11 +987,12 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             .dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView
         else { return UIView() }
         guard shuttleRealtimeSection.indices.contains(section) else { return UIView() }
-        let alternatives = busAlternatives[busAlternativeKey(section: section)] ?? []
-        let forceShow = section == 0 && forceShowBusAlternative
+        let alternatives = displayedBusAlternatives(from: busAlternatives, section: section)
+        let forceShow = section == 0 && canForceShowBusAlternative
         footerView.setupUI(
             stopID: stopID,
             section: section,
+            transferView: nil,
             busAlternatives: alternatives,
             forceShow: forceShow,
             showEntireTimetable: showEntireTimetable
@@ -767,61 +1010,83 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         if stopID == .dormiotryOut {
             if section == 0 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             } else if section == 1 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             } else if section == 2 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             }
         } else if stopID == .shuttlecockOut {
             if section == 0 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             } else if section == 1 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             } else if section == 2 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             }
         } else if stopID == .station {
             if section == 0 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             } else if section == 1 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             } else if section == 2 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value() else { return 0 }
-                return max(min(data.count, 3), 1)
+                return displayedRowCount(baseCount: max(min(data.count, 3), 1), section: section)
             }
         } else if stopID == .terminal {
             guard let data = try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value() else { return 0 }
-            return max(min(data.count, 7), 1)
+            return displayedRowCount(baseCount: max(min(data.count, 7), 1), section: section)
         } else if stopID == .jungangStation {
             guard let data = try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value() else { return 0 }
-            return max(min(data.count, 7), 1)
+            return displayedRowCount(baseCount: max(min(data.count, 7), 1), section: section)
         } else if stopID == .shuttlecockIn {
             guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value() else { return 0 }
-            return max(min(data.count, 7), 1)
+            return displayedRowCount(baseCount: max(min(data.count, 7), 1), section: section)
         }
         return 0
     }
 
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard shuttleRealtimeSection.indices.contains(indexPath.section) else { return UITableViewCell() }
         if showsInitialSkeleton {
             return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
         }
+        // swiftlint:disable opening_brace
+        if isTransferExpansionRow(indexPath),
+           let expandedRow = expandedDataRow(section: indexPath.section)
+        {
+            let entries = destinationEntries(section: indexPath.section)
+            guard entries.indices.contains(expandedRow) else { return UITableViewCell() }
+            let item = entries[expandedRow]
+            guard let transferView = transferView(
+                at: IndexPath(row: expandedRow, section: indexPath.section),
+                item: item
+            ), transferView.preferredHeight > 0 else { return UITableViewCell() }
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: ShuttleExpandedTransferCellView.reuseIdentifier,
+                for: indexPath
+            ) as? ShuttleExpandedTransferCellView else { return UITableViewCell() }
+            cell.setup(transferView: transferView)
+            return cell
+        }
+        // swiftlint:enable opening_brace
+        let displayedIndexPath = indexPath
+        guard let indexPath = dataIndexPath(for: displayedIndexPath) else { return UITableViewCell() }
         if stopID == .dormiotryOut {
             if indexPath.section == 0 {
                 guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return UITableViewCell() }
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -849,7 +1114,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -878,7 +1143,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -908,7 +1173,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -936,7 +1201,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -965,7 +1230,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -995,7 +1260,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -1023,7 +1288,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -1052,7 +1317,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 if data.indices.contains(indexPath.row) {
                     let cell = tableView.dequeueReusableCell(
                         withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                        for: indexPath
+                        for: displayedIndexPath
                     ) as! ShuttleRealtimeCellView
                     let item = data[indexPath.row]
                     let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -1081,7 +1346,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if data.indices.contains(indexPath.row) {
                 let cell = tableView.dequeueReusableCell(
                     withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                    for: indexPath
+                    for: displayedIndexPath
                 ) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
                 let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -1105,7 +1370,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if data.indices.contains(indexPath.row) {
                 let cell = tableView.dequeueReusableCell(
                     withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                    for: indexPath
+                    for: displayedIndexPath
                 ) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
                 let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -1133,7 +1398,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             if data.indices.contains(indexPath.row) {
                 let cell = tableView.dequeueReusableCell(
                     withIdentifier: ShuttleRealtimeCellView.reuseIdentifier,
-                    for: indexPath
+                    for: displayedIndexPath
                 ) as! ShuttleRealtimeCellView
                 let item = data[indexPath.row]
                 let directionDisplayName = directionDisplayName(section: indexPath.section)
@@ -1157,7 +1422,10 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 return cell
             }
         }
-        return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier, for: indexPath)
+        return tableView.dequeueReusableCell(
+            withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier,
+            for: displayedIndexPath
+        )
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -1168,14 +1436,71 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         if showsInitialSkeleton {
             return CGFloat.leastNormalMagnitude
         }
-        let alternativesCount = busAlternatives[busAlternativeKey(section: section)]?.count ?? 0
-        if alternativesCount > 0 {
-            return CGFloat(50 + 50 * alternativesCount)
+        let alternativesCount = displayedBusAlternatives(from: busAlternatives, section: section).count
+        let effectiveAlternativesCount = if alternativesCount > 0 {
+            alternativesCount
+        } else if section == 0, canForceShowBusAlternative {
+            1
+        } else {
+            0
         }
-        if section == 0, forceShowBusAlternative {
-            return 100
+        return ShuttleRealtimeFooterView.timetableButtonHeight
+            + ShuttleRealtimeCellView.informationRowHeight * CGFloat(effectiveAlternativesCount)
+    }
+
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard tableView === shuttleRealtimeTableView,
+              isTransferExpansionRow(indexPath),
+              let expandedRow = expandedDataRow(section: indexPath.section)
+        else { return ShuttleRealtimeCellView.informationRowHeight }
+        let entries = destinationEntries(section: indexPath.section)
+        guard entries.indices.contains(expandedRow) else {
+            return ShuttleRealtimeCellView.informationRowHeight
         }
-        return 50
+        let transferView = transferView(
+            at: IndexPath(row: expandedRow, section: indexPath.section),
+            item: entries[expandedRow]
+        )
+        return max(
+            ShuttleExpandedTransferCellView.preferredHeight(transferView: transferView),
+            CGFloat.leastNormalMagnitude
+        )
+    }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let isExpandedTransferRow =
+            tableView === shuttleRealtimeTableView &&
+            isTransferExpansionRow(indexPath) &&
+            !isAnimatingShuttleExpansion
+        if isExpandedTransferRow, let expandedRow = expandedDataRow(section: indexPath.section) {
+            transferInfoViewsByIndexPath[
+                IndexPath(row: expandedRow, section: indexPath.section)
+            ]?.showInlineConnectors(animated: false)
+            return
+        }
+        guard tableView === shuttleRealtimeTableView,
+              let shuttleCell = cell as? ShuttleRealtimeCellView,
+              let dataIndexPath = dataIndexPath(for: indexPath)
+        else { return }
+        let isExpanded = expandedShuttleIndexPath == dataIndexPath
+        guard isExpanded,
+              let item = shuttleCell.itemByDestination,
+              let transferView = transferView(at: dataIndexPath, item: item)
+        else {
+            shuttleCell.setTransferSelectionState(false)
+            return
+        }
+        shuttleCell.setTransferSelectionState(true)
+        let connectorTitle = transferView.inlineConnectorTitle
+        let connectorTintColor = transferView.inlineConnectorTintColor
+        if let connectorTitle, let connectorTintColor {
+            shuttleCell.prepareTransferConnector(
+                title: connectorTitle,
+                travelMinutes: transferView.inlineConnectorTravelMinutes,
+                tintColor: connectorTintColor
+            )
+            shuttleCell.showTransferConnector(animated: false)
+        }
     }
 
     func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
@@ -1186,10 +1511,28 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView else { return }
-        guard let item = cell.itemByDestination else { return }
+        guard !isTransferExpansionRow(indexPath) else { return }
+        guard let dataIndexPath = dataIndexPath(for: indexPath),
+              let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView
+        else { return }
+        if expandedShuttleIndexPath == dataIndexPath {
+            toggleShuttleExpansion(
+                at: dataIndexPath,
+                selectedCell: cell,
+                transferView: nil
+            )
+            return
+        }
+        guard let item = cell.itemByDestination,
+              let transferView = transferView(at: dataIndexPath, item: item),
+              transferView.preferredHeight > 0
+        else { return }
         AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
-        showViaVCByDestination(item)
+        toggleShuttleExpansion(
+            at: dataIndexPath,
+            selectedCell: cell,
+            transferView: transferView
+        )
     }
 
     private func busAlternativeKey(section: Int) -> String {

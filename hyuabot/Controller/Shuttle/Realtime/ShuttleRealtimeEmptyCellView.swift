@@ -24,7 +24,7 @@ class ShuttleRealtimeEmptyCellView: UITableViewCell {
         selectionStyle = .none
         emptyLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(20)
+            make.centerY.equalToSuperview()
         }
     }
 }

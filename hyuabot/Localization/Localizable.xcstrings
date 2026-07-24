@@ -6366,10 +6366,10 @@
     },
     "home.weather.attribution" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Forecast by Open-Meteo" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "予報：Open-Meteo" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "예보 Open-Meteo" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预报由 Open-Meteo 提供" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Open-Meteo ↗" } }
       }
     },
     "home.weather.confidence.low" : {
@@ -11659,6 +11659,22 @@
         }
       }
     },
+    "shuttle.connection.alternative" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Alternative" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "代替手段" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대체 수단" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "替代交通" } }
+      }
+    },
+    "shuttle.connection.transfer.%@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Transfer at %@" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@で乗り換え" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@ 환승" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在%@换乘" } }
+      }
+    },
     "shuttle.desination.dormitory" : {
       "localizations" : {
         "en" : {
@@ -12629,6 +12645,46 @@
         }
       }
     },
+    "shuttle.quick_settings.alternative.mode.always" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Always" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "常に" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "항상" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "始终" } }
+      }
+    },
+    "shuttle.quick_settings.alternative.mode.automatic" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Auto" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "自動" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "자동" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自动" } }
+      }
+    },
+    "shuttle.quick_settings.alternative.mode.hidden" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hide" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "非表示" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "숨김" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "隐藏" } }
+      }
+    },
+    "shuttle.quick_settings.alternative.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Auto shows alternatives when the next shuttle is at least 20 minutes away." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "自動では次のシャトルまで20分以上の場合に表示します。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "자동은 다음 셔틀까지 20분 이상일 때 표시해요." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自动模式会在距下一班校车至少20分钟时显示。" } }
+      }
+    },
+    "shuttle.quick_settings.alternative.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Show alternatives" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "代替手段を表示" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대체 수단 표시" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示替代交通" } }
+      }
+    },
     "shuttle.quick_settings.arrival_by_time.subtitle" : {
       "localizations" : {
         "en" : {
@@ -12727,6 +12783,30 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "一緒に見ている人を表示" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "함께 보는 사람 표시" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示同时查看的人" } }
+      }
+    },
+    "shuttle.quick_settings.section.connections" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Transfers & alternatives" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "乗り換え・代替手段" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "환승·대체 수단" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "换乘与替代交通" } }
+      }
+    },
+    "shuttle.quick_settings.section.display" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shuttle display" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "シャトル表示" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "셔틀 표시" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校车显示" } }
+      }
+    },
+    "shuttle.quick_settings.subway_destination.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Subway transfer destination" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "電車の乗り換え先" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "전철 환승 목적지" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "地铁换乘目的地" } }
       }
     },
     "shuttle.quick_settings.title" : {
@@ -13767,6 +13847,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Station 地铁 / Terminal 50路(KTX光明)"
+          }
+        }
+      }
+    },
+    "shuttle.transfer.inline.route.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ transfer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@乗換"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 환승"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@换乘"
           }
         }
       }

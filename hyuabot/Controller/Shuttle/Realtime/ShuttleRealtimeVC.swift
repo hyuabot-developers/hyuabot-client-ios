@@ -185,6 +185,23 @@ class ShuttleRealtimeVC: UIViewController {
         $0.accessibilityIdentifier = returnsToHome ? "shuttle.return_home" : "shuttle.quick_settings"
     }
 
+    private lazy var quickSettingsButton = UIButton(type: .system).then {
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 16,
+            weight: .semibold
+        ))
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10)
+        $0.configuration = config
+        $0.addTarget(self, action: #selector(openQuickSettings), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: "shuttle.quick_settings.title")
+        $0.accessibilityIdentifier = "shuttle.quick_settings"
+        $0.isHidden = !returnsToHome
+    }
+
     private lazy var quickSettingsBar = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.layer.borderWidth = 1 / UIScreen.main.scale
@@ -229,6 +246,8 @@ class ShuttleRealtimeVC: UIViewController {
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
+    private var pendingInitialStopLocation: CLLocation?
+    private var initialStopRules: [ShuttleInitialStopRuleCandidate]?
     private var hasCompletedInitialLocationSelection = false
     private var hasManualStopSelection = false
     private var hasLoadedInitialShuttlePageData = false
@@ -367,7 +386,7 @@ class ShuttleRealtimeVC: UIViewController {
             ),
             CoachMarkItem(
                 id: "shuttle.quickSettings",
-                targetView: homeButton,
+                targetView: returnsToHome ? quickSettingsButton : homeButton,
                 title: String(localized: "shuttle.quick_settings.button"),
                 message: String(localized: "coach.shuttle.quick_settings.message")
             ),
@@ -631,6 +650,7 @@ class ShuttleRealtimeVC: UIViewController {
         view.addSubview(presenceStatusPill)
         presenceStatusPill.addSubview(presenceStatusRow)
         quickSettingsBar.addSubview(quickSettingsBarLabel)
+        quickSettingsBar.addSubview(quickSettingsButton)
         quickSettingsBar.addSubview(homeButton)
         viewPager.snp.makeConstraints { make in
             if self.returnsToHome {
@@ -662,7 +682,13 @@ class ShuttleRealtimeVC: UIViewController {
         quickSettingsBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(homeButton.snp.leading).offset(-12)
+            let trailingView = returnsToHome ? quickSettingsButton : homeButton
+            make.trailing.lessThanOrEqualTo(trailingView.snp.leading).offset(-12)
+        }
+        quickSettingsButton.snp.makeConstraints { make in
+            make.trailing.equalTo(homeButton.snp.leading).offset(-8)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(36)
         }
         homeButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -784,11 +810,27 @@ class ShuttleRealtimeVC: UIViewController {
                 query: ShuttleRealtimePageQuery(
                     language: noticeLanguage,
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now)),
-                    weekday: currentWeekdayString()
+                    weekday: currentWeekdayString(),
+                    logDates: .some(busLogReferenceDates())
                 ),
                 cachePolicy: .networkOnly
             )
             await MainActor.run {
+                initialStopRules =
+                    response?.data?.shuttle.initialStopRules.map { rule in
+                        ShuttleInitialStopRuleCandidate(
+                            sequence: rule.seq,
+                            stopName: rule.stopName,
+                            priority: rule.priority,
+                            polygon: rule.polygon.map {
+                                ShuttleGeoCoordinate(latitude: $0.latitude, longitude: $0.longitude)
+                            }
+                        )
+                    } ?? []
+                if let pendingInitialStopLocation {
+                    self.pendingInitialStopLocation = nil
+                    applyInitialStop(for: pendingInitialStopLocation)
+                }
                 if let data = response?.data {
                     dataDelegate.transferData.onNext(data)
                     self.hasLoadedInitialNotices = true
@@ -1114,7 +1156,11 @@ class ShuttleRealtimeVC: UIViewController {
         let vc = ShuttleQuickSettingsVC(
             showArrivalByTime: showArrivalByTime,
             showDepartureTime: !showRemainingTime,
-            showPresenceStatus: showsPresenceStatus
+            showPresenceStatus: showsPresenceStatus,
+            showBusTransfer: ShuttleTransferDisplaySettings.showsBusTransfer,
+            showSubwayTransfer: ShuttleTransferDisplaySettings.showsSubwayTransfer,
+            subwayDestination: ShuttleTransferDisplaySettings.subwayDestination,
+            alternativeDisplayMode: ShuttleTransferDisplaySettings.alternativeDisplayMode
         )
         vc.openHome = { [weak self] in
             self?.openHomeExperience()
@@ -1128,6 +1174,22 @@ class ShuttleRealtimeVC: UIViewController {
         vc.updateShowPresenceStatus = { [weak self] isOn in
             self?.applyShowPresenceStatus(isOn)
         }
+        vc.updateShowBusTransfer = { [weak self] isOn in
+            ShuttleTransferDisplaySettings.showsBusTransfer = isOn
+            self?.reloadTransferDisplaySettings()
+        }
+        vc.updateShowSubwayTransfer = { [weak self] isOn in
+            ShuttleTransferDisplaySettings.showsSubwayTransfer = isOn
+            self?.reloadTransferDisplaySettings()
+        }
+        vc.updateSubwayDestination = { [weak self] destination in
+            ShuttleTransferDisplaySettings.subwayDestination = destination
+            self?.reloadTransferDisplaySettings()
+        }
+        vc.updateAlternativeDisplayMode = { [weak self] mode in
+            ShuttleTransferDisplaySettings.alternativeDisplayMode = mode
+            self?.reloadTransferDisplaySettings()
+        }
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom { context in
                 min(vc.preferredSheetHeight, context.maximumDetentValue)
@@ -1135,6 +1197,17 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true)
+    }
+
+    private func reloadTransferDisplaySettings() {
+        [
+            dormitoryOutTabVC,
+            shuttlecockOutTabVC,
+            stationTabVC,
+            terminalTabVC,
+            jungangStationTabVC,
+            shuttlecockInTabVC
+        ].forEach { $0.reloadTransferDisplaySettings() }
     }
 
     private func promptHomeExperienceIfNeeded() {
@@ -1203,14 +1276,21 @@ class ShuttleRealtimeVC: UIViewController {
 private func currentWeekdayString() -> String {
     var calendar = Calendar.current
     calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? calendar.timeZone
-    switch calendar.component(.weekday, from: Foundation.Date.now) {
-    case 1:
-        return "sunday"
-    case 7:
-        return "saturday"
-    default:
-        return "weekday"
-    }
+    let weekday = calendar.component(.weekday, from: Foundation.Date.now)
+    return weekday == 1 || weekday == 7 ? "weekends" : "weekdays"
+}
+
+private func busLogReferenceDates() -> [Api.Date] {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .iso8601)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+    formatter.dateFormat = "yyyy-MM-dd"
+    return [
+        Foundation.Date.now.addingTimeInterval(-60 * 60 * 24 * 7),
+        Foundation.Date.now.addingTimeInterval(-60 * 60 * 24 * 2),
+        Foundation.Date.now.addingTimeInterval(-60 * 60 * 24)
+    ].map(formatter.string)
 }
 
 extension ShuttleRealtimeVC {
@@ -1239,6 +1319,7 @@ extension ShuttleRealtimeVC {
         hasManualStopSelection = true
         hasCompletedInitialLocationSelection = true
         pendingGPSTabIndex = nil
+        pendingInitialStopLocation = nil
         locationManager.stopUpdatingLocation()
         selectStop(at: index)
     }
@@ -1251,20 +1332,23 @@ extension ShuttleRealtimeVC {
         updatePresenceStatus(viewerCount: nil)
         reportPresence()
     }
-}
 
-extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    private func applyInitialStop(for location: CLLocation) {
         guard !hasCompletedInitialLocationSelection,
               !hasManualStopSelection,
-              let currentLocation = locations.last,
-              let position = stopLocation.indices.dropLast().min(by: {
-                  currentLocation.distance(from: stopLocation[$0]) < currentLocation.distance(from: stopLocation[$1])
-              })
-        else {
-            locationManager.stopUpdatingLocation()
-            return
+              let initialStopRules
+        else { return }
+        let configuredStopID = ShuttleInitialStopResolver.resolve(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            rules: initialStopRules
+        )
+        let configuredIndex = configuredStopID.flatMap(Self.presenceStopIds.firstIndex)
+        let nearestIndex = stopLocation.indices.dropLast().min {
+            location.distance(from: stopLocation[$0]) < location.distance(from: stopLocation[$1])
         }
+        guard let position = configuredIndex ?? nearestIndex else { return }
+
         hasCompletedInitialLocationSelection = true
         if isShowingCoachMarks {
             pendingGPSTabIndex = position
@@ -1281,9 +1365,28 @@ extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
         selectStop(at: position)
         locationManager.stopUpdatingLocation()
     }
+}
+
+extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard !hasCompletedInitialLocationSelection,
+              !hasManualStopSelection,
+              let currentLocation = locations.last
+        else {
+            locationManager.stopUpdatingLocation()
+            return
+        }
+        guard initialStopRules != nil else {
+            pendingInitialStopLocation = currentLocation
+            locationManager.stopUpdatingLocation()
+            return
+        }
+        applyInitialStop(for: currentLocation)
+    }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         hasCompletedInitialLocationSelection = true
+        pendingInitialStopLocation = nil
         locationManager.stopUpdatingLocation()
         showToastMessage(
             image: UIImage(systemName: "exclamationmark.triangle.fill"),

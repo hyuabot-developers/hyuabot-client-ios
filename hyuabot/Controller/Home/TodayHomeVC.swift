@@ -76,6 +76,17 @@ private enum HomeDeparture: CaseIterable {
         }
     }
 
+    init?(shuttleStopName: String) {
+        switch shuttleStopName {
+        case "dormitory_o": self = .dormitory
+        case "shuttlecock_o", "shuttlecock_i": self = .shuttlecock
+        case "station": self = .station
+        case "terminal": self = .terminal
+        case "jungang_stn": self = .jungang
+        default: return nil
+        }
+    }
+
     func timetableStart(for destination: HomeDestination) -> String.LocalizationValue {
         if case (.shuttlecock, .dormitory) = (self, destination) {
             return "shuttle.stop.shuttlecock.in"
@@ -208,78 +219,6 @@ private struct HomeTransferConnection {
     let tintColor: UIColor
     let arrivalDate: Foundation.Date
     let minimumTransferMinutes: Int
-}
-
-private final class HomeTransferConnectorView: UIStackView {
-    private let connectorTintColor: UIColor
-    private let linkIcon = UIImageView(image: UIImage(systemName: "link"))
-    private let titleLabel = UILabel()
-
-    init(title: String, travelMinutes: Int?, tintColor: UIColor) {
-        connectorTintColor = tintColor
-        super.init(frame: .zero)
-
-        axis = .horizontal
-        alignment = .center
-        spacing = 4
-        layoutMargins = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
-        isLayoutMarginsRelativeArrangement = true
-        layer.cornerRadius = 12
-        layer.borderWidth = 1
-
-        linkIcon.contentMode = .scaleAspectFit
-        linkIcon.isAccessibilityElement = false
-        titleLabel.text = if let travelMinutes {
-            String(
-                format: String(localized: "home.transfer.connector.travel_time"),
-                locale: Locale.current,
-                title,
-                travelMinutes
-            )
-        } else {
-            title
-        }
-        isAccessibilityElement = true
-        accessibilityLabel = titleLabel.text
-        accessibilityTraits = .staticText
-        titleLabel.font = .godo(size: 10, weight: .bold)
-        titleLabel.numberOfLines = 1
-        titleLabel.isAccessibilityElement = false
-
-        addArrangedSubview(linkIcon)
-        addArrangedSubview(titleLabel)
-        linkIcon.snp.makeConstraints { make in
-            make.width.height.equalTo(11)
-        }
-        updateAppearance()
-    }
-
-    @available(*, unavailable)
-    required init(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        updateAppearance()
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
-        updateAppearance()
-    }
-
-    private func updateAppearance() {
-        let isDarkMode = traitCollection.userInterfaceStyle == .dark
-        backgroundColor = isDarkMode ? .secondarySystemBackground : .systemBackground
-        layer.borderColor = connectorTintColor
-            .withAlphaComponent(isDarkMode ? 0.60 : 0.18)
-            .resolvedColor(with: traitCollection)
-            .cgColor
-        linkIcon.tintColor = isDarkMode ? .white : connectorTintColor.withAlphaComponent(0.72)
-        titleLabel.textColor = isDarkMode ? .white : connectorTintColor
-    }
 }
 
 private struct HomeSubwayArrival {
@@ -1087,7 +1026,23 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private let mealStack = UIStackView()
     private let refreshControl = UIRefreshControl()
     private let homeHeroTitleLabel = UILabel()
-    private let homeHeroSubtitleLabel = UILabel()
+    private lazy var homeHeroSubtitleButton = UIButton(type: .system).then {
+        var configuration = UIButton.Configuration.plain()
+        var title = AttributedString(String(localized: "home.hero.subtitle"))
+        title.font = .godo(size: 15, weight: .regular)
+        configuration.attributedTitle = title
+        configuration.baseForegroundColor = .secondaryLabel
+        configuration.contentInsets = .zero
+        configuration.titleLineBreakMode = .byTruncatingTail
+        $0.configuration = configuration
+        $0.contentHorizontalAlignment = .leading
+        $0.titleLabel?.adjustsFontSizeToFitWidth = true
+        $0.titleLabel?.minimumScaleFactor = 0.85
+        $0.accessibilityTraits = .staticText
+        $0.isUserInteractionEnabled = false
+        $0.addTarget(self, action: #selector(openWeatherAttribution), for: .touchUpInside)
+    }
+
     private let homeWeatherIconView = HomeWeatherIconView()
     private var homeWeatherIconSizeConstraints: [NSLayoutConstraint] = []
     private var homeWeatherTextTrailingConstraints: [NSLayoutConstraint] = []
@@ -1125,6 +1080,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private var selectedDeparture: HomeDeparture = .dormitory
     private var hasResolvedInitialDepartureLocation = false
+    private var pendingDepartureLocation: CLLocation?
+    private var initialStopRules: [ShuttleInitialStopRuleCandidate]?
     private var isDepartureManuallySelected = false
     private var shouldRestoreAutomaticDepartureOnActivation = false
     private var selectedDestination: HomeDestination = .station
@@ -1259,18 +1216,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         homeHeroTitleLabel.textColor = .label
         homeHeroTitleLabel.numberOfLines = 0
 
-        homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
-        homeHeroSubtitleLabel.font = .godo(size: 15, weight: .regular)
-        homeHeroSubtitleLabel.textColor = .secondaryLabel
-        homeHeroSubtitleLabel.numberOfLines = 0
-
         homeWeatherIconView.isHidden = true
         homeWeatherIconView.isAccessibilityElement = false
 
         let titleRow = UIView()
         titleRow.addSubview(homeHeroTitleLabel)
         let subtitleRow = UIView()
-        subtitleRow.addSubview(homeHeroSubtitleLabel)
+        subtitleRow.addSubview(homeHeroSubtitleButton)
 
         stack.addArrangedSubview(topRow)
         stack.addArrangedSubview(titleRow)
@@ -1288,7 +1240,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.top.bottom.leading.equalToSuperview()
             make.trailing.lessThanOrEqualToSuperview()
         }
-        homeHeroSubtitleLabel.snp.makeConstraints { make in
+        homeHeroSubtitleButton.snp.makeConstraints { make in
             make.top.bottom.leading.equalToSuperview()
             make.trailing.lessThanOrEqualToSuperview()
         }
@@ -1307,7 +1259,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         NSLayoutConstraint.activate(homeWeatherIconSizeConstraints + [
             homeWeatherIconView.topAnchor.constraint(greaterThanOrEqualTo: container.topAnchor),
             homeWeatherIconView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleLabel.bottomAnchor)
+            homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleButton.bottomAnchor)
         ])
 
         homeWeatherTextTrailingConstraints = [
@@ -1315,7 +1267,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
                 constant: 3
             ),
-            homeHeroSubtitleLabel.trailingAnchor.constraint(
+            homeHeroSubtitleButton.trailingAnchor.constraint(
                 lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
                 constant: 3
             )
@@ -1592,7 +1544,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         #endif
         guard let weather = shuttleData?.homeWeather else {
             homeHeroTitleLabel.text = String(localized: "home.hero.title")
-            homeHeroSubtitleLabel.text = String(localized: "home.hero.subtitle")
+            setWeatherSubtitle(String(localized: "home.hero.subtitle"), includesAttribution: false)
             setHomeWeatherIconHidden(true)
             return
         }
@@ -1633,7 +1585,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         homeWeatherIconView.setWeatherCondition(weather.condition)
         setHomeWeatherIconHidden(false)
-        homeHeroSubtitleLabel.text = weatherSubtitle(for: weather)
+        setWeatherSubtitle(
+            weatherSubtitle(for: weather),
+            includesAttribution: weather.attribution != nil
+        )
     }
 
     private func weatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
@@ -1641,10 +1596,30 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         if weather.precipitationConfidence == "LOW" {
             parts.append(String(localized: "home.weather.confidence.low"))
         }
-        if weather.attribution != nil {
-            parts.append(String(localized: "home.weather.attribution"))
-        }
         return parts.joined(separator: " · ")
+    }
+
+    private func setWeatherSubtitle(_ subtitle: String, includesAttribution: Bool) {
+        var title = AttributedString(subtitle)
+        title.font = .godo(size: 15, weight: .regular)
+        if includesAttribution {
+            var attribution = AttributedString(" · \(String(localized: "home.weather.attribution"))")
+            attribution.font = .godo(size: 12, weight: .regular)
+            title.append(attribution)
+        }
+
+        var configuration = homeHeroSubtitleButton.configuration ?? .plain()
+        configuration.attributedTitle = title
+        homeHeroSubtitleButton.configuration = configuration
+        homeHeroSubtitleButton.isUserInteractionEnabled = includesAttribution
+        homeHeroSubtitleButton.accessibilityTraits = includesAttribution ? .link : .staticText
+        homeHeroSubtitleButton.accessibilityLabel = String(title.characters)
+    }
+
+    @objc
+    private func openWeatherAttribution() {
+        guard let url = URL(string: "https://open-meteo.com/") else { return }
+        UIApplication.shared.open(url)
     }
 
     private func baseWeatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
@@ -2751,6 +2726,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func fetchHomeData(showsLoadingState: Bool = true) {
         guard !isLoading else { return }
         isLoading = true
+        initialStopRules = nil
         if showsLoadingState || shuttleData == nil {
             renderLoadingState()
         }
@@ -2776,6 +2752,17 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             let bus50TerminalLogTimes = await fetchBus50TerminalLogTimes()
 
             await MainActor.run {
+                initialStopRules =
+                    response?.data?.shuttle.initialStopRules.map { rule in
+                        ShuttleInitialStopRuleCandidate(
+                            sequence: rule.seq,
+                            stopName: rule.stopName,
+                            priority: rule.priority,
+                            polygon: rule.polygon.map {
+                                ShuttleGeoCoordinate(latitude: $0.latitude, longitude: $0.longitude)
+                            }
+                        )
+                    } ?? []
                 if let data = response?.data {
                     shuttleData = data
                     busAlternatives = buildBusAlternatives(data.bus)
@@ -2787,6 +2774,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 }
                 isLoading = false
                 refreshControl.endRefreshing()
+                if let pendingDepartureLocation {
+                    self.pendingDepartureLocation = nil
+                    applyAutomaticDeparture(for: pendingDepartureLocation)
+                }
                 render()
             }
         }
@@ -2830,6 +2821,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func refreshHomeContext(showsLoadingState: Bool = true) {
+        fetchHomeData(showsLoadingState: showsLoadingState)
         #if DEBUG
             if !usesDebugDeparture {
                 requestDepartureLocation()
@@ -2837,7 +2829,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         #else
             requestDepartureLocation()
         #endif
-        fetchHomeData(showsLoadingState: showsLoadingState)
     }
 
     #if DEBUG
@@ -3072,7 +3063,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         let linkUpperRows = [shuttleRow] + Array(transferRows.dropLast())
         for (upperRow, connection) in zip(linkUpperRows, option.connections) {
-            let linkBadge = HomeTransferConnectorView(
+            let linkBadge = TransferConnectorView(
                 title: connection.connectorTitle,
                 travelMinutes: connection.connectorTravelMinutes,
                 tintColor: connection.tintColor
@@ -3392,6 +3383,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         isDepartureManuallySelected = true
         shouldRestoreAutomaticDepartureOnActivation = false
         hasResolvedInitialDepartureLocation = true
+        pendingDepartureLocation = nil
         guard selectedDeparture != departure else {
             updateDepartureSelector()
             return
@@ -3413,7 +3405,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         #if DEBUG
             guard !usesDebugDeparture else { return }
         #endif
-        requestDepartureLocation()
+        refreshHomeContext(showsLoadingState: false)
     }
 
     private func requestDepartureLocation() {
@@ -3685,23 +3677,55 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard !isDepartureManuallySelected,
-              let location = locations.last,
-              let nearestDeparture = HomeDeparture.allCases.min(by: {
-                  $0.location.distance(from: location) < $1.location.distance(from: location)
-              })
+              let location = locations.last
         else { return }
+        pendingDepartureLocation = location
+        guard initialStopRules != nil else { return }
+        pendingDepartureLocation = nil
+        applyAutomaticDeparture(for: location)
+    }
+
+    private func applyAutomaticDeparture(for location: CLLocation) {
+        guard !isDepartureManuallySelected, let initialStopRules else { return }
+        let configuredStopName = ShuttleInitialStopResolver.resolve(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            rules: initialStopRules
+        )
+        let configuredDeparture = configuredStopName.flatMap { HomeDeparture(shuttleStopName: $0) }
+        guard let initialDeparture = configuredDeparture ?? HomeDeparture.allCases.min(by: {
+            $0.location.distance(from: location) < $1.location.distance(from: location)
+        }) else { return }
+        let initialDestination: HomeDestination = switch configuredStopName {
+        case "shuttlecock_i": .dormitory
+        case "shuttlecock_o": selectedDestination == .dormitory ? .station : selectedDestination
+        default: initialDeparture.destinations.contains(selectedDestination)
+            ? selectedDestination
+            : initialDeparture.destinations[0]
+        }
         let shouldApplyHysteresis = hasResolvedInitialDepartureLocation
         hasResolvedInitialDepartureLocation = true
         let currentDistance = selectedDeparture.location.distance(from: location)
-        let nearestDistance = nearestDeparture.location.distance(from: location)
-        guard nearestDeparture != selectedDeparture else { return }
-        guard !shouldApplyHysteresis ||
-            nearestDistance + Self.departureSwitchHysteresisMeters < currentDistance
+        let initialDistance = initialDeparture.location.distance(from: location)
+        guard initialDeparture != selectedDeparture || initialDestination != selectedDestination else { return }
+        guard initialDeparture == selectedDeparture ||
+            configuredDeparture != nil ||
+            !shouldApplyHysteresis ||
+            initialDistance + Self.departureSwitchHysteresisMeters < currentDistance
         else { return }
-        updateDeparture(nearestDeparture)
+        selectedDestination = initialDestination
+        if initialDeparture == selectedDeparture {
+            updateDestinationControl()
+            renderMovement()
+            refreshPresenceStatus()
+        } else {
+            updateDeparture(initialDeparture)
+        }
     }
 
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {}
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        pendingDepartureLocation = nil
+    }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         requestDepartureLocation()
