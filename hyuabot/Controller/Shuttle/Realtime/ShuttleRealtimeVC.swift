@@ -322,6 +322,10 @@ class ShuttleRealtimeVC: UIViewController {
         logScreenView(.shuttleRealtime)
         scheduleCoachMarksIfNeeded()
         promptHomeExperienceIfNeeded()
+        // `viewWillAppear`'s presence report is skipped because `view.window` is
+        // still nil at that point, so trigger the first heartbeat here once the
+        // view is attached to a window and the count can render immediately.
+        reportPresence()
     }
 
     func retryCoachMarksIfNeeded() {
