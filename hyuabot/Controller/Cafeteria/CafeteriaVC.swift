@@ -8,6 +8,8 @@ class CafeteriaVC: UIViewController {
 
     private let disposeBag = DisposeBag()
     private var selectedMealIndex = 0
+    private var didApplyInitialMealSelection = false
+    private var didReceiveExternalMealSelection = false
     private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var lunchVC = CafeteriaTabVC(cafeteriaType: .lunch, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var dinnerVC = CafeteriaTabVC(cafeteriaType: .dinner, showCafeteriaInfoVC: openCafeteriaInfoVC)
@@ -180,6 +182,11 @@ class CafeteriaVC: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        applyInitialMealSelectionIfNeeded()
+    }
+
     private func setupUI() {
         view.addSubview(viewPager)
         view.addSubview(previousDateButton)
@@ -304,17 +311,37 @@ class CafeteriaVC: UIViewController {
         }
         present(vc, animated: true, completion: nil)
     }
+}
 
-    func scrollToMealTab(_ index: Int) {
+extension CafeteriaVC {
+    func scrollToMealTab(_ index: Int, animated: Bool = true) {
         selectedMealIndex = index
-        viewPager.tabView.moveToTab(index: index)
-        viewPager.contentView.moveToPage(index: index)
+        viewPager.tabView.moveToTab(index: index, animated: animated)
+        viewPager.contentView.moveToPage(index: index, animated: animated)
         updateShareButtonVisibility()
     }
 
     func showMeal(date: Foundation.Date, mealIndex: Int) {
+        didReceiveExternalMealSelection = true
+        didApplyInitialMealSelection = true
         loadViewIfNeeded()
         scrollToMealTab(mealIndex)
         CafeteriaData.shared.feedDate.onNext(date)
+    }
+
+    /// 탭바 등으로 학식 화면에 처음 진입했을 때, 홈 화면과 동일하게 현재 시각 기준으로
+    /// 조식/중식/석식 탭을 자동 선택한다. 홈/딥링크에서 `showMeal(date:mealIndex:)`로
+    /// 시간대를 명시한 경우에는 그 선택을 유지한다.
+    func applyInitialMealSelectionIfNeeded() {
+        guard !didApplyInitialMealSelection,
+              !didReceiveExternalMealSelection,
+              view.bounds.width > 0 else { return }
+        didApplyInitialMealSelection = true
+        let selection = CafeteriaData.automaticMealSelection()
+        scrollToMealTab(selection.mealIndex, animated: false)
+        let currentFeedDate = (try? CafeteriaData.shared.feedDate.value()) ?? selection.date
+        if !Calendar.current.isDate(currentFeedDate, inSameDayAs: selection.date) {
+            CafeteriaData.shared.feedDate.onNext(selection.date)
+        }
     }
 }

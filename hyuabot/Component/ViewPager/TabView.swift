@@ -73,10 +73,10 @@ class TabView: UIView {
         return collectionView.cellForItem(at: IndexPath(item: index, section: 0))
     }
 
-    func moveToTab(index: Int) {
+    func moveToTab(index: Int, animated: Bool = true) {
         guard tabs.indices.contains(index),
               tabs.indices.contains(selectedIndex) else { return }
-        collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
+        collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: animated)
         tabs[selectedIndex].onDeselected()
         tabs[index].onSelected()
         selectedIndex = index

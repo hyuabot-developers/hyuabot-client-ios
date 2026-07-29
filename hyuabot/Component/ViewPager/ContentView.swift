@@ -47,9 +47,9 @@ class ContentView: UIView {
         }
     }
 
-    func moveToPage(index: Int) {
+    func moveToPage(index: Int, animated: Bool = true) {
         guard pages.indices.contains(index) else { return }
-        collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
+        collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: animated)
     }
 }
 
