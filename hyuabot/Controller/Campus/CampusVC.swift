@@ -63,7 +63,7 @@ final class CampusVC: UIViewController {
         case .setting:
             SettingVC()
         case .inquiry:
-            WebViewVC(url: URL(string: "https://open.kakao.com/o/sW2kAinb")!)
+            InquiryChatVC()
         case .donate:
             WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
         }

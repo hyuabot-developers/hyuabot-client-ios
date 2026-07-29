@@ -2432,6 +2432,54 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "联系我们" } }
       }
     },
+    "inquiry.empty" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No messages yet. Leave us your question." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "まだ会話がありません。ご質問をお寄せください。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "아직 대화가 없습니다. 궁금한 점을 남겨주세요." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还没有对话。请留下您的问题。" } }
+      }
+    },
+    "inquiry.input.placeholder" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Type a message" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メッセージを入力してください" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지를 입력하세요" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请输入消息" } }
+      }
+    },
+    "inquiry.loadFailed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Failed to load." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "読み込めませんでした。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "불러오지 못했습니다." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加载失败。" } }
+      }
+    },
+    "inquiry.read" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Read" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "既読" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "읽음" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已读" } }
+      }
+    },
+    "inquiry.send" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Send" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "送信" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "전송" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "发送" } }
+      }
+    },
+    "inquiry.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Inquiry" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "お問い合わせ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "문의하기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "咨询" } }
+      }
+    },
     "campus.map.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Campus Map" } },
