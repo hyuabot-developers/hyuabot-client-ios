@@ -10,6 +10,7 @@ class CafeteriaVC: UIViewController {
     private var selectedMealIndex = 0
     private var didApplyInitialMealSelection = false
     private var didReceiveExternalMealSelection = false
+    private var isShowingAutomaticTomorrow = false
     private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var lunchVC = CafeteriaTabVC(cafeteriaType: .lunch, showCafeteriaInfoVC: openCafeteriaInfoVC)
     private lazy var dinnerVC = CafeteriaTabVC(cafeteriaType: .dinner, showCafeteriaInfoVC: openCafeteriaInfoVC)
@@ -284,17 +285,20 @@ class CafeteriaVC: UIViewController {
 
     @objc private func previousDateButtonTapped() {
         AnalyticsManager.logSelect(.cafeteriaPreviousDate, type: .dateControl)
+        clearAutomaticTomorrowIfNeeded()
         let date = Calendar.current.date(byAdding: .day, value: -1, to: feedDatePicker.date)
         CafeteriaData.shared.feedDate.onNext(date!)
     }
 
     @objc private func datePickerValueChanged() {
         AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
+        clearAutomaticTomorrowIfNeeded()
         CafeteriaData.shared.feedDate.onNext(feedDatePicker.date)
     }
 
     @objc private func nextDateButtonTapped() {
         AnalyticsManager.logSelect(.cafeteriaNextDate, type: .dateControl)
+        clearAutomaticTomorrowIfNeeded()
         let date = Calendar.current.date(byAdding: .day, value: 1, to: feedDatePicker.date)
         CafeteriaData.shared.feedDate.onNext(date!)
     }
@@ -326,6 +330,7 @@ extension CafeteriaVC {
         didApplyInitialMealSelection = true
         loadViewIfNeeded()
         scrollToMealTab(mealIndex)
+        applyMealTabTitles(showingTomorrow: Calendar.current.isDateInTomorrow(date))
         CafeteriaData.shared.feedDate.onNext(date)
     }
 
@@ -339,9 +344,33 @@ extension CafeteriaVC {
         didApplyInitialMealSelection = true
         let selection = CafeteriaData.automaticMealSelection()
         scrollToMealTab(selection.mealIndex, animated: false)
+        applyMealTabTitles(showingTomorrow: Calendar.current.isDateInTomorrow(selection.date))
         let currentFeedDate = (try? CafeteriaData.shared.feedDate.value()) ?? selection.date
         if !Calendar.current.isDate(currentFeedDate, inSameDayAs: selection.date) {
             CafeteriaData.shared.feedDate.onNext(selection.date)
         }
+    }
+
+    /// 자동으로 내일 식단으로 넘어간 경우에만 탭 제목을 "내일 조식/중식/석식"으로 표시한다.
+    /// 접두어 포맷(`cafeteria.tab.tomorrow.format`)은 언어별로 정의되며, 탭이 길어지는
+    /// 영어는 접두어 없이("%@") 기본 제목을 그대로 사용한다.
+    func applyMealTabTitles(showingTomorrow: Bool) {
+        guard showingTomorrow != isShowingAutomaticTomorrow else { return }
+        isShowingAutomaticTomorrow = showingTomorrow
+        let base = [
+            String(localized: "cafeteria.tab.breakfast"),
+            String(localized: "cafeteria.tab.lunch"),
+            String(localized: "cafeteria.tab.dinner")
+        ]
+        let titles = showingTomorrow
+            ? base.map { String(format: String(localized: "cafeteria.tab.tomorrow.format"), $0) }
+            : base
+        viewPager.tabView.tabs = titles.map { TabItem(title: $0) }
+    }
+
+    /// 사용자가 날짜를 직접 변경하면 자동 "내일" 표시를 해제하고 기본 탭 제목으로 되돌린다.
+    func clearAutomaticTomorrowIfNeeded() {
+        guard isShowingAutomaticTomorrow else { return }
+        applyMealTabTitles(showingTomorrow: false)
     }
 }
