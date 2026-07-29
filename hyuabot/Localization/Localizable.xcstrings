@@ -1743,6 +1743,34 @@
         }
       }
     },
+    "cafeteria.tab.tomorrow.format" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明日の%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明天%@"
+          }
+        }
+      }
+    },
     "cafeteria.tab.breakfast" : {
       "localizations" : {
         "en" : {
