@@ -3544,27 +3544,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func currentMealPeriod() -> HomeMealPeriod {
-        let hour = Calendar.current.component(.hour, from: Foundation.Date.now)
-        let date: Foundation.Date
-        let mealIndex: Int
-        if hour < 10 {
-            date = Foundation.Date.now
-            mealIndex = 0
-        } else if hour < 15 {
-            date = Foundation.Date.now
-            mealIndex = 1
-        } else if hour < 20 {
-            date = Foundation.Date.now
-            mealIndex = 2
-        } else {
-            date = Calendar.current.date(
-                byAdding: .day,
-                value: 1,
-                to: Foundation.Date.now
-            ) ?? Foundation.Date.now
-            mealIndex = 0
-        }
-        return mealPeriods(for: date)[mealIndex]
+        let selection = CafeteriaData.automaticMealSelection()
+        return mealPeriods(for: selection.date)[selection.mealIndex]
     }
 
     private func mealPeriods(for date: Foundation.Date) -> [HomeMealPeriod] {
