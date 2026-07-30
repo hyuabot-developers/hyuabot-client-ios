@@ -7,12 +7,33 @@ import SnapKit
 import UIKit
 
 final class InquiryChatVC: UIViewController {
+    private struct MessageSection {
+        let date: Date
+        var messages: [InquiryMessageDTO]
+    }
+
     private var thread: InquiryThreadDTO?
     private var messages: [InquiryMessageDTO] = []
     private var lastAdminMessageId = 0
     private var hasLoaded = false
     private var didReportFailure = false
     private var pollingTimer: Timer?
+    private var streamTask: Task<Void, Never>?
+
+    private var messageSections: [MessageSection] {
+        var sections: [MessageSection] = []
+        for message in messages {
+            let date = Self.messageDate(from: message.createdAt) ?? Date.distantPast
+            if let last = sections.indices.last,
+               Calendar.current.isDate(sections[last].date, inSameDayAs: date)
+            {
+                sections[last].messages.append(message)
+            } else {
+                sections.append(MessageSection(date: date, messages: [message]))
+            }
+        }
+        return sections
+    }
 
     private let tableView = UITableView().then {
         $0.separatorStyle = .none
@@ -46,7 +67,11 @@ final class InquiryChatVC: UIViewController {
 
     private let sendButton = UIButton(type: .system).then {
         $0.setTitle(String(localized: "inquiry.send"), for: .normal)
+        $0.setTitleColor(.white, for: .normal)
         $0.titleLabel?.font = .godo(size: 15, weight: .bold)
+        $0.backgroundColor = .systemBlue
+        $0.layer.cornerRadius = 24
+        $0.layer.cornerCurve = .continuous
         $0.accessibilityIdentifier = "inquiry.send_button"
     }
 
@@ -55,6 +80,7 @@ final class InquiryChatVC: UIViewController {
         title = String(localized: "inquiry.title")
         view.backgroundColor = .systemGroupedBackground
         tableView.dataSource = self
+        tableView.delegate = self
         inputField.delegate = self
         sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
         configureLayout()
@@ -70,6 +96,8 @@ final class InquiryChatVC: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopPolling()
+        streamTask?.cancel()
+        streamTask = nil
     }
 
     private func configureLayout() {
@@ -86,13 +114,14 @@ final class InquiryChatVC: UIViewController {
         inputField.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.top.bottom.equalToSuperview().inset(8)
-            make.height.greaterThanOrEqualTo(36)
+            make.height.equalTo(48)
         }
         sendButton.snp.makeConstraints { make in
             make.leading.equalTo(inputField.snp.trailing).offset(12)
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalTo(inputField)
-            make.width.greaterThanOrEqualTo(44)
+            make.width.equalTo(64)
+            make.height.equalTo(inputField)
         }
         tableView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
@@ -130,11 +159,25 @@ final class InquiryChatVC: UIViewController {
         }
         thread = resolved
         await refreshMessages(scrollToBottom: true)
+        startStream(threadId: resolved.id)
+    }
+
+    private func startStream(threadId: String) {
+        streamTask?.cancel()
+        streamTask = Task { [weak self] in
+            while !Task.isCancelled {
+                await InquiryService.shared.streamEvents { [weak self] event in
+                    guard event.threadId == threadId else { return }
+                    await self?.refreshMessages(scrollToBottom: true)
+                }
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
     }
 
     private func startPolling() {
         stopPolling()
-        pollingTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true) { [weak self] _ in
+        pollingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             guard let self else { return }
             Task { await self.refreshMessages(scrollToBottom: false) }
         }
@@ -169,9 +212,21 @@ final class InquiryChatVC: UIViewController {
     }
 
     private func scrollToLastRow() {
-        guard !messages.isEmpty else { return }
-        let indexPath = IndexPath(row: messages.count - 1, section: 0)
+        guard let lastSection = messageSections.indices.last,
+              let lastRow = messageSections[lastSection].messages.indices.last else { return }
+        let indexPath = IndexPath(row: lastRow, section: lastSection)
         tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+    }
+
+    private static func messageDate(from raw: String) -> Date? {
+        ISO8601DateFormatter().date(from: String(raw.split(separator: "[", maxSplits: 1).first ?? ""))
+    }
+
+    private static func sectionTitle(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M월 d일 EEEE"
+        return formatter.string(from: date)
     }
 
     private func reportFailure() {
@@ -197,21 +252,47 @@ final class InquiryChatVC: UIViewController {
 }
 
 extension InquiryChatVC: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        messageSections.count
+    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        messages.count
+        messageSections[section].messages.count
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let label = UILabel()
+        label.text = Self.sectionTitle(for: messageSections[section].date)
+        label.font = .godo(size: 12, weight: .regular)
+        label.textColor = .tertiaryLabel
+        label.textAlignment = .center
+
+        let header = UIView()
+        header.addSubview(label)
+        label.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        return header
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        40
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard messages.indices.contains(indexPath.row),
+        guard messageSections.indices.contains(indexPath.section),
+              messageSections[indexPath.section].messages.indices.contains(indexPath.row),
               let cell = tableView.dequeueReusableCell(
                   withIdentifier: InquiryMessageCellView.reuseIdentifier,
                   for: indexPath
               ) as? InquiryMessageCellView
         else { return UITableViewCell() }
-        cell.configure(with: messages[indexPath.row])
+        cell.configure(with: messageSections[indexPath.section].messages[indexPath.row])
         return cell
     }
 }
+
+extension InquiryChatVC: UITableViewDelegate {}
 
 extension InquiryChatVC: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
