@@ -202,36 +202,12 @@ class ShuttleRealtimeVC: UIViewController {
         $0.isHidden = !returnsToHome
     }
 
-    private lazy var inquiryButton = UIButton(type: .system).then {
-        var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = Self.actionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "message")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 14,
-            weight: .semibold
-        ))
-        config.attributedTitle = AttributedString(String(localized: "inquiry.short"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 14, weight: .bold)
-        ]))
-        config.imagePadding = 6
-        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
-        $0.configuration = config
-        $0.addTarget(self, action: #selector(openInquiry), for: .touchUpInside)
-        $0.accessibilityLabel = String(localized: "inquiry.title")
-        $0.accessibilityIdentifier = "shuttle.open_inquiry"
-    }
-
     private lazy var quickSettingsBar = UIView().then {
         $0.backgroundColor = .systemBackground
-        $0.layer.borderWidth = 1 / UIScreen.main.scale
-        $0.layer.borderColor = UIColor.separator.cgColor
     }
 
-    private lazy var quickSettingsBarLabel = UILabel().then {
-        $0.text = String(localized: returnsToHome ? "home.action_bar.title" : "shuttle.action_bar.title")
-        $0.textColor = .secondaryLabel
-        $0.font = .godo(size: 13, weight: .bold)
+    private let quickSettingsBarTopBorder = UIView().then {
+        $0.backgroundColor = .separator
     }
 
     private let presenceStatusPill = UIView().then {
@@ -630,15 +606,17 @@ class ShuttleRealtimeVC: UIViewController {
         let requestedIndex = selectedPresenceIndex
         let stopId = Self.presenceStopIds[requestedIndex]
         Task { [weak self] in
-            let count = await ShuttlePresenceService.shared.heartbeat(stopId: stopId)
+            async let count = ShuttlePresenceService.shared.heartbeat(stopId: stopId)
+            async let counts = ShuttlePresenceService.shared.viewerCounts()
+            let (viewerCount, viewerCounts) = await (count, counts)
             await MainActor.run {
                 guard let self, self.selectedPresenceIndex == requestedIndex else { return }
-                self.updatePresenceStatus(viewerCount: count)
+                self.updatePresenceStatus(viewerCount: viewerCount, viewerCounts: viewerCounts)
             }
         }
     }
 
-    private func updatePresenceStatus(viewerCount: Int?) {
+    private func updatePresenceStatus(viewerCount: Int?, viewerCounts: [String: Int]? = nil) {
         guard showsPresenceStatus,
               viewPager.tabView.tabs.indices.contains(selectedPresenceIndex)
         else {
@@ -653,6 +631,13 @@ class ShuttleRealtimeVC: UIViewController {
             presenceStatusPill.isHidden = true
             return
         }
+        let visualStyle = ShuttlePresenceVisualStyle(
+            viewerCount: viewerCount,
+            availableSeats: estimatedAvailableSeats(for: Self.presenceStopIds[selectedPresenceIndex], viewerCounts: viewerCounts)
+        )
+        presenceStatusPill.backgroundColor = visualStyle.backgroundColor
+        presenceStatusIconView.tintColor = visualStyle.foregroundColor
+        presenceStatusLabel.textColor = visualStyle.foregroundColor
         presenceStatusLabel.text = viewerCount.formatted()
         presenceStatusPill.accessibilityLabel = String(
             format: String(localized: "shuttle.presence.viewer.count"),
@@ -660,6 +645,27 @@ class ShuttleRealtimeVC: UIViewController {
             viewerCount
         )
         presenceStatusPill.isHidden = false
+    }
+
+    private func estimatedAvailableSeats(for stopID: String, viewerCounts: [String: Int]?) -> Int? {
+        guard let viewerCounts,
+              let routeStops = nextRouteStopIDs(for: stopID),
+              let stopIndex = routeStops.firstIndex(of: stopID)
+        else { return nil }
+        let onboard = routeStops.prefix(stopIndex).reduce(into: 0) { onboard, previousStopID in
+            if previousStopID == "station" {
+                onboard = 0
+            }
+            onboard += viewerCounts[previousStopID, default: 0]
+        }
+        return max(45 - onboard, 0)
+    }
+
+    private func nextRouteStopIDs(for stopID: String) -> [String]? {
+        guard let stop = try? ShuttleRealtimeData.shared.arrival.value().first(where: { $0.name == stopID }) else { return nil }
+        let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
+        let now = timeFormatter.string(from: .now)
+        return stop.timetable.order.first(where: { $0.time > now })?.stops.map(\.stop)
     }
 
     @objc private func coachMarksDidReset() {
@@ -671,10 +677,9 @@ class ShuttleRealtimeVC: UIViewController {
     private func setupUI() {
         view.addSubview(viewPager)
         view.addSubview(quickSettingsBar)
-        view.addSubview(presenceStatusPill)
+        quickSettingsBar.addSubview(quickSettingsBarTopBorder)
+        quickSettingsBar.addSubview(presenceStatusPill)
         presenceStatusPill.addSubview(presenceStatusRow)
-        quickSettingsBar.addSubview(quickSettingsBarLabel)
-        quickSettingsBar.addSubview(inquiryButton)
         quickSettingsBar.addSubview(quickSettingsButton)
         quickSettingsBar.addSubview(homeButton)
         viewPager.snp.makeConstraints { make in
@@ -691,29 +696,22 @@ class ShuttleRealtimeVC: UIViewController {
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
         }
+        quickSettingsBarTopBorder.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
+        }
         presenceStatusIconView.snp.makeConstraints { make in
             make.width.equalTo(15)
             make.height.equalTo(12)
         }
         presenceStatusPill.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(self.quickSettingsBar.snp.top).offset(-10)
-            make.height.equalTo(30)
-        }
-        presenceStatusRow.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(10)
-            make.centerY.equalToSuperview()
-        }
-        quickSettingsBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(inquiryButton.snp.leading).offset(-12)
+            make.height.equalTo(30)
+            make.width.equalTo(presenceStatusRow.snp.width).offset(20)
         }
-        inquiryButton.snp.makeConstraints { make in
-            let trailingView = returnsToHome ? quickSettingsButton : homeButton
-            make.trailing.equalTo(trailingView.snp.leading).offset(-8)
-            make.centerY.equalToSuperview()
-            make.height.equalTo(36)
+        presenceStatusRow.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
         quickSettingsButton.snp.makeConstraints { make in
             make.trailing.equalTo(homeButton.snp.leading).offset(-8)
@@ -1194,6 +1192,9 @@ class ShuttleRealtimeVC: UIViewController {
         )
         vc.openHome = { [weak self] in
             self?.openHomeExperience()
+        }
+        vc.openInquiry = { [weak self] in
+            self?.openInquiry()
         }
         vc.updateShowArrivalByTime = { [weak self] isOn in
             self?.applyShowArrivalByTime(isOn)
