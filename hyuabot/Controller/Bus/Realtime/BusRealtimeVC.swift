@@ -82,14 +82,10 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     private lazy var helpBar = UIView().then {
         $0.backgroundColor = .systemBackground
-        $0.layer.borderWidth = 1 / UIScreen.main.scale
-        $0.layer.borderColor = UIColor.separator.cgColor
     }
 
-    private lazy var helpBarLabel = UILabel().then {
-        $0.text = String(localized: "bus.action_bar.title")
-        $0.textColor = .secondaryLabel
-        $0.font = .godo(size: 13, weight: .bold)
+    private let helpBarTopBorder = UIView().then {
+        $0.backgroundColor = .separator
     }
 
     private lazy var noticeView = NoticeCarouselView().then {
@@ -236,7 +232,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private func setupUI() {
         view.addSubview(viewPager)
         view.addSubview(helpBar)
-        helpBar.addSubview(helpBarLabel)
+        helpBar.addSubview(helpBarTopBorder)
         helpBar.addSubview(inquiryButton)
         helpBar.addSubview(helpButton)
         viewPager.snp.makeConstraints { make in
@@ -248,10 +244,9 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
         }
-        helpBarLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(inquiryButton.snp.leading).offset(-12)
+        helpBarTopBorder.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
         }
         inquiryButton.snp.makeConstraints { make in
             make.trailing.equalTo(helpButton.snp.leading).offset(-8)
