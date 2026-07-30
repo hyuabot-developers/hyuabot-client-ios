@@ -2448,6 +2448,14 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请输入消息" } }
       }
     },
+    "inquiry.short" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Inquiry" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "問い合わせ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "문의" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "咨询" } }
+      }
+    },
     "inquiry.loadFailed" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Failed to load." } },

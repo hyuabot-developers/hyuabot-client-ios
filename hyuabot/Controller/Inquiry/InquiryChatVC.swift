@@ -19,6 +19,19 @@ final class InquiryChatVC: UIViewController {
     private var didReportFailure = false
     private var pollingTimer: Timer?
     private var streamTask: Task<Void, Never>?
+    private let entryScreen: String
+    private let entryScreenName: String
+
+    init(entryScreen: String = "campus", entryScreenName: String? = nil) {
+        self.entryScreen = entryScreen
+        self.entryScreenName = entryScreenName ?? String(localized: "tabbar.campus")
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     private var messageSections: [MessageSection] {
         var sections: [MessageSection] = []
@@ -139,14 +152,11 @@ final class InquiryChatVC: UIViewController {
         hasLoaded = true
         Task { [weak self] in
             guard let self else { return }
-            var resolved = await InquiryService.shared.activeThread()
-            if resolved == nil {
-                resolved = await InquiryService.shared.openThread(
-                    subject: nil,
-                    entryScreen: "campus",
-                    entryScreenName: String(localized: "tabbar.campus")
-                )
-            }
+            let resolved = await InquiryService.shared.openThread(
+                subject: nil,
+                entryScreen: entryScreen,
+                entryScreenName: entryScreenName
+            )
             await setThread(resolved)
         }
     }

@@ -202,6 +202,26 @@ class ShuttleRealtimeVC: UIViewController {
         $0.isHidden = !returnsToHome
     }
 
+    private lazy var inquiryButton = UIButton(type: .system).then {
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "message")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 14,
+            weight: .semibold
+        ))
+        config.attributedTitle = AttributedString(String(localized: "inquiry.short"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 14, weight: .bold)
+        ]))
+        config.imagePadding = 6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        $0.configuration = config
+        $0.addTarget(self, action: #selector(openInquiry), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: "inquiry.title")
+        $0.accessibilityIdentifier = "shuttle.open_inquiry"
+    }
+
     private lazy var quickSettingsBar = UIView().then {
         $0.backgroundColor = .systemBackground
         $0.layer.borderWidth = 1 / UIScreen.main.scale
@@ -654,6 +674,7 @@ class ShuttleRealtimeVC: UIViewController {
         view.addSubview(presenceStatusPill)
         presenceStatusPill.addSubview(presenceStatusRow)
         quickSettingsBar.addSubview(quickSettingsBarLabel)
+        quickSettingsBar.addSubview(inquiryButton)
         quickSettingsBar.addSubview(quickSettingsButton)
         quickSettingsBar.addSubview(homeButton)
         viewPager.snp.makeConstraints { make in
@@ -686,8 +707,13 @@ class ShuttleRealtimeVC: UIViewController {
         quickSettingsBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(inquiryButton.snp.leading).offset(-12)
+        }
+        inquiryButton.snp.makeConstraints { make in
             let trailingView = returnsToHome ? quickSettingsButton : homeButton
-            make.trailing.lessThanOrEqualTo(trailingView.snp.leading).offset(-12)
+            make.trailing.equalTo(trailingView.snp.leading).offset(-8)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
         quickSettingsButton.snp.makeConstraints { make in
             make.trailing.equalTo(homeButton.snp.leading).offset(-8)
@@ -1201,6 +1227,13 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true)
+    }
+
+    @objc private func openInquiry() {
+        navigationController?.pushViewController(
+            InquiryChatVC(entryScreen: "shuttle", entryScreenName: "셔틀"),
+            animated: true
+        )
     }
 
     private func reloadTransferDisplaySettings() {

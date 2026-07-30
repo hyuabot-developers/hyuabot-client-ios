@@ -1078,6 +1078,26 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         $0.accessibilityIdentifier = "home.quick_settings"
     }
 
+    private lazy var inquiryButton = UIButton(type: .system).then {
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "message")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 14,
+            weight: .semibold
+        ))
+        config.attributedTitle = AttributedString(String(localized: "inquiry.short"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 14, weight: .bold)
+        ]))
+        config.imagePadding = 6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        $0.configuration = config
+        $0.addTarget(self, action: #selector(openInquiry), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: "inquiry.title")
+        $0.accessibilityIdentifier = "home.open_inquiry"
+    }
+
     private var selectedDeparture: HomeDeparture = .dormitory
     private var hasResolvedInitialDepartureLocation = false
     private var pendingDepartureLocation: CLLocation?
@@ -1154,6 +1174,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         view.addSubview(scrollView)
         view.addSubview(legacyBar)
         legacyBar.addSubview(legacyBarLabel)
+        legacyBar.addSubview(inquiryButton)
         legacyBar.addSubview(legacyButton)
         scrollView.snp.makeConstraints { make in
             make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
@@ -1167,6 +1188,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         legacyBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(inquiryButton.snp.leading).offset(-12)
+        }
+        inquiryButton.snp.makeConstraints { make in
+            make.trailing.equalTo(legacyButton.snp.leading).offset(-8)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
         legacyButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -3470,6 +3497,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true)
+    }
+
+    @objc private func openInquiry() {
+        navigationController?.pushViewController(
+            InquiryChatVC(entryScreen: "home", entryScreenName: "홈"),
+            animated: true
+        )
     }
 
     @objc private func openLegacyShuttle() {
