@@ -2448,6 +2448,14 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请输入消息" } }
       }
     },
+    "inquiry.short" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Inquiry" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "問い合わせ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "문의" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "咨询" } }
+      }
+    },
     "inquiry.loadFailed" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Failed to load." } },
@@ -7230,25 +7238,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Home options"
+            "value" : "Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ホーム設定"
+            "value" : "設定"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "홈 옵션"
+            "value" : "설정"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "首页选项"
+            "value" : "设置"
           }
         }
       }
@@ -7482,25 +7490,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Home options"
+            "value" : "Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ホーム設定"
+            "value" : "設定"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "홈 옵션"
+            "value" : "설정"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "首页选项"
+            "value" : "设置"
           }
         }
       }
@@ -12794,25 +12802,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick settings"
+            "value" : "Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "簡単設定"
+            "value" : "設定"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "빠른 설정"
+            "value" : "설정"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "快速设置"
+            "value" : "设置"
           }
         }
       }
@@ -12890,25 +12898,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shuttle quick settings"
+            "value" : "Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "シャトル簡単設定"
+            "value" : "設定"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "셔틀 빠른 설정"
+            "value" : "설정"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "校车快速设置"
+            "value" : "设置"
           }
         }
       }

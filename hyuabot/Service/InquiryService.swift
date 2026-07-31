@@ -27,6 +27,10 @@ struct InquiryMessageListDTO: Codable {
     let result: [InquiryMessageDTO]
 }
 
+struct InquiryStreamEvent: Decodable {
+    let threadId: String?
+}
+
 private struct OpenThreadBody: Encodable {
     let subject: String?
     let contactEmail: String?
@@ -152,5 +156,34 @@ actor InquiryService {
             method: "POST"
         ) else { return }
         _ = try? await URLSession.shared.data(for: request)
+    }
+
+    func streamEvents(onEvent: @escaping @Sendable (InquiryStreamEvent) async -> Void) async {
+        guard let request = makeRequest(path: "/api/v1/inquiry/stream", method: "GET"),
+              let (bytes, response) = try? await URLSession.shared.bytes(for: request),
+              let http = response as? HTTPURLResponse,
+              (200 ..< 300).contains(http.statusCode) else { return }
+
+        var eventType: String?
+        var data: String?
+        do {
+            for try await line in bytes.lines {
+                if line.hasPrefix("event:") {
+                    eventType = line.dropFirst("event:".count).trimmingCharacters(in: .whitespaces)
+                } else if line.hasPrefix("data:") {
+                    data = line.dropFirst("data:".count).trimmingCharacters(in: .whitespaces)
+                } else if line.isEmpty {
+                    if eventType == "message", let data {
+                        if let event = try? JSONDecoder().decode(InquiryStreamEvent.self, from: Data(data.utf8)) {
+                            await onEvent(event)
+                        }
+                    }
+                    eventType = nil
+                    data = nil
+                }
+            }
+        } catch {
+            return
+        }
     }
 }

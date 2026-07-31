@@ -60,16 +60,32 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         $0.addTarget(self, action: #selector(openHelpVC), for: .touchUpInside)
     }
 
-    private lazy var helpBar = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.layer.borderWidth = 1 / UIScreen.main.scale
-        $0.layer.borderColor = UIColor.separator.cgColor
+    private lazy var inquiryButton = UIButton(type: .system).then {
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "message")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 14,
+            weight: .semibold
+        ))
+        config.attributedTitle = AttributedString(String(localized: "inquiry.short"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 14, weight: .bold)
+        ]))
+        config.imagePadding = 6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        $0.configuration = config
+        $0.accessibilityLabel = String(localized: "inquiry.title")
+        $0.accessibilityIdentifier = "bus.open_inquiry"
+        $0.addTarget(self, action: #selector(openInquiry), for: .touchUpInside)
     }
 
-    private lazy var helpBarLabel = UILabel().then {
-        $0.text = String(localized: "bus.action_bar.title")
-        $0.textColor = .secondaryLabel
-        $0.font = .godo(size: 13, weight: .bold)
+    private lazy var helpBar = UIView().then {
+        $0.backgroundColor = .systemBackground
+    }
+
+    private let helpBarTopBorder = UIView().then {
+        $0.backgroundColor = .separator
     }
 
     private lazy var noticeView = NoticeCarouselView().then {
@@ -216,7 +232,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private func setupUI() {
         view.addSubview(viewPager)
         view.addSubview(helpBar)
-        helpBar.addSubview(helpBarLabel)
+        helpBar.addSubview(helpBarTopBorder)
+        helpBar.addSubview(inquiryButton)
         helpBar.addSubview(helpButton)
         viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -227,9 +244,14 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
         }
-        helpBarLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
+        helpBarTopBorder.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
+        }
+        inquiryButton.snp.makeConstraints { make in
+            make.trailing.equalTo(helpButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
         helpButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -428,5 +450,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true, completion: nil)
+    }
+
+    @objc
+    private func openInquiry() {
+        navigationController?.pushViewController(
+            InquiryChatVC(entryScreen: "bus", entryScreenName: "버스"),
+            animated: true
+        )
     }
 }

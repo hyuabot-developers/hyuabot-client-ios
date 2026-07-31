@@ -103,14 +103,10 @@ class CafeteriaVC: UIViewController {
 
     private lazy var shareBar = UIView().then {
         $0.backgroundColor = .systemBackground
-        $0.layer.borderWidth = 1 / UIScreen.main.scale
-        $0.layer.borderColor = UIColor.separator.cgColor
     }
 
-    private lazy var shareBarLabel = UILabel().then {
-        $0.text = String(localized: "cafeteria.action_bar.title")
-        $0.textColor = .secondaryLabel
-        $0.font = .godo(size: 13, weight: .bold)
+    private let shareBarBottomBorder = UIView().then {
+        $0.backgroundColor = .separator
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -194,7 +190,7 @@ class CafeteriaVC: UIViewController {
         view.addSubview(feedDatePicker)
         view.addSubview(nextDateButton)
         view.addSubview(shareBar)
-        shareBar.addSubview(shareBarLabel)
+        shareBar.addSubview(shareBarBottomBorder)
         shareBar.addSubview(shareButton)
         feedDatePicker.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
@@ -220,9 +216,9 @@ class CafeteriaVC: UIViewController {
             make.bottom.equalTo(feedDatePicker.snp.top)
             make.height.equalTo(54)
         }
-        shareBarLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
+        shareBarBottomBorder.snp.makeConstraints { make in
+            make.bottom.leading.trailing.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
         }
         shareButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)

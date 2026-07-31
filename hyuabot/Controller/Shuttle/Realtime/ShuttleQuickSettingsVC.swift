@@ -14,6 +14,7 @@ final class ShuttleQuickSettingsVC: UIViewController {
     }
 
     var openHome: (() -> Void)?
+    var openInquiry: (() -> Void)?
     var updateShowArrivalByTime: ((Bool) -> Void)?
     var updateShowDepartureTime: ((Bool) -> Void)?
     var updateShowPresenceStatus: ((Bool) -> Void)?
@@ -21,7 +22,7 @@ final class ShuttleQuickSettingsVC: UIViewController {
     var updateShowSubwayTransfer: ((Bool) -> Void)?
     var updateSubwayDestination: ((ShuttleSubwayTransferDestination) -> Void)?
     var updateAlternativeDisplayMode: ((ShuttleAlternativeDisplayMode) -> Void)?
-    let preferredSheetHeight: CGFloat = 620
+    let preferredSheetHeight: CGFloat = 680
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -95,6 +96,7 @@ extension ShuttleQuickSettingsVC {
         contentStack.addArrangedSubview(title)
         contentStack.addArrangedSubview(displaySettingsGroup())
         contentStack.addArrangedSubview(connectionSettingsGroup())
+        contentStack.addArrangedSubview(inquiryActionRow())
         contentStack.addArrangedSubview(homeActionRow())
     }
 
@@ -339,10 +341,41 @@ extension ShuttleQuickSettingsVC {
         return button
     }
 
+    private func inquiryActionRow() -> UIView {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = Self.actionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "message")
+        config.attributedTitle = AttributedString(String(localized: "inquiry.title"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 17, weight: .bold)
+        ]))
+        config.imagePadding = 8
+        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
+        button.configuration = config
+        button.contentHorizontalAlignment = .leading
+        button.addTarget(self, action: #selector(onTapInquiry), for: .touchUpInside)
+        button.accessibilityIdentifier = "shuttle.quick_settings.open_inquiry"
+        button.snp.makeConstraints { make in
+            make.height.equalTo(48)
+        }
+        button.setContentHuggingPriority(.required, for: .vertical)
+        button.setContentCompressionResistancePriority(.required, for: .vertical)
+        return button
+    }
+
     @objc
     private func onTapHome() {
         dismiss(animated: true) { [weak self] in
             self?.openHome?()
+        }
+    }
+
+    @objc
+    private func onTapInquiry() {
+        dismiss(animated: true) { [weak self] in
+            self?.openInquiry?()
         }
     }
 

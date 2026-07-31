@@ -1078,6 +1078,26 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         $0.accessibilityIdentifier = "home.quick_settings"
     }
 
+    private lazy var inquiryButton = UIButton(type: .system).then {
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "message")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 14,
+            weight: .semibold
+        ))
+        config.attributedTitle = AttributedString(String(localized: "inquiry.short"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 14, weight: .bold)
+        ]))
+        config.imagePadding = 6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
+        $0.configuration = config
+        $0.addTarget(self, action: #selector(openInquiry), for: .touchUpInside)
+        $0.accessibilityLabel = String(localized: "inquiry.title")
+        $0.accessibilityIdentifier = "home.open_inquiry"
+    }
+
     private var selectedDeparture: HomeDeparture = .dormitory
     private var hasResolvedInitialDepartureLocation = false
     private var pendingDepartureLocation: CLLocation?
@@ -1154,6 +1174,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         view.addSubview(scrollView)
         view.addSubview(legacyBar)
         legacyBar.addSubview(legacyBarLabel)
+        legacyBar.addSubview(inquiryButton)
         legacyBar.addSubview(legacyButton)
         scrollView.snp.makeConstraints { make in
             make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
@@ -1167,6 +1188,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         legacyBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(inquiryButton.snp.leading).offset(-12)
+        }
+        inquiryButton.snp.makeConstraints { make in
+            make.trailing.equalTo(legacyButton.snp.leading).offset(-8)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(36)
         }
         legacyButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -1334,10 +1361,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         presenceStatusPill.snp.makeConstraints { make in
             make.height.equalTo(30)
+            make.width.equalTo(presenceStatusRow.snp.width).offset(20)
         }
         presenceStatusRow.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(10)
-            make.centerY.equalToSuperview()
+            make.center.equalToSuperview()
         }
 
         shuttleOptionStack.axis = .vertical
@@ -1793,21 +1820,30 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard ShuttlePresenceSettings.showsStatus, view.window != nil else { return }
         let requestedStopID = currentPresenceStopID
         Task { [weak self] in
-            let count = await ShuttlePresenceService.shared.heartbeat(stopId: requestedStopID)
+            async let count = ShuttlePresenceService.shared.heartbeat(stopId: requestedStopID)
+            async let counts = ShuttlePresenceService.shared.viewerCounts()
+            let (viewerCount, viewerCounts) = await (count, counts)
             await MainActor.run {
                 guard let self, self.currentPresenceStopID == requestedStopID else { return }
-                self.updatePresenceStatus(viewerCount: count)
+                self.updatePresenceStatus(viewerCount: viewerCount, viewerCounts: viewerCounts)
             }
         }
     }
 
-    private func updatePresenceStatus(viewerCount: Int?) {
+    private func updatePresenceStatus(viewerCount: Int?, viewerCounts: [String: Int]? = nil) {
         guard ShuttlePresenceSettings.showsStatus, let viewerCount else {
             presenceStatusLabel.text = nil
             presenceStatusPill.accessibilityLabel = nil
             presenceStatusPill.isHidden = true
             return
         }
+        let visualStyle = ShuttlePresenceVisualStyle(
+            viewerCount: viewerCount,
+            availableSeats: estimatedAvailableSeats(for: currentPresenceStopID, viewerCounts: viewerCounts)
+        )
+        presenceStatusPill.backgroundColor = visualStyle.backgroundColor
+        presenceStatusIconView.tintColor = visualStyle.foregroundColor
+        presenceStatusLabel.textColor = visualStyle.foregroundColor
         presenceStatusLabel.text = viewerCount.formatted()
         presenceStatusPill.accessibilityLabel = String(
             format: String(localized: "shuttle.presence.viewer.count"),
@@ -1815,6 +1851,32 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             viewerCount
         )
         presenceStatusPill.isHidden = false
+    }
+
+    private func estimatedAvailableSeats(for stopID: String, viewerCounts: [String: Int]?) -> Int? {
+        guard let viewerCounts,
+              let routeStops = nextHomeRouteStopIDs(),
+              let stopIndex = routeStops.firstIndex(of: stopID)
+        else { return nil }
+        let onboard = routeStops.prefix(stopIndex).reduce(into: 0) { onboard, previousStopID in
+            if previousStopID == "station" {
+                onboard = 0
+            }
+            onboard += viewerCounts[previousStopID, default: 0]
+        }
+        return max(45 - onboard, 0)
+    }
+
+    private func nextHomeRouteStopIDs() -> [String]? {
+        guard let route = shuttleRoute(from: selectedDeparture, to: selectedDestination),
+              let stop = shuttleData?.shuttle.stops.first(where: { $0.name == route.stop })
+        else { return nil }
+        return shuttleCandidates(
+            stop: stop,
+            stopName: route.stop,
+            destination: route.destination,
+            routeFilter: route.routeFilter
+        ).first?.stops.map(\.name)
     }
 
     private func applyShowPresenceStatus(_ isOn: Bool) {
@@ -3470,6 +3532,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true)
+    }
+
+    @objc
+    private func openInquiry() {
+        navigationController?.pushViewController(
+            InquiryChatVC(entryScreen: "home", entryScreenName: "홈"),
+            animated: true
+        )
     }
 
     @objc private func openLegacyShuttle() {
