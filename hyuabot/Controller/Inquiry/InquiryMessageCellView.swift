@@ -69,7 +69,7 @@ final class InquiryMessageCellView: UITableViewCell {
         bubbleView.layer.maskedCorners = [
             .layerMinXMinYCorner,
             .layerMaxXMinYCorner,
-            .layerMinXMaxYCorner,
+            .layerMinXMaxYCorner
         ]
         messageLabel.textColor = .white
         messageLabel.textAlignment = .left
@@ -90,7 +90,7 @@ final class InquiryMessageCellView: UITableViewCell {
         bubbleView.layer.maskedCorners = [
             .layerMinXMinYCorner,
             .layerMaxXMinYCorner,
-            .layerMaxXMaxYCorner,
+            .layerMaxXMaxYCorner
         ]
         messageLabel.textColor = .label
         messageLabel.textAlignment = .left
@@ -126,7 +126,7 @@ final class InquiryMessageCellView: UITableViewCell {
             .layerMinXMinYCorner,
             .layerMaxXMinYCorner,
             .layerMinXMaxYCorner,
-            .layerMaxXMaxYCorner,
+            .layerMaxXMaxYCorner
         ]
         messageLabel.textColor = .secondaryLabel
         messageLabel.textAlignment = .center

@@ -39,20 +39,20 @@ enum ShuttlePresenceVisualStyle {
     var backgroundColor: UIColor {
         switch self {
         case .low:
-            return UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1)
+            UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1)
         case .medium:
-            return UIColor(red: 0.78, green: 0.35, blue: 0.06, alpha: 1)
+            UIColor(red: 0.78, green: 0.35, blue: 0.06, alpha: 1)
         case .high:
-            return UIColor(red: 0.74, green: 0.12, blue: 0.15, alpha: 1)
+            UIColor(red: 0.74, green: 0.12, blue: 0.15, alpha: 1)
         }
     }
 
     var foregroundColor: UIColor {
         switch self {
         case .low:
-            return .hanyangBlue
+            .hanyangBlue
         case .medium, .high:
-            return .white
+            .white
         }
     }
 }
@@ -119,7 +119,8 @@ actor ShuttlePresenceService {
     func heartbeat(stopId: String) async -> Int? {
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-shuttlePresenceProxy"),
-               let previewCount = Self.previewCountsByStopID[stopId] {
+               let previewCount = Self.previewCountsByStopID[stopId]
+            {
                 return previewCount
             }
         #endif
