@@ -207,7 +207,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private let quickSettingsBarTopBorder = UIView().then {
-        $0.backgroundColor = .separator
+        $0.backgroundColor = .opaqueSeparator
     }
 
     private let presenceStatusPill = UIView().then {
@@ -251,6 +251,7 @@ class ShuttleRealtimeVC: UIViewController {
     private var hasLoadedInitialNotices = false
     private var subscription: Disposable?
     private var presenceSubscription: Disposable?
+    private var latestPresenceViewerCounts: [String: Int]?
     private var selectedPresenceIndex = 0
     private lazy var viewPager: ViewPager = {
         let viewPager = ViewPager(
@@ -617,6 +618,9 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func updatePresenceStatus(viewerCount: Int?, viewerCounts: [String: Int]? = nil) {
+        if let viewerCounts {
+            latestPresenceViewerCounts = viewerCounts
+        }
         guard showsPresenceStatus,
               viewPager.tabView.tabs.indices.contains(selectedPresenceIndex)
         else {
@@ -633,7 +637,10 @@ class ShuttleRealtimeVC: UIViewController {
         }
         let visualStyle = ShuttlePresenceVisualStyle(
             viewerCount: viewerCount,
-            availableSeats: estimatedAvailableSeats(for: Self.presenceStopIds[selectedPresenceIndex], viewerCounts: viewerCounts)
+            availableSeats: estimatedAvailableSeats(
+                for: Self.presenceStopIds[selectedPresenceIndex],
+                viewerCounts: viewerCounts ?? latestPresenceViewerCounts
+            )
         )
         presenceStatusPill.backgroundColor = visualStyle.backgroundColor
         presenceStatusIconView.tintColor = visualStyle.foregroundColor

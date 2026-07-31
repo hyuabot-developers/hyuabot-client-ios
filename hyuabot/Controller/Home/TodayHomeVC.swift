@@ -398,11 +398,12 @@ private enum SubwayTransferDestination: String, CaseIterable {
 
 private final class HomeQuickSettingsVC: UIViewController {
     var openLegacyShuttle: (() -> Void)?
+    var openInquiry: (() -> Void)?
     var updateShowPresenceStatus: ((Bool) -> Void)?
     var updateShowBus50Transfer: ((Bool) -> Void)?
     var updateShowSubwayTransfer: ((Bool) -> Void)?
     var updateSubwayTransferDestination: ((SubwayTransferDestination) -> Void)?
-    let preferredSheetHeight: CGFloat = 460
+    let preferredSheetHeight: CGFloat = 524
 
     private let contentStack = UIStackView()
     private let showPresenceStatusSwitch = UISwitch()
@@ -474,6 +475,7 @@ private final class HomeQuickSettingsVC: UIViewController {
             identifier: "home.quick_settings.bus50_transfer_row"
         ))
         contentStack.addArrangedSubview(subwayTransferRow())
+        contentStack.addArrangedSubview(inquiryActionRow())
         contentStack.addArrangedSubview(legacyActionRow())
     }
 
@@ -592,6 +594,30 @@ private final class HomeQuickSettingsVC: UIViewController {
         return button
     }
 
+    private func inquiryActionRow() -> UIView {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.plain()
+        config.background.backgroundColor = .homeActionButtonBackground
+        config.baseForegroundColor = .hanyangBlue
+        config.cornerStyle = .medium
+        config.image = UIImage(systemName: "message")
+        config.attributedTitle = AttributedString(String(localized: "inquiry.title"), attributes: AttributeContainer([
+            .font: UIFont.godo(size: 17, weight: .bold)
+        ]))
+        config.imagePadding = 8
+        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
+        button.configuration = config
+        button.contentHorizontalAlignment = .leading
+        button.addTarget(self, action: #selector(onTapInquiry), for: .touchUpInside)
+        button.accessibilityIdentifier = "home.quick_settings.open_inquiry"
+        button.snp.makeConstraints { make in
+            make.height.equalTo(52)
+        }
+        button.setContentHuggingPriority(.required, for: .vertical)
+        button.setContentCompressionResistancePriority(.required, for: .vertical)
+        return button
+    }
+
     @objc private func onChangeShowBus50Transfer() {
         updateShowBus50Transfer?(showBus50TransferSwitch.isOn)
     }
@@ -614,6 +640,13 @@ private final class HomeQuickSettingsVC: UIViewController {
     @objc private func onTapLegacy() {
         dismiss(animated: true) { [weak self] in
             self?.openLegacyShuttle?()
+        }
+    }
+
+    @objc
+    private func onTapInquiry() {
+        dismiss(animated: true) { [weak self] in
+            self?.openInquiry?()
         }
     }
 }
@@ -1078,26 +1111,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         $0.accessibilityIdentifier = "home.quick_settings"
     }
 
-    private lazy var inquiryButton = UIButton(type: .system).then {
-        var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = .homeActionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "message")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 14,
-            weight: .semibold
-        ))
-        config.attributedTitle = AttributedString(String(localized: "inquiry.short"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 14, weight: .bold)
-        ]))
-        config.imagePadding = 6
-        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
-        $0.configuration = config
-        $0.addTarget(self, action: #selector(openInquiry), for: .touchUpInside)
-        $0.accessibilityLabel = String(localized: "inquiry.title")
-        $0.accessibilityIdentifier = "home.open_inquiry"
-    }
-
     private var selectedDeparture: HomeDeparture = .dormitory
     private var hasResolvedInitialDepartureLocation = false
     private var pendingDepartureLocation: CLLocation?
@@ -1118,6 +1131,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var isLoading = false
     private var autoRefreshSubscription: Disposable?
     private var presenceSubscription: Disposable?
+    private var latestPresenceViewerCounts: [String: Int]?
     #if DEBUG
         private var usesDebugDeparture = false
     #endif
@@ -1174,7 +1188,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         view.addSubview(scrollView)
         view.addSubview(legacyBar)
         legacyBar.addSubview(legacyBarLabel)
-        legacyBar.addSubview(inquiryButton)
         legacyBar.addSubview(legacyButton)
         scrollView.snp.makeConstraints { make in
             make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
@@ -1188,12 +1201,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         legacyBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(inquiryButton.snp.leading).offset(-12)
-        }
-        inquiryButton.snp.makeConstraints { make in
-            make.trailing.equalTo(legacyButton.snp.leading).offset(-8)
-            make.centerY.equalToSuperview()
-            make.height.equalTo(36)
+            make.trailing.lessThanOrEqualTo(legacyButton.snp.leading).offset(-12)
         }
         legacyButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -1831,6 +1839,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func updatePresenceStatus(viewerCount: Int?, viewerCounts: [String: Int]? = nil) {
+        if let viewerCounts {
+            latestPresenceViewerCounts = viewerCounts
+        }
         guard ShuttlePresenceSettings.showsStatus, let viewerCount else {
             presenceStatusLabel.text = nil
             presenceStatusPill.accessibilityLabel = nil
@@ -1839,7 +1850,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         let visualStyle = ShuttlePresenceVisualStyle(
             viewerCount: viewerCount,
-            availableSeats: estimatedAvailableSeats(for: currentPresenceStopID, viewerCounts: viewerCounts)
+            availableSeats: estimatedAvailableSeats(
+                for: currentPresenceStopID,
+                viewerCounts: viewerCounts ?? latestPresenceViewerCounts
+            )
         )
         presenceStatusPill.backgroundColor = visualStyle.backgroundColor
         presenceStatusIconView.tintColor = visualStyle.foregroundColor
@@ -3509,6 +3523,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
         vc.openLegacyShuttle = { [weak self] in
             self?.openLegacyShuttle()
+        }
+        vc.openInquiry = { [weak self] in
+            self?.openInquiry()
         }
         vc.updateShowPresenceStatus = { [weak self] isOn in
             self?.applyShowPresenceStatus(isOn)
