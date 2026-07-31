@@ -173,11 +173,10 @@ actor InquiryService {
                 } else if line.hasPrefix("data:") {
                     data = line.dropFirst("data:".count).trimmingCharacters(in: .whitespaces)
                 } else if line.isEmpty {
-                    if eventType == "message",
-                       let data,
-                       let event = try? JSONDecoder().decode(InquiryStreamEvent.self, from: Data(data.utf8))
-                    {
-                        await onEvent(event)
+                    if eventType == "message", let data {
+                        if let event = try? JSONDecoder().decode(InquiryStreamEvent.self, from: Data(data.utf8)) {
+                            await onEvent(event)
+                        }
                     }
                     eventType = nil
                     data = nil

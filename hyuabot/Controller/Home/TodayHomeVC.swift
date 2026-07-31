@@ -3534,7 +3534,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         present(vc, animated: true)
     }
 
-    @objc private func openInquiry() {
+    @objc
+    private func openInquiry() {
         navigationController?.pushViewController(
             InquiryChatVC(entryScreen: "home", entryScreenName: "홈"),
             animated: true

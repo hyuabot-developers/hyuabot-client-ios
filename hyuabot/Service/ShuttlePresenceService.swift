@@ -118,9 +118,8 @@ actor ShuttlePresenceService {
 
     func heartbeat(stopId: String) async -> Int? {
         #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("-shuttlePresenceProxy"),
-               let previewCount = Self.previewCountsByStopID[stopId]
-            {
+            let isPreviewMode = ProcessInfo.processInfo.arguments.contains("-shuttlePresenceProxy")
+            if isPreviewMode, let previewCount = Self.previewCountsByStopID[stopId] {
                 return previewCount
             }
         #endif

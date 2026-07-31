@@ -37,10 +37,12 @@ final class InquiryChatVC: UIViewController {
         var sections: [MessageSection] = []
         for message in messages {
             let date = Self.messageDate(from: message.createdAt) ?? Date.distantPast
-            if let last = sections.indices.last,
-               Calendar.current.isDate(sections[last].date, inSameDayAs: date)
-            {
-                sections[last].messages.append(message)
+            if let last = sections.indices.last {
+                if Calendar.current.isDate(sections[last].date, inSameDayAs: date) {
+                    sections[last].messages.append(message)
+                } else {
+                    sections.append(MessageSection(date: date, messages: [message]))
+                }
             } else {
                 sections.append(MessageSection(date: date, messages: [message]))
             }

@@ -1230,7 +1230,8 @@ class ShuttleRealtimeVC: UIViewController {
         present(vc, animated: true)
     }
 
-    @objc private func openInquiry() {
+    @objc
+    private func openInquiry() {
         navigationController?.pushViewController(
             InquiryChatVC(entryScreen: "shuttle", entryScreenName: "셔틀"),
             animated: true
