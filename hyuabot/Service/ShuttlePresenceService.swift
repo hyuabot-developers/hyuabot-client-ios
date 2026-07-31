@@ -48,12 +48,7 @@ enum ShuttlePresenceVisualStyle {
     }
 
     var foregroundColor: UIColor {
-        switch self {
-        case .low:
-            .hanyangBlue
-        case .medium, .high:
-            .white
-        }
+        self == .low ? .hanyangBlue : .white
     }
 }
 
