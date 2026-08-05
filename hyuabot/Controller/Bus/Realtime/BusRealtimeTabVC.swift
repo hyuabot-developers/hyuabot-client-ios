@@ -129,6 +129,60 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         busRealtimeSection.count
     }
 
+    /// Stop ID + route list currently backing a given section, and the section's display title
+    /// (dynamic for sections whose primary stop is GPS-selected among a widened candidate set).
+    private func sectionInfo(_ section: Int) -> (stopID: Int32, routes: [Int32], title: String) {
+        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
+            .integer(forKey: "busStopID"))
+        let seoulFirstStopID = Int32(
+            UserDefaults.standard.integer(forKey: "bus.seoulFirstStopID") == 0 ? 216_000_379 : UserDefaults.standard
+                .integer(forKey: "bus.seoulFirstStopID")
+        )
+        let seoulSecondStopID = Int32(
+            UserDefaults.standard.integer(forKey: "bus.seoulSecondStopID") == 0 ? 216_000_719 : UserDefaults.standard
+                .integer(forKey: "bus.seoulSecondStopID")
+        )
+        let suwonStopID = Int32(
+            UserDefaults.standard.integer(forKey: "bus.suwonStopID") == 0 ? 216_000_070 : UserDefaults.standard
+                .integer(forKey: "bus.suwonStopID")
+        )
+        switch tabType {
+        case .city:
+            if section == 0 {
+                return (selectedStopID, [216_000_068], String(localized: busRealtimeSection[section]))
+            }
+            return (216_000_138, [216_000_068], String(localized: busRealtimeSection[section]))
+        case .seoul:
+            if section == 0 {
+                return (
+                    seoulFirstStopID,
+                    [216_000_061],
+                    dynamicSectionTitle(route: "3102", stopID: seoulFirstStopID)
+                )
+            }
+            return (
+                seoulSecondStopID,
+                [216_000_026, 216_000_043, 216_000_096],
+                dynamicSectionTitle(route: "3100/3101/3100N", stopID: seoulSecondStopID)
+            )
+        case .suwon:
+            return (
+                suwonStopID,
+                [216_000_104, 200_000_015],
+                dynamicSectionTitle(route: "7070/9090", stopID: suwonStopID)
+            )
+        case .other:
+            if section == 0 {
+                return (216_000_759, [216_000_075], String(localized: busRealtimeSection[section]))
+            }
+            return (213_000_487, [216_000_075], String(localized: busRealtimeSection[section]))
+        }
+    }
+
+    private func dynamicSectionTitle(route: String, stopID: Int32) -> String {
+        String(format: String(localized: "bus.realtime.section.dynamic"), route, BusStopName.title(for: stopID))
+    }
+
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if showsSkeleton {
             return tableView.dequeueReusableHeaderFooterView(withIdentifier: BusRealtimeSkeletonHeaderView.reuseIdentifier)
@@ -138,44 +192,11 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         else {
             return UIView()
         }
-        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
-            .integer(forKey: "busStopID"))
-        var stopID: Int32 = 0
-        var routes: [Int32] = []
-        if tabType == .city {
-            if section == 0 {
-                stopID = selectedStopID
-                routes = [216_000_068]
-            } else if section == 1 {
-                stopID = 216_000_138
-                routes = [216_000_068]
-            }
-        } else if tabType == .seoul {
-            if section == 0 {
-                stopID = selectedStopID
-                routes = [216_000_061]
-            } else if section == 1 {
-                stopID = 216_000_719
-                routes = [216_000_026, 216_000_043, 216_000_096]
-            }
-        } else if tabType == .suwon {
-            if section == 0 {
-                stopID = 216_000_070
-                routes = [216_000_104, 200_000_015]
-            }
-        } else if tabType == .other {
-            if section == 0 {
-                stopID = 216_000_759
-                routes = [216_000_075]
-            } else if section == 1 {
-                stopID = 213_000_487
-                routes = [216_000_075]
-            }
-        }
+        let info = sectionInfo(section)
         headerView.setupUI(
-            title: String(localized: busRealtimeSection[section]),
+            title: info.title,
             showStopVC: { [weak self] in
-                self?.showStopModal(stopID, routes: routes)
+                self?.showStopModal(info.stopID, routes: info.routes)
             }
         )
         return headerView
@@ -190,44 +211,11 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         else {
             return UIView()
         }
-        let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
-            .integer(forKey: "busStopID"))
-        var stopID: Int32 = 0
-        var routes: [Int32] = []
-        if tabType == .city {
-            if section == 0 {
-                stopID = selectedStopID
-                routes = [216_000_068]
-            } else if section == 1 {
-                stopID = 216_000_138
-                routes = [216_000_068]
-            }
-        } else if tabType == .seoul {
-            if section == 0 {
-                stopID = selectedStopID
-                routes = [216_000_061]
-            } else if section == 1 {
-                stopID = 216_000_719
-                routes = [216_000_026, 216_000_043, 216_000_096]
-            }
-        } else if tabType == .suwon {
-            if section == 0 {
-                stopID = 216_000_070
-                routes = [216_000_104, 200_000_015]
-            }
-        } else if tabType == .other {
-            if section == 0 {
-                stopID = 216_000_759
-                routes = [216_000_075]
-            } else if section == 1 {
-                stopID = 213_000_487
-                routes = [216_000_075]
-            }
-        }
+        let info = sectionInfo(section)
         footerView.setupUI(
-            stopID: stopID,
-            routes: routes,
-            title: busRealtimeSection[section],
+            stopID: info.stopID,
+            routes: info.routes,
+            title: String.LocalizationValue(stringLiteral: info.title),
             showEntireTimetable: showEntireTimetable,
             showDepartureLog: showDepartureLog
         )

@@ -4,12 +4,19 @@ import Foundation
 struct BusArrivalItem {
     var route: String
     var item: BusRealtimePageQuery.Data.Bus.Arrival
+    var secondaryArrivalTime: Api.LocalTime?
     var convertedTime: String? {
         guard let time = item.arrivalTime else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
         if components.hour! < 4 {
             return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
         }
+        return String(format: "%02d:%02d", components.hour!, components.minute!)
+    }
+
+    var secondaryConvertedTime: String? {
+        guard let time = secondaryArrivalTime else { return nil }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
         return String(format: "%02d:%02d", components.hour!, components.minute!)
     }
 }

@@ -67,11 +67,11 @@ class BusRealtimeCellView: UITableViewCell {
         }
     }
 
-    func setupUI(item: BusArrivalItem) {
+    func setupUI(item: BusArrivalItem, showSecondary: Bool = true) {
         busRouteLabel.text = item.route
         lowFloorBadgeLabel.isHidden = item.item.lowFloor != true
         setRouteColor(routeName: item.route)
-        setUITimeLabel(item: item)
+        setUITimeLabel(item: item, showSecondary: showSecondary)
     }
 
     func setRouteColor(routeName: String) {
@@ -82,19 +82,26 @@ class BusRealtimeCellView: UITableViewCell {
         }
     }
 
-    func setUITimeLabel(item: BusArrivalItem) {
+    func setUITimeLabel(item: BusArrivalItem, showSecondary: Bool = true) {
         busTimeLabel.attributedText = nil
         busTimeLabel.textColor = .label
+        let secondarySuffix: String = if showSecondary, let secondaryTime = item.secondaryConvertedTime {
+            String(format: String(localized: "bus.realtime.secondary.%@"), secondaryTime)
+        } else {
+            ""
+        }
         if item.item.isRealtime {
             if item.item.seats! < 0 {
                 if item.item.stops! <= 1 {
-                    setRealtimeAttributedText(String(format: String(localized: "bus.realtime.arriving.%lld"), item.item.stops!))
+                    setRealtimeAttributedText(
+                        String(format: String(localized: "bus.realtime.arriving.%lld"), item.item.stops!) + secondarySuffix
+                    )
                 } else {
                     setRealtimeAttributedText(String(
                         format: String(localized: "bus.realtime.no.seat.%lld.%lld"),
                         Int(item.item.minutes!),
                         item.item.stops!
-                    ))
+                    ) + secondarySuffix)
                 }
             } else {
                 if item.item.stops! <= 1 {
@@ -102,14 +109,14 @@ class BusRealtimeCellView: UITableViewCell {
                         format: String(localized: "bus.realtime.arriving.%lld.%lld"),
                         item.item.stops!,
                         item.item.seats!
-                    ))
+                    ) + secondarySuffix)
                 } else {
                     setRealtimeAttributedText(String(
                         format: String(localized: "bus.realtime.seat.%lld.%lld.%lld"),
                         Int(item.item.minutes!),
                         item.item.stops!,
                         item.item.seats!
-                    ))
+                    ) + secondarySuffix)
                 }
             }
         } else if !item.item.isRealtime {
@@ -121,7 +128,7 @@ class BusRealtimeCellView: UITableViewCell {
                 return s < 4 * 3600 ? s + 86400 : s
             }
             let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
-            busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes)
+            busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
             busTimeLabel.textColor = .secondaryLabel
         }
     }
