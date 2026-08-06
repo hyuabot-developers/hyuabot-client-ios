@@ -1,0 +1,15 @@
+{
+  "originHash" : "bd4b4ab6613448238f5b71e1341870269dd26612ae7d644889f7288d8d4d63e7",
+  "pins" : [
+    {
+      "identity" : "apollo-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apollographql/apollo-ios",
+      "state" : {
+        "revision" : "5a8d18cc239dd3c4b31c9e13e671dbcef5e4072a",
+        "version" : "2.2.0"
+      }
+    }
+  ],
+  "version" : 3
+}
