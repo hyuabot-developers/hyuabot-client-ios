@@ -85,7 +85,7 @@ class BusRealtimeCellView: UITableViewCell {
     func setUITimeLabel(item: BusArrivalItem, showSecondary: Bool = true) {
         busTimeLabel.attributedText = nil
         busTimeLabel.textColor = .label
-        let secondarySuffix: String = if showSecondary, let secondaryTime = item.secondaryConvertedTime {
+        let secondarySuffix = if showSecondary, let secondaryTime = item.secondaryConvertedTime {
             String(format: String(localized: "bus.realtime.secondary.%@"), secondaryTime)
         } else {
             ""

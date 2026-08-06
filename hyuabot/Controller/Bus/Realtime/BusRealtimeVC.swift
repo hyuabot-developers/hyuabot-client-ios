@@ -321,8 +321,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             let seoulRemoteStops: Set<Int32> = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
             let logs = (try? BusRealtimeData.shared.busSecondaryEtaLogs.value()) ?? []
 
-            // Realtime (GPS-tracked) arrivals never carry `arrivalTime` — only `minutes` remaining —
-            // so derive an absolute target time from "now + minutes" to still match against time-of-day log samples.
+            /// Realtime (GPS-tracked) arrivals never carry `arrivalTime` — only `minutes` remaining —
+            /// so derive an absolute target time from "now + minutes" to still match against time-of-day log samples.
             func estimatedArrivalTime(for arrival: BusRealtimePageQuery.Data.Bus.Arrival) -> Api.LocalTime? {
                 if let arrivalTime = arrival.arrivalTime { return arrivalTime }
                 guard arrival.isRealtime, let minutes = arrival.minutes else { return nil }
@@ -333,7 +333,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 logs.first(where: { $0.stop.seq == stop && $0.route.seq == route })?.log ?? []
             }
 
-            func secondaryTime(primaryArrivalTime: Api.LocalTime?, primaryRoute: Int32, primaryStop: Int32, stop: Int32, route: Int32) -> Api.LocalTime? {
+            func secondaryTime(
+                primaryArrivalTime: Api.LocalTime?,
+                primaryRoute: Int32,
+                primaryStop: Int32,
+                stop: Int32,
+                route: Int32
+            ) -> Api.LocalTime? {
                 guard showSecondary, let primaryArrivalTime else { return nil }
                 let secondaryLogs = logsFor(route: route, stop: stop)
                 guard !secondaryLogs.isEmpty else { return nil }
@@ -355,7 +361,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                             route: item.route.name,
                             item: arrival,
                             secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_068, primaryStop: selectedStopID,
+                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_068,
+                                primaryStop: selectedStopID,
                                 stop: 216_000_138, route: 216_000_068
                             )
                         )
@@ -388,7 +395,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                             route: item.route.name,
                             item: arrival,
                             secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_061, primaryStop: seoulFirstStopID,
+                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_061,
+                                primaryStop: seoulFirstStopID,
                                 stop: seoulFirstSecondaryStop, route: 216_000_061
                             )
                         )
@@ -401,7 +409,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             let gunpoFromCampus = result
                 .filter {
                     $0.stop
-                        .seq == seoulSecondStopID && ($0.route.seq == 216_000_096 || $0.route.seq == 216_000_026 || $0.route.seq == 216_000_043)
+                        .seq == seoulSecondStopID &&
+                        ($0.route.seq == 216_000_096 || $0.route.seq == 216_000_026 || $0.route.seq == 216_000_043)
                 }
             BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(
                 Array(
@@ -411,7 +420,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                                 route: route.route.name,
                                 item: arrival,
                                 secondaryArrivalTime: secondaryTime(
-                                    primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: Int32(route.route.seq), primaryStop: seoulSecondStopID,
+                                    primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: Int32(route.route.seq),
+                                    primaryStop: seoulSecondStopID,
                                     stop: seoulSecondSecondaryStop, route: Int32(route.route.seq)
                                 )
                             )
@@ -431,7 +441,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                             route: route.route.name,
                             item: arrival,
                             secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: Int32(route.route.seq), primaryStop: suwonStopID,
+                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: Int32(route.route.seq),
+                                primaryStop: suwonStopID,
                                 stop: suwonSecondaryStop, route: Int32(route.route.seq)
                             )
                         )
