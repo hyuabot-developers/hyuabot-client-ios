@@ -26,6 +26,14 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
         1
     }
 
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        .leastNonzeroMagnitude
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        nil
+    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if showsInitialSkeleton {
             return 6
