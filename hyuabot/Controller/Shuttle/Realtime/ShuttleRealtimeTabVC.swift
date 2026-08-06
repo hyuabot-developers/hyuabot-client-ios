@@ -24,7 +24,6 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private(set) var transferInfoView: ShuttleTransferInfoView?
-    private var transferInfoTimeView: ShuttleTransferInfoView?
     private var transferInfoViewsByIndexPath: [IndexPath: ShuttleTransferInfoView] = [:]
     private var expandedShuttleIndexPath: IndexPath?
     private var isAnimatingShuttleExpansion = false
@@ -140,13 +139,6 @@ class ShuttleRealtimeTabVC: UIViewController {
         reloadActiveBoardingAlarmKeys()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        if let transferInfoTimeView {
-            updateTableFooter(tableView: shuttleRealtimeTableTimeView, transferView: transferInfoTimeView, actionFooter: tableFooterView2)
-        }
-    }
-
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -160,62 +152,10 @@ class ShuttleRealtimeTabVC: UIViewController {
         shuttleRealtimeTableTimeView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        setupTransferFootersIfNeeded()
-    }
-
-    private func setupTransferFootersIfNeeded() {
-        guard shouldShowTransferSection else { return }
-
-        let transferTimeView = ShuttleTransferInfoView(stopID: stopID)
-        transferInfoTimeView = transferTimeView
-
-        transferTimeView.onHeightChange = { [weak self, weak transferTimeView] in
-            guard let self, let transferTimeView else { return }
-            updateTableFooter(tableView: shuttleRealtimeTableTimeView, transferView: transferTimeView, actionFooter: tableFooterView2)
-        }
-
-        shuttleRealtimeTableView.tableFooterView = tableFooterView1
-        updateTableFooter(tableView: shuttleRealtimeTableTimeView, transferView: transferTimeView, actionFooter: tableFooterView2)
     }
 
     private var shouldShowTransferSection: Bool {
         stopID == .dormiotryOut || stopID == .shuttlecockOut
-    }
-
-    private func updateTableFooter(tableView: UITableView, transferView: ShuttleTransferInfoView, actionFooter: UIView) {
-        let width = max(tableView.bounds.width, view.bounds.width)
-        if let stopFooter = actionFooter as? ShuttleRealtimeTableFooterView {
-            stopFooter.setCompactLayout(transferView.preferredHeight > 0)
-        }
-        let actionHeight = actionFooter.frame.height
-        let transferHeight = transferView.preferredHeight
-        let desiredSize = CGSize(width: width, height: transferHeight + actionHeight)
-        // swiftlint:disable opening_brace
-        if let currentFooter = tableView.tableFooterView,
-           currentFooter.bounds.size == desiredSize,
-           transferView.superview === currentFooter,
-           actionFooter.superview === currentFooter
-        {
-            return
-        }
-        // swiftlint:enable opening_brace
-
-        let footer = UIView(frame: CGRect(origin: .zero, size: desiredSize))
-        footer.backgroundColor = .systemBackground
-
-        footer.addSubview(actionFooter)
-        footer.addSubview(transferView)
-        actionFooter.snp.remakeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(actionHeight)
-        }
-        transferView.snp.remakeConstraints { make in
-            make.top.equalTo(actionFooter.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-            make.height.equalTo(transferHeight)
-        }
-
-        tableView.tableFooterView = footer
     }
 
     private func observeSubjects() {
@@ -248,29 +188,10 @@ class ShuttleRealtimeTabVC: UIViewController {
                 for transferView in transferInfoViewsByIndexPath.values {
                     transferView.setup(data: data)
                 }
-                transferInfoTimeView?.setup(data: data)
                 UIView.performWithoutAnimation {
                     shuttleRealtimeTableView.reloadData()
                 }
-                debugScrollToTransferFooterIfNeeded()
             }).disposed(by: disposeBag)
-    }
-
-    private func debugScrollToTransferFooterIfNeeded() {
-        #if DEBUG
-            guard ProcessInfo.processInfo.arguments.contains("-debugScrollShuttleTransferFooter"),
-                  shouldShowTransferSection else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-                guard let self else { return }
-                let tableView = visibleTableView
-                tableView.layoutIfNeeded()
-                let bottomOffset = max(
-                    0,
-                    tableView.contentSize.height + tableView.adjustedContentInset.bottom - tableView.bounds.height
-                )
-                tableView.setContentOffset(CGPoint(x: 0, y: bottomOffset), animated: false)
-            }
-        #endif
     }
 
     private func observeAlarmStateChanges() {
@@ -618,7 +539,6 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     func reloadTransferDisplaySettings() {
         transferInfoViewsByIndexPath.values.forEach { $0.reloadDisplaySettings() }
-        transferInfoTimeView?.reloadDisplaySettings()
         UIView.performWithoutAnimation {
             shuttleRealtimeTableView.reloadData()
             shuttleRealtimeTableTimeView.reloadData()
