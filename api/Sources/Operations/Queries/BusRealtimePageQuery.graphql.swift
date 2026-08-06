@@ -8,7 +8,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "BusRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusRealtimePageQuery($language: String!, $dates: [Date!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus( input: [ { route: 216000068, stop: 216000138, limit: 3, dates: $dates } { route: 216000068, stop: 216000383, limit: 3, dates: $dates } { route: 216000068, stop: 216000381, limit: 3, dates: $dates } { route: 216000068, stop: 216000379, limit: 3, dates: $dates } { route: 216000068, stop: 216000378, limit: 3, dates: $dates } { route: 216000061, stop: 216000383, limit: 3, dates: $dates } { route: 216000061, stop: 216000381, limit: 3, dates: $dates } { route: 216000061, stop: 216000379, limit: 3, dates: $dates } { route: 216000061, stop: 121000060, limit: 3, dates: $dates } { route: 216000061, stop: 121000929, limit: 3, dates: $dates } { route: 216000061, stop: 121000974, limit: 3, dates: $dates } { route: 216000061, stop: 121000970, limit: 3, dates: $dates } { route: 216000061, stop: 121000220, limit: 3, dates: $dates } { route: 216000043, stop: 216000719, limit: 3, dates: $dates } { route: 216000043, stop: 121000060, limit: 3, dates: $dates } { route: 216000043, stop: 121000929, limit: 3, dates: $dates } { route: 216000043, stop: 121000974, limit: 3, dates: $dates } { route: 216000043, stop: 121000970, limit: 3, dates: $dates } { route: 216000043, stop: 121000220, limit: 3, dates: $dates } { route: 216000026, stop: 216000719, limit: 3, dates: $dates } { route: 216000026, stop: 121000060, limit: 3, dates: $dates } { route: 216000026, stop: 121000929, limit: 3, dates: $dates } { route: 216000026, stop: 121000974, limit: 3, dates: $dates } { route: 216000026, stop: 121000970, limit: 3, dates: $dates } { route: 216000026, stop: 121000220, limit: 3, dates: $dates } { route: 216000096, stop: 216000719, limit: 3, dates: $dates } { route: 216000096, stop: 121000060, limit: 3, dates: $dates } { route: 216000096, stop: 121000929, limit: 3, dates: $dates } { route: 216000096, stop: 121000974, limit: 3, dates: $dates } { route: 216000096, stop: 121000970, limit: 3, dates: $dates } { route: 216000096, stop: 121000220, limit: 3, dates: $dates } { route: 216000104, stop: 216000070, limit: 3, dates: $dates } { route: 216000104, stop: 202000208, limit: 3, dates: $dates } { route: 200000015, stop: 216000070, limit: 3, dates: $dates } { route: 200000015, stop: 202000208, limit: 3, dates: $dates } { route: 216000075, stop: 216000759, limit: 3, dates: $dates } { route: 216000075, stop: 213000487, limit: 3, dates: $dates } { route: 216000075, stop: 216000117, limit: 3, dates: $dates } { route: 216000016, stop: 216000152, limit: 3, dates: $dates } ] ) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime } log { __typename date time vehicle } } }"#
+      #"query BusRealtimePageQuery($language: String!, $dates: [Date!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus( input: [ { route: 216000068, stop: 216000138, limit: 3, dates: $dates } { route: 216000068, stop: 216000383, limit: 3, dates: $dates } { route: 216000068, stop: 216000381, limit: 3, dates: $dates } { route: 216000068, stop: 216000379, limit: 3, dates: $dates } { route: 216000068, stop: 216000378, limit: 3, dates: $dates } { route: 216000061, stop: 216000383, limit: 3, dates: $dates } { route: 216000061, stop: 216000381, limit: 3, dates: $dates } { route: 216000061, stop: 216000379, limit: 3, dates: $dates } { route: 216000061, stop: 216000378, limit: 3, dates: $dates } { route: 216000061, stop: 121000060, limit: 3, dates: $dates } { route: 216000061, stop: 121000929, limit: 3, dates: $dates } { route: 216000061, stop: 121000974, limit: 3, dates: $dates } { route: 216000061, stop: 121000970, limit: 3, dates: $dates } { route: 216000061, stop: 121000220, limit: 3, dates: $dates } { route: 216000043, stop: 216000719, limit: 3, dates: $dates } { route: 216000043, stop: 216000048, limit: 3, dates: $dates } { route: 216000043, stop: 121000060, limit: 3, dates: $dates } { route: 216000043, stop: 121000929, limit: 3, dates: $dates } { route: 216000043, stop: 121000974, limit: 3, dates: $dates } { route: 216000043, stop: 121000970, limit: 3, dates: $dates } { route: 216000043, stop: 121000220, limit: 3, dates: $dates } { route: 216000026, stop: 216000719, limit: 3, dates: $dates } { route: 216000026, stop: 216000048, limit: 3, dates: $dates } { route: 216000026, stop: 121000060, limit: 3, dates: $dates } { route: 216000026, stop: 121000929, limit: 3, dates: $dates } { route: 216000026, stop: 121000974, limit: 3, dates: $dates } { route: 216000026, stop: 121000970, limit: 3, dates: $dates } { route: 216000026, stop: 121000220, limit: 3, dates: $dates } { route: 216000096, stop: 216000719, limit: 3, dates: $dates } { route: 216000096, stop: 216000048, limit: 3, dates: $dates } { route: 216000096, stop: 121000060, limit: 3, dates: $dates } { route: 216000096, stop: 121000929, limit: 3, dates: $dates } { route: 216000096, stop: 121000974, limit: 3, dates: $dates } { route: 216000096, stop: 121000970, limit: 3, dates: $dates } { route: 216000096, stop: 121000220, limit: 3, dates: $dates } { route: 216000104, stop: 216000070, limit: 3, dates: $dates } { route: 216000104, stop: 202000208, limit: 3, dates: $dates } { route: 200000015, stop: 216000070, limit: 3, dates: $dates } { route: 200000015, stop: 202000208, limit: 3, dates: $dates } { route: 216000075, stop: 216000759, limit: 3, dates: $dates } { route: 216000075, stop: 213000487, limit: 3, dates: $dates } { route: 216000075, stop: 216000117, limit: 3, dates: $dates } { route: 216000016, stop: 216000152, limit: 3, dates: $dates } ] ) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime } log { __typename date time vehicle } } }"#
     ))
 
   public var language: String
@@ -79,6 +79,11 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         "dates": .variable("dates")
       ], [
         "route": 216000061,
+        "stop": 216000378,
+        "limit": 3,
+        "dates": .variable("dates")
+      ], [
+        "route": 216000061,
         "stop": 121000060,
         "limit": 3,
         "dates": .variable("dates")
@@ -105,6 +110,11 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
       ], [
         "route": 216000043,
         "stop": 216000719,
+        "limit": 3,
+        "dates": .variable("dates")
+      ], [
+        "route": 216000043,
+        "stop": 216000048,
         "limit": 3,
         "dates": .variable("dates")
       ], [
@@ -135,6 +145,11 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
       ], [
         "route": 216000026,
         "stop": 216000719,
+        "limit": 3,
+        "dates": .variable("dates")
+      ], [
+        "route": 216000026,
+        "stop": 216000048,
         "limit": 3,
         "dates": .variable("dates")
       ], [
@@ -165,6 +180,11 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
       ], [
         "route": 216000096,
         "stop": 216000719,
+        "limit": 3,
+        "dates": .variable("dates")
+      ], [
+        "route": 216000096,
+        "stop": 216000048,
         "limit": 3,
         "dates": .variable("dates")
       ], [

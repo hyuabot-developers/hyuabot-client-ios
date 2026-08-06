@@ -372,7 +372,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             )
             // Seoul bus section 1 (3102) — primary stop widened to campus or one of 5 Seoul-bound stops
             let seoulFirstStopID = (try? BusRealtimeData.shared.seoulFirstSelectedStopID.value()) ?? 216_000_379
-            let seoulFirstSecondaryStop: Int32 = seoulRemoteStops.contains(seoulFirstStopID) ? 216_000_379 : seoulTarget.stopID
+            let seoulFirstSecondaryStop: Int32 = seoulRemoteStops.contains(seoulFirstStopID) ? 216_000_378 : seoulTarget.stopID
             let seoulFromCampus = result.first(where: { $0.stop.seq == seoulFirstStopID && $0.route.seq == 216_000_061 })
             BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(
                 seoulFromCampus.map { item in
@@ -390,7 +390,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             )
             // Seoul bus section 2 (3100/3101/3100N) — primary stop widened to main gate or Seoul-bound stops
             let seoulSecondStopID = (try? BusRealtimeData.shared.seoulSecondSelectedStopID.value()) ?? 216_000_719
-            let seoulSecondSecondaryStop: Int32 = seoulRemoteStops.contains(seoulSecondStopID) ? 216_000_379 : seoulTarget.stopID
+            let seoulSecondSecondaryStop: Int32 = seoulRemoteStops.contains(seoulSecondStopID) ? 216_000_048 : seoulTarget.stopID
             let gunpoFromCampus = result
                 .filter {
                     $0.stop

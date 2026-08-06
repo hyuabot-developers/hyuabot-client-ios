@@ -15,7 +15,7 @@ enum BusTravelTimeEstimator {
 
     /// Durations further apart than this are treated as a mismatched/wrapped-route pairing, not a real trip.
     private static let maxPlausibleDurationMinutes: Double = 180
-    private static let timeOfDayWindows: [Double] = [30, 60]
+    private static let timeOfDayWindows: [Double] = [30, 60, 120]
 
     static func secondaryArrivalTime(
         primaryArrivalTime: Api.LocalTime,
