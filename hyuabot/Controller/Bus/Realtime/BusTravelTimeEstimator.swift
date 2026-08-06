@@ -19,8 +19,8 @@ enum BusTravelTimeEstimator {
 
     static func secondaryArrivalTime(
         primaryArrivalTime: Api.LocalTime,
-        primaryLogs: [BusRealtimePageQuery.Data.Bus.Log],
-        secondaryLogs: [BusRealtimePageQuery.Data.Bus.Log]
+        primaryLogs: [BusSecondaryEtaLogQuery.Data.Bus.Log],
+        secondaryLogs: [BusSecondaryEtaLogQuery.Data.Bus.Log]
     ) -> Api.LocalTime? {
         let samples = travelDurationSamples(primaryLogs: primaryLogs, secondaryLogs: secondaryLogs)
         guard !samples.isEmpty else { return nil }
@@ -36,8 +36,8 @@ enum BusTravelTimeEstimator {
     }
 
     private static func travelDurationSamples(
-        primaryLogs: [BusRealtimePageQuery.Data.Bus.Log],
-        secondaryLogs: [BusRealtimePageQuery.Data.Bus.Log]
+        primaryLogs: [BusSecondaryEtaLogQuery.Data.Bus.Log],
+        secondaryLogs: [BusSecondaryEtaLogQuery.Data.Bus.Log]
     ) -> [Sample] {
         let secondaryByDate = Dictionary(grouping: secondaryLogs, by: \.date)
         var samples: [Sample] = []

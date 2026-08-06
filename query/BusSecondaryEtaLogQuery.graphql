@@ -1,11 +1,4 @@
-query BusRealtimePageQuery($language: String!, $dates: [Date!]!) {
-    notices(input: {language: $language, category: "버스"}) {
-        notices {
-            title
-            url
-            expiredAt
-        }
-    },
+query BusSecondaryEtaLogQuery($dates: [Date!]!) {
     bus (
         input: [
             { route: 216000068, stop: 216000138, limit: 3, dates: $dates },
@@ -57,17 +50,12 @@ query BusRealtimePageQuery($language: String!, $dates: [Date!]!) {
             { route: 216000016, stop: 216000152, limit: 3, dates: $dates },
         ]
     ) {
-        route { seq, name }
-        stop { seq, latitude, longitude }
-        order
-        arrival {
-            stops
-            seats
-            minutes
-            lowFloor
-            isRealtime
+        route { seq }
+        stop { seq }
+        log {
+            date
             time
-            arrivalTime
+            vehicle
         }
     }
 }
