@@ -1,0 +1,120 @@
+name: Sync Changelog to Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - hyuabot.xcodeproj/project.pbxproj
+
+concurrency:
+  group: ios-sync-changelog
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version change
+        id: version
+        run: |
+          NEW_VERSION=$(grep -m1 'MARKETING_VERSION' hyuabot.xcodeproj/project.pbxproj | sed -E 's/.*MARKETING_VERSION = ([^;]+);/\1/' | tr -d ' ')
+          OLD_VERSION=$(git show HEAD^:hyuabot.xcodeproj/project.pbxproj 2>/dev/null | grep -m1 'MARKETING_VERSION' | sed -E 's/.*MARKETING_VERSION = ([^;]+);/\1/' | tr -d ' ' || echo "")
+          if [ "$NEW_VERSION" = "$OLD_VERSION" ] || [ -z "$NEW_VERSION" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find previous version-bump commit
+        if: steps.version.outputs.changed == 'true'
+        id: range
+        run: |
+          PREV_COMMIT=$(git log --skip=1 -n 1 --format=%H -- hyuabot.xcodeproj/project.pbxproj)
+          if [ -z "$PREV_COMMIT" ]; then
+            PREV_COMMIT=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "prev=$PREV_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Build changelog body
+        if: steps.version.outputs.changed == 'true'
+        id: body
+        run: |
+          git log ${{ steps.range.outputs.prev }}..HEAD --no-merges --format='%s' \
+            | grep -Eiv '^(chore: )?(bump|unify)( app)?( watch,)?( and watch)?( and widget)? version' \
+            > /tmp/commits.txt || true
+
+          {
+            echo 'body<<CHANGELOG_EOF'
+
+            FEAT=$(grep -iE '^feat' /tmp/commits.txt | sed -E 's/^feat(\([^)]*\))?:? ?/- /I')
+            if [ -n "$FEAT" ]; then
+              echo '### 새로운 기능'
+              echo "$FEAT"
+              echo
+            fi
+
+            FIX=$(grep -iE '^fix' /tmp/commits.txt | sed -E 's/^fix(\([^)]*\))?:? ?/- /I')
+            if [ -n "$FIX" ]; then
+              echo '### 버그 수정'
+              echo "$FIX"
+              echo
+            fi
+
+            OTHER=$(grep -ivE '^(feat|fix)' /tmp/commits.txt | sed -E 's/^[a-zA-Z]+(\([^)]*\))?:? ?/- /')
+            if [ -n "$OTHER" ]; then
+              echo '### 기타 변경 사항'
+              echo "$OTHER"
+              echo
+            fi
+
+            echo 'CHANGELOG_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout docs site
+        if: steps.version.outputs.changed == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: hyuabot-developers/hyuabot-developers.github.io
+          token: ${{ secrets.DOCS_SYNC_TOKEN }}
+          path: docs-site
+
+      - name: Write changelog entry
+        if: steps.version.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BODY: ${{ steps.body.outputs.body }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          FILE="docs-site/changelog/ios/${DATE}-v${VERSION}.md"
+          {
+            echo '---'
+            echo "slug: v${VERSION}"
+            echo "title: v${VERSION}"
+            echo 'authors: []'
+            echo 'tags: [ios]'
+            echo '---'
+            echo
+            echo "$BODY"
+          } > "$FILE"
+
+      - name: Commit and push
+        if: steps.version.outputs.changed == 'true'
+        working-directory: docs-site
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "hyuabot-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add changelog/ios
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "docs: add iOS v${VERSION} changelog"
+            git push
+          fi
