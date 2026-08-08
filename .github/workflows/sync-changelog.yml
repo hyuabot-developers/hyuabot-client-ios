@@ -35,7 +35,7 @@ jobs:
         id: body
         run: |
           git log ${{ steps.range.outputs.prev }}..HEAD --no-merges --format='%s' \
-            | grep -Eiv '^(chore: )?(bump|unify)( app)?( watch,)?( and watch)?( and widget)? version' \
+            | grep -Eiv '^(chore: )?(bump|unify).*version' \
             > /tmp/commits.txt || true
 
           {
