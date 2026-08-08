@@ -25,7 +25,7 @@ jobs:
       - name: Find previous version-bump commit
         id: range
         run: |
-          PREV_COMMIT=$(git log --skip=1 -n 1 --format=%H -- hyuabot.xcodeproj/project.pbxproj)
+          PREV_COMMIT=$(git log --no-merges --skip=1 -n 1 --format=%H -i -E --grep='^(chore: )?(bump|unify).*version')
           if [ -z "$PREV_COMMIT" ]; then
             PREV_COMMIT=$(git rev-list --max-parents=0 HEAD)
           fi
