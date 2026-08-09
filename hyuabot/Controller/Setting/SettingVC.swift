@@ -150,15 +150,14 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
 
     private func openHelp() {
         let lang = Bundle.main.preferredLocalizations.first ?? "ko"
-        let localePath: String
-        if lang.hasPrefix("en") {
-            localePath = "en/"
+        let localePath = if lang.hasPrefix("en") {
+            "en/"
         } else if lang.hasPrefix("ja") {
-            localePath = "ja/"
+            "ja/"
         } else if lang.hasPrefix("zh") {
-            localePath = "zh-Hans/"
+            "zh-Hans/"
         } else {
-            localePath = ""
+            ""
         }
         guard let url = URL(string: "https://hyuabot-developers.github.io/\(localePath)docs/ios") else { return }
         let viewController = SFSafariViewController(url: url)
