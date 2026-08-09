@@ -153,7 +153,7 @@ class SettingCellView: UITableViewCell {
         } else if title == "setting.language" {
             arrowImageView.isHidden = false
             selectionStyle = .default
-        } else if title == "setting.privacy_policy" || title == "setting.open_source_licenses" {
+        } else if title == "setting.help" || title == "setting.privacy_policy" || title == "setting.open_source_licenses" {
             arrowImageView.isHidden = false
             selectionStyle = .default
         } else if title == "setting.analytics" {
