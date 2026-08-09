@@ -8,6 +8,7 @@ class SettingVC: UIViewController {
         "globe",
         "chart.bar.fill",
         "questionmark.circle",
+        "book.fill",
         "hand.raised.fill",
         "doc.text.fill",
         "person.circle",
@@ -19,6 +20,7 @@ class SettingVC: UIViewController {
         "setting.language",
         "setting.analytics",
         "setting.coachmark.reset",
+        "setting.help",
         "setting.privacy_policy",
         "setting.open_source_licenses",
         "setting.developer",
@@ -30,6 +32,7 @@ class SettingVC: UIViewController {
         "setting.language",
         "setting.analytics",
         "setting.coachmark.reset",
+        "setting.help",
         "setting.privacy_policy",
         "setting.open_source_licenses",
         "setting.developer",
@@ -133,6 +136,8 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
             openAppSetting()
         } else if titles[indexPath.row] == "setting.coachmark.reset" {
             resetCoachMarks()
+        } else if titles[indexPath.row] == "setting.help" {
+            openHelp()
         } else if titles[indexPath.row] == "setting.privacy_policy" {
             openPrivacyPolicy()
         } else if titles[indexPath.row] == "setting.open_source_licenses" {
@@ -141,6 +146,24 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
             navigationController?.pushViewController(viewController, animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    private func openHelp() {
+        let lang = Bundle.main.preferredLocalizations.first ?? "ko"
+        let localePath: String
+        if lang.hasPrefix("en") {
+            localePath = "en/"
+        } else if lang.hasPrefix("ja") {
+            localePath = "ja/"
+        } else if lang.hasPrefix("zh") {
+            localePath = "zh-Hans/"
+        } else {
+            localePath = ""
+        }
+        guard let url = URL(string: "https://hyuabot-developers.github.io/\(localePath)docs/ios") else { return }
+        let viewController = SFSafariViewController(url: url)
+        viewController.dismissButtonStyle = .close
+        present(viewController, animated: true)
     }
 
     private func openPrivacyPolicy() {
