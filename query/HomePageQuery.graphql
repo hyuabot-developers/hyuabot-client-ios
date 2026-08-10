@@ -1,5 +1,6 @@
 query HomePageQuery(
     $language: String!
+    $subwayLanguage: String!
     $after: LocalTime
     $weekday: String!
     $date: Date!
@@ -86,7 +87,7 @@ query HomePageQuery(
             isRealtime
         }
     }
-    subway(input: { language: $language, keys: [
+    subway(input: { language: $subwayLanguage, keys: [
         { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
         { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
         { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 },

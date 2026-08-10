@@ -8,6 +8,17 @@ final class LanguageManager {
     private let suggestionShownKey = "languageSuggestionShownV1"
     private let hasLaunchedKey = "appHasLaunched"
 
+    var apiLanguageTag: String {
+        Self.apiLanguageTag(for: Bundle.main.preferredLocalizations.first ?? "ko")
+    }
+
+    static func apiLanguageTag(for localization: String) -> String {
+        if localization.hasPrefix("ko") { return "ko" }
+        if localization.hasPrefix("ja") { return "ja" }
+        if localization.hasPrefix("zh") { return "zh-Hans" }
+        return "en"
+    }
+
     var isFirstLaunch: Bool {
         let first = !UserDefaults.standard.bool(forKey: hasLaunchedKey)
         if first { UserDefaults.standard.set(true, forKey: hasLaunchedKey) }

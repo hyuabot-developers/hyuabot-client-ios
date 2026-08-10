@@ -2817,6 +2817,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             let response = try? await Network.shared.client.fetch(
                 query: HomePageQuery(
                     language: currentNoticeLanguage(),
+                    subwayLanguage: LanguageManager.shared.apiLanguageTag,
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
                     weekday: weekday,
                     date: mealPeriod.queryDate.toLocalDateString(),
