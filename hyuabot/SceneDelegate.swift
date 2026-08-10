@@ -40,11 +40,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         showLanguageSuggestionIfNeeded()
 
         if let urlContext = connectionOptions.urlContexts.first {
-            handleDeepLink(urlContext.url)
+            handleIncomingURL(urlContext.url)
         } else if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
                   let url = userActivity.webpageURL
         {
-            handleDeepLink(url)
+            handleIncomingURL(url)
         } else if let shortcutItem = connectionOptions.shortcutItem {
             handleShortcut(shortcutItem)
         }
@@ -60,15 +60,130 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
-            handleDeepLink(url)
+            handleIncomingURL(url)
         }
     }
 
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
               let url = userActivity.webpageURL else { return }
+        handleIncomingURL(url)
+    }
+
+    private func handleIncomingURL(_ url: URL) {
+        #if DEBUG
+            if handleDebugDeepLink(url) { return }
+        #endif
         handleDeepLink(url)
     }
+
+    #if DEBUG
+        private func handleDebugDeepLink(_ url: URL) -> Bool {
+            guard url.scheme == "hyuabot", url.host == "debug",
+                  let route = url.pathComponents.dropFirst().first else { return false }
+
+            let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
+            if handleDebugPageRoute(route, params: params) { return true }
+
+            guard let rootVC = window?.rootViewController as? RootVC else { return true }
+            return handleDebugOverlayRoute(route, rootVC: rootVC, params: params)
+        }
+
+        private func handleDebugPageRoute(_ route: String, params: [URLQueryItem]?) -> Bool {
+            let pageRoutes = [
+                "home", "shuttle", "bus", "subway", "cafeteria", "reading-room",
+                "map", "contact", "calendar", "setting", "campus", "inquiry"
+            ]
+            guard pageRoutes.contains(route) else { return false }
+
+            var components = URLComponents()
+            components.scheme = "hyuabot"
+            components.host = route
+            components.queryItems = params
+            if let pageURL = components.url {
+                handleDeepLink(pageURL)
+            }
+            return true
+        }
+
+        private func handleDebugOverlayRoute(
+            _ route: String,
+            rootVC: RootVC,
+            params: [URLQueryItem]?
+        ) -> Bool {
+            let query = { (name: String) -> String? in
+                params?.first(where: { $0.name == name })?.value
+            }
+            let int = { (name: String, fallback: Int32) -> Int32 in
+                query(name).flatMap(Int32.init) ?? fallback
+            }
+
+            let topViewController = rootVC.selectedViewController?.presentedViewController
+                ?? (rootVC.selectedViewController as? UINavigationController)?.topViewController
+
+            switch route {
+            case "home-quick-settings":
+                rootVC.selectedViewController = rootVC.shuttleNC
+                rootVC.shuttleNC.showHome(animated: false)
+                (rootVC.shuttleNC.topViewController as? TodayHomeVC)?.presentDebugQuickSettings()
+
+            case "shuttle-quick-settings":
+                rootVC.selectedViewController = rootVC.shuttleNC
+                rootVC.shuttleNC.openShuttle(stopID: query("stop"), destinationID: query("to"))
+                (rootVC.shuttleNC.topViewController as? ShuttleRealtimeVC)?.presentDebugQuickSettings()
+
+            case "bus-quick-settings":
+                rootVC.selectedViewController = rootVC.busNC
+                (rootVC.busNC.topViewController as? BusRealtimeVC)?.presentDebugQuickSettings()
+
+            case "shuttle-stop-sheet":
+                rootVC.selectedViewController = rootVC.shuttleNC
+                rootVC.shuttleNC.openShuttle(stopID: query("stop"), destinationID: query("to"))
+                let stop = query("stop") == "station" ? ShuttleStopEnum.station : .dormiotryOut
+                (rootVC.shuttleNC.topViewController as? ShuttleRealtimeVC)?.presentDebugStopSheet(stop)
+
+            case "bus-departure-sheet":
+                rootVC.selectedViewController = rootVC.busNC
+                (rootVC.busNC.topViewController as? BusRealtimeVC)?.presentDebugDepartureLog(
+                    stopID: int("stopID", 216_000_383),
+                    routes: [int("routeID", 216_000_068)]
+                )
+
+            case "bus-stop-sheet":
+                rootVC.selectedViewController = rootVC.busNC
+                (rootVC.busNC.topViewController as? BusRealtimeVC)?.presentDebugBusStop(
+                    stopID: int("stopID", 216_000_383),
+                    routes: [int("routeID", 216_000_068)]
+                )
+
+            case "cafeteria-info-sheet":
+                rootVC.selectedViewController = rootVC.cafeteriaNC
+                (rootVC.cafeteriaNC.topViewController as? CafeteriaVC)?.presentDebugInfo(
+                    cafeteriaID: Int(int("cafeteriaID", 1))
+                )
+
+            case "map-building-sheet":
+                rootVC.openCampus(.map)
+                guard let top = rootVC.campusNC.topViewController else { return true }
+                let name = query("name") ?? "Debug Building"
+                guard let url = URL(string: query("url") ?? "https://hyuabot.app") else { return true }
+                let vc = BuildingVC(buildingName: name, url: url)
+                vc.modalPresentationStyle = .pageSheet
+                top.present(vc, animated: false)
+
+            case "web-sheet":
+                guard let top = topViewController else { return true }
+                guard let url = URL(string: query("url") ?? "https://hyuabot.app") else { return true }
+                let vc = WebViewVC(url: url)
+                vc.modalPresentationStyle = .pageSheet
+                top.present(vc, animated: false)
+
+            default:
+                return true
+            }
+            return true
+        }
+    #endif
 
     private func handleDeepLink(_ url: URL) {
         guard let rootVC = window?.rootViewController as? RootVC,
@@ -120,6 +235,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         case "calendar":
             rootVC.openCampus(.calendar)
+
+        case "inquiry":
+            rootVC.openCampus(.inquiry)
 
         case "setting":
             rootVC.openCampus(.setting)

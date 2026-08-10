@@ -1445,4 +1445,14 @@ extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         checkUserDeviceLocationServiceAuthorization()
     }
+
+    #if DEBUG
+        func presentDebugQuickSettings() {
+            openQuickSettings()
+        }
+
+        func presentDebugStopSheet(_ stop: ShuttleStopEnum) {
+            openShuttleStopVC(stop)
+        }
+    #endif
 } // swiftlint:disable:this file_length
