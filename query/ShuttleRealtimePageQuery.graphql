@@ -66,7 +66,7 @@ query ShuttleRealtimePageQuery(
             }
         }
     }
-    subway(input: { keys: [
+    subway(input: { language: $language, keys: [
         { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
         { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
         { stationID: "K450", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },

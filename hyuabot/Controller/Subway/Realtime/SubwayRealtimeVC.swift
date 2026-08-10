@@ -222,7 +222,10 @@ class SubwayRealtimeVC: UIViewController {
         let weekday = (component == 1 || component == 7) ? "weekends" : "weekdays"
         Task {
             let response = try? await Network.shared.client.fetch(
-                query: SubwayRealtimePageQuery(weekday: weekday),
+                query: SubwayRealtimePageQuery(
+                    weekday: weekday,
+                    language: Locale.current.language.languageCode?.identifier ?? "ko"
+                ),
                 cachePolicy: .networkOnly
             )
             await MainActor.run {

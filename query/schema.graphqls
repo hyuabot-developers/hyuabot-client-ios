@@ -761,7 +761,8 @@ type SubwayArrivalGroup {
 
 """ 전철 정보를 반환하는 쿼리입니다."""
 input SubwayInput {
-  keys: [SubwayStationInput!]!
+    keys: [SubwayStationInput!]!
+    language: String
 }
 
 type SubwayOriginTerminal {

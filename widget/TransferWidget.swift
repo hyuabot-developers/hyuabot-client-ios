@@ -138,14 +138,7 @@ struct TransferProvider: TimelineProvider {
     private func fetchEntry() async -> TransferEntry {
         let fetcher = WidgetLocationFetcher()
         guard let location = await fetcher.getCurrentLocation() else {
-            return TransferEntry(
-                date: .now,
-                stopDisplayName: "",
-                stopID: "",
-                shuttleGroups: [],
-                transitArrivals: [],
-                errorState: .noLocation
-            )
+            return emptyEntry(errorState: .noLocation)
         }
 
         let timeFormatter = DateFormatter()
@@ -160,31 +153,18 @@ struct TransferProvider: TimelineProvider {
                 query: ShuttleTransferWidgetQuery(
                     after: GraphQLNullable(stringLiteral: currentTimeStr),
                     weekday: widgetWeekday(),
-                    logDates: .some(logDates)
+                    logDates: .some(logDates),
+                    language: Locale.current.language.languageCode?.identifier ?? "ko"
                 )
             )
 
             guard let data = response.data else {
-                return TransferEntry(
-                    date: .now,
-                    stopDisplayName: "",
-                    stopID: "",
-                    shuttleGroups: [],
-                    transitArrivals: [],
-                    errorState: .noData
-                )
+                return emptyEntry(errorState: .noData)
             }
 
             let stops = data.shuttle.stops
             guard !stops.isEmpty else {
-                return TransferEntry(
-                    date: .now,
-                    stopDisplayName: "",
-                    stopID: "",
-                    shuttleGroups: [],
-                    transitArrivals: [],
-                    errorState: .noData
-                )
+                return emptyEntry(errorState: .noData)
             }
 
             let nearestStop = stops.min {
@@ -224,8 +204,19 @@ struct TransferProvider: TimelineProvider {
                 errorState: .none
             )
         } catch {
-            return TransferEntry(date: .now, stopDisplayName: "", stopID: "", shuttleGroups: [], transitArrivals: [], errorState: .noData)
+            return emptyEntry(errorState: .noData)
         }
+    }
+
+    private func emptyEntry(errorState: ShuttleErrorState) -> TransferEntry {
+        TransferEntry(
+            date: .now,
+            stopDisplayName: "",
+            stopID: "",
+            shuttleGroups: [],
+            transitArrivals: [],
+            errorState: errorState
+        )
     }
 
     private func buildTransit(for stopID: String, data: ShuttleTransferWidgetQuery.Data) -> [TransitArrival] {

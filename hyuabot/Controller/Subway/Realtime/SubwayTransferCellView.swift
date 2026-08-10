@@ -275,30 +275,6 @@ class SubwayTransferCellView: UITableViewCell {
     }
 
     func getDestinationLabelText(_ stationID: String, fallback: String) -> String {
-        var stationName = ""
-        switch stationID {
-        case "K209": stationName = String(localized: "subway.station.k209")
-        case "K210": stationName = String(localized: "subway.station.k210")
-        case "K233": stationName = String(localized: "subway.station.k233")
-        case "K246": stationName = String(localized: "subway.station.k246")
-        case "K258": stationName = String(localized: "subway.station.k258")
-        case "K272": stationName = String(localized: "subway.station.k272")
-        case "K409": stationName = String(localized: "subway.station.k409")
-        case "K411": stationName = String(localized: "subway.station.k411")
-        case "K419": stationName = String(localized: "subway.station.k419")
-        case "K433": stationName = String(localized: "subway.station.k433")
-        case "K443": stationName = String(localized: "subway.station.k443")
-        case "K444": stationName = String(localized: "subway.station.k444")
-        case "K453": stationName = String(localized: "subway.station.k453")
-        case "K456": stationName = String(localized: "subway.station.k456")
-        case "S07": stationName = String(localized: "subway.station.s07")
-        case "S11": stationName = String(localized: "subway.station.s11")
-        case "S16": stationName = String(localized: "subway.station.s16")
-        default:
-            let key = "subway.station.\(stationID.lowercased())"
-            let localized = String(localized: String.LocalizationValue(stringLiteral: key))
-            return localized == key ? fallback : localized
-        }
-        return stationName
+        fallback
     }
 }
