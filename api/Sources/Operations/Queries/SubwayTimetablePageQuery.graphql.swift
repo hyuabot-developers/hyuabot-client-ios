@@ -8,23 +8,27 @@ nonisolated public struct SubwayTimetablePageQuery: GraphQLQuery {
   public static let operationName: String = "SubwayTimetablePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayTimetablePageQuery($station: String!, $direction: [String!]!) { subway( input: { keys: [ { stationID: $station direction: $direction weekdays: ["weekdays", "weekends"] } ] } ) { __typename timetable { __typename weekday direction time terminal { __typename stationID name } } } }"#
+      #"query SubwayTimetablePageQuery($station: String!, $direction: [String!]!, $language: String!) { subway( input: { language: $language keys: [ { stationID: $station direction: $direction weekdays: ["weekdays", "weekends"] } ] } ) { __typename timetable { __typename weekday direction time terminal { __typename stationID name } } } }"#
     ))
 
   public var station: String
   public var direction: [String]
+  public var language: String
 
   public init(
     station: String,
-    direction: [String]
+    direction: [String],
+    language: String
   ) {
     self.station = station
     self.direction = direction
+    self.language = language
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "station": station,
-    "direction": direction
+    "direction": direction,
+    "language": language
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -33,11 +37,14 @@ nonisolated public struct SubwayTimetablePageQuery: GraphQLQuery {
 
     @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.Query }
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
-      .field("subway", [Subway].self, arguments: ["input": ["keys": [[
-        "stationID": .variable("station"),
-        "direction": .variable("direction"),
-        "weekdays": ["weekdays", "weekends"]
-      ]]]]),
+      .field("subway", [Subway].self, arguments: ["input": [
+        "language": .variable("language"),
+        "keys": [[
+          "stationID": .variable("station"),
+          "direction": .variable("direction"),
+          "weekdays": ["weekdays", "weekends"]
+        ]]
+      ]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
       SubwayTimetablePageQuery.Data.self

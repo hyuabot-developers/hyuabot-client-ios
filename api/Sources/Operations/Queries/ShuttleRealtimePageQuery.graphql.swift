@@ -8,7 +8,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: String!, $logDates: [Date!]) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 100, destination: 100 } } { name: "shuttlecock_o", limit: { order: 100, destination: 100 } } { name: "station", limit: { order: 100, destination: 100 } } { name: "terminal", limit: { order: 100, destination: 100 } } { name: "jungang_stn", limit: { order: 100, destination: 100 } } { name: "shuttlecock_i", limit: { order: 100, destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename latitude longitude name timetable { __typename order { __typename seq route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } subway( input: { keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K450" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 12, dates: $logDates } { route: 216000075, stop: 216000117, limit: 12, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops isRealtime } log { __typename date time } } }"#
+      #"query ShuttleRealtimePageQuery($language: String!, $after: LocalTime, $weekday: String!, $logDates: [Date!]) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 100, destination: 100 } } { name: "shuttlecock_o", limit: { order: 100, destination: 100 } } { name: "station", limit: { order: 100, destination: 100 } } { name: "terminal", limit: { order: 100, destination: 100 } } { name: "jungang_stn", limit: { order: 100, destination: 100 } } { name: "shuttlecock_i", limit: { order: 100, destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename latitude longitude name timetable { __typename order { __typename seq route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } subway( input: { language: $language keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K450" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 12, dates: $logDates } { route: 216000075, stop: 216000117, limit: 12, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops isRealtime } log { __typename date time } } }"#
     ))
 
   public var language: String
@@ -85,31 +85,34 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
         ]],
         "after": .variable("after")
       ]]),
-      .field("subway", [Subway].self, arguments: ["input": ["keys": [[
-        "stationID": "K449",
-        "direction": ["up", "down"],
-        "weekdays": [.variable("weekday")],
-        "limit": 12
-      ], [
-        "stationID": "K251",
-        "direction": ["up", "down"],
-        "weekdays": [.variable("weekday")],
-        "limit": 12
-      ], [
-        "stationID": "K450",
-        "direction": ["up", "down"],
-        "weekdays": [.variable("weekday")],
-        "limit": 12
-      ], [
-        "stationID": "K258",
-        "direction": ["down"],
-        "weekdays": [.variable("weekday")],
-        "limit": 12
-      ], [
-        "stationID": "S26",
-        "direction": ["up"],
-        "weekdays": [.variable("weekday")]
-      ]]]]),
+      .field("subway", [Subway].self, arguments: ["input": [
+        "language": .variable("language"),
+        "keys": [[
+          "stationID": "K449",
+          "direction": ["up", "down"],
+          "weekdays": [.variable("weekday")],
+          "limit": 12
+        ], [
+          "stationID": "K251",
+          "direction": ["up", "down"],
+          "weekdays": [.variable("weekday")],
+          "limit": 12
+        ], [
+          "stationID": "K450",
+          "direction": ["up", "down"],
+          "weekdays": [.variable("weekday")],
+          "limit": 12
+        ], [
+          "stationID": "K258",
+          "direction": ["down"],
+          "weekdays": [.variable("weekday")],
+          "limit": 12
+        ], [
+          "stationID": "S26",
+          "direction": ["up"],
+          "weekdays": [.variable("weekday")]
+        ]]
+      ]]),
       .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": [[
         "route": 216000075,
         "stop": 216000759,

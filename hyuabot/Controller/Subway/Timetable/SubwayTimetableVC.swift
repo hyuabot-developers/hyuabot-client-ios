@@ -48,64 +48,21 @@ class SubwayTimetableVC: UIViewController {
 
     private func fetchSubwayTimetable() {
         SubwayTimetableData.shared.isLoading.onNext(true)
-        if heading == .up {
-            if timetableTitle == "subway.realtime.section.4.up" {
-                Task {
-                    let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(
-                        station: "K449",
-                        direction: ["up"]
-                    ))
-                    await MainActor.run {
-                        if let timetable = response?.data?.subway.first?.timetable {
-                            SubwayTimetableData.shared.timetable.onNext(timetable)
-                        } else {
-                            SubwayTimetableData.shared.isLoading.onNext(false)
-                        }
-                    }
-                }
-            } else if timetableTitle == "subway.realtime.section.suin.up" {
-                Task {
-                    let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(
-                        station: "K251",
-                        direction: ["up"]
-                    ))
-                    await MainActor.run {
-                        if let timetable = response?.data?.subway.first?.timetable {
-                            SubwayTimetableData.shared.timetable.onNext(timetable)
-                        } else {
-                            SubwayTimetableData.shared.isLoading.onNext(false)
-                        }
-                    }
-                }
-            }
-        } else {
-            if timetableTitle == "subway.realtime.section.4.down" {
-                Task {
-                    let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(
-                        station: "K449",
-                        direction: ["down"]
-                    ))
-                    await MainActor.run {
-                        if let timetable = response?.data?.subway.first?.timetable {
-                            SubwayTimetableData.shared.timetable.onNext(timetable)
-                        } else {
-                            SubwayTimetableData.shared.isLoading.onNext(false)
-                        }
-                    }
-                }
-            } else if timetableTitle == "subway.realtime.section.suin.down" {
-                Task {
-                    let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(
-                        station: "K251",
-                        direction: ["down"]
-                    ))
-                    await MainActor.run {
-                        if let timetable = response?.data?.subway.first?.timetable {
-                            SubwayTimetableData.shared.timetable.onNext(timetable)
-                        } else {
-                            SubwayTimetableData.shared.isLoading.onNext(false)
-                        }
-                    }
+        let isLine4 = timetableTitle == "subway.realtime.section.4.up"
+            || timetableTitle == "subway.realtime.section.4.down"
+        let station = isLine4 ? "K449" : "K251"
+        let direction = heading == .up ? "up" : "down"
+        Task {
+            let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(
+                station: station,
+                direction: [direction],
+                language: Locale.current.language.languageCode?.identifier ?? "ko"
+            ))
+            await MainActor.run {
+                if let timetable = response?.data?.subway.first?.timetable {
+                    SubwayTimetableData.shared.timetable.onNext(timetable)
+                } else {
+                    SubwayTimetableData.shared.isLoading.onNext(false)
                 }
             }
         }

@@ -1,4 +1,4 @@
-query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!]) {
+query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!], $language: String!) {
     shuttle(input: {
         stops: [
             { name: "dormitory_o", limit: { order: 0, destination: 8 } },
@@ -22,7 +22,7 @@ query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates
             }
         }
     }
-    subway(input: { keys: [
+    subway(input: { language: $language, keys: [
         { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 },
         { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 }
     ]}) {

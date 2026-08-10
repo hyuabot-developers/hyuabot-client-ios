@@ -8,27 +8,31 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTransferWidgetQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!]) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 0, destination: 8 } } { name: "shuttlecock_o", limit: { order: 0, destination: 8 } } { name: "station", limit: { order: 0, destination: 8 } } { name: "terminal", limit: { order: 0, destination: 8 } } { name: "jungang_stn", limit: { order: 0, destination: 8 } } { name: "shuttlecock_i", limit: { order: 0, destination: 8 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename time } } } } } subway( input: { keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 2, dates: $logDates } { route: 216000075, stop: 216000117, limit: 2, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops } log { __typename date time } } }"#
+      #"query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!], $language: String!) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 0, destination: 8 } } { name: "shuttlecock_o", limit: { order: 0, destination: 8 } } { name: "station", limit: { order: 0, destination: 8 } } { name: "terminal", limit: { order: 0, destination: 8 } } { name: "jungang_stn", limit: { order: 0, destination: 8 } } { name: "shuttlecock_i", limit: { order: 0, destination: 8 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename time } } } } } subway( input: { language: $language keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 2, dates: $logDates } { route: 216000075, stop: 216000117, limit: 2, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops } log { __typename date time } } }"#
     ))
 
   public var after: GraphQLNullable<LocalTime>
   public var weekday: String
   public var logDates: GraphQLNullable<[Date]>
+  public var language: String
 
   public init(
     after: GraphQLNullable<LocalTime>,
     weekday: String,
-    logDates: GraphQLNullable<[Date]>
+    logDates: GraphQLNullable<[Date]>,
+    language: String
   ) {
     self.after = after
     self.weekday = weekday
     self.logDates = logDates
+    self.language = language
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "after": after,
     "weekday": weekday,
-    "logDates": logDates
+    "logDates": logDates,
+    "language": language
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -77,17 +81,20 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
         ]],
         "after": .variable("after")
       ]]),
-      .field("subway", [Subway].self, arguments: ["input": ["keys": [[
-        "stationID": "K449",
-        "direction": ["up", "down"],
-        "weekdays": [.variable("weekday")],
-        "limit": 1
-      ], [
-        "stationID": "K251",
-        "direction": ["up", "down"],
-        "weekdays": [.variable("weekday")],
-        "limit": 1
-      ]]]]),
+      .field("subway", [Subway].self, arguments: ["input": [
+        "language": .variable("language"),
+        "keys": [[
+          "stationID": "K449",
+          "direction": ["up", "down"],
+          "weekdays": [.variable("weekday")],
+          "limit": 1
+        ], [
+          "stationID": "K251",
+          "direction": ["up", "down"],
+          "weekdays": [.variable("weekday")],
+          "limit": 1
+        ]]
+      ]]),
       .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": [[
         "route": 216000075,
         "stop": 216000759,

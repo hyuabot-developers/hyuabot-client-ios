@@ -1261,9 +1261,7 @@ final class ShuttleTransferInfoView: UIView {
     }
 
     private func localizedStationName(stationID: String, fallback: String) -> String {
-        let nameKey = "subway.station.\(stationID.lowercased())"
-        let localized = String(localized: String.LocalizationValue(stringLiteral: nameKey))
-        return localized == nameKey ? fallback : localized
+        fallback
     }
 
     private func subwayDirection(_ direction: String) -> Int {
