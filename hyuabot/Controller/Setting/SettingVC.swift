@@ -166,7 +166,7 @@ extension SettingVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     private func openPrivacyPolicy() {
-        guard let url = URL(string: "https://jil8885.github.io/privacy_policy") else { return }
+        guard let url = URL(string: "https://hyuabot-developers.github.io/privacy-policy") else { return }
         let viewController = SFSafariViewController(url: url)
         viewController.dismissButtonStyle = .close
         present(viewController, animated: true)
