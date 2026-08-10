@@ -87,34 +87,6 @@
         }
       }
     },
-    "bus.action_bar.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus guide"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "バス利用案内"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "버스 이용 안내"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "公交使用指南"
-          }
-        }
-      }
-    },
     "bus.first.last.%@.%@.%@": {
       "localizations": {
         "en": {
@@ -983,35 +955,6 @@
         }
       }
     },
-    "bus.realtime.loading": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading bus arrival information"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "バス到着情報を読み込み中"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "도착 정보 불러오는 중..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在加载公交到达信息"
-          }
-        }
-      }
-    },
     "bus.realtime.low.floor": {
       "localizations": {
         "en": {
@@ -1288,35 +1231,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "7070/9090 (汉阳大入口)"
-          }
-        }
-      }
-    },
-    "bus.realtime.time.%lld.%lld": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Depart at %02lld:%02lld"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02lld時%02lld分 終点出発"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02lld시 %02lld분 종점 출발"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02lld时%02lld分 始发站出发"
           }
         }
       }
@@ -1685,34 +1599,6 @@
         }
       }
     },
-    "cafeteria.action_bar.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Meal sharing"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "食事メニュー共有"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "식단 공유"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "分享菜单"
-          }
-        }
-      }
-    },
     "cafeteria.breakfast": {
       "localizations": {
         "en": {
@@ -1765,35 +1651,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "晚餐"
-          }
-        }
-      }
-    },
-    "cafeteria.loading": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading Cafeteria Menu…"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "学食メニューを読み込み中"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "학식 메뉴 불러오는 중"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在加载食堂菜单"
           }
         }
       }
@@ -2074,35 +1931,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "已结束"
-          }
-        }
-      }
-    },
-    "cafeteria.status.has.menu": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Menu available"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "メニューあり"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "메뉴 있음"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "有菜单"
           }
         }
       }
@@ -2669,64 +2497,6 @@
         }
       }
     },
-    "calendar.section.month": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This Month"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今月の学事日程"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이번 달 학사일정"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本月学事日程"
-          }
-        }
-      }
-    },
-    "calendar.section.today": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今日"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "오늘"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今天"
-          }
-        }
-      }
-    },
     "calendar.section.upcoming": {
       "localizations": {
         "en": {
@@ -3032,34 +2802,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "请输入消息"
-          }
-        }
-      }
-    },
-    "inquiry.short": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inquiry"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "問い合わせ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "문의"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "咨询"
           }
         }
       }
@@ -4587,35 +4329,6 @@
         }
       }
     },
-    "coach.root.more.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "もっと見る"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "더보기"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更多"
-          }
-        }
-      }
-    },
     "coach.setting.campus.message": {
       "extractionState": "manual",
       "localizations": {
@@ -4844,122 +4557,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "班车替代路线信息"
-          }
-        }
-      }
-    },
-    "coach.shuttle.byDestination.message": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "When off, shows all departures in time order; when on, groups them by destination"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "オフにすると全行き先を時間順で、オンにすると行き先別にまとめて表示します"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "비활성화하면 모든 행선지를 출발 순서대로, 활성화하면 행선지별로 묶어서 보여줍니다"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "关闭时按时间顺序显示所有班车，开启时按目的地分组显示"
-          }
-        }
-      }
-    },
-    "coach.shuttle.byDestination.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sort by Destination"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "目的地別で表示"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "목적지별 정렬"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "按目的地排序"
-          }
-        }
-      }
-    },
-    "coach.shuttle.departureTime.message": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shows time remaining until departure when on. Turn off to see the exact departure time."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "オンのとき現在時刻からの残り時間を表示し、オフにすると正確な出発時刻を表示します。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "켜져 있으면 현재 시각 기준 남은 시간을, 끄면 정확한 출발 시각을 보여줍니다"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "开启时显示距当前时间的剩余时间，关闭后显示精确出发时间。"
-          }
-        }
-      }
-    },
-    "coach.shuttle.departureTime.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Departure Time"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "出発時刻"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "출발 시각"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "出发时间"
           }
         }
       }
@@ -5543,35 +5140,6 @@
         }
       }
     },
-    "coach.shuttle.transfer.other.message": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Switch to the dormitory or shuttlecock tab to view nearby subway and bus transfer info"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "寮またはシャトルコックタブに移動すると電車・バスの乗り換え情報を確認できます"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기숙사·셔틀콕 탭으로 이동하면 인근 전철·버스 환승 정보를 확인할 수 있습니다"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "切换到宿舍或接驳巴士站标签可查看附近地铁和公交换乘信息"
-          }
-        }
-      }
-    },
     "coach.shuttle.transfer.title": {
       "extractionState": "manual",
       "localizations": {
@@ -5597,64 +5165,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "换乘信息"
-          }
-        }
-      }
-    },
-    "coach.shuttle.widget.message": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add a shuttle bus or shuttle+transfer widget to your home screen for quick access"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シャトルバスまたはシャトル+乗り換えウィジェットをホーム画面に追加してすばやく確認できます"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "셔틀버스 및 셔틀버스+환승 정보를 홈 화면 위젯으로 추가하여 빠르게 확인할 수 있습니다"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "可在主屏幕添加班车或班车+换乘信息小组件以快速查看"
-          }
-        }
-      }
-    },
-    "coach.shuttle.widget.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Home Screen Widget"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ホーム画面ウィジェット"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "홈 화면 위젯"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "主屏幕小组件"
           }
         }
       }
@@ -6392,35 +5902,6 @@
         }
       }
     },
-    "event.header.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Event of month"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今月の学事日程"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이달의 학사일정"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本月学校日程"
-          }
-        }
-      }
-    },
     "event.version.loading": {
       "localizations": {
         "en": {
@@ -6449,35 +5930,6 @@
         }
       }
     },
-    "home.action_bar.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The home screen is new"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ホーム画面が新しくなりました"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "홈 화면이 새로워졌어요"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "首页焕新了"
-          }
-        }
-      }
-    },
     "home.alt.bus_direction": {
       "localizations": {
         "en": {
@@ -6502,35 +5954,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@方向"
-          }
-        }
-      }
-    },
-    "home.alt.direction.haesol": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ansan Haesol Elementary School"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "安山ヘソル小学校"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "안산해솔초등학교"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "安山海松小学"
           }
         }
       }
@@ -6587,35 +6010,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "常绿树站"
-          }
-        }
-      }
-    },
-    "home.alt.direction.sangnoksu_exit3_opposite": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sangnoksu Stn. Exit 3 Opposite"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "常緑樹駅3番出口向かい"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "상록수역3번출구건너편"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "常绿树站3号出口对面"
           }
         }
       }
@@ -6788,35 +6182,6 @@
         }
       }
     },
-    "home.badge.alternative": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alt."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "代替"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "대체"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "替代"
-          }
-        }
-      }
-    },
     "home.badge.free": {
       "localizations": {
         "en": {
@@ -6841,35 +6206,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "免费"
-          }
-        }
-      }
-    },
-    "home.badge.transfer": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "乗換"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "换乘"
           }
         }
       }
@@ -6902,35 +6238,6 @@
         }
       }
     },
-    "home.cafeteria.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eat now"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今食べる"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "지금 먹기"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "现在用餐"
-          }
-        }
-      }
-    },
     "home.check": {
       "localizations": {
         "en": {
@@ -6955,35 +6262,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "查看"
-          }
-        }
-      }
-    },
-    "home.destination.campus": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To campus"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "学校へ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "학교로"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "回学校"
           }
         }
       }
@@ -7069,35 +6347,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "汉大前"
-          }
-        }
-      }
-    },
-    "home.destination.terminal": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terminal"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ターミナル"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "예술인"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "客运站"
           }
         }
       }
@@ -7462,34 +6711,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "今天非常炎热"
-          }
-        }
-      }
-    },
-    "home.weather.precipitation.subtitle": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$d%% chance of precipitation · %2$.0f°C–%3$.0f°C today"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "降水確率 %1$d%%・今日 %2$.0f°C〜%3$.0f°C"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "강수 확률 %1$d%% · 오늘 %2$.0f°C~%3$.0f°C"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "降水概率 %1$d%% · 今日 %2$.0f°C～%3$.0f°C"
           }
         }
       }
@@ -7942,35 +7163,6 @@
         }
       }
     },
-    "home.legacy": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Previous screen"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "以前の画面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기존 화면"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "旧版页面"
-          }
-        }
-      }
-    },
     "home.loading": {
       "localizations": {
         "en": {
@@ -8139,34 +7331,6 @@
         }
       }
     },
-    "home.meal.tomorrow_breakfast": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tomorrow breakfast"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "明日の朝食"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "내일 조식"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "明天早餐"
-          }
-        }
-      }
-    },
     "home.minutes": {
       "localizations": {
         "en": {
@@ -8303,34 +7467,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "完整时刻表"
-          }
-        }
-      }
-    },
-    "home.movement.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Move now"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今すぐ移動"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "지금 이동"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "现在出发"
           }
         }
       }
@@ -8812,151 +7948,6 @@
         }
       }
     },
-    "home.route.campus": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Handaeap Station -> Shuttlecock -> Dormitory"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "漢大前駅 ▶ シャトルコック ▶ 寮"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한대앞역 ▶ 셔틀콕 ▶ 기숙사"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "汉大前站 ▶ Shuttlecock ▶ 宿舍"
-          }
-        }
-      }
-    },
-    "home.route.gwangmyeong": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dormitory -> Shuttlecock -> Yesulin -> Gwangmyeong Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "寮 ▶ シャトルコック ▶ 芸術人 ▶ 光明駅"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기숙사 ▶ 셔틀콕 ▶ 예술인 ▶ 광명역"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "宿舍 ▶ Shuttlecock ▶ 艺术人 ▶ 光明站"
-          }
-        }
-      }
-    },
-    "home.route.jungang": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dormitory -> Jungang Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "寮 ▶ 中央駅"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기숙사 ▶ 중앙역"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "宿舍 ▶ 中央站"
-          }
-        }
-      }
-    },
-    "home.route.station": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dormitory -> Shuttlecock -> Handaeap Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "寮 ▶ シャトルコック ▶ 漢大前駅"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기숙사 ▶ 셔틀콕 ▶ 한대앞역"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "宿舍 ▶ Shuttlecock ▶ 汉大前站"
-          }
-        }
-      }
-    },
-    "home.route.terminal": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dormitory -> Terminal"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "寮 ▶ ターミナル"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기숙사 ▶ 예술인"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "宿舍 ▶ 客运站"
-          }
-        }
-      }
-    },
     "home.shuttle.departure.title": {
       "localizations": {
         "en": {
@@ -9153,35 +8144,6 @@
         }
       }
     },
-    "home.transfer.bus50.available": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 transfer available"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番に乗り換え可"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번 환승 가능"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "可换乘50路"
-          }
-        }
-      }
-    },
     "home.transfer.bus50.badge": {
       "localizations": {
         "en": {
@@ -9206,63 +8168,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "50路"
-          }
-        }
-      }
-    },
-    "home.transfer.bus50.buffer": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+%d min"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+%d分"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+%d분"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+%d分钟"
-          }
-        }
-      }
-    },
-    "home.transfer.bus50.card.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Connect at Yesulin"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "芸術人で接続"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "예술인에서 50번 연결"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在艺术人换乘50路"
           }
         }
       }
@@ -9324,34 +8229,6 @@
         }
       }
     },
-    "home.transfer.bus50.log.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expected at %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 到着予定"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 도착 예정"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "预计%@到达"
-          }
-        }
-      }
-    },
     "home.transfer.bus50.realtime": {
       "extractionState": "stale",
       "localizations": {
@@ -9377,120 +8254,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "预计%@到达 · +%d分钟"
-          }
-        }
-      }
-    },
-    "home.transfer.bus50.realtime.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expected at %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 到着予定"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 도착 예정"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "预计%@到达"
-          }
-        }
-      }
-    },
-    "home.transfer.bus50.subtitle": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer to bus at Yesulin"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "芸術人でバスに乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "예술인에서 버스 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在艺术人换乘公交"
-          }
-        }
-      }
-    },
-    "home.transfer.bus50.tight": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 transfer is tight"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番への乗り換えはぎりぎり"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번 환승 빠듯"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "换乘50路较紧"
-          }
-        }
-      }
-    },
-    "home.transfer.bus50.usual": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usual Bus 50 transfer"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "通常の50番乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "평소 50번 연결"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "通常50路换乘"
           }
         }
       }
@@ -9915,34 +8678,6 @@
         }
       }
     },
-    "home.transfer.subway.choji.subtitle": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer at Choji Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "草芝駅で地下鉄に乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "초지역에서 전철 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在草芝站换乘地铁"
-          }
-        }
-      }
-    },
     "home.transfer.subway.connector": {
       "localizations": {
         "en": {
@@ -9995,64 +8730,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "乌耳岛"
-          }
-        }
-      }
-    },
-    "home.transfer.subway.oido.subtitle": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer at Oido Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "烏耳島駅で地下鉄に乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "오이도역에서 전철 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在乌耳岛站换乘地铁"
-          }
-        }
-      }
-    },
-    "home.transfer.subway.subtitle": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer at Hanyang Univ. at Ansan"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "韓大前で地下鉄に乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한대앞에서 전철 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在汉大前换乘地铁"
           }
         }
       }
@@ -10113,412 +8790,6 @@
         }
       }
     },
-    "home.transit.bus_50_ansan.subtitle": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "From Gwangmyeong Station to Yesulin, then shuttle"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "光明駅から芸術人へ移動後シャトル"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "광명역에서 예술인으로 이동 후 셔틀"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "从光明站到艺术人后换乘校车"
-          }
-        }
-      }
-    },
-    "home.transit.bus_50_ansan.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 toward Ansan"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番 安山方面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번 안산 방면"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50路 安山方向"
-          }
-        }
-      }
-    },
-    "home.transit.bus_50_gwangmyeong.subtitle": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer at Yesulin stop"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "芸術人停留所で乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "예술인 정류장에서 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在艺术人站换乘"
-          }
-        }
-      }
-    },
-    "home.transit.bus_50_gwangmyeong.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 toward Gwangmyeong Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番 光明駅方面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번 광명역 방면"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50路 光明站方向"
-          }
-        }
-      }
-    },
-    "home.transit.free_artist_50": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Get off at Yesulin, then bus 50"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "芸術人で下車後50番"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "예술인 하차 후 50번"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "艺术人下车后乘50路"
-          }
-        }
-      }
-    },
-    "home.transit.free_campus": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To dormitory via Shuttlecock"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シャトルコック経由で寮へ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "셔틀콕 경유 기숙사"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "经Shuttlecock到宿舍"
-          }
-        }
-      }
-    },
-    "home.transit.free_jungang": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toward Jungang Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "中央駅方面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "중앙역 방향"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "中央站方向"
-          }
-        }
-      }
-    },
-    "home.transit.free_station_transfer": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Line 4/Suin-Bundang at Handaeap Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "漢大前駅で4号線/水仁盆唐線"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한대앞역에서 4호선/수인분당선"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在汉大前站换乘4号线/水仁盆唐线"
-          }
-        }
-      }
-    },
-    "home.transit.free_terminal": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toward Terminal"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ターミナル方面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "예술인 방향"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "客运站方向"
-          }
-        }
-      }
-    },
-    "home.transit.station_transfer.subtitle": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Take Line 4 or Suin-Bundang Line after arrival"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "到着後、4号線または水仁盆唐線に乗車"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "도착 후 4호선 또는 수인분당선 탑승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "到达后乘坐4号线或水仁盆唐线"
-          }
-        }
-      }
-    },
-    "home.transit.station_transfer.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transfer at Handaeap Station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "漢大前駅で乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한대앞역 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "汉大前站换乘"
-          }
-        }
-      }
-    },
-    "language.chinese": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chinese (中文)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "中国語 (中文)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "중국어 (中文)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "中文"
-          }
-        }
-      }
-    },
-    "language.english": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "English"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "英語 (English)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "영어 (English)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "英语 (English)"
-          }
-        }
-      }
-    },
-    "language.japanese": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Japanese (日本語)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "日本語"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "일본어 (日本語)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "日语 (日本語)"
-          }
-        }
-      }
-    },
     "language.keep.current": {
       "extractionState": "manual",
       "localizations": {
@@ -10544,35 +8815,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "继续使用英语"
-          }
-        }
-      }
-    },
-    "language.korean": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Korean (한국어)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "韓国語 (한국어)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한국어"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "韩语 (한국어)"
           }
         }
       }
@@ -10744,34 +8986,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "公告"
-          }
-        }
-      }
-    },
-    "notice.title.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[Notice] %1$@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[お知らせ] %1$@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[공지] %1$@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[公告] %1$@"
           }
         }
       }
@@ -11980,35 +10194,6 @@
         }
       }
     },
-    "shuttle.action_bar.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shuttle display options"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シャトル表示オプション"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "셔틀 표시 옵션"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "校车显示选项"
-          }
-        }
-      }
-    },
     "shuttle.alarm.alighting": {
       "localizations": {
         "en": {
@@ -13129,34 +11314,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld分钟后到达"
-          }
-        }
-      }
-    },
-    "shuttle.connection.alternative": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alternative"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "代替手段"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "대체 수단"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "替代交通"
           }
         }
       }
@@ -15544,35 +13701,6 @@
         }
       }
     },
-    "shuttle.timetable.loading": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading shuttle timetable..."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "時刻表を読み込み中..."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "시간표 불러오는 중…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在加载时刻表..."
-          }
-        }
-      }
-    },
     "shuttle.timetable.weekdays": {
       "localizations": {
         "en": {
@@ -15625,148 +13753,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "周末"
-          }
-        }
-      }
-    },
-    "shuttle.transfer.bus50.title": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 Transfer"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番バス乗り換え"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번 버스 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50路公交换乘"
-          }
-        }
-      }
-    },
-    "shuttle.transfer.bus50.to.ansan": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 To Ansan"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番 安山行き"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번 안산행"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50路 安山方向"
-          }
-        }
-      }
-    },
-    "shuttle.transfer.bus50.to.kwangmyeong": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bus 50 (For Gwangmyeong)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50番(KTX光明)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50번(KTX광명)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "50路(KTX光明)"
-          }
-        }
-      }
-    },
-    "shuttle.transfer.dormitory.info": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Subway at Station · Bus 50(KTX Gwangmyeong) at Terminal"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Station 地下鉄 / Terminal 50番(KTX光明)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한대앞역 지하철 / 예술인 50번(KTX광명)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Station 地铁 / Terminal 50路(KTX光明)"
-          }
-        }
-      }
-    },
-    "shuttle.transfer.inline.route.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ transfer"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@乗換"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 환승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@换乘"
           }
         }
       }
@@ -15851,35 +13837,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "站点"
-          }
-        }
-      }
-    },
-    "shuttle.transfer.terminal.info": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ansan Parkpurgio Opp. Stop · To Ansan"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "安山パークフルジオ向かい · 安山方面"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "안산파크푸르지오 건너편 · 안산 방면"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "安山公园PRUGIO对面 · 安山方向"
           }
         }
       }
@@ -16472,35 +14429,6 @@
         }
       }
     },
-    "subway.realtime.loading": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading subway arrival..."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "電鉄到着情報を読み込み中..."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "전철 도착 정보 불러오는 중…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在加载地铁到达信息..."
-          }
-        }
-      }
-    },
     "subway.realtime.now": {
       "localizations": {
         "en": {
@@ -16749,35 +14677,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "查看完整时刻表"
-          }
-        }
-      }
-    },
-    "subway.station.%@": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
           }
         }
       }
@@ -17511,35 +15410,6 @@
         }
       }
     },
-    "subway.timetable.loading": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading subway timetable..."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "電鉄時刻表を読み込み中..."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "전철 시간표 불러오는 중..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在加载地铁时刻表..."
-          }
-        }
-      }
-    },
     "subway.timetable.weekdays": {
       "localizations": {
         "en": {
@@ -17596,146 +15466,6 @@
         }
       }
     },
-    "subway.transfer.almost.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Depart from previous station"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "前駅出発"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "전역 출발"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "前站出发"
-          }
-        }
-      }
-    },
-    "subway.transfer.arrived.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arrived at %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 到着"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 도착"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@到达"
-          }
-        }
-      }
-    },
-    "subway.transfer.departed.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Depart from %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 出発"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 출발"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@出发"
-          }
-        }
-      }
-    },
-    "subway.transfer.board.hanyang": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Board at Hanyang Univ. at Ansan"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "漢大前で乗車"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "한대앞 탑승"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在汉大前上车"
-          }
-        }
-      }
-    },
-    "subway.transfer.current_location.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Near %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@付近"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 부근"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@附近"
-          }
-        }
-      }
-    },
     "subway.transfer.destination.%@": {
       "localizations": {
         "en": {
@@ -17760,62 +15490,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "开往%@"
-          }
-        }
-      }
-    },
-    "subway.transfer.down.%@.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@) %2$@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@行き) %2$@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@행) %2$@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(开往%1$@) %2$@"
-          }
-        }
-      }
-    },
-    "subway.transfer.entering.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arrived at %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 進入"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 진입"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@进站"
           }
         }
       }
@@ -17876,34 +15550,6 @@
         }
       }
     },
-    "subway.transfer.timetable.%@.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@) %2$@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@行き) %2$@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@행) %2$@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(开往%1$@) %2$@"
-          }
-        }
-      }
-    },
     "subway.transfer.wait.%lld": {
       "localizations": {
         "en": {
@@ -17928,34 +15574,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "等%1$(minute)lld分钟"
-          }
-        }
-      }
-    },
-    "subway.transfer.up.%@.%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@) %2$@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@行き) %2$@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%1$@행) %2$@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(开往%1$@) %2$@"
           }
         }
       }
@@ -18068,34 +15686,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "校历"
-          }
-        }
-      }
-    },
-    "tabbar.chat": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contact"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "問い合わせ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "문의하기"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "咨询"
           }
         }
       }
@@ -18628,35 +16218,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld分钟"
-          }
-        }
-      }
-    },
-    "transfer.subway.time.format": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lldmins(%2$@)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld分(%2$@行き)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld분(%2$@행)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld分钟(开往%2$@)"
           }
         }
       }
