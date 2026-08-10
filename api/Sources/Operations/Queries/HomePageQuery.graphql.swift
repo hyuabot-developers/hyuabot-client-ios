@@ -8,10 +8,11 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
   public static let operationName: String = "HomePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HomePageQuery($language: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { language: $language keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
+      #"query HomePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { language: $subwayLanguage keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq } stop { __typename seq } arrival { __typename minutes } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
     ))
 
   public var language: String
+  public var subwayLanguage: String
   public var after: GraphQLNullable<LocalTime>
   public var weekday: String
   public var date: Date
@@ -20,6 +21,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
   public init(
     language: String,
+    subwayLanguage: String,
     after: GraphQLNullable<LocalTime>,
     weekday: String,
     date: Date,
@@ -27,6 +29,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
     busInput: [BusRouteStopInput]
   ) {
     self.language = language
+    self.subwayLanguage = subwayLanguage
     self.after = after
     self.weekday = weekday
     self.date = date
@@ -36,6 +39,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "language": language,
+    "subwayLanguage": subwayLanguage,
     "after": after,
     "weekday": weekday,
     "date": date,
@@ -82,7 +86,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         "limit": 2
       ]]]),
       .field("subway", [Subway].self, arguments: ["input": [
-        "language": .variable("language"),
+        "language": .variable("subwayLanguage"),
         "keys": [[
           "stationID": "K449",
           "direction": ["up", "down"],

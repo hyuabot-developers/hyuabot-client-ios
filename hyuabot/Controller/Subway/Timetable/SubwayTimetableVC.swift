@@ -48,16 +48,20 @@ class SubwayTimetableVC: UIViewController {
 
     private func fetchSubwayTimetable() {
         SubwayTimetableData.shared.isLoading.onNext(true)
+        SubwayTimetableData.shared.timetable.onNext([])
         let isLine4 = timetableTitle == "subway.realtime.section.4.up"
             || timetableTitle == "subway.realtime.section.4.down"
         let station = isLine4 ? "K449" : "K251"
         let direction = heading == .up ? "up" : "down"
         Task {
-            let response = try? await Network.shared.client.fetch(query: SubwayTimetablePageQuery(
-                station: station,
-                direction: [direction],
-                language: Locale.current.language.languageCode?.identifier ?? "ko"
-            ))
+            let response = try? await Network.shared.client.fetch(
+                query: SubwayTimetablePageQuery(
+                    station: station,
+                    direction: [direction],
+                    language: LanguageManager.shared.apiLanguageTag
+                ),
+                cachePolicy: .networkOnly
+            )
             await MainActor.run {
                 if let timetable = response?.data?.subway.first?.timetable {
                     SubwayTimetableData.shared.timetable.onNext(timetable)

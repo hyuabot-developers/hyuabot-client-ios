@@ -37,6 +37,14 @@ final class LanguageManagerTests: XCTestCase {
         XCTAssertTrue(UserDefaults.standard.bool(forKey: suggestionShownKey))
     }
 
+    @MainActor
+    func testAPILanguageTagNormalizesSupportedLocalizations() {
+        XCTAssertEqual(LanguageManager.apiLanguageTag(for: "ko-KR"), "ko")
+        XCTAssertEqual(LanguageManager.apiLanguageTag(for: "en-US"), "en")
+        XCTAssertEqual(LanguageManager.apiLanguageTag(for: "ja-JP"), "ja")
+        XCTAssertEqual(LanguageManager.apiLanguageTag(for: "zh-Hans"), "zh-Hans")
+    }
+
     private func resetDefaults() {
         UserDefaults.standard.removeObject(forKey: suggestionShownKey)
         UserDefaults.standard.removeObject(forKey: hasLaunchedKey)

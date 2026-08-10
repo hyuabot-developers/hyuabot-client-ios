@@ -831,7 +831,7 @@ class ShuttleRealtimeVC: UIViewController {
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let dataDelegate = ShuttleRealtimeData.shared
         var currentLanguage: String {
-            Locale.current.language.languageCode?.identifier ?? "ko"
+            LanguageManager.shared.apiLanguageTag
         }
         var noticeLanguage: String {
             if currentLanguage.starts(with: "ko") {
@@ -840,10 +840,12 @@ class ShuttleRealtimeVC: UIViewController {
                 "ENGLISH"
             }
         }
+        dataDelegate.prepareForSubwayLanguage(currentLanguage)
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: ShuttleRealtimePageQuery(
                     language: noticeLanguage,
+                    subwayLanguage: currentLanguage,
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now)),
                     weekday: currentWeekdayString(),
                     logDates: .some(busLogReferenceDates())

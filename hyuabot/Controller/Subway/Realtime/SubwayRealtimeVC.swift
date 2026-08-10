@@ -220,11 +220,13 @@ class SubwayRealtimeVC: UIViewController {
         let today = Foundation.Date.now
         let component = Calendar.current.component(.weekday, from: today)
         let weekday = (component == 1 || component == 7) ? "weekends" : "weekdays"
+        let language = LanguageManager.shared.apiLanguageTag
+        SubwayRealtimeData.shared.prepareForLanguage(language)
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: SubwayRealtimePageQuery(
                     weekday: weekday,
-                    language: Locale.current.language.languageCode?.identifier ?? "ko"
+                    language: language
                 ),
                 cachePolicy: .networkOnly
             )

@@ -49,6 +49,7 @@ struct ShuttleAlarmContext: Equatable {
 class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
     private init() {}
+    var loadedSubwayLanguage: String?
     let isLoading = BehaviorSubject<Bool>(value: true)
     // Realtime Query
     let arrival = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop]>(value: [])
@@ -86,4 +87,11 @@ class ShuttleRealtimeData {
     let showRemainingTime = BehaviorSubject<Bool>(value: true)
     /// Show arrival by time
     let showArrivalByTime = BehaviorSubject<Bool>(value: true)
+
+    func prepareForSubwayLanguage(_ language: String) {
+        guard loadedSubwayLanguage != language else { return }
+        loadedSubwayLanguage = language
+        transferData.onNext(nil)
+        isLoading.onNext(true)
+    }
 }
