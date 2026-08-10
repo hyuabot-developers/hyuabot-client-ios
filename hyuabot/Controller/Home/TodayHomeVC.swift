@@ -1080,9 +1080,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var homeWeatherIconSizeConstraints: [NSLayoutConstraint] = []
     private var homeWeatherTextTrailingConstraints: [NSLayoutConstraint] = []
     private lazy var legacyBar = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.layer.borderWidth = 1 / UIScreen.main.scale
-        $0.layer.borderColor = UIColor.separator.cgColor
+        $0.backgroundColor = .clear
+    }
+
+    private let legacyBarTopBorder = UIView().then {
+        $0.backgroundColor = .separator
     }
 
     private lazy var legacyBarLabel = UILabel().then {
@@ -1180,13 +1182,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func setupUI() {
-        view.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = .systemBackground
         navigationItem.title = String(localized: "home.title.today")
 
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
         view.addSubview(scrollView)
         view.addSubview(legacyBar)
+        legacyBar.addSubview(legacyBarTopBorder)
         legacyBar.addSubview(legacyBarLabel)
         legacyBar.addSubview(legacyButton)
         scrollView.snp.makeConstraints { make in
@@ -1197,6 +1200,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
+        }
+        legacyBarTopBorder.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
         }
         legacyBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)

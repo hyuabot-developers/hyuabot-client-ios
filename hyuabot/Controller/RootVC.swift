@@ -114,8 +114,6 @@ class RootVC: UITabBarController {
             [shuttleNC, busNC, subwayNC, cafeteriaNC, campusNC],
             animated: true
         )
-        // Appearance
-        UITabBar.appearance().backgroundColor = .systemBackground
     }
 
     private func installTranslationPreparationHostIfNeeded() {

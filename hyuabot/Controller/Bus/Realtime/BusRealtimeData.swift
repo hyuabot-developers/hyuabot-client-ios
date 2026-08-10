@@ -44,7 +44,7 @@ class BusRealtimeData {
         return BehaviorSubject(value: savedID == 0 ? 216_000_070 : Int32(savedID))
     }()
 
-    /// Whether to show the secondary arrival-time suffix ("→ HH:mm 도착 예정")
+    /// Whether to show the secondary arrival-time suffix ("▶ HH:mm 도착 예정")
     let showSecondaryEta = BehaviorSubject<Bool>(value: BusRealtimeDisplaySettings.showsSecondaryEta)
     /// Seoul-bound destination used for the secondary ETA when the primary section is on campus
     let seoulTargetStop = BehaviorSubject<BusSeoulTargetStop>(value: BusRealtimeDisplaySettings.seoulTargetStop)
