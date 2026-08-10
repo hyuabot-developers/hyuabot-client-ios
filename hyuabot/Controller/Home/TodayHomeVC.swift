@@ -1083,6 +1083,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         $0.backgroundColor = .clear
     }
 
+    private let legacyBarTopBorder = UIView().then {
+        $0.backgroundColor = .separator
+    }
+
     private lazy var legacyBarLabel = UILabel().then {
         $0.text = String(localized: "home.quick_settings.action_bar.title")
         $0.textColor = .secondaryLabel
@@ -1185,6 +1189,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         scrollView.refreshControl = refreshControl
         view.addSubview(scrollView)
         view.addSubview(legacyBar)
+        legacyBar.addSubview(legacyBarTopBorder)
         legacyBar.addSubview(legacyBarLabel)
         legacyBar.addSubview(legacyButton)
         scrollView.snp.makeConstraints { make in
@@ -1195,6 +1200,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
+        }
+        legacyBarTopBorder.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
         }
         legacyBarLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)

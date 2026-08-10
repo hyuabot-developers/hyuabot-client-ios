@@ -64,12 +64,17 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         $0.accessibilityIdentifier = "bus.quick_settings"
     }
 
-    private lazy var helpBar = UIView().then {
-        $0.backgroundColor = .systemBackground
+    private lazy var quickSettingsBar = UIView().then {
+        $0.backgroundColor = .clear
     }
 
-    private let helpBarTopBorder = UIView().then {
+    private let quickSettingsBarTopBorder = UIView().then {
         $0.backgroundColor = .separator
+    }
+
+    private lazy var quickSettingsBarLabel = UILabel().then {
+        $0.textColor = .secondaryLabel
+        $0.font = .godo(size: 13, weight: .bold)
     }
 
     private lazy var noticeView = NoticeCarouselView().then {
@@ -186,6 +191,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         noticeView.resumeAutoScroll()
         selectNearestBusStop()
         navigationController?.setNavigationBarHidden(true, animated: false)
+        updateQuickSettingsBarLabel()
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -210,21 +216,27 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     private func setupUI() {
         view.addSubview(viewPager)
-        view.addSubview(helpBar)
-        helpBar.addSubview(helpBarTopBorder)
-        helpBar.addSubview(quickSettingsButton)
+        view.addSubview(quickSettingsBar)
+        quickSettingsBar.addSubview(quickSettingsBarTopBorder)
+        quickSettingsBar.addSubview(quickSettingsBarLabel)
+        quickSettingsBar.addSubview(quickSettingsButton)
         viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.helpBar.snp.top)
+            make.bottom.equalTo(self.quickSettingsBar.snp.top)
         }
-        helpBar.snp.makeConstraints { make in
+        quickSettingsBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(54)
         }
-        helpBarTopBorder.snp.makeConstraints { make in
+        quickSettingsBarTopBorder.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(1 / UIScreen.main.scale)
+        }
+        quickSettingsBarLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(quickSettingsButton.snp.leading).offset(-12)
         }
         quickSettingsButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -601,11 +613,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         )
         vc.updateShowSecondaryEta = { isOn in
             BusRealtimeDisplaySettings.showsSecondaryEta = isOn
+            self.updateQuickSettingsBarLabel()
             BusRealtimeData.shared.showSecondaryEta.onNext(isOn)
             BusRealtimeData.shared.busRealtimeData.onNext((try? BusRealtimeData.shared.busRealtimeData.value()) ?? [])
         }
         vc.updateSeoulTarget = { target in
             BusRealtimeDisplaySettings.seoulTargetStop = target
+            self.updateQuickSettingsBarLabel()
             BusRealtimeData.shared.seoulTargetStop.onNext(target)
             BusRealtimeData.shared.busRealtimeData.onNext((try? BusRealtimeData.shared.busRealtimeData.value()) ?? [])
         }
@@ -618,6 +632,17 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true)
+    }
+
+    private func updateQuickSettingsBarLabel() {
+        if BusRealtimeDisplaySettings.showsSecondaryEta {
+            quickSettingsBarLabel.text = String(
+                format: String(localized: "bus.quick_settings.action_bar.enabled"),
+                BusRealtimeDisplaySettings.seoulTargetStop.title
+            )
+        } else {
+            quickSettingsBarLabel.text = String(localized: "bus.quick_settings.action_bar.disabled")
+        }
     }
 
     private func openHelpVC() {

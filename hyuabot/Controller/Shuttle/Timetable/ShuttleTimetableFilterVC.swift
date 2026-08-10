@@ -49,7 +49,7 @@ class ShuttleTimetableFilterVC: UIViewController {
     private lazy var routeSearchStackView: UIStackView = .init().then {
         let arrowView = UILabel().then {
             $0.font = .godo(size: 16, weight: .medium)
-            $0.text = "→"
+            $0.text = "▶"
             $0.textAlignment = .center
         }
         $0.axis = .horizontal

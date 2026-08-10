@@ -20,10 +20,42 @@ final class CampusNC: UINavigationController {
         self.init(rootViewController: CampusVC())
     }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configureNavigationBar()
+    }
+
     func open(_ destination: CampusDestination, animated: Bool) {
         popToRootViewController(animated: false)
         guard let campusViewController = viewControllers.first as? CampusVC else { return }
         campusViewController.open(destination, animated: animated, logSelection: false)
+    }
+
+    private func configureNavigationBar() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .hanyangBlue
+
+        let whiteAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.white
+        ]
+        appearance.titleTextAttributes = whiteAttributes.merging([
+            .font: UIFont.godo(size: 17, weight: .bold)
+        ]) { _, new in new }
+        appearance.largeTitleTextAttributes = whiteAttributes.merging([
+            .font: UIFont.godo(size: 34, weight: .bold)
+        ]) { _, new in new }
+        let buttonAttributes = whiteAttributes.merging([
+            .font: UIFont.godo(size: 17, weight: .medium)
+        ]) { _, new in new }
+        appearance.buttonAppearance.normal.titleTextAttributes = buttonAttributes
+        appearance.doneButtonAppearance.normal.titleTextAttributes = buttonAttributes
+        appearance.backButtonAppearance.normal.titleTextAttributes = buttonAttributes
+
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+        navigationBar.compactAppearance = appearance
+        navigationBar.tintColor = .white
     }
 }
 

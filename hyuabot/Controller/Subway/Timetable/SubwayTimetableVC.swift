@@ -44,6 +44,7 @@ class SubwayTimetableVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: false)
+        configureNavigationBar()
     }
 
     private func fetchSubwayTimetable() {
@@ -73,7 +74,7 @@ class SubwayTimetableVC: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = .hanyangBlue
+        view.backgroundColor = .systemBackground
         view.addSubview(viewPager)
         navigationItem.title = String(localized: timetableTitle)
         viewPager.snp.makeConstraints { make in
@@ -81,6 +82,33 @@ class SubwayTimetableVC: UIViewController {
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
+    }
+
+    private func configureNavigationBar() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .hanyangBlue
+
+        let whiteAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.white
+        ]
+        appearance.titleTextAttributes = whiteAttributes.merging([
+            .font: UIFont.godo(size: 17, weight: .bold)
+        ]) { _, new in new }
+        appearance.largeTitleTextAttributes = whiteAttributes.merging([
+            .font: UIFont.godo(size: 34, weight: .bold)
+        ]) { _, new in new }
+        let buttonAttributes = whiteAttributes.merging([
+            .font: UIFont.godo(size: 17, weight: .medium)
+        ]) { _, new in new }
+        appearance.buttonAppearance.normal.titleTextAttributes = buttonAttributes
+        appearance.doneButtonAppearance.normal.titleTextAttributes = buttonAttributes
+        appearance.backButtonAppearance.normal.titleTextAttributes = buttonAttributes
+
+        navigationItem.standardAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
+        navigationItem.compactAppearance = appearance
+        navigationController?.navigationBar.tintColor = .white
     }
 
     private func observeSubjects() {
