@@ -66,9 +66,6 @@ class SubwayRealtimeCellView: UITableViewCell {
     }
 
     private func getRealtimeLabelText(_ item: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) -> String {
-        guard isKoreanAppLanguage else {
-            return appendStopsText(getTimetableLabelText(item.minutes), stops: item.stops, compact: true)
-        }
         guard let location = item.location,
               let status = item.status
         else {
@@ -107,10 +104,6 @@ class SubwayRealtimeCellView: UITableViewCell {
 
     private func getTimetableLabelText(_ minutes: Int) -> String {
         String(format: String(localized: "subway.time.%lld"), minutes)
-    }
-
-    private var isKoreanAppLanguage: Bool {
-        (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
     }
 
     private func appendStopsText(_ text: String, stops: Int?, compact: Bool = false) -> String {
