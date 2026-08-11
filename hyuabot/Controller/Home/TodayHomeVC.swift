@@ -1526,7 +1526,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             icon: "bus.fill",
             title: String(localized: "home.bus.destination.gangnam"),
             titleLabel: busHomeTitleLabel,
-            buttonTitle: String(localized: "home.movement.detail"),
+            buttonTitle: String(localized: "home.bus.detail"),
             action: #selector(openBusPage),
             showsChevron: true
         )
@@ -3329,19 +3329,32 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
 
         let live = candidates.filter(\.isRealtime)
-        let liveRows = live.sorted { $0.sortDate < $1.sortDate }
+        let liveRows = live.sorted { homeBusRowComesBefore($0, $1, group: group) }
         var selected = Array(liveRows.prefix(2))
         let fallbackRows = candidates.filter { candidate in
             !selected.contains(where: { selectedRow in
                 selectedRow.route == candidate.route && abs(selectedRow.sortDate.timeIntervalSince(candidate.sortDate)) < 600
             })
-        }.sorted { $0.sortDate < $1.sortDate }
+        }.sorted { homeBusRowComesBefore($0, $1, group: group) }
         for candidate in fallbackRows where selected.count < 2 {
             guard !selected.contains(where: { $0.route == candidate.route && abs($0.sortDate.timeIntervalSince(candidate.sortDate)) < 600 }) else { continue }
             selected.append(candidate)
         }
 
-        return selected.sorted { $0.sortDate < $1.sortDate }.map(makeHomeBusRow)
+        return selected.sorted { homeBusRowComesBefore($0, $1, group: group) }.map(makeHomeBusRow)
+    }
+
+    private func homeBusRowComesBefore(
+        _ lhs: HomeBusRowData,
+        _ rhs: HomeBusRowData,
+        group: HomeBusGroup
+    ) -> Bool {
+        if case .seoul = group {
+            let lhsPriority = lhs.route == "3102" ? 0 : 1
+            let rhsPriority = rhs.route == "3102" ? 0 : 1
+            if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
+        }
+        return lhs.sortDate < rhs.sortDate
     }
 
     private func makeHomeBusRow(_ data: HomeBusRowData) -> UIView {
@@ -3433,7 +3446,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         destinationBus: HomePageQuery.Data.Bus?
     ) -> String {
         guard let destinationBus else { return destinationFallbackTime(primaryArrivalTime) }
-        let samples = primaryBus.log.compactMap { primary in
+        let samples = primaryBus.log.compactMap { primary -> (primaryMinutes: Int, duration: Int)? in
             destinationBus.log
                 .filter { $0.date == primary.date && $0.vehicle == primary.vehicle && $0.time > primary.time }
                 .min { $0.time < $1.time }
@@ -3444,10 +3457,24 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     let value = Int(end.timeIntervalSince(start) / 60)
                     return value > 0 && value < 180 ? value : nil
                 }
+                .map { duration in
+                    (primaryMinutes: localTimeMinutes(primary.time.toLocalTime()), duration: duration)
+                }
         }
         guard !samples.isEmpty else { return destinationFallbackTime(primaryArrivalTime) }
-        let average = samples.reduce(0, +) / samples.count
+        let targetMinutes = localTimeMinutes(primaryArrivalTime)
+        let average = [30, 60, 120].compactMap { window -> Int? in
+            let nearby = samples.filter { abs($0.primaryMinutes - targetMinutes) <= window }
+            guard !nearby.isEmpty else { return nil }
+            return nearby.map(\.duration).reduce(0, +) / nearby.count
+        }.first
+        guard let average else { return destinationFallbackTime(primaryArrivalTime) }
         return destinationFallbackTime(primaryArrivalTime.addingTimeInterval(Double(average) * 60))
+    }
+
+    private func localTimeMinutes(_ date: Foundation.Date) -> Int {
+        let calendar = Calendar.current
+        return calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
     }
 
     private func destinationFallbackTime(_ date: Foundation.Date) -> String {

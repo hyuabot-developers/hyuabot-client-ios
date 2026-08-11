@@ -1375,6 +1375,14 @@
         }
       }
     },
+    "home.bus.detail": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "View all" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "すべて見る" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "전체보기" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "查看全部" } }
+      }
+    },
     "home.bus.destination.gangnam": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "To Gangnam Station" } },
