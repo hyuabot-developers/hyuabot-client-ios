@@ -1375,6 +1375,14 @@
         }
       }
     },
+    "home.bus.destination.gangnam": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "To Gangnam Station" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "江南駅方面" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "강남역 방면" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "江南站方向" } }
+      }
+    },
     "home.quick_settings.seoul_bus_stop.title": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Seoul bus arrival stop" } },

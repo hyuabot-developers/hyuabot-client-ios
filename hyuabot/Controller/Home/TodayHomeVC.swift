@@ -1155,6 +1155,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private let shuttleOptionStack = UIStackView()
     private let busOptionStack = UIStackView()
+    private let busHomeTitleLabel = UILabel()
     private let supportingOptionStack = UIStackView()
     private let cafeteriaCard = UIStackView()
     private let cafeteriaIconView = UIImageView()
@@ -1523,8 +1524,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         let header = makeSectionHeader(
             icon: "bus.fill",
-            title: String(localized: "bus.stop.title")
+            title: String(localized: "home.bus.destination.gangnam"),
+            titleLabel: busHomeTitleLabel,
+            buttonTitle: String(localized: "home.movement.detail"),
+            action: #selector(openBusPage),
+            showsChevron: true
         )
+        header.snp.makeConstraints { make in make.height.equalTo(48) }
         busOptionStack.axis = .vertical
         busOptionStack.spacing = 8
         stack.addArrangedSubview(header)
@@ -3256,6 +3262,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let now = Foundation.Date.now
         let sourceBuses = homeBusData
             .filter { group.sourceStops.contains(Int32($0.stop.seq)) && group.routeIDs.contains(Int32($0.route.seq)) }
+        switch group {
+        case .campus:
+            busHomeTitleLabel.text = String(localized: "home.bus.destination.gangnam")
+        default:
+            busHomeTitleLabel.text = sourceBuses.first?.stop.name ?? String(localized: "bus.stop.title")
+        }
         let destinationBuses = Dictionary(grouping: homeBusData.filter { bus in
             destinationStopID(routeID: Int32(bus.route.seq), group: group) == Int32(bus.stop.seq)
         }, by: { Int32($0.route.seq) })
@@ -3333,15 +3345,65 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func makeHomeBusRow(_ data: HomeBusRowData) -> UIView {
-        let option = HomeTransitOption(
-            kind: .alternative,
-            title: data.stopName,
-            subtitle: data.subtitle,
-            minutes: nil,
-            badge: data.route,
-            tintColor: data.tintColor
-        )
-        return makeTransitRow(option, emphasized: true, trailingText: data.trailing)
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 12
+        row.layoutMargins = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+        row.isLayoutMarginsRelativeArrangement = true
+        row.backgroundColor = data.tintColor.withAlphaComponent(0.10)
+        row.layer.cornerRadius = 8
+        row.snp.makeConstraints { make in make.height.greaterThanOrEqualTo(58) }
+
+        let badge = HomePaddedLabel()
+        badge.text = data.route
+        badge.font = .godo(size: 12, weight: .bold)
+        badge.textColor = .white
+        badge.textAlignment = .center
+        badge.backgroundColor = data.tintColor
+        badge.contentInsets = .zero
+        badge.layer.cornerRadius = 12
+        badge.clipsToBounds = true
+        badge.adjustsFontSizeToFitWidth = true
+        badge.minimumScaleFactor = 0.75
+        badge.snp.makeConstraints { make in
+            make.width.equalTo(64)
+            make.height.equalTo(24)
+        }
+
+        let textStack = UIStackView()
+        textStack.axis = .vertical
+        textStack.spacing = 3
+        let title = UILabel()
+        title.text = data.stopName
+        title.font = .godo(size: 17, weight: .bold)
+        title.textColor = .label
+        title.numberOfLines = 1
+        title.lineBreakMode = .byTruncatingTail
+        let subtitle = UILabel()
+        subtitle.text = data.subtitle
+        subtitle.font = .godo(size: 13, weight: .regular)
+        subtitle.textColor = .secondaryLabel
+        subtitle.numberOfLines = 2
+        subtitle.lineBreakMode = .byTruncatingTail
+        textStack.addArrangedSubview(title)
+        textStack.addArrangedSubview(subtitle)
+
+        let trailing = UILabel()
+        trailing.text = data.trailing
+        trailing.font = .godo(size: 22, weight: .bold)
+        trailing.textColor = data.tintColor
+        trailing.textAlignment = .right
+        trailing.adjustsFontSizeToFitWidth = true
+        trailing.minimumScaleFactor = 0.64
+        trailing.numberOfLines = 1
+        trailing.setContentCompressionResistancePriority(.required, for: .horizontal)
+        trailing.snp.makeConstraints { make in make.width.lessThanOrEqualTo(76) }
+
+        row.addArrangedSubview(badge)
+        row.addArrangedSubview(textStack)
+        row.addArrangedSubview(trailing)
+        return row
     }
 
     private func destinationStopID(routeID: Int32, group: HomeBusGroup) -> Int32? {
@@ -3406,6 +3468,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         ["3100", "3100N", "3101", "3102", "7070", "9090"].contains(route)
             ? .systemRed
             : .systemGreen
+    }
+
+    @objc private func openBusPage() {
+        tabBarController?.selectedIndex = 1
     }
 
     private func minutesUntilService(_ time: Foundation.Date) -> Int? {
