@@ -1553,6 +1553,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
         header.snp.makeConstraints { make in make.height.equalTo(48) }
         busHomeDestinationButton.titleLabel?.font = .godo(size: 20, weight: .bold)
+        busHomeDestinationButton.setTitleColor(.label, for: .normal)
+        busHomeDestinationButton.setTitleColor(.secondaryLabel, for: .highlighted)
         busHomeDestinationButton.contentHorizontalAlignment = .leading
         busHomeDestinationButton.showsMenuAsPrimaryAction = true
         updateHomeBusDestinationMenu()
