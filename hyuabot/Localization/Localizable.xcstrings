@@ -1455,12 +1455,28 @@
         "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld站 · 预计 %@ 到达" } }
       }
     },
+    "home.bus.stops": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%lld stops" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld停留所" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%lld전" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld站" } }
+      }
+    },
     "home.bus.stops.seats.eta": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "%lld stops · %lld seats · arrives %@" } },
         "ja": { "stringUnit": { "state": "translated", "value": "%lld停留所 · %lld席 · %@到着予定" } },
         "ko": { "stringUnit": { "state": "translated", "value": "%lld전 · %lld석 · %@ 도착" } },
         "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld站 · %lld座 · 预计 %@ 到达" } }
+      }
+    },
+    "home.bus.stops.seats": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%lld stops · %lld seats" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld停留所 · %lld席" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%lld전 · %lld석" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld站 · %lld座" } }
       }
     },
     "home.bus.stop.convention.short": {
