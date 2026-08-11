@@ -3144,7 +3144,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let arrivals = homeBusData
             .filter { group.sourceStops.contains(Int32($0.stop.seq)) && group.routeIDs.contains(Int32($0.route.seq)) }
             .flatMap { bus in
-                bus.arrival.compactMap { arrival -> (String, String, Int, Int?)? in
+                let realtime = bus.arrival.compactMap { arrival -> (String, String, Int, Int?)? in
                     let minutes: Int?
                     if let arrivalMinutes = arrival.minutes {
                         minutes = arrivalMinutes
@@ -3156,8 +3156,15 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     guard let minutes else { return nil }
                     return (bus.route.name, bus.stop.name, minutes, arrival.stops)
                 }
+                let logged = bus.log.compactMap { log -> (String, String, Int, Int?)? in
+                    guard let time = log.time.toLocalTimeOrNil(),
+                          let minutes = minutesUntilService(time)
+                    else { return nil }
+                    return (bus.route.name, bus.stop.name, minutes, nil)
+                }
+                return realtime + logged
             }
-            .sorted { $0.1 < $1.1 }
+            .sorted { $0.2 < $1.2 }
             .prefix(2)
 
         return arrivals.map { route, stopName, minutes, stops in
@@ -3170,6 +3177,22 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 tintColor: .systemRed
             )
         }.map { makeTransitRow($0, emphasized: true) }
+    }
+
+    private func minutesUntilService(_ time: Foundation.Date) -> Int? {
+        let calendar = Calendar.current
+        let now = Foundation.Date.now
+        let today = calendar.date(
+            bySettingHour: calendar.component(.hour, from: time),
+            minute: calendar.component(.minute, from: time),
+            second: 0,
+            of: now
+        ) ?? time
+        let adjusted = today < now && calendar.component(.hour, from: time) < 4
+            ? calendar.date(byAdding: .day, value: 1, to: today) ?? today
+            : today
+        let minutes = Int(ceil(adjusted.timeIntervalSince(now) / 60))
+        return minutes >= 0 ? minutes : nil
     }
 
     private func nearestHomeBusGroup() -> HomeBusGroup? {
