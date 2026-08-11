@@ -661,4 +661,18 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             animated: true
         )
     }
-}
+
+    #if DEBUG
+        func presentDebugQuickSettings() {
+            openQuickSettings()
+        }
+
+        func presentDebugDepartureLog(stopID: Int32, routes: [Int32]) {
+            openDepartureLogSheet(stopID, routes)
+        }
+
+        func presentDebugBusStop(stopID: Int32, routes: [Int32]) {
+            openBusStopVC(stopID, routes)
+        }
+    #endif
+} // swiftlint:disable:this file_length

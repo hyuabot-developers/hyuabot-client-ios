@@ -311,6 +311,12 @@ class CafeteriaVC: UIViewController {
         }
         present(vc, animated: true, completion: nil)
     }
+
+    #if DEBUG
+        func presentDebugInfo(cafeteriaID: Int) {
+            openCafeteriaInfoVC(cafeteriaID: cafeteriaID)
+        }
+    #endif
 }
 
 extension CafeteriaVC {

@@ -3748,6 +3748,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             $0.setLocalizedDateFormatFromTemplate("MdEEEE")
         }.string(from: Foundation.Date.now)
     }
+
+    #if DEBUG
+        func presentDebugQuickSettings() {
+            openQuickSettings()
+        }
+    #endif
 }
 
 extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
