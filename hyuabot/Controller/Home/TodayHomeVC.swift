@@ -1524,6 +1524,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         let header = makeSectionHeader(
             icon: "bus.fill",
+            assetName: "home_movement",
             iconTint: .homeSelectorIconTint,
             title: String(localized: "home.bus.destination.gangnam"),
             titleLabel: busHomeTitleLabel,
@@ -1620,6 +1621,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func makeSectionHeader(
         icon: String,
         iconView providedIconView: UIImageView? = nil,
+        assetName: String? = nil,
         iconTint: UIColor = .hanyangBlue,
         title: String,
         titleLabel providedTitleLabel: UILabel? = nil,
@@ -1633,7 +1635,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         titleRow.spacing = 10
 
         let imageView = providedIconView ?? UIImageView()
-        imageView.image = UIImage(systemName: icon)
+        imageView.image = assetName.flatMap(UIImage.init(named:)) ?? UIImage(systemName: icon)
         imageView.tintColor = iconTint
         imageView.contentMode = .scaleAspectFit
         imageView.snp.makeConstraints { make in
