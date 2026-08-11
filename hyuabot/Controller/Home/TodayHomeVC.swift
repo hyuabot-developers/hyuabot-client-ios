@@ -3456,15 +3456,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
-        if HomeSettings.showSeoulBusStop { return true }
-        switch group {
-        case .campus:
-            return selectedHomeBusDestination != .gangnam || ![216_000_061, 216_000_096].contains(routeID)
-        case .kitch, .dormitory:
-            return routeID != 216_000_061
-        default:
-            return true
-        }
+        return HomeSettings.showSeoulBusStop
     }
 
     private func updateHomeBusDestinationMenu() {
