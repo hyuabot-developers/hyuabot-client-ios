@@ -3146,8 +3146,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             .flatMap { bus in
                 bus.arrival.compactMap { arrival -> (String, String, Int, Int?)? in
                     let minutes: Int?
-                    if arrival.isRealtime {
-                        minutes = arrival.minutes
+                    if let arrivalMinutes = arrival.minutes {
+                        minutes = arrivalMinutes
                     } else if let arrivalTime = arrival.arrivalTime?.toLocalTimeOrNil() {
                         minutes = max(0, Int(ceil(arrivalTime.timeIntervalSince(now) / 60)))
                     } else {
@@ -3180,11 +3180,17 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             .seoul(121_000_970), .seoul(121_000_220)
         ]
         let nearest = groups.compactMap { group -> (HomeBusGroup, CLLocationDistance)? in
-            guard let stop = homeBusData.first(where: { group.sourceStops.contains(Int32($0.stop.seq)) }) else { return nil }
+            guard let stop = homeBusData.first(where: {
+                group.sourceStops.contains(Int32($0.stop.seq)) &&
+                    $0.stop.latitude != 0 && $0.stop.longitude != 0
+            }) else { return nil }
             let stopLocation = CLLocation(latitude: stop.stop.latitude, longitude: stop.stop.longitude)
             return (group, location.distance(from: stopLocation))
         }.min { $0.1 < $1.1 }
-        guard let nearest, nearest.1 <= 1_500 else { return nil }
+        guard let nearest else {
+            return selectedDeparture == .dormitory ? .dormitory : .campus
+        }
+        guard nearest.1 <= 1_500 else { return nil }
         return nearest.0
     }
 
