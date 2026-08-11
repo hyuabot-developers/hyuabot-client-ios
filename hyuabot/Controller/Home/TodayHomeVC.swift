@@ -3192,13 +3192,19 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return arrivals.map { route, stopName, minutes, stops in
             HomeTransitOption(
                 kind: .alternative,
-                title: route,
-                subtitle: stopName,
+                title: stopName,
+                subtitle: route,
                 minutes: minutes,
                 badge: route,
-                tintColor: .systemRed
+                tintColor: homeBusTintColor(route)
             )
         }.map { makeTransitRow($0, emphasized: true) }
+    }
+
+    private func homeBusTintColor(_ route: String) -> UIColor {
+        ["3100", "3100N", "3101", "3102", "7070", "9090"].contains(route)
+            ? .systemRed
+            : .systemGreen
     }
 
     private func minutesUntilService(_ time: Foundation.Date) -> Int? {
