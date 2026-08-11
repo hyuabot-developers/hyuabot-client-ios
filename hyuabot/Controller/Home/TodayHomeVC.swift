@@ -3264,8 +3264,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             )]
         }
         let now = Foundation.Date.now
-        let sourceBuses = homeBusData
-            .filter { group.sourceStops.contains(Int32($0.stop.seq)) && group.routeIDs.contains(Int32($0.route.seq)) }
+        let sourceBuses = homeBusSourceBuses(for: group)
         switch group {
         case .campus:
             busHomeTitleLabel.text = String(localized: "home.bus.destination.gangnam")
@@ -3359,6 +3358,22 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
         }
         return lhs.sortDate < rhs.sortDate
+    }
+
+    private func homeBusSourceBuses(for group: HomeBusGroup) -> [HomePageQuery.Data.Bus] {
+        switch group {
+        case .campus:
+            // Match Android's campus Gangnam-bound source mapping:
+            // 3102 from the convention center and 3100N from the main gate.
+            return homeBusData.filter {
+                ($0.route.seq == 216_000_061 && $0.stop.seq == 216_000_379) ||
+                ($0.route.seq == 216_000_096 && $0.stop.seq == 216_000_719)
+            }
+        default:
+            return homeBusData.filter {
+                group.sourceStops.contains(Int32($0.stop.seq)) && group.routeIDs.contains(Int32($0.route.seq))
+            }
+        }
     }
 
     private func makeHomeBusRow(_ data: HomeBusRowData) -> UIView {
