@@ -3017,6 +3017,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func homeBusInput() -> [BusRouteStopInput] {
+        let dates = BusRecentDates.sameWeekdayType(count: 4)
         let sourceStops: [Int32] = [
             216_000_379, 216_000_719, 216_000_070, 216_000_381, 216_000_383,
             202_000_106, 121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220
@@ -3024,7 +3025,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let routes: [Int32] = [216_000_068, 216_000_061, 216_000_026, 216_000_043, 216_000_096, 216_000_104, 200_000_015]
         return routes.flatMap { route in
             sourceStops.map { stop in
-                BusRouteStopInput(route: route, stop: stop, limit: 3)
+                BusRouteStopInput(route: route, stop: stop, limit: 3, dates: .some(dates))
             }
         }
     }
