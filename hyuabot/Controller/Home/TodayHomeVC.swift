@@ -3560,7 +3560,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 return routeID == 216_000_043 ? 225_000_116 : nil
             }
         case .kitch:
-            return HomeSettings.seoulBusStop.stopID
+            return routeID == 216_000_068 ? 216_000_138 : HomeSettings.seoulBusStop.stopID
         }
     }
 
