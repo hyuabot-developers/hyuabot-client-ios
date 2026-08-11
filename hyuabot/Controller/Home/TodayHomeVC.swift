@@ -1524,6 +1524,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         let header = makeSectionHeader(
             icon: "bus.fill",
+            iconTint: .homeSelectorIconTint,
             title: String(localized: "home.bus.destination.gangnam"),
             titleLabel: busHomeTitleLabel,
             buttonTitle: String(localized: "home.bus.detail"),
@@ -1619,6 +1620,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func makeSectionHeader(
         icon: String,
         iconView providedIconView: UIImageView? = nil,
+        iconTint: UIColor = .hanyangBlue,
         title: String,
         titleLabel providedTitleLabel: UILabel? = nil,
         buttonTitle: String? = nil,
@@ -1632,7 +1634,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         let imageView = providedIconView ?? UIImageView()
         imageView.image = UIImage(systemName: icon)
-        imageView.tintColor = .hanyangBlue
+        imageView.tintColor = iconTint
         imageView.contentMode = .scaleAspectFit
         imageView.snp.makeConstraints { make in
             make.width.height.equalTo(22)
