@@ -1259,6 +1259,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         contentStack.addArrangedSubview(makeNoticeView())
         contentStack.addArrangedSubview(makeDestinationControlView())
         contentStack.addArrangedSubview(makeMovementCard())
+        contentStack.addArrangedSubview(makeBusCard())
         contentStack.addArrangedSubview(makeCafeteriaCard())
         renderLoadingState()
     }
@@ -1413,19 +1414,39 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
         shuttleOptionStack.axis = .vertical
         shuttleOptionStack.spacing = 10
-        busOptionStack.axis = .vertical
-        busOptionStack.spacing = 8
         supportingOptionStack.axis = .vertical
         supportingOptionStack.spacing = 8
 
         movementCard.addArrangedSubview(header)
         movementCard.addArrangedSubview(movementStateRow)
         movementCard.addArrangedSubview(shuttleOptionStack)
-        movementCard.addArrangedSubview(busOptionStack)
         movementCard.addArrangedSubview(supportingOptionStack)
 
         card.addSubview(movementCard)
         movementCard.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        return card
+    }
+
+    private func makeBusCard() -> UIView {
+        let card = cardView()
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.layoutMargins = UIEdgeInsets(top: 18, left: 16, bottom: 16, right: 16)
+        stack.isLayoutMarginsRelativeArrangement = true
+
+        let header = makeSectionHeader(
+            icon: "bus.fill",
+            title: String(localized: "bus.stop.title")
+        )
+        busOptionStack.axis = .vertical
+        busOptionStack.spacing = 8
+        stack.addArrangedSubview(header)
+        stack.addArrangedSubview(busOptionStack)
+        card.addSubview(stack)
+        stack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
         return card
