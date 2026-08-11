@@ -311,6 +311,24 @@ private struct HomeBusRowData {
     let tintColor: UIColor
 }
 
+private enum HomeBusDestination: CaseIterable {
+    case sangnoksu
+    case gangnam
+    case suwon
+    case uiwang
+    case gunpo
+
+    var title: String {
+        switch self {
+        case .sangnoksu: String(localized: "home.bus.destination.sangnoksu")
+        case .gangnam: String(localized: "home.bus.destination.gangnam")
+        case .suwon: String(localized: "home.bus.destination.suwon")
+        case .uiwang: String(localized: "home.bus.destination.uiwang")
+        case .gunpo: String(localized: "home.bus.destination.gunpo")
+        }
+    }
+}
+
 private enum HomeBusGroup {
     case campus
     case kitch
@@ -1155,7 +1173,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private let shuttleOptionStack = UIStackView()
     private let busOptionStack = UIStackView()
-    private let busHomeTitleLabel = UILabel()
+    private let busHomeDestinationButton = UIButton(type: .system)
     private let supportingOptionStack = UIStackView()
     private let cafeteriaCard = UIStackView()
     private let cafeteriaIconView = UIImageView()
@@ -1232,6 +1250,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var isDepartureManuallySelected = false
     private var shouldRestoreAutomaticDepartureOnActivation = false
     private var selectedDestination: HomeDestination = .station
+    private var selectedHomeBusDestination: HomeBusDestination = .gangnam
     private var lastLocation: CLLocation?
     private var availableDestinations: [HomeDestination] {
         selectedDeparture.destinations
@@ -1527,12 +1546,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             assetName: "home_movement",
             iconTint: .homeSelectorIconTint,
             title: String(localized: "home.bus.destination.gangnam"),
-            titleLabel: busHomeTitleLabel,
+            titleView: busHomeDestinationButton,
             buttonTitle: String(localized: "home.bus.detail"),
             action: #selector(openBusPage),
             showsChevron: true
         )
         header.snp.makeConstraints { make in make.height.equalTo(48) }
+        busHomeDestinationButton.titleLabel?.font = .godo(size: 20, weight: .bold)
+        busHomeDestinationButton.contentHorizontalAlignment = .leading
+        busHomeDestinationButton.showsMenuAsPrimaryAction = true
+        updateHomeBusDestinationMenu()
         busOptionStack.axis = .vertical
         busOptionStack.spacing = 8
         stack.addArrangedSubview(header)
@@ -1625,6 +1648,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         iconTint: UIColor = .hanyangBlue,
         title: String,
         titleLabel providedTitleLabel: UILabel? = nil,
+        titleView providedTitleView: UIView? = nil,
         buttonTitle: String? = nil,
         action: Selector? = nil,
         showsChevron: Bool = true
@@ -1642,13 +1666,19 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             make.width.height.equalTo(22)
         }
 
-        let label = providedTitleLabel ?? UILabel()
-        label.text = title
-        label.font = .godo(size: 20, weight: .bold)
-        label.textColor = .label
+        let titleView: UIView
+        if let providedTitleView {
+            titleView = providedTitleView
+        } else {
+            let label = providedTitleLabel ?? UILabel()
+            label.text = title
+            label.font = .godo(size: 20, weight: .bold)
+            label.textColor = .label
+            titleView = label
+        }
 
         titleRow.addArrangedSubview(imageView)
-        titleRow.addArrangedSubview(label)
+        titleRow.addArrangedSubview(titleView)
         titleRow.addArrangedSubview(UIView())
         if let buttonTitle, let action {
             titleRow.addArrangedSubview(makeHeaderButton(
@@ -3267,9 +3297,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let sourceBuses = homeBusSourceBuses(for: group)
         switch group {
         case .campus:
-            busHomeTitleLabel.text = String(localized: "home.bus.destination.gangnam")
+            updateHomeBusDestinationMenu()
         default:
-            busHomeTitleLabel.text = sourceBuses.first?.stop.name ?? String(localized: "bus.stop.title")
+            busHomeDestinationButton.setTitle(sourceBuses.first?.stop.name ?? String(localized: "bus.stop.title"), for: .normal)
+            busHomeDestinationButton.menu = nil
         }
         let destinationBuses = Dictionary(grouping: homeBusData.filter { bus in
             destinationStopID(routeID: Int32(bus.route.seq), group: group) == Int32(bus.stop.seq)
@@ -3363,17 +3394,37 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func homeBusSourceBuses(for group: HomeBusGroup) -> [HomePageQuery.Data.Bus] {
         switch group {
         case .campus:
-            // Match Android's campus Gangnam-bound source mapping:
-            // 3102 from the convention center and 3100N from the main gate.
-            return homeBusData.filter {
-                ($0.route.seq == 216_000_061 && $0.stop.seq == 216_000_379) ||
-                ($0.route.seq == 216_000_096 && $0.stop.seq == 216_000_719)
+            let requests: [(Int, Int)]
+            switch selectedHomeBusDestination {
+            case .sangnoksu: requests = [(216_000_068, 216_000_383)]
+            case .gangnam: requests = [(216_000_061, 216_000_379), (216_000_096, 216_000_719)]
+            case .suwon: requests = [(216_000_104, 216_000_070), (200_000_015, 216_000_070)]
+            case .uiwang: requests = [(216_000_026, 216_000_719), (216_000_096, 216_000_719)]
+            case .gunpo: requests = [(216_000_043, 216_000_719)]
+            }
+            return homeBusData.filter { bus in
+                requests.contains { route, stop in bus.route.seq == route && bus.stop.seq == stop }
             }
         default:
             return homeBusData.filter {
                 group.sourceStops.contains(Int32($0.stop.seq)) && group.routeIDs.contains(Int32($0.route.seq))
             }
         }
+    }
+
+    private func updateHomeBusDestinationMenu() {
+        busHomeDestinationButton.setTitle(selectedHomeBusDestination.title, for: .normal)
+        busHomeDestinationButton.menu = UIMenu(children: HomeBusDestination.allCases.map { destination in
+            UIAction(
+                title: destination.title,
+                state: destination == selectedHomeBusDestination ? .on : .off
+            ) { [weak self] _ in
+                guard let self else { return }
+                selectedHomeBusDestination = destination
+                updateHomeBusDestinationMenu()
+                renderMovement()
+            }
+        })
     }
 
     private func makeHomeBusRow(_ data: HomeBusRowData) -> UIView {
@@ -3447,12 +3498,19 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         case .dormitory:
             return routeID == 216_000_068 ? 216_000_138 : HomeSettings.seoulBusStop.stopID
         case .campus:
-            switch routeID {
-            case 216_000_068: return 216_000_138
-            case 216_000_061: return HomeSettings.showSeoulBusStop ? HomeSettings.seoulBusStop.stopID : nil
-            case 216_000_026, 216_000_096: return 226_000_042
-            case 216_000_043: return 225_000_116
-            default: return nil
+            switch selectedHomeBusDestination {
+            case .sangnoksu:
+                return routeID == 216_000_068 ? 216_000_138 : nil
+            case .gangnam:
+                return [216_000_061, 216_000_096].contains(routeID) && HomeSettings.showSeoulBusStop
+                    ? HomeSettings.seoulBusStop.stopID
+                    : nil
+            case .suwon:
+                return [216_000_104, 200_000_015].contains(routeID) ? 216_000_141 : nil
+            case .uiwang:
+                return [216_000_026, 216_000_096].contains(routeID) ? 226_000_042 : nil
+            case .gunpo:
+                return routeID == 216_000_043 ? 225_000_116 : nil
             }
         case .kitch:
             return HomeSettings.seoulBusStop.stopID

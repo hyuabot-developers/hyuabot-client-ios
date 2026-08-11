@@ -1375,6 +1375,38 @@
         }
       }
     },
+    "home.bus.destination.sangnoksu": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "To Sangnoksu Station" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "常緑樹駅方面" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "상록수역 방면" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "常绿树站方向" } }
+      }
+    },
+    "home.bus.destination.suwon": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "To Suwon Station" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "水原駅方面" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "수원역 방면" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "水原站方向" } }
+      }
+    },
+    "home.bus.destination.uiwang": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "To Uiwang" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "義王方面" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "의왕 방면" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "义王方向" } }
+      }
+    },
+    "home.bus.destination.gunpo": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "To Gunpo" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "軍浦方面" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "군포 방면" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "军浦方向" } }
+      }
+    },
     "home.bus.detail": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "View all" } },
