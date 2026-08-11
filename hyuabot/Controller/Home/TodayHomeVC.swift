@@ -318,11 +318,11 @@ private enum HomeBusGroup {
         }
     }
 
-    var routes: Set<String> {
+    var routeIDs: Set<Int32> {
         switch self {
-        case .campus, .seoul: ["3102", "3100", "3101", "3100N", "10-1"]
-        case .kitch, .dormitory: ["10-1", "3102"]
-        case .suwon: ["7070", "9090"]
+        case .campus, .seoul: [216_000_068, 216_000_061, 216_000_026, 216_000_043, 216_000_096]
+        case .kitch, .dormitory: [216_000_068, 216_000_061]
+        case .suwon: [216_000_104, 200_000_015]
         }
     }
 }
@@ -3142,7 +3142,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard let group = nearestHomeBusGroup() else { return [] }
         let now = Foundation.Date.now
         let arrivals = homeBusData
-            .filter { group.sourceStops.contains(Int32($0.stop.seq)) && group.routes.contains($0.route.name) }
+            .filter { group.sourceStops.contains(Int32($0.stop.seq)) && group.routeIDs.contains(Int32($0.route.seq)) }
             .flatMap { bus in
                 bus.arrival.compactMap { arrival -> (String, String, Int, Int?)? in
                     let minutes: Int?
