@@ -3424,15 +3424,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let live = candidates.filter(\.isRealtime)
         let liveRows = live.sorted { homeBusRowComesBefore($0, $1, group: group) }
         var selected: [HomeBusRowData] = if group.limitsOnePerRoute {
-            liveRows
-                .reduce(into: [Int32: HomeBusRowData]()) { result, row in
-                    guard let routeID = homeBusRouteID(row.route), result[routeID] == nil else { return }
-                    result[routeID] = row
-                }
-                .values
-                .sorted { homeBusRowComesBefore($0, $1, group: group) }
-                .prefix(2)
-                .map(Array.init)
+            Array(
+                liveRows
+                    .reduce(into: [Int32: HomeBusRowData]()) { result, row in
+                        guard let routeID = homeBusRouteID(row.route), result[routeID] == nil else { return }
+                        result[routeID] = row
+                    }
+                    .values
+                    .sorted { homeBusRowComesBefore($0, $1, group: group) }
+                    .prefix(2)
+            )
         } else {
             Array(liveRows.prefix(2))
         }
