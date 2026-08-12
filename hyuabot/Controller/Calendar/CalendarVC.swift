@@ -354,6 +354,10 @@ class CalendarVC: UIViewController {
         guard let allEvents = try? eventSubject.value() else { return }
         var segments: [EventSegment] = []
         let numRows = calendarDates.count / 7
+        let normalizedEvents = allEvents.map { event in
+            (event: event, start: String(event.startDate.prefix(10)), end: String(event.endDate.prefix(10)))
+        }
+        let dayStrings = calendarDates.map(dateFormatter.string)
 
         for row in 0 ..< numRows {
             let startIdx = row * 7
@@ -363,24 +367,24 @@ class CalendarVC: UIViewController {
             let weekStartStr = dateFormatter.string(from: weekDates.first!)
             let weekEndStr = dateFormatter.string(from: weekDates.last!)
 
-            let rowEvents = allEvents.filter {
-                String($0.endDate.prefix(10)) >= weekStartStr &&
-                    String($0.startDate.prefix(10)) <= weekEndStr
+            let rowEvents = normalizedEvents.filter {
+                $0.end >= weekStartStr && $0.start <= weekEndStr
             }.sorted { lhs, rhs in
-                lhs.startDate != rhs.startDate
-                    ? lhs.startDate < rhs.startDate
-                    : lhs.endDate > rhs.endDate // longer events get lower slots
+                lhs.start != rhs.start
+                    ? lhs.start < rhs.start
+                    : lhs.end > rhs.end // longer events get lower slots
             }
 
             var slotOccupancy: [Int: Set<Int>] = [:]
 
-            for event in rowEvents {
-                let evStart = String(event.startDate.prefix(10))
-                let evEnd = String(event.endDate.prefix(10))
+            for rowEvent in rowEvents {
+                let event = rowEvent.event
+                let evStart = rowEvent.start
+                let evEnd = rowEvent.end
 
                 var cols = Set<Int>()
                 for col in 0 ..< weekDates.count {
-                    let dayStr = dateFormatter.string(from: weekDates[col])
+                    let dayStr = dayStrings[startIdx + col]
                     if evStart <= dayStr, evEnd >= dayStr { cols.insert(col) }
                 }
                 guard !cols.isEmpty else { continue }
@@ -567,10 +571,15 @@ class CalendarVC: UIViewController {
             if let data = response?.data {
                 let prev = UserDefaults.standard.string(forKey: "calendarVersion") ?? ""
                 let isEmpty = Database.shared.database.objects(Event.self).isEmpty
-                if data.calendar.version != prev || isEmpty { updateEvent() }
+                if data.calendar.version != prev || isEmpty {
+                    updateEvent()
+                } else {
+                    isLoading.onNext(false)
+                }
+            } else {
+                isLoading.onNext(false)
             }
         }
-        isLoading.onNext(false)
     }
 
     private func updateEvent() {
@@ -579,9 +588,10 @@ class CalendarVC: UIViewController {
             let response = try? await Network.shared.client.fetch(query: CalendarPageQuery())
             if let data = response?.data {
                 let events = await Event.transformTranslated(from: data.calendar.categories)
-                Event.replaceAll(with: events)
+                await Event.replaceAll(with: events)
                 UserDefaults.standard.set(data.calendar.version, forKey: "calendarVersion")
             }
+            isLoading.onNext(false)
         }
     }
 

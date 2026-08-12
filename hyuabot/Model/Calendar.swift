@@ -18,6 +18,16 @@ final class Event: RealmSwift.Object {
 }
 
 extension Event {
+    struct Record {
+        let id: Int
+        let title: String
+        let descriptionText: String
+        let startDate: String
+        let endDate: String
+        let categoryID: Int
+        let categoryName: String
+    }
+
     static let dateFormatter = DateFormatter().then {
         $0.dateFormat = "yyyy-MM-dd HH:mm:ss"
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
@@ -38,7 +48,7 @@ extension Event {
     }
 
     @MainActor
-    static func transformTranslated(from categories: [CalendarPageQuery.Data.Calendar.Category]) async -> [Event] {
+    static func transformTranslated(from categories: [CalendarPageQuery.Data.Calendar.Category]) async -> [Record] {
         let events = categories.flatMap { category in
             category.events.map { (category, $0) }
         }
@@ -48,28 +58,40 @@ extension Event {
             }
         )
         return events.map { category, event in
-            Event().then {
-                $0.id = event.seq
-                $0.title = translations[event.title] ?? event.title
-                $0.descriptionText = translations[event.description] ?? event.description
-                $0.startDate = event.start
-                $0.endDate = event.end
-                $0.categoryID = category.seq
-                $0.categoryName = translations[category.name] ?? category.name
-            }
+            Record(
+                id: event.seq,
+                title: translations[event.title] ?? event.title,
+                descriptionText: translations[event.description] ?? event.description,
+                startDate: event.start,
+                endDate: event.end,
+                categoryID: category.seq,
+                categoryName: translations[category.name] ?? category.name
+            )
         }
     }
 
-    static func replaceAll(with contacts: [Event]) {
-        let realm = Database.shared.database
-        do {
-            try realm.write {
-                realm.delete(realm.objects(Event.self))
-                realm.add(contacts)
+    static func replaceAll(with records: [Record]) async {
+        await Task.detached {
+            guard let realm = try? Realm() else { return }
+            do {
+                try realm.write {
+                    realm.delete(realm.objects(Event.self))
+                    realm.add(records.map { record in
+                        Event().then {
+                            $0.id = record.id
+                            $0.title = record.title
+                            $0.descriptionText = record.descriptionText
+                            $0.startDate = record.startDate
+                            $0.endDate = record.endDate
+                            $0.categoryID = record.categoryID
+                            $0.categoryName = record.categoryName
+                        }
+                    })
+                }
+            } catch {
+                assertionFailure("Failed to replace events: \(error)")
             }
-        } catch {
-            assertionFailure("Failed to replace events: \(error)")
-        }
+        }.value
     }
 
     static func fetchAll() -> Results<Event> {
