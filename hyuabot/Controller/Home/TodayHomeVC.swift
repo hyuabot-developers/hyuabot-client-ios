@@ -762,12 +762,14 @@ private final class HomeQuickSettingsVC: UIViewController {
         updateSubwayTransferDestination?(SubwayTransferDestination.allCases[subwayDestinationControl.selectedSegmentIndex])
     }
 
-    @objc private func onChangeShowSeoulBusStop() {
+    @objc
+    private func onChangeShowSeoulBusStop() {
         seoulBusStopControl.isEnabled = showSeoulBusStopSwitch.isOn
         updateShowSeoulBusStop?(showSeoulBusStopSwitch.isOn)
     }
 
-    @objc private func onChangeSeoulBusStop() {
+    @objc
+    private func onChangeSeoulBusStop() {
         guard BusSeoulTargetStop.allCases.indices.contains(seoulBusStopControl.selectedSegmentIndex) else { return }
         updateSeoulBusStop?(BusSeoulTargetStop.allCases[seoulBusStopControl.selectedSegmentIndex])
     }
@@ -3328,6 +3330,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return row
     }
 
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func homeBusRows() -> [UIView] {
         guard let group = nearestHomeBusGroup() else {
             return [makeEmptyView(
@@ -3429,7 +3432,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 .values
                 .sorted { homeBusRowComesBefore($0, $1, group: group) }
                 .prefix(2)
-                .map { $0 }
+                .map(Array.init)
         } else {
             Array(liveRows.prefix(2))
         }
@@ -3672,7 +3675,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             : .systemGreen
     }
 
-    @objc private func openBusPage() {
+    @objc
+    private func openBusPage() {
         tabBarController?.selectedIndex = 1
     }
 
