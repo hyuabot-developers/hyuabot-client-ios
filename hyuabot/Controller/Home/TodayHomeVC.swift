@@ -1120,6 +1120,7 @@ private final class HomeWeatherIconView: UIView {
 
 final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_length
     private static let autoRefreshIntervalSeconds = 60
+    private static let homeBusLogTimeMarginMinutes = 5
     private static let departureSwitchHysteresisMeters: CLLocationDistance = 75
     private static let subwayMinimumTransferMinutes = 5
     private static let chojiMinimumTransferMinutes = 8
@@ -3360,7 +3361,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 ))
             }
             bus.log.forEach { log in
-                guard let time = log.time.toLocalTimeOrNil(), let minutes = minutesUntilService(time) else { return }
+                guard let time = log.time.toLocalTimeOrNil() else { return }
+                let minimumLeadMinutes = max(
+                    0,
+                    homeBusLogLeadMinutes(route: bus.route.name) - Self.homeBusLogTimeMarginMinutes
+                )
+                let minimumLogTime = now.addingTimeInterval(Double(minimumLeadMinutes) * 60)
+                guard time >= minimumLogTime, let minutes = minutesUntilService(time) else { return }
                 let arrivalDate = now.addingTimeInterval(Double(minutes) * 60)
                 let destinationETA = showsHomeBusDestinationETA(group, routeID: Int32(bus.route.seq))
                     ? destinationArrivalTime(
@@ -3561,6 +3568,19 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             }
         case .kitch:
             return routeID == 216_000_068 ? 216_000_138 : HomeSettings.seoulBusStop.stopID
+        }
+    }
+
+    private func homeBusLogLeadMinutes(route: String) -> Int {
+        switch route {
+        case "10-1": 20
+        case "3102": 55
+        case "3100N": 75
+        case "3100": 65
+        case "3101": 60
+        case "7070": 35
+        case "9090": 40
+        default: 60
         }
     }
 
