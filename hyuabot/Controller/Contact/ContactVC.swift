@@ -196,10 +196,11 @@ class ContactVC: UIViewController {
                 let previousVersion = UserDefaults.standard.string(forKey: "contactVersion") ?? ""
                 if data.phonebook.version != previousVersion {
                     self.updateContact()
-                }
+                } else { isLoading.onNext(false) }
+            } else {
+                isLoading.onNext(false)
             }
         }
-        isLoading.onNext(false)
     }
 
     private func updateContact() {
@@ -208,9 +209,10 @@ class ContactVC: UIViewController {
             let response = try? await Network.shared.client.fetch(query: ContactPageQuery())
             if let data = response?.data {
                 let contacts = await Contact.transformTranslated(from: data.phonebook.categories)
-                Contact.replaceAll(with: contacts)
+                await Contact.replaceAll(with: contacts)
                 UserDefaults.standard.set(data.phonebook.version, forKey: "contactVersion")
             }
+            isLoading.onNext(false)
         }
     }
 
