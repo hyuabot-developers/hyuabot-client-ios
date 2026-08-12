@@ -14,7 +14,7 @@ final class Contact: RealmSwift.Object {
 }
 
 extension Contact {
-    struct Record: Sendable {
+    struct Record {
         let id: Int
         let campusID: Int
         let name: String

@@ -18,7 +18,7 @@ final class Event: RealmSwift.Object {
 }
 
 extension Event {
-    struct Record: Sendable {
+    struct Record {
         let id: Int
         let title: String
         let descriptionText: String
