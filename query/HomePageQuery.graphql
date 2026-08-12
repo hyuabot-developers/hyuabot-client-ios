@@ -121,12 +121,26 @@ query HomePageQuery(
     bus(input: $busInput) {
         route {
             seq
+            name
         }
         stop {
             seq
+            name
+            latitude
+            longitude
         }
         arrival {
             minutes
+            stops
+            seats
+            isRealtime
+            time
+            arrivalTime
+        }
+        log {
+            date
+            time
+            vehicle
         }
     }
     cafeteria(input: { date: $date, campus: $campusID }) {
