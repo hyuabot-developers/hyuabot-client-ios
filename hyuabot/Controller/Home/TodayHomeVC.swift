@@ -3173,17 +3173,46 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private func homeBusInput() -> [BusRouteStopInput] {
         let dates = BusRecentDates.sameWeekdayType(count: 4)
-        let sourceStops: [Int32] = [
-            216_000_379, 216_000_719, 216_000_070, 216_000_381, 216_000_383,
-            202_000_106, 216_000_138, 216_000_141, 216_000_378, 216_000_048,
-            225_000_116, 226_000_042, 121_000_060, 121_000_929, 121_000_974,
-            121_000_970, 121_000_220
+        // Keep this list in lockstep with Android's HomeViewModel.homeBusInput().
+        // The home alternative cards use stops that are not part of the location
+        // preview itself (80A/80B and 62 transfer stops in particular).
+        let inputs: [(Int32, Int32)] = [
+            (216_000_068, 216_000_383), (216_000_068, 216_000_138),
+            (216_000_104, 216_000_141), (200_000_015, 216_000_141),
+            (216_000_081, 216_000_028), (216_000_101, 216_000_028),
+            (216_000_016, 216_000_152),
+            (216_000_082, 216_000_077), (216_000_102, 216_000_077),
+            (216_000_016, 216_000_074),
+            (216_000_082, 217_000_140), (216_000_102, 217_000_140),
+            (216_000_016, 217_000_264),
+            (216_000_068, 216_000_379), (216_000_068, 216_000_719),
+            (216_000_068, 216_000_070), (216_000_068, 216_000_381),
+            (216_000_061, 216_000_379), (216_000_061, 216_000_378),
+            (216_000_061, 216_000_381), (216_000_061, 216_000_383),
+            (216_000_061, 216_000_719),
+            (216_000_026, 216_000_719), (216_000_043, 216_000_719),
+            (216_000_096, 216_000_719),
+            (216_000_096, 216_000_048), (216_000_026, 216_000_048),
+            (216_000_043, 216_000_048),
+            (216_000_026, 226_000_042), (216_000_096, 226_000_042),
+            (216_000_043, 225_000_116),
+            (216_000_104, 216_000_070), (200_000_015, 216_000_070),
+            (216_000_104, 202_000_106), (200_000_015, 202_000_106),
+            (216_000_061, 121_000_060), (216_000_061, 121_000_929),
+            (216_000_061, 121_000_974), (216_000_061, 121_000_970),
+            (216_000_061, 121_000_220),
+            (216_000_026, 121_000_060), (216_000_026, 121_000_929),
+            (216_000_026, 121_000_974), (216_000_026, 121_000_970),
+            (216_000_026, 121_000_220),
+            (216_000_043, 121_000_060), (216_000_043, 121_000_929),
+            (216_000_043, 121_000_974), (216_000_043, 121_000_970),
+            (216_000_043, 121_000_220),
+            (216_000_096, 121_000_060), (216_000_096, 121_000_929),
+            (216_000_096, 121_000_974), (216_000_096, 121_000_970),
+            (216_000_096, 121_000_220)
         ]
-        let routes: [Int32] = [216_000_068, 216_000_061, 216_000_026, 216_000_043, 216_000_096, 216_000_104, 200_000_015]
-        return routes.flatMap { route in
-            sourceStops.map { stop in
-                BusRouteStopInput(route: route, stop: stop, limit: 3, dates: .some(dates))
-            }
+        return inputs.map { route, stop in
+            BusRouteStopInput(route: route, stop: stop, limit: 3, dates: .some(dates))
         }
     }
 
@@ -3243,6 +3272,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         row.isLayoutMarginsRelativeArrangement = true
         row.backgroundColor = emphasized ? option.tintColor.withAlphaComponent(0.10) : .tertiarySystemGroupedBackground
         row.layer.cornerRadius = 8
+        row.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(58)
+        }
 
         let badge = HomePaddedLabel()
         badge.text = option.badge
@@ -3250,22 +3282,21 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         badge.textColor = .white
         badge.textAlignment = .center
         badge.backgroundColor = option.tintColor
-        badge.contentInsets = UIEdgeInsets(top: 5, left: 14, bottom: 5, right: 14)
+        badge.contentInsets = .zero
         badge.layer.cornerRadius = 13
         badge.clipsToBounds = true
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(48)
-            make.width.lessThanOrEqualTo(82)
-            make.height.equalTo(26)
+            make.width.equalTo(64)
+            make.height.equalTo(24)
         }
         badge.setContentHuggingPriority(.required, for: .horizontal)
         badge.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let textStack = UIStackView()
         textStack.axis = .vertical
-        textStack.spacing = 4
+        textStack.spacing = 3
         let title = UILabel()
         title.text = option.title
         title.font = .godo(size: emphasized ? 17 : 15, weight: .bold)
@@ -4074,7 +4105,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private func requestDepartureLocation() {
         switch locationManager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
-            locationManager.requestLocation()
+            // requestLocation() may immediately return a cached simulator/device fix.
+            // Ask Core Location for one fresh high-accuracy update so the home bus
+            // group is recalculated when the user moves between stop groups.
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.distanceFilter = kCLDistanceFilterNone
+            locationManager.startUpdatingLocation()
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         default:
@@ -4350,6 +4386,7 @@ extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
         guard !isDepartureManuallySelected,
               let location = locations.last
         else { return }
+        manager.stopUpdatingLocation()
         lastLocation = location
         renderMovement()
         pendingDepartureLocation = location
