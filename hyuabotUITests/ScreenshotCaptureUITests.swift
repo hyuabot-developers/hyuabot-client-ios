@@ -11,7 +11,6 @@
 import XCTest
 
 final class ScreenshotCaptureUITests: XCTestCase {
-
     // MARK: - Main test
 
     func testCaptureScreenshots() throws {
@@ -22,12 +21,13 @@ final class ScreenshotCaptureUITests: XCTestCase {
 
         let configPath = "/tmp/screenshot_config.json"
         if let data = FileManager.default.contents(atPath: configPath),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String]
+        {
             outputDir = json["SCREENSHOT_DIR"] ?? outputDir
-            language  = json["SCREENSHOT_LANG"] ?? language
+            language = json["SCREENSHOT_LANG"] ?? language
         } else {
             outputDir = ProcessInfo.processInfo.environment["SCREENSHOT_DIR"] ?? outputDir
-            language  = ProcessInfo.processInfo.environment["SCREENSHOT_LANG"] ?? language
+            language = ProcessInfo.processInfo.environment["SCREENSHOT_LANG"] ?? language
         }
 
         try FileManager.default.createDirectory(
@@ -82,7 +82,7 @@ final class ScreenshotCaptureUITests: XCTestCase {
             ("tab.bus", "bus"),
             ("tab.subway", "subway"),
             ("tab.cafeteria", "cafeteria"),
-            ("tab.campus", "campus"),
+            ("tab.campus", "campus")
         ] {
             let button = tabBar.buttons[tabID]
             guard button.waitForExistence(timeout: 5) else {
@@ -119,7 +119,7 @@ final class ScreenshotCaptureUITests: XCTestCase {
         var tapped = false
         let maxSwipes = 6
 
-        for attempt in 0...maxSwipes {
+        for attempt in 0 ... maxSwipes {
             let btn = app.buttons.matching(
                 NSPredicate(format: "label == %@", buttonLabel)
             ).firstMatch
@@ -156,26 +156,26 @@ final class ScreenshotCaptureUITests: XCTestCase {
             "-AppleLanguages", "(\(language))",
             "-AppleLocale", localeIdentifier(for: language),
             "-homeExperienceEnabled", homeEnabled ? "YES" : "NO",
-            "-homeExperiencePromptDecision", "YES",
+            "-homeExperiencePromptDecision", "YES"
         ]
         return app
     }
 
     private func localeIdentifier(for language: String) -> String {
         switch language {
-        case "en": return "en_US"
-        case "zh-Hans": return "zh_Hans_CN"
-        case "ja": return "ja_JP"
-        default: return language
+        case "en": "en_US"
+        case "zh-Hans": "zh_Hans_CN"
+        case "ja": "ja_JP"
+        default: language
         }
     }
 
     private func timetableButtonLabel(for language: String) -> String {
         switch language {
-        case "en": return "Show Entire Timetable"
-        case "zh-Hans": return "查看完整时刻表"
-        case "ja": return "全時刻表を表示"
-        default: return "전체 시간표 보기"
+        case "en": "Show Entire Timetable"
+        case "zh-Hans": "查看完整时刻表"
+        case "ja": "全時刻表を表示"
+        default: "전체 시간표 보기"
         }
     }
 

@@ -888,7 +888,11 @@ class ShuttleRealtimeVC: UIViewController {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
         }
 
-        func display(_ bus: ShuttleRealtimePageQuery.Data.AlternativeBus?, routeName: String, color: UIColor) -> ShuttleBusAlternativeDisplayData? {
+        func display(
+            _ bus: ShuttleRealtimePageQuery.Data.AlternativeBus?,
+            routeName: String,
+            color: UIColor
+        ) -> ShuttleBusAlternativeDisplayData? {
             guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
             return ShuttleBusAlternativeDisplayData(
                 routeName: routeName,
