@@ -1129,6 +1129,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private static let shuttleDisplayCount = 2
     private static let shuttleTransferLookaheadCount = 3
     private static let selectorTitleFontSize: CGFloat = 18
+    private static let selectorIconSize: CGFloat = 22
+    private static let selectorHeaderSpacing: CGFloat = 10
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -1183,6 +1185,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private let shuttleOptionStack = UIStackView()
     private let busOptionStack = UIStackView()
+    private weak var busCard: UIView?
     private let busHomeDestinationButton = UIButton(type: .system)
     private let supportingOptionStack = UIStackView()
     private let cafeteriaCard = UIStackView()
@@ -1269,6 +1272,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var shuttleData: HomePageQuery.Data?
     private var busAlternatives: [String: [HomeTransitOption]] = [:]
     private var homeBusData: [HomePageQuery.Data.Bus] = []
+    private var homeBusRowsCache: [HomeBusDestination: [UIView]] = [:]
+    private var isHomeBusRefreshing = false
+    private var pendingHomeDataRefresh = false
     private var bus50TerminalLogTimes: [LocalTime] = []
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
@@ -1373,7 +1379,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         contentStack.addArrangedSubview(makeNoticeView())
         contentStack.addArrangedSubview(makeDestinationControlView())
         contentStack.addArrangedSubview(makeMovementCard())
-        contentStack.addArrangedSubview(makeBusCard())
+        let busCard = makeBusCard()
+        self.busCard = busCard
+        contentStack.addArrangedSubview(busCard)
         contentStack.addArrangedSubview(makeCafeteriaCard())
         renderLoadingState()
     }
@@ -1562,10 +1570,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             showsChevron: true
         )
         header.snp.makeConstraints { make in make.height.equalTo(48) }
-        busHomeDestinationButton.titleLabel?.font = .godo(size: 20, weight: .bold)
         busHomeDestinationButton.setTitleColor(.label, for: .normal)
         busHomeDestinationButton.setTitleColor(.secondaryLabel, for: .highlighted)
         busHomeDestinationButton.contentHorizontalAlignment = .leading
+        busHomeDestinationButton.titleLabel?.numberOfLines = 1
+        busHomeDestinationButton.titleLabel?.adjustsFontSizeToFitWidth = true
+        busHomeDestinationButton.titleLabel?.minimumScaleFactor = 0.9
+        busHomeDestinationButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         busHomeDestinationButton.showsMenuAsPrimaryAction = true
         updateHomeBusDestinationMenu()
         busOptionStack.axis = .vertical
@@ -1583,13 +1594,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let header = UIStackView()
         header.axis = .horizontal
         header.alignment = .center
-        header.spacing = 10
+        header.spacing = Self.selectorHeaderSpacing
 
         let imageView = UIImageView(image: UIImage(systemName: "bus.fill"))
         imageView.tintColor = .homeSelectorIconTint
         imageView.contentMode = .scaleAspectFit
         imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(22)
+            make.width.height.equalTo(Self.selectorIconSize)
         }
 
         departureSelectorButton.snp.makeConstraints { make in
@@ -1631,12 +1642,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let header = UIStackView()
         header.axis = .horizontal
         header.alignment = .center
-        header.spacing = 10
+        header.spacing = Self.selectorHeaderSpacing
 
         cafeteriaIconView.tintColor = .homeSelectorIconTint
         cafeteriaIconView.contentMode = .scaleAspectFit
         cafeteriaIconView.snp.makeConstraints { make in
-            make.width.height.equalTo(22)
+            make.width.height.equalTo(Self.selectorIconSize)
         }
         cafeteriaPeriodSelectorButton.snp.makeConstraints { make in
             make.height.greaterThanOrEqualTo(44)
@@ -1668,14 +1679,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let titleRow = UIStackView()
         titleRow.axis = .horizontal
         titleRow.alignment = .center
-        titleRow.spacing = 10
+        titleRow.spacing = Self.selectorHeaderSpacing
 
         let imageView = providedIconView ?? UIImageView()
         imageView.image = assetName.flatMap(UIImage.init(named:)) ?? UIImage(systemName: icon)
         imageView.tintColor = iconTint
         imageView.contentMode = .scaleAspectFit
         imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(22)
+            make.width.height.equalTo(Self.selectorIconSize)
         }
 
         let titleView: UIView
@@ -1736,11 +1747,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func renderLoadingState() {
+        busCard?.isHidden = nearestHomeBusGroup() == nil
         movementStateLabel.text = String(localized: "home.loading")
         updateDepartureSelector()
         updateMealPeriodSelector()
         replaceSubviews(in: shuttleOptionStack, with: [makeSkeletonRow(widthRatio: 0.72), makeSkeletonRow(widthRatio: 0.54)])
-        replaceSubviews(in: busOptionStack, with: [])
+        replaceSubviews(in: busOptionStack, with: [makeSkeletonRow(widthRatio: 0.68), makeSkeletonRow(widthRatio: 0.52)])
         replaceSubviews(in: supportingOptionStack, with: [])
         replaceSubviews(in: mealStack, with: [makeSkeletonRow(widthRatio: 0.82), makeSkeletonRow(widthRatio: 0.64)])
     }
@@ -1961,7 +1973,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             selectedDestination.title
         )
         updateDepartureSelector()
-        if shuttleOptions.isEmpty {
+        if shuttleData == nil {
+            replaceSubviews(in: shuttleOptionStack, with: [
+                makeSkeletonRow(widthRatio: 0.72),
+                makeSkeletonRow(widthRatio: 0.54)
+            ])
+        } else if shuttleOptions.isEmpty {
             replaceSubviews(in: shuttleOptionStack, with: [
                 makeEmptyView(
                     title: String(localized: "home.empty.shuttle.title"),
@@ -1972,7 +1989,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             replaceSubviews(in: shuttleOptionStack, with: shuttleTransferPairViews(for: Array(shuttleOptions.prefix(2))))
         }
 
-        replaceSubviews(in: busOptionStack, with: homeBusRows())
+        let homeBusGroup = nearestHomeBusGroup()
+        renderHomeBus(for: homeBusGroup)
 
         let supportHeader = UILabel()
         supportHeader.font = .godo(size: 13, weight: .bold)
@@ -2998,10 +3016,18 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         ]
     }
 
+    // swiftlint:disable:next function_body_length
     private func fetchHomeData(showsLoadingState: Bool = true) {
-        guard !isLoading else { return }
+        guard !isLoading else {
+            pendingHomeDataRefresh = true
+            return
+        }
         isLoading = true
+        pendingHomeDataRefresh = false
+        isHomeBusRefreshing = true
         initialStopRules = nil
+        homeBusRowsCache.removeAll()
+        let requestedHomeBusDestination = selectedHomeBusDestination
         if showsLoadingState || shuttleData == nil {
             renderLoadingState()
         }
@@ -3028,6 +3054,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             let bus50TerminalLogTimes = await fetchBus50TerminalLogTimes()
 
             await MainActor.run {
+                guard requestedHomeBusDestination == selectedHomeBusDestination else {
+                    isLoading = false
+                    if pendingHomeDataRefresh {
+                        fetchHomeData(showsLoadingState: false)
+                    }
+                    return
+                }
                 initialStopRules =
                     response?.data?.shuttle.initialStopRules.map { rule in
                         ShuttleInitialStopRuleCandidate(
@@ -3049,6 +3082,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                         await ShuttleServiceNoticeScheduler.shared.sync()
                     }
                 }
+                isHomeBusRefreshing = false
                 isLoading = false
                 refreshControl.endRefreshing()
                 if let pendingDepartureLocation {
@@ -3056,6 +3090,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     applyAutomaticDeparture(for: pendingDepartureLocation)
                 }
                 render()
+
+                if pendingHomeDataRefresh {
+                    fetchHomeData(showsLoadingState: false)
+                }
             }
         }
     }
@@ -3214,8 +3252,45 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             (216_000_096, 121_000_220)
         ]
         return inputs.map { route, stop in
-            BusRouteStopInput(route: route, stop: stop, limit: 3, dates: .some(dates))
+            BusRouteStopInput(
+                route: route,
+                stop: stop,
+                destinationStop: homeBusDestinationStopID(routeID: route, stopID: stop),
+                limit: 3,
+                dates: .some(dates)
+            )
         }
+    }
+
+    private func homeBusDestinationStopID(routeID: Int32, stopID: Int32) -> GraphQLNullable<Int32> {
+        let destination: Int32? = switch (routeID, stopID) {
+        case (216_000_068, 216_000_383), (216_000_068, 216_000_381):
+            216_000_138
+        case (216_000_061, 216_000_383), (216_000_061, 216_000_381):
+            HomeSettings.showSeoulBusStop ? HomeSettings.seoulBusStop.stopID : nil
+        case (216_000_104, 216_000_070), (200_000_015, 216_000_070),
+             (216_000_104, 202_000_106), (200_000_015, 202_000_106):
+            216_000_141
+        case (216_000_061, 216_000_379), (216_000_096, 216_000_719):
+            switch selectedHomeBusDestination {
+            case .gangnam where HomeSettings.showSeoulBusStop:
+                HomeSettings.seoulBusStop.stopID
+            case .uiwang where routeID == 216_000_096:
+                226_000_042
+            default:
+                nil
+            }
+        case (216_000_026, 216_000_719), (216_000_026, 216_000_048):
+            226_000_042
+        case (216_000_043, 216_000_719), (216_000_043, 216_000_048):
+            225_000_116
+        case let (routeID, stopID)
+            where [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220].contains(stopID):
+            routeID == 216_000_061 ? 216_000_378 : 216_000_048
+        default:
+            nil
+        }
+        return destination.map(GraphQLNullable.some) ?? .none
     }
 
     private func buildMealSections(
@@ -3330,45 +3405,66 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return row
     }
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
-    private func homeBusRows() -> [UIView] {
-        guard let group = nearestHomeBusGroup() else {
-            return [makeEmptyView(
-                title: String(localized: "home.empty.bus.title"),
-                message: String(localized: "home.empty.bus.message")
-            )]
+    private func renderHomeBus(for group: HomeBusGroup?) {
+        busCard?.isHidden = group == nil
+        if case .campus? = group, busHomeDestinationButton.menu == nil {
+            updateHomeBusDestinationMenu()
         }
+        guard let group else {
+            replaceSubviews(in: busOptionStack, with: [])
+            return
+        }
+        if isHomeBusRefreshing {
+            replaceSubviews(in: busOptionStack, with: [makeSkeletonRow(widthRatio: 0.68), makeSkeletonRow(widthRatio: 0.52)])
+            return
+        }
+        if case .campus = group {
+            let rows: [UIView]
+            if let cachedRows = homeBusRowsCache[selectedHomeBusDestination] {
+                rows = cachedRows
+            } else {
+                rows = homeBusRows(group)
+                homeBusRowsCache[selectedHomeBusDestination] = rows
+            }
+            replaceSubviews(in: busOptionStack, with: rows)
+        } else {
+            replaceSubviews(in: busOptionStack, with: homeBusRows(group))
+        }
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    private func homeBusRows(_ group: HomeBusGroup) -> [UIView] {
         let now = Foundation.Date.now
         let sourceBuses = homeBusSourceBuses(for: group)
         switch group {
         case .campus:
-            updateHomeBusDestinationMenu()
+            break
         default:
-            busHomeDestinationButton.setTitle(sourceBuses.first?.stop.name ?? String(localized: "bus.stop.title"), for: .normal)
+            var configuration = busHomeDestinationButton.configuration ?? .plain()
+            configuration.attributedTitle = AttributedString(
+                sourceBuses.first?.stop.name ?? String(localized: "bus.stop.title"),
+                attributes: AttributeContainer([.font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)])
+            )
+            configuration.image = nil
+            busHomeDestinationButton.configuration = configuration
             busHomeDestinationButton.menu = nil
         }
-        let destinationBuses = Dictionary(grouping: homeBusData.filter { bus in
-            destinationStopID(routeID: Int32(bus.route.seq), group: group) == Int32(bus.stop.seq)
-        }, by: { Int32($0.route.seq) })
-
         var candidates: [HomeBusRowData] = []
         for bus in sourceBuses {
             for arrival in bus.arrival {
-                let minutes: Int? = if let arrivalMinutes = arrival.minutes {
-                    arrivalMinutes
+                let minutes: Int?
+                if let arrivalMinutes = arrival.minutes {
+                    minutes = arrivalMinutes > 0 ? arrivalMinutes : nil
                 } else if let arrivalTime = arrival.arrivalTime?.toLocalTimeOrNil() {
-                    max(0, Int(ceil(arrivalTime.timeIntervalSince(now) / 60)))
+                    let computedMinutes = Int(ceil(arrivalTime.timeIntervalSince(now) / 60))
+                    minutes = computedMinutes > 0 ? computedMinutes : nil
                 } else {
-                    nil
+                    minutes = nil
                 }
                 guard let minutes else { continue }
                 let arrivalDate = now.addingTimeInterval(Double(minutes) * 60)
                 let destinationETA = showsHomeBusDestinationETA(group, routeID: Int32(bus.route.seq))
-                    ? destinationArrivalTime(
-                        primaryArrivalTime: arrivalDate,
-                        primaryBus: bus,
-                        destinationBus: destinationBuses[Int32(bus.route.seq)]?.first
-                    )
+                    ? arrival.destinationArrivalTime?.toLocalTimeOrNil().map(destinationFallbackTime)
                     : nil
                 let details = if arrival.isRealtime, let seats = arrival.seats, seats >= 0, let destinationETA {
                     String(format: String(localized: "home.bus.stops.seats.eta"), arrival.stops ?? 0, seats, destinationETA)
@@ -3394,20 +3490,19 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 ))
             }
             for log in bus.log {
-                guard let time = log.time.toLocalTimeOrNil(), let minutes = minutesUntilService(time) else { continue }
+                guard let time = log.time.toLocalTimeOrNil(),
+                      let serviceDate = serviceDate(for: time, now: now),
+                      serviceDate > now
+                else { continue }
                 if let leadMinutes = homeBusLogLeadMinutes(route: bus.route.name, stopID: Int32(bus.stop.seq)) {
                     let minimumLogTime = now.addingTimeInterval(
                         Double(max(0, leadMinutes - Self.homeBusLogTimeMarginMinutes)) * 60
                     )
-                    guard time >= minimumLogTime else { continue }
+                    guard serviceDate >= minimumLogTime else { continue }
                 }
-                let arrivalDate = now.addingTimeInterval(Double(minutes) * 60)
+                let arrivalDate = serviceDate
                 let destinationETA = showsHomeBusDestinationETA(group, routeID: Int32(bus.route.seq))
-                    ? destinationArrivalTime(
-                        primaryArrivalTime: arrivalDate,
-                        primaryBus: bus,
-                        destinationBus: destinationBuses[Int32(bus.route.seq)]?.first
-                    )
+                    ? busDestinationArrivalTime(for: bus, sourceTime: time)
                     : nil
                 candidates.append(HomeBusRowData(
                     route: bus.route.name,
@@ -3488,14 +3583,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     }
 
-    private func homeBusRouteID(_ route: String) -> Int32? {
-        switch route {
-        case "10-1": 216_000_068
-        case "3102": 216_000_061
-        default: nil
-        }
-    }
-
     private func homeBusLogLeadMinutes(route: String, stopID: Int32) -> Int? {
         switch (route, stopID) {
         case ("10-1", 216_000_383): 21
@@ -3510,12 +3597,32 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     }
 
+    private func homeBusRouteID(_ route: String) -> Int32? {
+        switch route {
+        case "10-1": 216_000_068
+        case "3102": 216_000_061
+        default: nil
+        }
+    }
+
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
         HomeSettings.showSeoulBusStop
     }
 
     private func updateHomeBusDestinationMenu() {
-        busHomeDestinationButton.setTitle(selectedHomeBusDestination.title, for: .normal)
+        var configuration = busHomeDestinationButton.configuration ?? .plain()
+        configuration.baseForegroundColor = .label
+        configuration.attributedTitle = AttributedString(selectedHomeBusDestination.title, attributes: AttributeContainer([
+            .font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)
+        ]))
+        configuration.image = UIImage(systemName: "chevron.down")?.withConfiguration(UIImage.SymbolConfiguration(
+            pointSize: 10,
+            weight: .semibold
+        ))
+        configuration.imagePlacement = .trailing
+        configuration.imagePadding = 5
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 2)
+        busHomeDestinationButton.configuration = configuration
         busHomeDestinationButton.menu = UIMenu(children: HomeBusDestination.allCases.map { destination in
             UIAction(
                 title: destination.title,
@@ -3523,8 +3630,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             ) { [weak self] _ in
                 guard let self else { return }
                 selectedHomeBusDestination = destination
+                homeBusRowsCache.removeAll()
+                homeBusData.removeAll()
+                isHomeBusRefreshing = true
                 updateHomeBusDestinationMenu()
-                renderMovement()
+                renderHomeBus(for: nearestHomeBusGroup())
+                fetchHomeData(showsLoadingState: false)
             }
         })
     }
@@ -3619,41 +3730,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     }
 
-    private func destinationArrivalTime(
-        primaryArrivalTime: Foundation.Date,
-        primaryBus: HomePageQuery.Data.Bus,
-        destinationBus: HomePageQuery.Data.Bus?
-    ) -> String {
-        guard let destinationBus else { return destinationFallbackTime(primaryArrivalTime) }
-        let samples = primaryBus.log.compactMap { primary -> (primaryMinutes: Int, duration: Int)? in
-            destinationBus.log
-                .filter { $0.date == primary.date && $0.vehicle == primary.vehicle && $0.time > primary.time }
-                .min { $0.time < $1.time }
-                .flatMap { secondary -> Int? in
-                    let start = primary.time.toLocalTimeOrNil()
-                    let end = secondary.time.toLocalTimeOrNil()
-                    guard let start, let end else { return nil }
-                    let value = Int(end.timeIntervalSince(start) / 60)
-                    return value > 0 && value < 180 ? value : nil
-                }
-                .map { duration in
-                    (primaryMinutes: localTimeMinutes(primary.time.toLocalTime()), duration: duration)
-                }
-        }
-        guard !samples.isEmpty else { return destinationFallbackTime(primaryArrivalTime) }
-        let targetMinutes = localTimeMinutes(primaryArrivalTime)
-        let average = [30, 60, 120].compactMap { window -> Int? in
-            let nearby = samples.filter { abs($0.primaryMinutes - targetMinutes) <= window }
-            guard !nearby.isEmpty else { return nil }
-            return nearby.map(\.duration).reduce(0, +) / nearby.count
-        }.first
-        guard let average else { return destinationFallbackTime(primaryArrivalTime) }
-        return destinationFallbackTime(primaryArrivalTime.addingTimeInterval(Double(average) * 60))
-    }
-
-    private func localTimeMinutes(_ date: Foundation.Date) -> Int {
-        let calendar = Calendar.current
-        return calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
+    private func busDestinationArrivalTime(
+        for bus: HomePageQuery.Data.Bus,
+        sourceTime: Foundation.Date
+    ) -> String? {
+        guard let arrival = bus.arrival.first(where: {
+            $0.arrivalTime?.toLocalTimeOrNil() == sourceTime
+        }),
+            let destinationArrivalTime = arrival.destinationArrivalTime?.toLocalTimeOrNil()
+        else { return nil }
+        return destinationFallbackTime(destinationArrivalTime)
     }
 
     private func destinationFallbackTime(_ date: Foundation.Date) -> String {
@@ -3681,20 +3767,18 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         tabBarController?.selectedIndex = 1
     }
 
-    private func minutesUntilService(_ time: Foundation.Date) -> Int? {
-        let calendar = Calendar.current
-        let now = Foundation.Date.now
+    private func serviceDate(for time: Foundation.Date, now: Foundation.Date) -> Foundation.Date? {
+        var calendar = Calendar.current
+        calendar.timeZone = .current
         let today = calendar.date(
             bySettingHour: calendar.component(.hour, from: time),
             minute: calendar.component(.minute, from: time),
             second: 0,
             of: now
         ) ?? time
-        let adjusted = today < now && calendar.component(.hour, from: time) < 4
-            ? calendar.date(byAdding: .day, value: 1, to: today) ?? today
-            : today
-        let minutes = Int(ceil(adjusted.timeIntervalSince(now) / 60))
-        return minutes >= 0 ? minutes : nil
+        if today > now { return today }
+        guard calendar.component(.hour, from: time) < 4 else { return nil }
+        return calendar.date(byAdding: .day, value: 1, to: today)
     }
 
     private func nearestHomeBusGroup() -> HomeBusGroup? {
@@ -4001,7 +4085,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
         configuration.imagePlacement = .trailing
         configuration.imagePadding = 5
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 2)
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 2)
         configuration.attributedTitle = AttributedString(displayedTitle, attributes: AttributeContainer([
             .font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)
         ]))
@@ -4030,7 +4114,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
         configuration.imagePlacement = .trailing
         configuration.imagePadding = 5
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 2)
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 2)
         configuration.attributedTitle = AttributedString(selectedPeriod.title, attributes: AttributeContainer([
             .font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)
         ]))
