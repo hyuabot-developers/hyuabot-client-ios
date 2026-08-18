@@ -20,9 +20,10 @@ final class ScreenshotCaptureUITests: XCTestCase {
         var language = "en"
 
         let configPath = "/tmp/screenshot_config.json"
-        if let data = FileManager.default.contents(atPath: configPath),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String]
-        {
+        let config = FileManager.default.contents(atPath: configPath).flatMap { data in
+            try? JSONSerialization.jsonObject(with: data) as? [String: String]
+        }
+        if let json = config {
             outputDir = json["SCREENSHOT_DIR"] ?? outputDir
             language = json["SCREENSHOT_LANG"] ?? language
         } else {

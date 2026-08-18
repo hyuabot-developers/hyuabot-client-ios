@@ -881,6 +881,7 @@ class ShuttleRealtimeVC: UIViewController {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     private static func buildBusAlternatives(_ busList: [ShuttleRealtimePageQuery.Data.AlternativeBus])
         -> [String: [ShuttleBusAlternativeDisplayData]]
     {
