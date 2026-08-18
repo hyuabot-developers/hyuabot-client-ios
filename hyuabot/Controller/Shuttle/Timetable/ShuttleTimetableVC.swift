@@ -231,14 +231,10 @@ class ShuttleTimetableVC: UIViewController {
             }
             ShuttleTimetableData.shared.isLoading.onNext(true)
             Task {
-                let response = try? await Network.shared.client
-                    .fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: date)))
-                guard let period = response?.data?.shuttle.period?.type else {
-                    publishTimetable([])
-                    return
-                }
                 let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(
-                    period: [period],
+                    date: .some(dateFormatter.string(from: date)),
+                    period: [],
+                    weekdays: [],
                     stopID: stopID,
                     destination: destinations
                 ))
@@ -252,7 +248,9 @@ class ShuttleTimetableVC: UIViewController {
             ShuttleTimetableData.shared.isLoading.onNext(true)
             Task {
                 let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(
+                    date: .none,
                     period: [period],
+                    weekdays: [true, false],
                     stopID: stopID,
                     destination: destinations
                 ))

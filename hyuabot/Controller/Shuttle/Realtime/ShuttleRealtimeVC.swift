@@ -4,7 +4,7 @@ import RxSwift
 import UIKit
 
 private struct ShuttleBusRouteOption {
-    let bus: ShuttleBusAlternativeQuery.Data.Bus?
+    let bus: ShuttleRealtimePageQuery.Data.AlternativeBus?
     let routeName: String
     let color: UIColor
 }
@@ -873,29 +873,27 @@ class ShuttleRealtimeVC: UIViewController {
                     self.hasLoadedInitialNotices = true
                     dataDelegate.notices.onNext(data.notices.flatMap(\.notices))
                     dataDelegate.arrival.onNext(data.shuttle.stops)
+                    dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(data.alternativeBus))
                 }
                 markInitialShuttlePageDataLoaded()
-            }
-        }
-        Task {
-            let busResponse = try? await Network.shared.client.fetch(query: ShuttleBusAlternativeQuery(), cachePolicy: .networkOnly)
-            await MainActor.run {
-                if let busData = busResponse?.data {
-                    dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(busData.bus))
-                }
                 markInitialBusAlternativeDataLoaded()
             }
         }
     }
 
-    private static func buildBusAlternatives(_ busList: [ShuttleBusAlternativeQuery.Data.Bus])
+    // swiftlint:disable:next function_body_length
+    private static func buildBusAlternatives(_ busList: [ShuttleRealtimePageQuery.Data.AlternativeBus])
         -> [String: [ShuttleBusAlternativeDisplayData]]
     {
-        func item(routeSeq: Int, stopSeq: Int) -> ShuttleBusAlternativeQuery.Data.Bus? {
+        func item(routeSeq: Int, stopSeq: Int) -> ShuttleRealtimePageQuery.Data.AlternativeBus? {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
         }
 
-        func display(_ bus: ShuttleBusAlternativeQuery.Data.Bus?, routeName: String, color: UIColor) -> ShuttleBusAlternativeDisplayData? {
+        func display(
+            _ bus: ShuttleRealtimePageQuery.Data.AlternativeBus?,
+            routeName: String,
+            color: UIColor
+        ) -> ShuttleBusAlternativeDisplayData? {
             guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
             return ShuttleBusAlternativeDisplayData(
                 routeName: routeName,

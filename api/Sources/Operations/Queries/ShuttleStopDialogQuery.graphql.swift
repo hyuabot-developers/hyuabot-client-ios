@@ -8,23 +8,23 @@ nonisolated public struct ShuttleStopDialogQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleStopDialogQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleStopDialogQuery($stopID: String!, $period: [String!]!) { shuttle( input: { stops: [{ name: $stopID, limit: { order: null, destination: null } }] periods: $period weekdays: [true, false] } ) { __typename stops { __typename latitude longitude timetable { __typename destination { __typename destination entries { __typename time weekday route { __typename tag } } } } } } }"#
+      #"query ShuttleStopDialogQuery($date: Date!, $stopID: String!) { shuttle( input: { date: $date stops: [{ name: $stopID, limit: { order: null, destination: null } }] } ) { __typename stops { __typename latitude longitude timetable { __typename destination { __typename destination entries { __typename time weekday route { __typename tag } } } } } } }"#
     ))
 
+  public var date: Date
   public var stopID: String
-  public var period: [String]
 
   public init(
-    stopID: String,
-    period: [String]
+    date: Date,
+    stopID: String
   ) {
+    self.date = date
     self.stopID = stopID
-    self.period = period
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
-    "stopID": stopID,
-    "period": period
+    "date": date,
+    "stopID": stopID
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -34,15 +34,14 @@ nonisolated public struct ShuttleStopDialogQuery: GraphQLQuery {
     @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.Query }
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
       .field("shuttle", Shuttle.self, arguments: ["input": [
+        "date": .variable("date"),
         "stops": [[
           "name": .variable("stopID"),
           "limit": [
             "order": .null,
             "destination": .null
           ]
-        ]],
-        "periods": .variable("period"),
-        "weekdays": [true, false]
+        ]]
       ]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
