@@ -69,5 +69,10 @@ query BusRealtimePageQuery($language: String!, $dates: [Date!]!) {
             time
             arrivalTime
         }
+        log {
+            date
+            time
+            vehicle
+        }
     }
 }

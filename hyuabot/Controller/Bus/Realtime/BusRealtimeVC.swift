@@ -182,7 +182,6 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         super.viewDidLoad()
         setupUI()
         observeSubjects()
-        fetchSecondaryEtaLogsOnce()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -341,7 +340,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 return Date.now.addingTimeInterval(Double(minutes) * 60).toLocalTimeString()
             }
 
-            func logsFor(route: Int32, stop: Int32) -> [BusSecondaryEtaLogQuery.Data.Bus.Log] {
+            func logsFor(route: Int32, stop: Int32) -> [BusRealtimePageQuery.Data.Bus.Log] {
                 logs.first(where: { $0.stop.seq == stop && $0.route.seq == route })?.log ?? []
             }
 
@@ -533,6 +532,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             await MainActor.run {
                 if let data = response?.data {
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
+                    BusRealtimeData.shared.busSecondaryEtaLogs.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))
                     if data.bus.isEmpty {
@@ -551,23 +551,6 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             .subscribe(onNext: { [weak self] _ in
                 self?.fetchBusRealtimeData()
             })
-    }
-
-    /// Historical logs only change once a day at most, so fetch them once per screen visit
-    /// instead of on every 15-second realtime poll.
-    private func fetchSecondaryEtaLogsOnce() {
-        let dates = BusRecentDates.sameWeekdayType(count: 4)
-        Task {
-            let response = try? await Network.shared.client.fetch(
-                query: BusSecondaryEtaLogQuery(dates: dates),
-                cachePolicy: .networkOnly
-            )
-            await MainActor.run {
-                if let data = response?.data {
-                    BusRealtimeData.shared.busSecondaryEtaLogs.onNext(data.bus)
-                }
-            }
-        }
     }
 
     private func stopPolling() {
