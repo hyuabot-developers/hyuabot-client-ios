@@ -8,25 +8,33 @@ nonisolated public struct ShuttleTimetablePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTimetablePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTimetablePageQuery($period: [String!]!, $stopID: String!, $destination: [String!]!) { shuttle( input: { stops: [ { name: $stopID limit: { order: null, destination: null } destinations: $destination } ] periods: $period weekdays: [true, false] } ) { __typename stops { __typename timetable { __typename order { __typename time weekday route { __typename tag name } stops { __typename stop time } } } } } }"#
+      #"query ShuttleTimetablePageQuery($date: Date, $period: [String!]!, $weekdays: [Boolean!]!, $stopID: String!, $destination: [String!]!) { shuttle( input: { date: $date stops: [ { name: $stopID limit: { order: null, destination: null } destinations: $destination } ] periods: $period weekdays: $weekdays } ) { __typename stops { __typename timetable { __typename order { __typename time weekday route { __typename tag name } stops { __typename stop time } } } } } }"#
     ))
 
+  public var date: GraphQLNullable<Date>
   public var period: [String]
+  public var weekdays: [Bool]
   public var stopID: String
   public var destination: [String]
 
   public init(
+    date: GraphQLNullable<Date>,
     period: [String],
+    weekdays: [Bool],
     stopID: String,
     destination: [String]
   ) {
+    self.date = date
     self.period = period
+    self.weekdays = weekdays
     self.stopID = stopID
     self.destination = destination
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
+    "date": date,
     "period": period,
+    "weekdays": weekdays,
     "stopID": stopID,
     "destination": destination
   ] }
@@ -38,6 +46,7 @@ nonisolated public struct ShuttleTimetablePageQuery: GraphQLQuery {
     @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.Query }
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
       .field("shuttle", Shuttle.self, arguments: ["input": [
+        "date": .variable("date"),
         "stops": [[
           "name": .variable("stopID"),
           "limit": [
@@ -47,7 +56,7 @@ nonisolated public struct ShuttleTimetablePageQuery: GraphQLQuery {
           "destinations": .variable("destination")
         ]],
         "periods": .variable("period"),
-        "weekdays": [true, false]
+        "weekdays": .variable("weekdays")
       ]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
