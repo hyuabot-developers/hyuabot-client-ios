@@ -8,7 +8,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
   public static let operationName: String = "HomePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HomePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { language: $subwayLanguage keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq name latitude longitude } arrival { __typename minutes stops seats isRealtime time arrivalTime destinationArrivalTime } log { __typename date time vehicle } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
+      #"query HomePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { language: $subwayLanguage keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq name latitude longitude } arrival { __typename minutes stops seats isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
     ))
 
   public var language: String
@@ -705,6 +705,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
           .field("isRealtime", Bool.self),
           .field("time", Api.LocalTime?.self),
           .field("arrivalTime", Api.LocalTime?.self),
+          .field("destinationTravelMinutes", [DestinationTravelMinute].self),
           .field("destinationArrivalTime", Api.LocalTime?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -717,7 +718,30 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         public var isRealtime: Bool { __data["isRealtime"] }
         public var time: Api.LocalTime? { __data["time"] }
         public var arrivalTime: Api.LocalTime? { __data["arrivalTime"] }
+        public var destinationTravelMinutes: [DestinationTravelMinute] { __data["destinationTravelMinutes"] }
+        /// Deprecated. Use destinationTravelMinutes instead.
         public var destinationArrivalTime: Api.LocalTime? { __data["destinationArrivalTime"] }
+
+        /// Bus.Arrival.DestinationTravelMinute
+        ///
+        /// Parent Type: `BusDestinationTravelMinutes`
+        nonisolated public struct DestinationTravelMinute: Api.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusDestinationTravelMinutes }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("destinationStopId", Int.self),
+            .field("minutes", Int.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            HomePageQuery.Data.Bus.Arrival.DestinationTravelMinute.self
+          ] }
+
+          public var destinationStopId: Int { __data["destinationStopId"] }
+          public var minutes: Int { __data["minutes"] }
+        }
       }
 
       /// Bus.Log

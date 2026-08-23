@@ -8,23 +8,23 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "BusRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusRealtimePageQuery($language: String!, $dates: [Date!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus( input: [ { route: 216000068, stop: 216000138, limit: 3, dates: $dates } { route: 216000068, stop: 216000383, limit: 3, dates: $dates } { route: 216000068, stop: 216000381, limit: 3, dates: $dates } { route: 216000068, stop: 216000379, limit: 3, dates: $dates } { route: 216000068, stop: 216000378, limit: 3, dates: $dates } { route: 216000061, stop: 216000383, limit: 3, dates: $dates } { route: 216000061, stop: 216000381, limit: 3, dates: $dates } { route: 216000061, stop: 216000379, limit: 3, dates: $dates } { route: 216000061, stop: 216000378, limit: 3, dates: $dates } { route: 216000061, stop: 121000060, limit: 3, dates: $dates } { route: 216000061, stop: 121000929, limit: 3, dates: $dates } { route: 216000061, stop: 121000974, limit: 3, dates: $dates } { route: 216000061, stop: 121000970, limit: 3, dates: $dates } { route: 216000061, stop: 121000220, limit: 3, dates: $dates } { route: 216000043, stop: 216000719, limit: 3, dates: $dates } { route: 216000043, stop: 216000048, limit: 3, dates: $dates } { route: 216000043, stop: 121000060, limit: 3, dates: $dates } { route: 216000043, stop: 121000929, limit: 3, dates: $dates } { route: 216000043, stop: 121000974, limit: 3, dates: $dates } { route: 216000043, stop: 121000970, limit: 3, dates: $dates } { route: 216000043, stop: 121000220, limit: 3, dates: $dates } { route: 216000026, stop: 216000719, limit: 3, dates: $dates } { route: 216000026, stop: 216000048, limit: 3, dates: $dates } { route: 216000026, stop: 121000060, limit: 3, dates: $dates } { route: 216000026, stop: 121000929, limit: 3, dates: $dates } { route: 216000026, stop: 121000974, limit: 3, dates: $dates } { route: 216000026, stop: 121000970, limit: 3, dates: $dates } { route: 216000026, stop: 121000220, limit: 3, dates: $dates } { route: 216000096, stop: 216000719, limit: 3, dates: $dates } { route: 216000096, stop: 216000048, limit: 3, dates: $dates } { route: 216000096, stop: 121000060, limit: 3, dates: $dates } { route: 216000096, stop: 121000929, limit: 3, dates: $dates } { route: 216000096, stop: 121000974, limit: 3, dates: $dates } { route: 216000096, stop: 121000970, limit: 3, dates: $dates } { route: 216000096, stop: 121000220, limit: 3, dates: $dates } { route: 216000104, stop: 216000070, limit: 3, dates: $dates } { route: 216000104, stop: 216000141, limit: 3, dates: $dates } { route: 216000104, stop: 202000208, limit: 3, dates: $dates } { route: 216000104, stop: 202000106, limit: 3, dates: $dates } { route: 200000015, stop: 216000070, limit: 3, dates: $dates } { route: 200000015, stop: 216000141, limit: 3, dates: $dates } { route: 200000015, stop: 202000208, limit: 3, dates: $dates } { route: 200000015, stop: 202000106, limit: 3, dates: $dates } { route: 216000075, stop: 216000759, limit: 3, dates: $dates } { route: 216000075, stop: 213000487, limit: 3, dates: $dates } { route: 216000075, stop: 216000117, limit: 3, dates: $dates } { route: 216000016, stop: 216000152, limit: 3, dates: $dates } ] ) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime } log { __typename date time vehicle } } }"#
+      #"query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } minimumDispatchIntervals { __typename weekday minutes } } }"#
     ))
 
   public var language: String
-  public var dates: [Date]
+  public var busInput: [BusRouteStopInput]
 
   public init(
     language: String,
-    dates: [Date]
+    busInput: [BusRouteStopInput]
   ) {
     self.language = language
-    self.dates = dates
+    self.busInput = busInput
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "language": language,
-    "dates": dates
+    "busInput": busInput
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -37,242 +37,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         "language": .variable("language"),
         "category": "버스"
       ]]),
-      .field("bus", [Bus].self, arguments: ["input": [[
-        "route": 216000068,
-        "stop": 216000138,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000068,
-        "stop": 216000383,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000068,
-        "stop": 216000381,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000068,
-        "stop": 216000379,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000068,
-        "stop": 216000378,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 216000383,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 216000381,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 216000379,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 216000378,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 121000060,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 121000929,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 121000974,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 121000970,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000061,
-        "stop": 121000220,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 216000719,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 216000048,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 121000060,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 121000929,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 121000974,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 121000970,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000043,
-        "stop": 121000220,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 216000719,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 216000048,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 121000060,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 121000929,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 121000974,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 121000970,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000026,
-        "stop": 121000220,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 216000719,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 216000048,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 121000060,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 121000929,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 121000974,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 121000970,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000096,
-        "stop": 121000220,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000104,
-        "stop": 216000070,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000104,
-        "stop": 216000141,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000104,
-        "stop": 202000208,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000104,
-        "stop": 202000106,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 200000015,
-        "stop": 216000070,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 200000015,
-        "stop": 216000141,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 200000015,
-        "stop": 202000208,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 200000015,
-        "stop": 202000106,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000075,
-        "stop": 216000759,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000075,
-        "stop": 213000487,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000075,
-        "stop": 216000117,
-        "limit": 3,
-        "dates": .variable("dates")
-      ], [
-        "route": 216000016,
-        "stop": 216000152,
-        "limit": 3,
-        "dates": .variable("dates")
-      ]]]),
+      .field("bus", [Bus].self, arguments: ["input": .variable("busInput")]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
       BusRealtimePageQuery.Data.self
@@ -338,6 +103,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         .field("order", Int.self),
         .field("arrival", [Arrival].self),
         .field("log", [Log].self),
+        .field("minimumDispatchIntervals", [MinimumDispatchInterval].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         BusRealtimePageQuery.Data.Bus.self
@@ -348,6 +114,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
       public var order: Int { __data["order"] }
       public var arrival: [Arrival] { __data["arrival"] }
       public var log: [Log] { __data["log"] }
+      public var minimumDispatchIntervals: [MinimumDispatchInterval] { __data["minimumDispatchIntervals"] }
 
       /// Bus.Route
       ///
@@ -410,6 +177,8 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
           .field("isRealtime", Bool.self),
           .field("time", Api.LocalTime?.self),
           .field("arrivalTime", Api.LocalTime?.self),
+          .field("destinationTravelMinutes", [DestinationTravelMinute].self),
+          .field("destinationArrivalTime", Api.LocalTime?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           BusRealtimePageQuery.Data.Bus.Arrival.self
@@ -422,6 +191,30 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         public var isRealtime: Bool { __data["isRealtime"] }
         public var time: Api.LocalTime? { __data["time"] }
         public var arrivalTime: Api.LocalTime? { __data["arrivalTime"] }
+        public var destinationTravelMinutes: [DestinationTravelMinute] { __data["destinationTravelMinutes"] }
+        /// Deprecated. Use destinationTravelMinutes instead.
+        public var destinationArrivalTime: Api.LocalTime? { __data["destinationArrivalTime"] }
+
+        /// Bus.Arrival.DestinationTravelMinute
+        ///
+        /// Parent Type: `BusDestinationTravelMinutes`
+        nonisolated public struct DestinationTravelMinute: Api.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusDestinationTravelMinutes }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("destinationStopId", Int.self),
+            .field("minutes", Int.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            BusRealtimePageQuery.Data.Bus.Arrival.DestinationTravelMinute.self
+          ] }
+
+          public var destinationStopId: Int { __data["destinationStopId"] }
+          public var minutes: Int { __data["minutes"] }
+        }
       }
 
       /// Bus.Log
@@ -445,6 +238,27 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         public var date: Api.Date { __data["date"] }
         public var time: Api.LocalTime { __data["time"] }
         public var vehicle: String { __data["vehicle"] }
+      }
+
+      /// Bus.MinimumDispatchInterval
+      ///
+      /// Parent Type: `BusMinimumDispatchInterval`
+      nonisolated public struct MinimumDispatchInterval: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusMinimumDispatchInterval }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("weekday", String.self),
+          .field("minutes", Int.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          BusRealtimePageQuery.Data.Bus.MinimumDispatchInterval.self
+        ] }
+
+        public var weekday: String { __data["weekday"] }
+        public var minutes: Int { __data["minutes"] }
       }
     }
   }

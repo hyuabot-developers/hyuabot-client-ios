@@ -136,6 +136,10 @@ query HomePageQuery(
             isRealtime
             time
             arrivalTime
+            destinationTravelMinutes {
+                destinationStopId
+                minutes
+            }
             destinationArrivalTime
         }
         log {

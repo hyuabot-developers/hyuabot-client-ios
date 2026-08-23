@@ -14,7 +14,7 @@ nonisolated public struct BusRouteStopInput: InputObject {
   public init(
     route: Int32,
     stop: Int32,
-    destinationStop: GraphQLNullable<Int32> = nil,
+    destinationStops: GraphQLNullable<[Int32]> = nil,
     after: GraphQLNullable<LocalTime> = nil,
     limit: GraphQLNullable<Int32> = nil,
     dates: GraphQLNullable<[Date]> = nil,
@@ -23,7 +23,7 @@ nonisolated public struct BusRouteStopInput: InputObject {
     __data = InputDict([
       "route": route,
       "stop": stop,
-      "destinationStop": destinationStop,
+      "destinationStops": destinationStops,
       "after": after,
       "limit": limit,
       "dates": dates,
@@ -41,9 +41,9 @@ nonisolated public struct BusRouteStopInput: InputObject {
     set { __data["stop"] = newValue }
   }
 
-  public var destinationStop: GraphQLNullable<Int32> {
-    get { __data["destinationStop"] }
-    set { __data["destinationStop"] = newValue }
+  public var destinationStops: GraphQLNullable<[Int32]> {
+    get { __data["destinationStops"] }
+    set { __data["destinationStops"] = newValue }
   }
 
   public var after: GraphQLNullable<LocalTime> {

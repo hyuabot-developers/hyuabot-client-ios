@@ -25,6 +25,8 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "Building": Api.Objects.Building,
     "BusArrival": Api.Objects.BusArrival,
     "BusDepartureLog": Api.Objects.BusDepartureLog,
+    "BusDestinationTravelMinutes": Api.Objects.BusDestinationTravelMinutes,
+    "BusMinimumDispatchInterval": Api.Objects.BusMinimumDispatchInterval,
     "BusRoute": Api.Objects.BusRoute,
     "BusRouteStop": Api.Objects.BusRouteStop,
     "BusRunningTime": Api.Objects.BusRunningTime,
