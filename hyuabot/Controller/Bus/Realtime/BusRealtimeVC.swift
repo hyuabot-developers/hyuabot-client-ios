@@ -405,13 +405,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     .compactMap { $0 }
                     .min()
                     .map { Int($0 / 60) }
-                let currentWeekday: String = {
-                    switch Calendar.current.component(.weekday, from: .now) {
-                    case 1: return "sunday"
-                    case 7: return "saturday"
-                    default: return "weekdays"
-                    }
-                }()
+                let currentWeekday = switch Calendar.current.component(.weekday, from: .now) {
+                case 1: "sunday"
+                case 7: "saturday"
+                default: "weekdays"
+                }
                 let dispatchMinutes = bus.minimumDispatchIntervals
                     .first(where: { $0.weekday == currentWeekday })?.minutes
                     ?? logDerivedDispatchMinutes
@@ -463,7 +461,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 // Realtime entries are ordered by their remaining minutes. Log entries are
                 // appended only when they are at least one dispatch interval apart from the
                 // preceding realtime/log entry.
-                return liveItems.sorted() + logItems.sorted { $0.1 < $1.1 }.map { $0.0 }
+                return liveItems.sorted() + logItems.sorted { $0.1 < $1.1 }.map(\.0)
             }
 
             let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
@@ -567,7 +565,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             input(216_000_068, 216_000_138, [216_000_378]),
             input(216_000_068, 216_000_383, [216_000_138]),
             input(216_000_068, 216_000_381, [216_000_138]),
-            input(216_000_068, 216_000_379, [216_000_138]),
+            input(216_000_068, 216_000_379, [216_000_138])
         ]
 
         // Seoul buses use the destination selected in the bottom sheet. For a remote

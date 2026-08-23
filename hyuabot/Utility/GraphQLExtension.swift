@@ -23,7 +23,7 @@ extension String {
         // The API may serialize LocalTime with fractional seconds (for example,
         // realtime destination ETAs). LocalTime is second-precision for the UI,
         // so discard the fractional part before parsing it.
-        let normalizedTime = String(self.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)[0])
+        let normalizedTime = String(split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)[0])
         let formatter = DateFormatter().then {
             $0.calendar = Calendar(identifier: .iso8601)
             $0.locale = Locale(identifier: "en_US_POSIX")
