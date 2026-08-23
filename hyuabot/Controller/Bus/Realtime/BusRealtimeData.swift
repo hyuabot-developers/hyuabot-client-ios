@@ -1,6 +1,21 @@
 import Api
+import CoreLocation
 import Foundation
 import RxSwift
+
+/// Canonical stop coordinates used when a stop is missing from the realtime payload
+/// (e.g. neither of its routes has a live vehicle) but we still need to compute
+/// GPS-based selection or containment.
+enum BusStopFallbackCoordinate {
+    static let suwonStation = CLLocationCoordinate2D(latitude: 37.2678485, longitude: 127.0001900)
+
+    static func coordinate(for stopSeq: Int32) -> (lat: Double, lng: Double)? {
+        switch stopSeq {
+        case 202_000_106: (suwonStation.latitude, suwonStation.longitude)
+        default: nil
+        }
+    }
+}
 
 @MainActor
 class BusRealtimeData {
@@ -8,8 +23,6 @@ class BusRealtimeData {
     private init() {}
     /// Realtime Query
     let busRealtimeData = BehaviorSubject<[BusRealtimePageQuery.Data.Bus]>(value: [])
-    /// Historical departure logs used for secondary-ETA estimation, fetched once per screen visit (not on the 15s poll).
-    let busSecondaryEtaLogs = BehaviorSubject<[BusSecondaryEtaLogQuery.Data.Bus]>(value: [])
     let busRealtimeCityFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
     let busRealtimeCityFromStation = BehaviorSubject<[BusArrivalItem]>(value: [])
     let busRealtimeSeoulFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])

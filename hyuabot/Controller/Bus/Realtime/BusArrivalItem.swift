@@ -5,8 +5,9 @@ struct BusArrivalItem {
     var route: String
     var item: BusRealtimePageQuery.Data.Bus.Arrival
     var secondaryArrivalTime: Api.LocalTime?
+    var scheduledTime: Api.LocalTime?
     var convertedTime: String? {
-        guard let time = item.arrivalTime else { return nil }
+        guard let time = scheduledTime ?? item.arrivalTime else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
         if components.hour! < 4 {
             return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
@@ -34,18 +35,14 @@ extension BusArrivalItem: Comparable {
     /// realtime and scheduled entries from multiple routes (e.g. Suwon's 7070/9090) sorts chronologically
     /// instead of grouping all realtime entries before all scheduled ones.
     private var remainingMinutes: Double? {
+        if let scheduledTime {
+            return Double(scheduledTime.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
+        }
         if item.isRealtime {
             guard let minutes = item.minutes else { return nil }
             return Double(minutes)
         }
         guard let arrivalTime = item.arrivalTime else { return nil }
-        let arrival = arrivalTime.toLocalTime()
-        let now = Foundation.Date()
-        func serviceSeconds(_ date: Foundation.Date) -> Int {
-            let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-            let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
-            return seconds < 4 * 3600 ? seconds + 86400 : seconds
-        }
-        return Double(serviceSeconds(arrival) - serviceSeconds(now)) / 60
+        return Double(arrivalTime.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
     }
 }

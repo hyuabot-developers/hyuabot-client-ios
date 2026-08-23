@@ -106,6 +106,10 @@ type BusArrival {
   isRealtime: Boolean!
   time: LocalTime
   arrivalTime: LocalTime
+  destinationTravelMinutes: [BusDestinationTravelMinutes!]!
+
+  """Deprecated. Use destinationTravelMinutes instead."""
+  destinationArrivalTime: LocalTime
 }
 
 type BusCompany {
@@ -119,6 +123,11 @@ type BusDepartureLog {
   date: Date!
   time: LocalTime!
   vehicle: String!
+}
+
+type BusDestinationTravelMinutes {
+  destinationStopId: Int!
+  minutes: Int!
 }
 
 type BusRealtime {
@@ -148,12 +157,14 @@ type BusRouteStop {
   timetable: [BusTimetable!]!
   arrival: [BusArrival!]!
   log: [BusDepartureLog!]!
+  minimumDispatchIntervals: [BusMinimumDispatchInterval!]!
 }
 
 """ 노선 버스 정보를 반환하는 쿼리입니다."""
 input BusRouteStopInput {
   route: Int!
   stop: Int!
+  destinationStops: [Int!]
   after: LocalTime
   limit: Int
   dates: [Date!]
@@ -184,6 +195,11 @@ type BusStop {
   mobileNumber: String!
   latitude: Float!
   longitude: Float!
+}
+
+type BusMinimumDispatchInterval {
+  weekday: String!
+  minutes: Int!
 }
 
 type BusTimetable {
@@ -644,6 +660,23 @@ type Shuttle {
   stops: [ShuttleStop!]!
 }
 
+type ShuttleArrival {
+  stop: String!
+  time: LocalTime!
+}
+
+type ShuttleGeoPoint {
+  latitude: Float!
+  longitude: Float!
+}
+
+type ShuttleHoliday {
+  seq: Int!
+  date: Date!
+  type: String!
+  calendar: String!
+}
+
 type ShuttleInitialStopRule {
   seq: Int!
   name: String!
@@ -654,23 +687,6 @@ type ShuttleInitialStopRule {
   stopName: String!
   priority: Int!
   polygon: [ShuttleGeoPoint!]!
-}
-
-type ShuttleGeoPoint {
-  latitude: Float!
-  longitude: Float!
-}
-
-type ShuttleArrival {
-  stop: String!
-  time: LocalTime!
-}
-
-type ShuttleHoliday {
-  seq: Int!
-  date: Date!
-  type: String!
-  calendar: String!
 }
 
 """ 셔틀버스 노선 및 시간표를 반환하는 쿼리입니다."""
@@ -761,8 +777,8 @@ type SubwayArrivalGroup {
 
 """ 전철 정보를 반환하는 쿼리입니다."""
 input SubwayInput {
-    keys: [SubwayStationInput!]!
-    language: String
+  keys: [SubwayStationInput!]!
+  language: String
 }
 
 type SubwayOriginTerminal {

@@ -1,62 +1,12 @@
-query BusRealtimePageQuery($language: String!, $dates: [Date!]!) {
+query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!) {
     notices(input: {language: $language, category: "버스"}) {
         notices {
             title
             url
             expiredAt
         }
-    },
-    bus (
-        input: [
-            { route: 216000068, stop: 216000138, limit: 3, dates: $dates },
-            { route: 216000068, stop: 216000383, limit: 3, dates: $dates },
-            { route: 216000068, stop: 216000381, limit: 3, dates: $dates },
-            { route: 216000068, stop: 216000379, limit: 3, dates: $dates },
-            { route: 216000068, stop: 216000378, limit: 3, dates: $dates },
-            { route: 216000061, stop: 216000383, limit: 3, dates: $dates },
-            { route: 216000061, stop: 216000381, limit: 3, dates: $dates },
-            { route: 216000061, stop: 216000379, limit: 3, dates: $dates },
-            { route: 216000061, stop: 216000378, limit: 3, dates: $dates },
-            { route: 216000061, stop: 121000060, limit: 3, dates: $dates },
-            { route: 216000061, stop: 121000929, limit: 3, dates: $dates },
-            { route: 216000061, stop: 121000974, limit: 3, dates: $dates },
-            { route: 216000061, stop: 121000970, limit: 3, dates: $dates },
-            { route: 216000061, stop: 121000220, limit: 3, dates: $dates },
-            { route: 216000043, stop: 216000719, limit: 3, dates: $dates },
-            { route: 216000043, stop: 216000048, limit: 3, dates: $dates },
-            { route: 216000043, stop: 121000060, limit: 3, dates: $dates },
-            { route: 216000043, stop: 121000929, limit: 3, dates: $dates },
-            { route: 216000043, stop: 121000974, limit: 3, dates: $dates },
-            { route: 216000043, stop: 121000970, limit: 3, dates: $dates },
-            { route: 216000043, stop: 121000220, limit: 3, dates: $dates },
-            { route: 216000026, stop: 216000719, limit: 3, dates: $dates },
-            { route: 216000026, stop: 216000048, limit: 3, dates: $dates },
-            { route: 216000026, stop: 121000060, limit: 3, dates: $dates },
-            { route: 216000026, stop: 121000929, limit: 3, dates: $dates },
-            { route: 216000026, stop: 121000974, limit: 3, dates: $dates },
-            { route: 216000026, stop: 121000970, limit: 3, dates: $dates },
-            { route: 216000026, stop: 121000220, limit: 3, dates: $dates },
-            { route: 216000096, stop: 216000719, limit: 3, dates: $dates },
-            { route: 216000096, stop: 216000048, limit: 3, dates: $dates },
-            { route: 216000096, stop: 121000060, limit: 3, dates: $dates },
-            { route: 216000096, stop: 121000929, limit: 3, dates: $dates },
-            { route: 216000096, stop: 121000974, limit: 3, dates: $dates },
-            { route: 216000096, stop: 121000970, limit: 3, dates: $dates },
-            { route: 216000096, stop: 121000220, limit: 3, dates: $dates },
-            { route: 216000104, stop: 216000070, limit: 3, dates: $dates },
-            { route: 216000104, stop: 216000141, limit: 3, dates: $dates },
-            { route: 216000104, stop: 202000208, limit: 3, dates: $dates },
-            { route: 216000104, stop: 202000106, limit: 3, dates: $dates },
-            { route: 200000015, stop: 216000070, limit: 3, dates: $dates },
-            { route: 200000015, stop: 216000141, limit: 3, dates: $dates },
-            { route: 200000015, stop: 202000208, limit: 3, dates: $dates },
-            { route: 200000015, stop: 202000106, limit: 3, dates: $dates },
-            { route: 216000075, stop: 216000759, limit: 3, dates: $dates },
-            { route: 216000075, stop: 213000487, limit: 3, dates: $dates },
-            { route: 216000075, stop: 216000117, limit: 3, dates: $dates },
-            { route: 216000016, stop: 216000152, limit: 3, dates: $dates },
-        ]
-    ) {
+    }
+    bus(input: $busInput) {
         route { seq, name }
         stop { seq, latitude, longitude }
         order
@@ -68,6 +18,20 @@ query BusRealtimePageQuery($language: String!, $dates: [Date!]!) {
             isRealtime
             time
             arrivalTime
+            destinationTravelMinutes {
+                destinationStopId
+                minutes
+            }
+            destinationArrivalTime
+        }
+        log {
+            date
+            time
+            vehicle
+        }
+        minimumDispatchIntervals {
+            weekday
+            minutes
         }
     }
 }

@@ -149,7 +149,11 @@ extension BusRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         switch tabType {
         case .city:
             if section == 0 {
-                return (selectedStopID, [216_000_068], String(localized: busRealtimeSection[section]))
+                return (
+                    selectedStopID,
+                    [216_000_068],
+                    dynamicSectionTitle(route: "10-1", stopID: selectedStopID)
+                )
             }
             return (216_000_138, [216_000_068], String(localized: busRealtimeSection[section]))
         case .seoul:

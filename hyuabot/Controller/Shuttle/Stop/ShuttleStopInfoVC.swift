@@ -1,9 +1,11 @@
+// swiftlint:disable file_length
+
 import Api
 import MapKit
 import RxSwift
 import UIKit
 
-class ShuttleStopInfoVC: UIViewController {
+class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_length
     private typealias StopTimetableDestination = ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination
     private typealias StopTimetableEntry = ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
 
@@ -385,13 +387,10 @@ class ShuttleStopInfoVC: UIViewController {
         }
         ShuttleTimetableData.shared.isLoading.onNext(true)
         Task {
-            let response = try? await Network.shared.client
-                .fetch(query: ShuttleTimetablePeriodQuery(date: dateFormatter.string(from: Foundation.Date.now)))
-            guard let period = response?.data?.shuttle.period?.type else {
-                publishStopInfo(nil, timetable: [])
-                return
-            }
-            let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(stopID: stopID, period: [period]))
+            let stopResponse = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(
+                date: dateFormatter.string(from: Foundation.Date.now),
+                stopID: stopID
+            ))
             let stop = stopResponse?.data?.shuttle.stops.first
             publishStopInfo(stop, timetable: stop?.timetable.destination ?? [])
         }
