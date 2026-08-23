@@ -1,22 +1,37 @@
 import Foundation
 
-private enum GraphQLDateFormatters {
-    nonisolated(unsafe) static let localDate: DateFormatter = makeFormatter(dateFormat: "yyyy-MM-dd")
-    nonisolated(unsafe) static let localTime: DateFormatter = makeFormatter(dateFormat: "HH:mm:ss")
+private final class LockedFormatter<Resource: AnyObject>: @unchecked Sendable {
+    private let lock = NSLock()
+    private let resource: Resource
 
-    nonisolated(unsafe) static let zonedFractional: ISO8601DateFormatter = {
+    init(_ resource: Resource) {
+        self.resource = resource
+    }
+
+    func withLock<Result>(_ body: (Resource) -> Result) -> Result {
+        lock.lock()
+        defer { lock.unlock() }
+        return body(resource)
+    }
+}
+
+private enum GraphQLDateFormatters {
+    static let localDate = LockedFormatter(makeDateFormatter(dateFormat: "yyyy-MM-dd"))
+    static let localTime = LockedFormatter(makeDateFormatter(dateFormat: "HH:mm:ss"))
+
+    static let zonedFractional = LockedFormatter({
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
-    }()
+    }())
 
-    nonisolated(unsafe) static let zoned: ISO8601DateFormatter = {
+    static let zoned = LockedFormatter({
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
-    }()
+    }())
 
-    private static func makeFormatter(dateFormat: String) -> DateFormatter {
+    private static func makeDateFormatter(dateFormat: String) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .iso8601)
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -32,7 +47,7 @@ extension String {
     }
 
     func toLocalDateOrNil() -> Foundation.Date? {
-        GraphQLDateFormatters.localDate.date(from: self)
+        GraphQLDateFormatters.localDate.withLock { $0.date(from: self) }
     }
 
     func toLocalTime() -> Foundation.Date {
@@ -44,7 +59,7 @@ extension String {
         // realtime destination ETAs). LocalTime is second-precision for the UI,
         // so discard the fractional part before parsing it.
         let normalizedTime = String(split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)[0])
-        guard let time = GraphQLDateFormatters.localTime.date(from: normalizedTime) else { return nil }
+        guard let time = GraphQLDateFormatters.localTime.withLock({ $0.date(from: normalizedTime) }) else { return nil }
         let calendar = Calendar.current
         let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
         let todayComponents = calendar.dateComponents([.year, .month, .day], from: Date.now)
@@ -62,24 +77,24 @@ extension String {
     }
 
     func toZonedDateTimeOrNil() -> Foundation.Date? {
-        if let date = GraphQLDateFormatters.zonedFractional.date(from: self) {
+        if let date = GraphQLDateFormatters.zonedFractional.withLock({ $0.date(from: self) }) {
             return date
         }
-        return GraphQLDateFormatters.zoned.date(from: self)
+        return GraphQLDateFormatters.zoned.withLock { $0.date(from: self) }
     }
 }
 
 extension Foundation.Date {
     func toLocalDateString() -> String {
-        GraphQLDateFormatters.localDate.string(from: self)
+        GraphQLDateFormatters.localDate.withLock { $0.string(from: self) }
     }
 
     func toLocalTimeString() -> String {
-        GraphQLDateFormatters.localTime.string(from: self)
+        GraphQLDateFormatters.localTime.withLock { $0.string(from: self) }
     }
 
     func toZonedDateTimeString() -> String {
-        GraphQLDateFormatters.zonedFractional.string(from: self)
+        GraphQLDateFormatters.zonedFractional.withLock { $0.string(from: self) }
     }
 
     /// Seconds since the start of the current bus service day, which rolls over at 04:00
