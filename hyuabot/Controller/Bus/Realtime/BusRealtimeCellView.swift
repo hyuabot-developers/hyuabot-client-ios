@@ -95,8 +95,8 @@ class BusRealtimeCellView: UITableViewCell {
             let now = Foundation.Date()
             let toServiceSec: (Foundation.Date) -> Int = { date in
                 let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-                let s = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
-                return s < 4 * 3600 ? s + 86400 : s
+                let seconds = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
+                return seconds < 4 * 3600 ? seconds + 86400 : seconds
             }
             let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
             busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
@@ -135,8 +135,8 @@ class BusRealtimeCellView: UITableViewCell {
             let now = Foundation.Date()
             let toServiceSec: (Foundation.Date) -> Int = { date in
                 let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-                let s = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
-                return s < 4 * 3600 ? s + 86400 : s
+                let seconds = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
+                return seconds < 4 * 3600 ? seconds + 86400 : seconds
             }
             let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
             busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix

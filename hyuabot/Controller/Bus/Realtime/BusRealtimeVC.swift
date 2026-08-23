@@ -336,7 +336,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         }
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable function_body_length
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
             guard let self else { return }
@@ -547,6 +547,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             }
         }).disposed(by: disposeBag)
     }
+
+    // swiftlint:enable function_body_length
 
     private func busRealtimeInput(dates: [Api.Date]) -> [BusRouteStopInput] {
         let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]

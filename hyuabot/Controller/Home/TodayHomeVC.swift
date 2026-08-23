@@ -3570,9 +3570,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             let requests: [(Int, Int)] = switch selectedHomeBusDestination {
             case .sangnoksu: [(216_000_068, 216_000_379)]
             case .gangnam: [(216_000_061, 216_000_379), (216_000_096, 216_000_719)]
-            case .suwon: [
-                    (216_000_104, 216_000_070), (200_000_015, 216_000_070)
-                ]
+            case .suwon: [(216_000_104, 216_000_070), (200_000_015, 216_000_070)]
             case .uiwang: [(216_000_026, 216_000_719), (216_000_096, 216_000_719)]
             case .gunpo: [(216_000_043, 216_000_719)]
             }
