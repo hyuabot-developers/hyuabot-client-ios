@@ -3759,7 +3759,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         // Suwon Station may not be present in the current response when both
         // 7070/9090 have no live vehicle. Use the canonical stop coordinate so
         // the home bus card does not disappear just because the payload is empty.
-        let suwonStation = CLLocation(latitude: 37.2678485, longitude: 127.0001900)
+        let suwonStation = CLLocation(
+            latitude: BusStopFallbackCoordinate.suwonStation.latitude,
+            longitude: BusStopFallbackCoordinate.suwonStation.longitude
+        )
         if location.distance(from: suwonStation) <= 2000 {
             return .suwon
         }

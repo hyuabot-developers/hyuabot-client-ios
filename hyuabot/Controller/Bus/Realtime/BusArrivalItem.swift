@@ -36,27 +36,13 @@ extension BusArrivalItem: Comparable {
     /// instead of grouping all realtime entries before all scheduled ones.
     private var remainingMinutes: Double? {
         if let scheduledTime {
-            let arrival = scheduledTime.toLocalTime()
-            let now = Foundation.Date()
-            func serviceSeconds(_ date: Foundation.Date) -> Int {
-                let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-                let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
-                return seconds < 4 * 3600 ? seconds + 86400 : seconds
-            }
-            return Double(serviceSeconds(arrival) - serviceSeconds(now)) / 60
+            return Double(scheduledTime.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
         }
         if item.isRealtime {
             guard let minutes = item.minutes else { return nil }
             return Double(minutes)
         }
         guard let arrivalTime = item.arrivalTime else { return nil }
-        let arrival = arrivalTime.toLocalTime()
-        let now = Foundation.Date()
-        func serviceSeconds(_ date: Foundation.Date) -> Int {
-            let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-            let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
-            return seconds < 4 * 3600 ? seconds + 86400 : seconds
-        }
-        return Double(serviceSeconds(arrival) - serviceSeconds(now)) / 60
+        return Double(arrivalTime.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
     }
 }

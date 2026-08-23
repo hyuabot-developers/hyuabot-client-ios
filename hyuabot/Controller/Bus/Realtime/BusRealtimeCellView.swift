@@ -90,15 +90,9 @@ class BusRealtimeCellView: UITableViewCell {
         } else {
             ""
         }
-        if let scheduledTime = item.scheduledTime {
-            let arrival = scheduledTime.toLocalTime()
-            let now = Foundation.Date()
-            let toServiceSec: (Foundation.Date) -> Int = { date in
-                let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-                let seconds = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
-                return seconds < 4 * 3600 ? seconds + 86400 : seconds
-            }
-            let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
+        let scheduledSource: Api.LocalTime? = item.scheduledTime ?? (item.item.isRealtime ? nil : item.item.arrivalTime)
+        if let scheduledSource {
+            let remainingMinutes = (scheduledSource.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
             busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
             busTimeLabel.textColor = .secondaryLabel
         } else if item.item.isRealtime {
@@ -130,17 +124,6 @@ class BusRealtimeCellView: UITableViewCell {
                     ) + secondarySuffix)
                 }
             }
-        } else if !item.item.isRealtime {
-            let arrival = item.item.arrivalTime!.toLocalTime()
-            let now = Foundation.Date()
-            let toServiceSec: (Foundation.Date) -> Int = { date in
-                let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-                let seconds = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
-                return seconds < 4 * 3600 ? seconds + 86400 : seconds
-            }
-            let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
-            busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
-            busTimeLabel.textColor = .secondaryLabel
         }
     }
 
