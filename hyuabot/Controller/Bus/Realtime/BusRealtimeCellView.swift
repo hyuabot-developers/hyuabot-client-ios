@@ -90,7 +90,18 @@ class BusRealtimeCellView: UITableViewCell {
         } else {
             ""
         }
-        if item.item.isRealtime {
+        if let scheduledTime = item.scheduledTime {
+            let arrival = scheduledTime.toLocalTime()
+            let now = Foundation.Date()
+            let toServiceSec: (Foundation.Date) -> Int = { date in
+                let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
+                let s = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
+                return s < 4 * 3600 ? s + 86400 : s
+            }
+            let remainingMinutes = (toServiceSec(arrival) - toServiceSec(now)) / 60
+            busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
+            busTimeLabel.textColor = .secondaryLabel
+        } else if item.item.isRealtime {
             if item.item.seats! < 0 {
                 if item.item.stops! <= 1 {
                     setRealtimeAttributedText(

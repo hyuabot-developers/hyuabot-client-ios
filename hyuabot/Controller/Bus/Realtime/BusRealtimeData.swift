@@ -8,8 +8,6 @@ class BusRealtimeData {
     private init() {}
     /// Realtime Query
     let busRealtimeData = BehaviorSubject<[BusRealtimePageQuery.Data.Bus]>(value: [])
-    /// Historical departure logs used for secondary-ETA estimation, fetched once per screen visit (not on the 15s poll).
-    let busSecondaryEtaLogs = BehaviorSubject<[BusRealtimePageQuery.Data.Bus]>(value: [])
     let busRealtimeCityFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
     let busRealtimeCityFromStation = BehaviorSubject<[BusArrivalItem]>(value: [])
     let busRealtimeSeoulFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])

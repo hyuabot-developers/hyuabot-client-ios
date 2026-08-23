@@ -20,13 +20,17 @@ extension String {
     }
 
     func toLocalTimeOrNil() -> Foundation.Date? {
+        // The API may serialize LocalTime with fractional seconds (for example,
+        // realtime destination ETAs). LocalTime is second-precision for the UI,
+        // so discard the fractional part before parsing it.
+        let normalizedTime = String(self.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)[0])
         let formatter = DateFormatter().then {
             $0.calendar = Calendar(identifier: .iso8601)
             $0.locale = Locale(identifier: "en_US_POSIX")
             $0.timeZone = TimeZone(identifier: "Asia/Seoul")
             $0.dateFormat = "HH:mm:ss"
         }
-        guard let time = formatter.date(from: self) else { return nil }
+        guard let time = formatter.date(from: normalizedTime) else { return nil }
         let calendar = Calendar.current
         let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
         let todayComponents = calendar.dateComponents([.year, .month, .day], from: Date.now)

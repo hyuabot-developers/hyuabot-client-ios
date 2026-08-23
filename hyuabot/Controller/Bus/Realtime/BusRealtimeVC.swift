@@ -9,7 +9,6 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
-    private var didSelectBusStop = false
     private var lastLocation: CLLocation?
     private var hasLoadedInitialNotices = false
     private lazy var cityBusTabVC = BusRealtimeTabVC(
@@ -209,6 +208,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
+        locationManager.stopUpdatingLocation()
         stopPolling()
         noticeView.stopAutoScroll()
     }
@@ -245,11 +245,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func selectNearestBusStop() {
-        guard !didSelectBusStop else { return }
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         let status = locationManager.authorizationStatus
         if status == .authorizedWhenInUse || status == .authorizedAlways {
+            locationManager.startUpdatingLocation()
             locationManager.requestLocation()
         } else if status == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
@@ -258,6 +258,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse || status == .authorizedAlways {
+            locationManager.startUpdatingLocation()
             locationManager.requestLocation()
         }
     }
@@ -276,12 +277,22 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     /// coordinates returned by the bus API. Retried both when a new location arrives and when new bus
     /// data arrives, since either one may be the last piece needed.
     private func attemptNearestStopSelection() {
-        guard !didSelectBusStop, let location = lastLocation else { return }
+        guard let location = lastLocation else { return }
         guard let allBuses = try? BusRealtimeData.shared.busRealtimeData.value(), !allBuses.isEmpty else { return }
 
         func coordinate(_ seq: Int32) -> (lat: Double, lng: Double)? {
-            guard let match = allBuses.first(where: { $0.stop.seq == seq }) else { return nil }
-            return (match.stop.latitude, match.stop.longitude)
+            if let match = allBuses.first(where: { $0.stop.seq == seq }) {
+                return (match.stop.latitude, match.stop.longitude)
+            }
+            // A stop can be absent from the response when none of its routes has a
+            // realtime vehicle. Keep GPS selection working from the canonical stop
+            // coordinate in that case.
+            switch seq {
+            case 202_000_106:
+                return (37.2678485, 127.0001900)
+            default:
+                return nil
+            }
         }
 
         func nearest(_ candidates: [Int32]) -> Int32? {
@@ -300,21 +311,28 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
 
         guard let cityStop = nearest(campusStops) else { return }
-        didSelectBusStop = true
-        UserDefaults.standard.set(cityStop, forKey: "busStopID")
-        BusRealtimeData.shared.selectedBusStopID.onNext(cityStop)
+        if (try? BusRealtimeData.shared.selectedBusStopID.value()) != cityStop {
+            UserDefaults.standard.set(cityStop, forKey: "busStopID")
+            BusRealtimeData.shared.selectedBusStopID.onNext(cityStop)
+        }
 
         if let seoulFirst = nearest(campusStops + seoulRemoteStops) {
-            UserDefaults.standard.set(seoulFirst, forKey: "bus.seoulFirstStopID")
-            BusRealtimeData.shared.seoulFirstSelectedStopID.onNext(seoulFirst)
+            if (try? BusRealtimeData.shared.seoulFirstSelectedStopID.value()) != seoulFirst {
+                UserDefaults.standard.set(seoulFirst, forKey: "bus.seoulFirstStopID")
+                BusRealtimeData.shared.seoulFirstSelectedStopID.onNext(seoulFirst)
+            }
         }
         if let seoulSecond = nearest([216_000_719] + seoulRemoteStops) {
-            UserDefaults.standard.set(seoulSecond, forKey: "bus.seoulSecondStopID")
-            BusRealtimeData.shared.seoulSecondSelectedStopID.onNext(seoulSecond)
+            if (try? BusRealtimeData.shared.seoulSecondSelectedStopID.value()) != seoulSecond {
+                UserDefaults.standard.set(seoulSecond, forKey: "bus.seoulSecondStopID")
+                BusRealtimeData.shared.seoulSecondSelectedStopID.onNext(seoulSecond)
+            }
         }
         if let suwon = nearest([216_000_070, 202_000_106]) {
-            UserDefaults.standard.set(suwon, forKey: "bus.suwonStopID")
-            BusRealtimeData.shared.suwonSelectedStopID.onNext(suwon)
+            if (try? BusRealtimeData.shared.suwonSelectedStopID.value()) != suwon {
+                UserDefaults.standard.set(suwon, forKey: "bus.suwonStopID")
+                BusRealtimeData.shared.suwonSelectedStopID.onNext(suwon)
+            }
         }
     }
 
@@ -330,35 +348,122 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             let showSecondary = (try? BusRealtimeData.shared.showSecondaryEta.value()) ?? true
             let seoulTarget = (try? BusRealtimeData.shared.seoulTargetStop.value()) ?? .gangnam
             let seoulRemoteStops: Set<Int32> = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
-            let logs = (try? BusRealtimeData.shared.busSecondaryEtaLogs.value()) ?? []
-
-            /// Realtime (GPS-tracked) arrivals never carry `arrivalTime` — only `minutes` remaining —
-            /// so derive an absolute target time from "now + minutes" to still match against time-of-day log samples.
             func estimatedArrivalTime(for arrival: BusRealtimePageQuery.Data.Bus.Arrival) -> Api.LocalTime? {
                 if let arrivalTime = arrival.arrivalTime { return arrivalTime }
                 guard arrival.isRealtime, let minutes = arrival.minutes else { return nil }
                 return Date.now.addingTimeInterval(Double(minutes) * 60).toLocalTimeString()
             }
 
-            func logsFor(route: Int32, stop: Int32) -> [BusRealtimePageQuery.Data.Bus.Log] {
-                logs.first(where: { $0.stop.seq == stop && $0.route.seq == route })?.log ?? []
-            }
-
             func secondaryTime(
                 primaryArrivalTime: Api.LocalTime?,
-                primaryRoute: Int32,
-                primaryStop: Int32,
-                stop: Int32,
-                route: Int32
+                arrival: BusRealtimePageQuery.Data.Bus.Arrival?,
+                destinationStop: Int32
             ) -> Api.LocalTime? {
-                guard showSecondary, let primaryArrivalTime else { return nil }
-                let secondaryLogs = logsFor(route: route, stop: stop)
-                guard !secondaryLogs.isEmpty else { return nil }
-                return BusTravelTimeEstimator.secondaryArrivalTime(
-                    primaryArrivalTime: primaryArrivalTime,
-                    primaryLogs: logsFor(route: primaryRoute, stop: primaryStop),
-                    secondaryLogs: secondaryLogs
-                )
+                guard showSecondary,
+                      let primaryArrivalTime,
+                      let primaryDate = primaryArrivalTime.toLocalTimeOrNil(),
+                      let arrival,
+                      let minutes = arrival.destinationTravelMinutes.first(where: {
+                          $0.destinationStopId == destinationStop
+                      })?.minutes
+                else { return nil }
+                return primaryDate.addingTimeInterval(Double(minutes) * 60).toLocalTimeString()
+            }
+
+            func arrivalItems(
+                for bus: BusRealtimePageQuery.Data.Bus,
+                destinationStop: Int32
+            ) -> [BusArrivalItem] {
+                // The home screen also uses scheduled arrival rows that carry an arrivalTime
+                // but are marked non-realtime. Keep the same source set here so both screens
+                // show the same upcoming bus instead of falling through to a much later log.
+                let liveArrivals = bus.arrival
+                let liveItems = liveArrivals
+                    .map { arrival in
+                        BusArrivalItem(
+                            route: bus.route.name,
+                            item: arrival,
+                            secondaryArrivalTime: secondaryTime(
+                                primaryArrivalTime: estimatedArrivalTime(for: arrival),
+                                arrival: arrival,
+                                destinationStop: destinationStop
+                            )
+                        )
+                    }
+                let logTimesByDate = Dictionary(grouping: bus.log.compactMap { log -> (String, Foundation.Date)? in
+                    guard let time = log.time.toLocalTimeOrNil() else { return nil }
+                    return (log.date, time)
+                }, by: \.0)
+                let logDerivedDispatchMinutes = logTimesByDate.values
+                    .map { entries in
+                        let times = entries.map(\.1).sorted()
+                        return zip(times, times.dropFirst())
+                            .map { next, current in next.timeIntervalSince(current) }
+                            .filter { $0 > 0 }
+                            .min()
+                    }
+                    .compactMap { $0 }
+                    .min()
+                    .map { Int($0 / 60) }
+                let currentWeekday: String = {
+                    switch Calendar.current.component(.weekday, from: .now) {
+                    case 1: return "sunday"
+                    case 7: return "saturday"
+                    default: return "weekdays"
+                    }
+                }()
+                let dispatchMinutes = bus.minimumDispatchIntervals
+                    .first(where: { $0.weekday == currentWeekday })?.minutes
+                    ?? logDerivedDispatchMinutes
+                    ?? 0
+                let minimumDispatchGap = TimeInterval(dispatchMinutes * 60)
+                let lastLiveArrivalDate = liveArrivals.compactMap { arrival -> Foundation.Date? in
+                    estimatedArrivalTime(for: arrival)?.toLocalTimeOrNil()
+                }.max()
+                let earliestAllowedLogDate = lastLiveArrivalDate?.addingTimeInterval(minimumDispatchGap)
+                var seenLogTimes = Set<String>()
+                var lastDisplayedLogDate = earliestAllowedLogDate.map { $0 - minimumDispatchGap }
+                let futureLogCandidates: [(BusRealtimePageQuery.Data.Bus.Log, Foundation.Date)] = bus.log.compactMap { log in
+                    guard let time = log.time.toLocalTimeOrNil(),
+                          let serviceDate = self.serviceDate(for: time, now: .now),
+                          serviceDate > .now
+                    else { return nil }
+                    return (log, serviceDate)
+                }.sorted { $0.1 < $1.1 }
+                let logItems = futureLogCandidates.compactMap { candidate -> (BusArrivalItem, Foundation.Date)? in
+                    let log = candidate.0
+                    let serviceDate = candidate.1
+                    guard let time = log.time.toLocalTimeOrNil() else { return nil }
+                    guard earliestAllowedLogDate.map({ serviceDate >= $0 }) ?? true,
+                          lastDisplayedLogDate.map({ serviceDate.timeIntervalSince($0) >= minimumDispatchGap }) ?? true
+                    else { return nil }
+                    let logKey = String(format: "%lld", Int64(serviceDate.timeIntervalSince1970))
+                    guard seenLogTimes.insert(logKey).inserted else { return nil }
+                    // A historical log is valid even when realtime has no row with the same
+                    // clock value. Reuse an arrival only as a rendering template; scheduledTime
+                    // remains the source of truth for this row's ETA.
+                    guard let arrival = bus.arrival.first(where: {
+                        $0.time?.toLocalTimeOrNil() == time || $0.arrivalTime?.toLocalTimeOrNil() == time
+                    }) ?? bus.arrival.first(where: {
+                        $0.destinationTravelMinutes.contains { $0.destinationStopId == destinationStop }
+                    }) ?? bus.arrival.first else { return nil }
+                    let item = BusArrivalItem(
+                        route: bus.route.name,
+                        item: arrival,
+                        secondaryArrivalTime: secondaryTime(
+                            primaryArrivalTime: log.time,
+                            arrival: arrival,
+                            destinationStop: destinationStop
+                        ),
+                        scheduledTime: log.time
+                    )
+                    lastDisplayedLogDate = serviceDate
+                    return (item, serviceDate)
+                }
+                // Realtime entries are ordered by their remaining minutes. Log entries are
+                // appended only when they are at least one dispatch interval apart from the
+                // preceding realtime/log entry.
+                return liveItems.sorted() + logItems.sorted { $0.1 < $1.1 }.map { $0.0 }
             }
 
             let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
@@ -367,32 +472,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216_000_068 })
             BusRealtimeData.shared.busRealtimeCityFromCampus.onNext(
                 cityFromCampus.map { item in
-                    item.arrival.map { arrival in
-                        BusArrivalItem(
-                            route: item.route.name,
-                            item: arrival,
-                            secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_068,
-                                primaryStop: selectedStopID,
-                                stop: 216_000_138, route: 216_000_068
-                            )
-                        )
-                    }.sorted()
+                    arrivalItems(for: item, destinationStop: 216_000_138)
                 } ?? []
             )
             let cityFromStation = result.first(where: { $0.stop.seq == 216_000_138 && $0.route.seq == 216_000_068 })
             BusRealtimeData.shared.busRealtimeCityFromStation.onNext(
                 cityFromStation.map { item in
-                    item.arrival.map { arrival in
-                        BusArrivalItem(
-                            route: item.route.name,
-                            item: arrival,
-                            secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_068, primaryStop: 216_000_138,
-                                stop: 216_000_378, route: 216_000_068
-                            )
-                        )
-                    }.sorted()
+                    arrivalItems(for: item, destinationStop: 216_000_378)
                 } ?? []
             )
             // Seoul bus section 1 (3102) — primary stop widened to campus or one of 5 Seoul-bound stops
@@ -401,17 +487,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             let seoulFromCampus = result.first(where: { $0.stop.seq == seoulFirstStopID && $0.route.seq == 216_000_061 })
             BusRealtimeData.shared.busRealtimeSeoulFromCampus.onNext(
                 seoulFromCampus.map { item in
-                    item.arrival.map { arrival in
-                        BusArrivalItem(
-                            route: item.route.name,
-                            item: arrival,
-                            secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_061,
-                                primaryStop: seoulFirstStopID,
-                                stop: seoulFirstSecondaryStop, route: 216_000_061
-                            )
-                        )
-                    }.sorted()
+                    arrivalItems(for: item, destinationStop: seoulFirstSecondaryStop)
                 } ?? []
             )
             // Seoul bus section 2 (3100/3101/3100N) — primary stop widened to main gate or Seoul-bound stops
@@ -426,17 +502,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(
                 Array(
                     gunpoFromCampus.flatMap { route in
-                        route.arrival.map { arrival in
-                            BusArrivalItem(
-                                route: route.route.name,
-                                item: arrival,
-                                secondaryArrivalTime: secondaryTime(
-                                    primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: Int32(route.route.seq),
-                                    primaryStop: seoulSecondStopID,
-                                    stop: seoulSecondSecondaryStop, route: Int32(route.route.seq)
-                                )
-                            )
-                        }
+                        arrivalItems(for: route, destinationStop: seoulSecondSecondaryStop)
                     }.sorted().prefix(4)
                 )
             )
@@ -447,47 +513,19 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 .filter { $0.stop.seq == suwonStopID && ($0.route.seq == 216_000_104 || $0.route.seq == 200_000_015) }
             BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(
                 suwonFromCampus.flatMap { route in
-                    route.arrival.map { arrival in
-                        BusArrivalItem(
-                            route: route.route.name,
-                            item: arrival,
-                            secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: Int32(route.route.seq),
-                                primaryStop: suwonStopID,
-                                stop: suwonSecondaryStop, route: Int32(route.route.seq)
-                            )
-                        )
-                    }
+                    arrivalItems(for: route, destinationStop: suwonSecondaryStop)
                 }.sorted()
             )
             let ktxFromCampus = result.first(where: { $0.stop.seq == 216_000_759 && $0.route.seq == 216_000_075 })
             BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(
                 ktxFromCampus.map { item in
-                    item.arrival.map { arrival in
-                        BusArrivalItem(
-                            route: item.route.name,
-                            item: arrival,
-                            secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_075, primaryStop: 216_000_759,
-                                stop: 213_000_487, route: 216_000_075
-                            )
-                        )
-                    }.sorted()
+                    arrivalItems(for: item, destinationStop: 213_000_487)
                 } ?? []
             )
             let ktxFromStation = result.first(where: { $0.stop.seq == 213_000_487 && $0.route.seq == 216_000_075 })
             BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(
                 ktxFromStation.map { item in
-                    item.arrival.map { arrival in
-                        BusArrivalItem(
-                            route: item.route.name,
-                            item: arrival,
-                            secondaryArrivalTime: secondaryTime(
-                                primaryArrivalTime: estimatedArrivalTime(for: arrival), primaryRoute: 216_000_075, primaryStop: 213_000_487,
-                                stop: 216_000_117, route: 216_000_075
-                            )
-                        )
-                    }.sorted()
+                    arrivalItems(for: item, destinationStop: 216_000_117)
                 } ?? []
             )
             // Reload the table view
@@ -512,6 +550,75 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         }).disposed(by: disposeBag)
     }
 
+    private func busRealtimeInput(dates: [Api.Date]) -> [BusRouteStopInput] {
+        let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
+        func input(_ route: Int32, _ stop: Int32, _ destinations: [Int32] = []) -> BusRouteStopInput {
+            BusRouteStopInput(
+                route: route,
+                stop: stop,
+                destinationStops: destinations.isEmpty ? .none : .some(destinations),
+                limit: .some(3),
+                dates: .some(dates)
+            )
+        }
+
+        var inputs: [BusRouteStopInput] = [
+            // 10-1: campus stops arrive at Sangnoksu, and Sangnoksu arrives at the ERICA Convention Center.
+            input(216_000_068, 216_000_138, [216_000_378]),
+            input(216_000_068, 216_000_383, [216_000_138]),
+            input(216_000_068, 216_000_381, [216_000_138]),
+            input(216_000_068, 216_000_379, [216_000_138]),
+        ]
+
+        // Seoul buses use the destination selected in the bottom sheet. For a remote
+        // source stop, the first campus transfer stop is the relevant destination.
+        inputs += [216_000_383, 216_000_381, 216_000_379].map {
+            input(216_000_061, $0, seoulRemoteStops)
+        }
+        inputs += seoulRemoteStops.map {
+            input(216_000_061, $0, [216_000_378])
+        }
+
+        for route: Int32 in [216_000_043, 216_000_026, 216_000_096] {
+            inputs += [
+                input(route, 216_000_719, seoulRemoteStops)
+            ]
+            inputs += seoulRemoteStops.map {
+                input(route, $0, [216_000_048])
+            }
+        }
+
+        inputs += [
+            input(216_000_104, 216_000_070, [202_000_208]),
+            input(216_000_104, 216_000_141),
+            input(216_000_104, 202_000_208),
+            input(216_000_104, 202_000_106, [216_000_141]),
+            input(200_000_015, 216_000_070, [202_000_208]),
+            input(200_000_015, 216_000_141),
+            input(200_000_015, 202_000_208),
+            input(200_000_015, 202_000_106, [216_000_141]),
+            input(216_000_075, 216_000_759, [213_000_487]),
+            input(216_000_075, 213_000_487, [216_000_117]),
+            input(216_000_075, 216_000_117),
+            input(216_000_016, 216_000_152)
+        ]
+        return inputs
+    }
+
+    private func serviceDate(for time: Foundation.Date, now: Foundation.Date) -> Foundation.Date? {
+        var calendar = Calendar.current
+        calendar.timeZone = .current
+        let today = calendar.date(
+            bySettingHour: calendar.component(.hour, from: time),
+            minute: calendar.component(.minute, from: time),
+            second: 0,
+            of: now
+        ) ?? time
+        if today > now { return today }
+        guard calendar.component(.hour, from: time) < 4 else { return nil }
+        return calendar.date(byAdding: .day, value: 1, to: today)
+    }
+
     private func fetchBusRealtimeData() {
         var currentLanguage: String {
             Locale.current.language.languageCode?.identifier ?? "ko"
@@ -524,15 +631,15 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             }
         }
         let dates = BusRecentDates.sameWeekdayType(count: 4)
+        let busInput = busRealtimeInput(dates: dates)
         Task {
             let response = try? await Network.shared.client.fetch(
-                query: BusRealtimePageQuery(language: noticeLanguage, dates: dates),
+                query: BusRealtimePageQuery(language: noticeLanguage, busInput: busInput),
                 cachePolicy: .networkOnly
             )
             await MainActor.run {
                 if let data = response?.data {
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
-                    BusRealtimeData.shared.busSecondaryEtaLogs.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))
                     if data.bus.isEmpty {
@@ -546,6 +653,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func startPolling() {
+        stopPolling()
         fetchBusRealtimeData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
@@ -604,7 +712,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             BusRealtimeDisplaySettings.seoulTargetStop = target
             self.updateQuickSettingsBarLabel()
             BusRealtimeData.shared.seoulTargetStop.onNext(target)
-            BusRealtimeData.shared.busRealtimeData.onNext((try? BusRealtimeData.shared.busRealtimeData.value()) ?? [])
+            self.fetchBusRealtimeData()
         }
         vc.openHelp = { [weak self] in self?.openHelpVC() }
         vc.openInquiry = { [weak self] in self?.openInquiry() }
