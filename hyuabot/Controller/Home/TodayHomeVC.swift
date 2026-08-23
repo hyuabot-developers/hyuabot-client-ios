@@ -1121,8 +1121,7 @@ private final class HomeWeatherIconView: UIView {
 }
 
 final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_length
-    private static let autoRefreshIntervalSeconds = 60
-    private static let homeBusLogTimeMarginMinutes = 5
+    private static let autoRefreshIntervalSeconds = 15
     private static let departureSwitchHysteresisMeters: CLLocationDistance = 75
     private static let subwayMinimumTransferMinutes = 5
     private static let chojiMinimumTransferMinutes = 8
@@ -1131,6 +1130,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private static let selectorTitleFontSize: CGFloat = 18
     private static let selectorIconSize: CGFloat = 22
     private static let selectorHeaderSpacing: CGFloat = 10
+    private static let homeTransitBadgeWidth: CGFloat = 64
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -1317,6 +1317,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+        refreshHomeContext(showsLoadingState: false)
         startAutoRefresh()
     }
 
@@ -3255,42 +3256,37 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             BusRouteStopInput(
                 route: route,
                 stop: stop,
-                destinationStop: homeBusDestinationStopID(routeID: route, stopID: stop),
+                destinationStops: homeBusDestinationStopIDs(routeID: route, stopID: stop),
                 limit: 3,
                 dates: .some(dates)
             )
         }
     }
 
-    private func homeBusDestinationStopID(routeID: Int32, stopID: Int32) -> GraphQLNullable<Int32> {
-        let destination: Int32? = switch (routeID, stopID) {
-        case (216_000_068, 216_000_383), (216_000_068, 216_000_381):
-            216_000_138
-        case (216_000_061, 216_000_383), (216_000_061, 216_000_381):
-            HomeSettings.showSeoulBusStop ? HomeSettings.seoulBusStop.stopID : nil
-        case (216_000_104, 216_000_070), (200_000_015, 216_000_070),
-             (216_000_104, 202_000_106), (200_000_015, 202_000_106):
-            216_000_141
-        case (216_000_061, 216_000_379), (216_000_096, 216_000_719):
-            switch selectedHomeBusDestination {
-            case .gangnam where HomeSettings.showSeoulBusStop:
-                HomeSettings.seoulBusStop.stopID
-            case .uiwang where routeID == 216_000_096:
-                226_000_042
-            default:
-                nil
-            }
-        case (216_000_026, 216_000_719), (216_000_026, 216_000_048):
-            226_000_042
-        case (216_000_043, 216_000_719), (216_000_043, 216_000_048):
-            225_000_116
+    private func homeBusDestinationStopIDs(routeID: Int32, stopID: Int32) -> GraphQLNullable<[Int32]> {
+        let seoulDestinationStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
+        let destinations: [Int32] = switch (routeID, stopID) {
+        case (216_000_068, 216_000_383), (216_000_068, 216_000_381), (216_000_068, 216_000_379):
+            [216_000_138]
+        case (216_000_061, 216_000_383), (216_000_061, 216_000_381), (216_000_061, 216_000_379):
+            seoulDestinationStops
+        case (216_000_096, 216_000_719):
+            seoulDestinationStops + [226_000_042]
+        case (216_000_026, 216_000_719):
+            [226_000_042]
+        case (216_000_043, 216_000_719):
+            [225_000_116]
+        case (216_000_104, 216_000_070), (200_000_015, 216_000_070):
+            [202_000_208]
+        case (216_000_104, 202_000_106), (200_000_015, 202_000_106):
+            [216_000_141]
         case let (routeID, stopID)
-            where [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220].contains(stopID):
-            routeID == 216_000_061 ? 216_000_378 : 216_000_048
+            where seoulDestinationStops.contains(stopID):
+            [routeID == 216_000_061 ? 216_000_378 : 216_000_048]
         default:
-            nil
+            []
         }
-        return destination.map(GraphQLNullable.some) ?? .none
+        return destinations.isEmpty ? .none : .some(destinations)
     }
 
     private func buildMealSections(
@@ -3365,7 +3361,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(64)
+            make.width.equalTo(Self.homeTransitBadgeWidth)
             make.height.equalTo(24)
         }
         badge.setContentHuggingPriority(.required, for: .horizontal)
@@ -3414,7 +3410,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             replaceSubviews(in: busOptionStack, with: [])
             return
         }
-        if isHomeBusRefreshing {
+        if isHomeBusRefreshing, homeBusData.isEmpty {
             replaceSubviews(in: busOptionStack, with: [makeSkeletonRow(widthRatio: 0.68), makeSkeletonRow(widthRatio: 0.52)])
             return
         }
@@ -3442,7 +3438,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         default:
             var configuration = busHomeDestinationButton.configuration ?? .plain()
             configuration.attributedTitle = AttributedString(
-                sourceBuses.first?.stop.name ?? String(localized: "bus.stop.title"),
+                homeBusSectionTitle(for: group, fallback: sourceBuses.first?.stop.name),
                 attributes: AttributeContainer([.font: UIFont.godo(size: Self.selectorTitleFontSize, weight: .bold)])
             )
             configuration.image = nil
@@ -3462,9 +3458,21 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     minutes = nil
                 }
                 guard let minutes else { continue }
-                let arrivalDate = now.addingTimeInterval(Double(minutes) * 60)
+                let arrivalDate = if arrival.isRealtime {
+                    now.addingTimeInterval(Double(minutes) * 60)
+                } else {
+                    arrival.arrivalTime?.toLocalTimeOrNil() ?? now
+                }
                 let destinationETA = showsHomeBusDestinationETA(group, routeID: Int32(bus.route.seq))
-                    ? arrival.destinationArrivalTime?.toLocalTimeOrNil().map(destinationFallbackTime)
+                    ? destinationETA(
+                        for: arrival,
+                        sourceArrivalDate: arrivalDate,
+                        destinationStopID: destinationStopID(
+                            routeID: Int32(bus.route.seq),
+                            group: group,
+                            sourceStopID: Int32(bus.stop.seq)
+                        )
+                    )
                     : nil
                 let details = if arrival.isRealtime, let seats = arrival.seats, seats >= 0, let destinationETA {
                     String(format: String(localized: "home.bus.stops.seats.eta"), arrival.stops ?? 0, seats, destinationETA)
@@ -3483,34 +3491,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     route: bus.route.name,
                     stopName: homeBusStopName(stopSeq: Int32(bus.stop.seq), fallback: bus.stop.name),
                     subtitle: details,
-                    trailing: String(format: String(localized: "home.minutes"), minutes),
+                    trailing: arrival.isRealtime
+                        ? String(format: String(localized: "home.minutes"), minutes)
+                        : destinationFallbackTime(arrivalDate),
                     sortDate: arrivalDate,
-                    isRealtime: true,
-                    tintColor: homeBusTintColor(bus.route.name)
-                ))
-            }
-            for log in bus.log {
-                guard let time = log.time.toLocalTimeOrNil(),
-                      let serviceDate = serviceDate(for: time, now: now),
-                      serviceDate > now
-                else { continue }
-                if let leadMinutes = homeBusLogLeadMinutes(route: bus.route.name, stopID: Int32(bus.stop.seq)) {
-                    let minimumLogTime = now.addingTimeInterval(
-                        Double(max(0, leadMinutes - Self.homeBusLogTimeMarginMinutes)) * 60
-                    )
-                    guard serviceDate >= minimumLogTime else { continue }
-                }
-                let arrivalDate = serviceDate
-                let destinationETA = showsHomeBusDestinationETA(group, routeID: Int32(bus.route.seq))
-                    ? busDestinationArrivalTime(for: bus, sourceTime: time)
-                    : nil
-                candidates.append(HomeBusRowData(
-                    route: bus.route.name,
-                    stopName: homeBusStopName(stopSeq: Int32(bus.stop.seq), fallback: bus.stop.name),
-                    subtitle: destinationETA.map { String(format: String(localized: "home.bus.eta"), $0) } ?? "",
-                    trailing: busTimeString(time),
-                    sortDate: arrivalDate,
-                    isRealtime: false,
+                    isRealtime: arrival.isRealtime,
                     tintColor: homeBusTintColor(bus.route.name)
                 ))
             }
@@ -3550,6 +3535,22 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return selected.sorted { homeBusRowComesBefore($0, $1, group: group) }.map(makeHomeBusRow)
     }
 
+    private func homeBusSectionTitle(for group: HomeBusGroup, fallback: String?) -> String {
+        switch group {
+        case .campus:
+            return selectedHomeBusDestination.title
+        case .dormitory:
+            return String(localized: "shuttle_type_dormitory")
+        case .kitch:
+            return String(localized: "bus.stop.cluster")
+        case .suwon:
+            return String(localized: "bus.stop.suwon_station")
+        case let .seoul(stopID):
+            let title = BusStopName.title(for: stopID)
+            return title.isEmpty ? (fallback ?? String(localized: "bus.stop.title")) : title
+        }
+    }
+
     private func homeBusRowComesBefore(
         _ lhs: HomeBusRowData,
         _ rhs: HomeBusRowData,
@@ -3567,9 +3568,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         switch group {
         case .campus:
             let requests: [(Int, Int)] = switch selectedHomeBusDestination {
-            case .sangnoksu: [(216_000_068, 216_000_383)]
+            case .sangnoksu: [(216_000_068, 216_000_379)]
             case .gangnam: [(216_000_061, 216_000_379), (216_000_096, 216_000_719)]
-            case .suwon: [(216_000_104, 216_000_070), (200_000_015, 216_000_070)]
+            case .suwon: [
+                (216_000_104, 216_000_070), (200_000_015, 216_000_070)
+            ]
             case .uiwang: [(216_000_026, 216_000_719), (216_000_096, 216_000_719)]
             case .gunpo: [(216_000_043, 216_000_719)]
             }
@@ -3583,20 +3586,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     }
 
-    private func homeBusLogLeadMinutes(route: String, stopID: Int32) -> Int? {
-        switch (route, stopID) {
-        case ("10-1", 216_000_383): 21
-        case ("10-1", 216_000_381): 21
-        case ("10-1", 216_000_379): 22
-        case ("3102", 216_000_383): 27
-        case ("3102", 216_000_381): 28
-        case ("3102", 216_000_379): 29
-        case ("7070", 216_000_070): 40
-        case ("7070", 202_000_106): 76
-        default: nil
-        }
-    }
-
     private func homeBusRouteID(_ route: String) -> Int32? {
         switch route {
         case "10-1": 216_000_068
@@ -3606,7 +3595,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
-        HomeSettings.showSeoulBusStop
+        if case .seoul = group {
+            return HomeSettings.showSeoulBusStop
+        }
+        return destinationStopID(routeID: routeID, group: group) != nil
     }
 
     private func updateHomeBusDestinationMenu() {
@@ -3631,11 +3623,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 guard let self else { return }
                 selectedHomeBusDestination = destination
                 homeBusRowsCache.removeAll()
-                homeBusData.removeAll()
-                isHomeBusRefreshing = true
                 updateHomeBusDestinationMenu()
                 renderHomeBus(for: nearestHomeBusGroup())
-                fetchHomeData(showsLoadingState: false)
             }
         })
     }
@@ -3663,7 +3652,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.equalTo(64)
+            make.width.equalTo(Self.homeTransitBadgeWidth)
             make.height.equalTo(24)
         }
 
@@ -3702,12 +3691,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return row
     }
 
-    private func destinationStopID(routeID: Int32, group: HomeBusGroup) -> Int32? {
+    private func destinationStopID(routeID: Int32, group: HomeBusGroup, sourceStopID: Int32? = nil) -> Int32? {
         switch group {
         case .seoul:
             routeID == 216_000_061 ? 216_000_378 : 216_000_048
         case .suwon:
-            216_000_141
+            sourceStopID == 202_000_106 ? 216_000_141 : 202_000_208
         case .dormitory:
             routeID == 216_000_068 ? 216_000_138 : HomeSettings.seoulBusStop.stopID
         case .campus:
@@ -3719,7 +3708,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     ? HomeSettings.seoulBusStop.stopID
                     : nil
             case .suwon:
-                [216_000_104, 200_000_015].contains(routeID) ? 216_000_141 : nil
+                [216_000_104, 200_000_015].contains(routeID) ? 202_000_208 : nil
             case .uiwang:
                 [216_000_026, 216_000_096].contains(routeID) ? 226_000_042 : nil
             case .gunpo:
@@ -3730,26 +3719,26 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     }
 
-    private func busDestinationArrivalTime(
-        for bus: HomePageQuery.Data.Bus,
-        sourceTime: Foundation.Date
+    private func destinationETA(
+        for arrival: HomePageQuery.Data.Bus.Arrival,
+        sourceArrivalDate: Foundation.Date,
+        destinationStopID: Int32?
     ) -> String? {
-        guard let arrival = bus.arrival.first(where: {
-            $0.arrivalTime?.toLocalTimeOrNil() == sourceTime
-        }),
-            let destinationArrivalTime = arrival.destinationArrivalTime?.toLocalTimeOrNil()
+        guard let destinationStopID,
+              let minutes = arrival.destinationTravelMinutes.first(where: { $0.destinationStopId == destinationStopID })?.minutes
         else { return nil }
-        return destinationFallbackTime(destinationArrivalTime)
+        let sourceDate = if arrival.isRealtime {
+            sourceArrivalDate
+        } else {
+            arrival.arrivalTime?.toLocalTimeOrNil() ?? sourceArrivalDate
+        }
+        return destinationFallbackTime(sourceDate.addingTimeInterval(Double(minutes) * 60))
     }
 
     private func destinationFallbackTime(_ date: Foundation.Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
-    }
-
-    private func busTimeString(_ time: Foundation.Date) -> String {
-        destinationFallbackTime(time)
     }
 
     private func homeBusStopName(stopSeq: Int32, fallback: String) -> String {
@@ -3767,22 +3756,15 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         tabBarController?.selectedIndex = 1
     }
 
-    private func serviceDate(for time: Foundation.Date, now: Foundation.Date) -> Foundation.Date? {
-        var calendar = Calendar.current
-        calendar.timeZone = .current
-        let today = calendar.date(
-            bySettingHour: calendar.component(.hour, from: time),
-            minute: calendar.component(.minute, from: time),
-            second: 0,
-            of: now
-        ) ?? time
-        if today > now { return today }
-        guard calendar.component(.hour, from: time) < 4 else { return nil }
-        return calendar.date(byAdding: .day, value: 1, to: today)
-    }
-
     private func nearestHomeBusGroup() -> HomeBusGroup? {
         guard let location = lastLocation else { return .campus }
+        // Suwon Station may not be present in the current response when both
+        // 7070/9090 have no live vehicle. Use the canonical stop coordinate so
+        // the home bus card does not disappear just because the payload is empty.
+        let suwonStation = CLLocation(latitude: 37.2678485, longitude: 127.0001900)
+        if location.distance(from: suwonStation) <= 2000 {
+            return .suwon
+        }
         let groups: [HomeBusGroup] = [
             .campus, .kitch, .dormitory, .suwon,
             .seoul(121_000_060), .seoul(121_000_929), .seoul(121_000_974),
@@ -3931,8 +3913,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         badge.adjustsFontSizeToFitWidth = true
         badge.minimumScaleFactor = 0.75
         badge.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(48)
-            make.width.lessThanOrEqualTo(72)
+            make.width.equalTo(Self.homeTransitBadgeWidth)
             make.height.equalTo(26)
         }
         badge.setContentHuggingPriority(.required, for: .horizontal)
@@ -4257,11 +4238,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         vc.updateShowSeoulBusStop = { [weak self] isOn in
             HomeSettings.showSeoulBusStop = isOn
-            self?.renderMovement()
+            self?.refreshHomeContext(showsLoadingState: false)
         }
         vc.updateSeoulBusStop = { [weak self] stop in
             HomeSettings.seoulBusStop = stop
-            self?.renderMovement()
+            self?.refreshHomeContext(showsLoadingState: false)
         }
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom { context in
