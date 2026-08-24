@@ -3593,10 +3593,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
-        if case .seoul = group {
-            return HomeSettings.showSeoulBusStop
-        }
-        return destinationStopID(routeID: routeID, group: group) != nil
+        HomeSettings.showSeoulBusStop
     }
 
     private func updateHomeBusDestinationMenu() {
