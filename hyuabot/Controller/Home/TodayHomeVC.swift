@@ -478,15 +478,39 @@ private final class HomeQuickSettingsVC: UIViewController {
     var updateSubwayTransferDestination: ((SubwayTransferDestination) -> Void)?
     var updateShowSeoulBusStop: ((Bool) -> Void)?
     var updateSeoulBusStop: ((BusSeoulTargetStop) -> Void)?
-    let preferredSheetHeight: CGFloat = 650
 
     private let contentStack = UIStackView()
+    private let sheetTitleLabel = UILabel()
     private let showPresenceStatusSwitch = UISwitch()
     private let showBus50TransferSwitch = UISwitch()
     private let showSubwayTransferSwitch = UISwitch()
     private let subwayDestinationControl = UISegmentedControl()
     private let showSeoulBusStopSwitch = UISwitch()
     private let seoulBusStopControl = UISegmentedControl()
+
+    var calculatedSheetHeight: CGFloat {
+        view.layoutIfNeeded()
+
+        let contentWidth = max(view.bounds.width - 40, 1)
+        let fittingSize = CGSize(width: contentWidth, height: UIView.layoutFittingCompressedSize.height)
+        let titleHeight = sheetTitleLabel.systemLayoutSizeFitting(
+            fittingSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        let arrangedHeight = contentStack.arrangedSubviews.reduce(CGFloat.zero) { height, subview in
+            height + subview.systemLayoutSizeFitting(
+                fittingSize,
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            ).height
+        }
+        let spacingHeight = CGFloat(max(contentStack.arrangedSubviews.count - 1, 0)) * contentStack.spacing
+        let marginsHeight = contentStack.layoutMargins.top + contentStack.layoutMargins.bottom
+        let safetyPadding: CGFloat = 8
+
+        return 28 + titleHeight + 14 + marginsHeight + arrangedHeight + spacingHeight + safetyPadding
+    }
 
     init(
         showPresenceStatus: Bool,
@@ -526,20 +550,26 @@ private final class HomeQuickSettingsVC: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
 
+        sheetTitleLabel.text = String(localized: "home.quick_settings.title")
+        sheetTitleLabel.font = .godo(size: 20, weight: .bold)
+        sheetTitleLabel.textColor = .label
+
+        view.addSubview(sheetTitleLabel)
+        sheetTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(28)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(28)
+        }
+
         view.addSubview(contentStack)
         contentStack.axis = .vertical
         contentStack.spacing = 14
-        contentStack.layoutMargins = UIEdgeInsets(top: 22, left: 20, bottom: 24, right: 20)
+        contentStack.layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 24, right: 20)
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.snp.makeConstraints { make in
-            make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
-            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(sheetTitleLabel.snp.bottom).offset(4)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
-
-        let title = UILabel()
-        title.text = String(localized: "home.quick_settings.title")
-        title.font = .godo(size: 20, weight: .bold)
-        title.textColor = .label
 
         showPresenceStatusSwitch.addTarget(self, action: #selector(onChangeShowPresenceStatus), for: .valueChanged)
         showBus50TransferSwitch.addTarget(self, action: #selector(onChangeShowBus50Transfer), for: .valueChanged)
@@ -548,7 +578,11 @@ private final class HomeQuickSettingsVC: UIViewController {
         showSeoulBusStopSwitch.addTarget(self, action: #selector(onChangeShowSeoulBusStop), for: .valueChanged)
         seoulBusStopControl.addTarget(self, action: #selector(onChangeSeoulBusStop), for: .valueChanged)
 
-        contentStack.addArrangedSubview(title)
+        let titleToCardsSpacer = UIView()
+        titleToCardsSpacer.setContentHuggingPriority(.defaultLow, for: .vertical)
+        titleToCardsSpacer.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        contentStack.addArrangedSubview(titleToCardsSpacer)
+
         contentStack.addArrangedSubview(settingRow(
             title: String(localized: "shuttle.quick_settings.presence.title"),
             subtitle: String(localized: "shuttle.quick_settings.presence.subtitle"),
@@ -560,6 +594,12 @@ private final class HomeQuickSettingsVC: UIViewController {
             subtitle: String(localized: "home.quick_settings.bus50_transfer.subtitle"),
             control: showBus50TransferSwitch,
             identifier: "home.quick_settings.bus50_transfer_row"
+        ))
+        contentStack.addArrangedSubview(settingRow(
+            title: String(localized: "home.quick_settings.destination_eta.title"),
+            subtitle: String(localized: "home.quick_settings.destination_eta.subtitle"),
+            control: showSeoulBusStopSwitch,
+            identifier: "home.quick_settings.show_destination_eta"
         ))
         contentStack.addArrangedSubview(seoulBusStopRow())
         contentStack.addArrangedSubview(subwayTransferRow())
@@ -609,7 +649,7 @@ private final class HomeQuickSettingsVC: UIViewController {
     private func subwayTransferRow() -> UIView {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 10
+        stack.spacing = 12
         stack.accessibilityIdentifier = "home.quick_settings.subway_transfer_row"
         stack.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
         stack.isLayoutMarginsRelativeArrangement = true
@@ -618,23 +658,29 @@ private final class HomeQuickSettingsVC: UIViewController {
 
         let header = UIStackView()
         header.axis = .horizontal
-        header.alignment = .center
-        header.spacing = 12
+        header.alignment = .top
+        header.spacing = 8
+        header.setContentHuggingPriority(.required, for: .vertical)
+        header.setContentCompressionResistancePriority(.required, for: .vertical)
 
         let textStack = UIStackView()
         textStack.axis = .vertical
         textStack.spacing = 4
+        textStack.setContentHuggingPriority(.required, for: .vertical)
+        textStack.setContentCompressionResistancePriority(.required, for: .vertical)
 
         let titleLabel = UILabel()
         titleLabel.text = String(localized: "home.quick_settings.subway_transfer.title")
         titleLabel.font = .godo(size: 16, weight: .bold)
         titleLabel.textColor = .label
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = String(localized: "home.quick_settings.subway_transfer.subtitle")
         subtitleLabel.font = .godo(size: 13, weight: .regular)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.numberOfLines = 0
+        subtitleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(subtitleLabel)
@@ -647,12 +693,12 @@ private final class HomeQuickSettingsVC: UIViewController {
         subwayDestinationControl.setTitleTextAttributes([
             .font: UIFont.godo(size: 12, weight: .bold)
         ], for: .selected)
+        subwayDestinationControl.snp.makeConstraints { make in
+            make.height.equalTo(32)
+        }
 
         stack.addArrangedSubview(header)
         stack.addArrangedSubview(subwayDestinationControl)
-        stack.snp.makeConstraints { make in
-            make.height.equalTo(118)
-        }
         stack.setContentHuggingPriority(.required, for: .vertical)
         stack.setContentCompressionResistancePriority(.required, for: .vertical)
         return stack
@@ -661,7 +707,7 @@ private final class HomeQuickSettingsVC: UIViewController {
     private func seoulBusStopRow() -> UIView {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 10
+        stack.spacing = 8
         stack.accessibilityIdentifier = "home.quick_settings.seoul_bus_stop_row"
         stack.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
         stack.isLayoutMarginsRelativeArrangement = true
@@ -670,28 +716,47 @@ private final class HomeQuickSettingsVC: UIViewController {
 
         let header = UIStackView()
         header.axis = .horizontal
-        header.alignment = .center
-        header.spacing = 12
+        header.alignment = .top
+        header.spacing = 4
+        header.setContentHuggingPriority(.required, for: .vertical)
+        header.setContentCompressionResistancePriority(.required, for: .vertical)
+
         let textStack = UIStackView()
         textStack.axis = .vertical
         textStack.spacing = 4
-        let title = UILabel()
-        title.text = String(localized: "home.quick_settings.seoul_bus_stop.title")
-        title.font = .godo(size: 16, weight: .bold)
-        let subtitle = UILabel()
-        subtitle.text = String(localized: "home.quick_settings.seoul_bus_stop.subtitle")
-        subtitle.font = .godo(size: 13, weight: .regular)
-        subtitle.textColor = .secondaryLabel
-        subtitle.numberOfLines = 0
-        textStack.addArrangedSubview(title)
-        textStack.addArrangedSubview(subtitle)
+        textStack.setContentHuggingPriority(.required, for: .vertical)
+        textStack.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let titleLabel = UILabel()
+        titleLabel.text = String(localized: "home.quick_settings.seoul_bus_stop.title")
+        titleLabel.font = .godo(size: 16, weight: .bold)
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = String(localized: "home.quick_settings.seoul_bus_stop.subtitle")
+        subtitleLabel.font = .godo(size: 13, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 0
+        subtitleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        textStack.addArrangedSubview(titleLabel)
+        textStack.addArrangedSubview(subtitleLabel)
         header.addArrangedSubview(textStack)
-        header.addArrangedSubview(showSeoulBusStopSwitch)
-        seoulBusStopControl.setTitleTextAttributes([.font: UIFont.godo(size: 12, weight: .regular)], for: .normal)
-        seoulBusStopControl.setTitleTextAttributes([.font: UIFont.godo(size: 12, weight: .bold)], for: .selected)
+
+        seoulBusStopControl.setTitleTextAttributes([
+            .font: UIFont.godo(size: 12, weight: .regular)
+        ], for: .normal)
+        seoulBusStopControl.setTitleTextAttributes([
+            .font: UIFont.godo(size: 12, weight: .bold)
+        ], for: .selected)
+        seoulBusStopControl.snp.makeConstraints { make in
+            make.height.equalTo(32)
+        }
+
         stack.addArrangedSubview(header)
         stack.addArrangedSubview(seoulBusStopControl)
-        stack.snp.makeConstraints { make in make.height.equalTo(118) }
+        stack.setContentHuggingPriority(.required, for: .vertical)
+        stack.setContentCompressionResistancePriority(.required, for: .vertical)
         return stack
     }
 
@@ -3593,10 +3658,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
-        if case .seoul = group {
-            return HomeSettings.showSeoulBusStop
-        }
-        return destinationStopID(routeID: routeID, group: group) != nil
+        HomeSettings.showSeoulBusStop
     }
 
     private func updateHomeBusDestinationMenu() {
@@ -4246,8 +4308,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             self?.refreshHomeContext(showsLoadingState: false)
         }
         if let sheet = vc.sheetPresentationController {
+            vc.loadViewIfNeeded()
+            let preferredHeight = vc.calculatedSheetHeight
             sheet.detents = [.custom { context in
-                min(vc.preferredSheetHeight, context.maximumDetentValue)
+                min(preferredHeight, context.maximumDetentValue)
             }]
             sheet.prefersGrabberVisible = true
         }
