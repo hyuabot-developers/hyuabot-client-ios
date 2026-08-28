@@ -541,56 +541,56 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     private func busRealtimeInput(dates: [Api.Date]) -> [BusRouteStopInput] {
         let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
+        let showSecondary = (try? BusRealtimeData.shared.showSecondaryEta.value()) ?? true
+        let seoulTarget = (try? BusRealtimeData.shared.seoulTargetStop.value()) ?? .gangnam
+        let selectedCityStop = (try? BusRealtimeData.shared.selectedBusStopID.value()) ?? 216_000_379
+        let seoulFirstStop = (try? BusRealtimeData.shared.seoulFirstSelectedStopID.value()) ?? 216_000_379
+        let seoulSecondStop = (try? BusRealtimeData.shared.seoulSecondSelectedStopID.value()) ?? 216_000_719
+        let suwonStop = (try? BusRealtimeData.shared.suwonSelectedStopID.value()) ?? 216_000_070
+
         func input(_ route: Int32, _ stop: Int32, _ destinations: [Int32] = []) -> BusRouteStopInput {
             BusRouteStopInput(
                 route: route,
                 stop: stop,
-                destinationStops: destinations.isEmpty ? .none : .some(destinations),
+                destinationStops: showSecondary && !destinations.isEmpty ? .some(destinations) : .none,
                 limit: .some(3),
                 dates: .some(dates)
             )
         }
 
+        // Request only the stops used by the current selections. The log field is still
+        // requested for the selected stops because it is used as the fallback ETA source.
         var inputs: [BusRouteStopInput] = [
-            // 10-1: campus stops arrive at Sangnoksu, and Sangnoksu arrives at the ERICA Convention Center.
+            input(216_000_068, selectedCityStop, [216_000_138]),
             input(216_000_068, 216_000_138, [216_000_378]),
-            input(216_000_068, 216_000_383, [216_000_138]),
-            input(216_000_068, 216_000_381, [216_000_138]),
-            input(216_000_068, 216_000_379, [216_000_138])
-        ]
-
-        // Seoul buses use the destination selected in the bottom sheet. For a remote
-        // source stop, the first campus transfer stop is the relevant destination.
-        inputs += [216_000_383, 216_000_381, 216_000_379].map {
-            input(216_000_061, $0, seoulRemoteStops)
-        }
-        inputs += seoulRemoteStops.map {
-            input(216_000_061, $0, [216_000_378])
-        }
-
-        for route: Int32 in [216_000_043, 216_000_026, 216_000_096] {
-            inputs += [
-                input(route, 216_000_719, seoulRemoteStops)
-            ]
-            inputs += seoulRemoteStops.map {
-                input(route, $0, [216_000_048])
-            }
-        }
-
-        inputs += [
-            input(216_000_104, 216_000_070, [202_000_208]),
-            input(216_000_104, 216_000_141),
-            input(216_000_104, 202_000_208),
-            input(216_000_104, 202_000_106, [216_000_141]),
-            input(200_000_015, 216_000_070, [202_000_208]),
-            input(200_000_015, 216_000_141),
-            input(200_000_015, 202_000_208),
-            input(200_000_015, 202_000_106, [216_000_141]),
+            input(
+                216_000_061,
+                seoulFirstStop,
+                [seoulRemoteStops.contains(seoulFirstStop) ? 216_000_378 : seoulTarget.stopID]
+            ),
+            input(
+                216_000_104,
+                suwonStop,
+                [suwonStop == 202_000_106 ? 216_000_141 : 202_000_208]
+            ),
+            input(
+                200_000_015,
+                suwonStop,
+                [suwonStop == 202_000_106 ? 216_000_141 : 202_000_208]
+            ),
             input(216_000_075, 216_000_759, [213_000_487]),
             input(216_000_075, 213_000_487, [216_000_117]),
-            input(216_000_075, 216_000_117),
             input(216_000_016, 216_000_152)
         ]
+
+        // The second Seoul section contains three routes but shares one selected stop.
+        inputs += [216_000_043, 216_000_026, 216_000_096].map {
+            input(
+                $0,
+                seoulSecondStop,
+                [seoulRemoteStops.contains(seoulSecondStop) ? 216_000_048 : seoulTarget.stopID]
+            )
+        }
         return inputs
     }
 
