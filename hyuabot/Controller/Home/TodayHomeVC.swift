@@ -2804,6 +2804,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let routeTag = candidate.routeTag
         let routeName = candidate.routeName
 
+        // Campus-bound routes that terminate at shuttlecock (name ends with "S") show the
+        // Shuttlecock badge from every campus-direction boarding stop.
+        if destination == "CAMPUS", routeName.hasSuffix("S") {
+            return (String(localized: "shuttle.type.shuttlecock"), .busRed)
+        }
+
         switch (stop, destination) {
         case ("dormitory_o", "STATION"), ("shuttlecock_o", "STATION"):
             if routeTag == "DH" || routeTag == "DJ" {
@@ -2839,9 +2845,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
             }
         case ("terminal", "CAMPUS"), ("jungang_stn", "CAMPUS"), ("shuttlecock_i", "CAMPUS"):
-            if routeName.hasSuffix("S") {
-                return (String(localized: "shuttle.type.shuttlecock"), .busRed)
-            }
             if routeName.hasSuffix("D") {
                 return (String(localized: "shuttle.type.dormitory"), .hanyangBlue)
             }
@@ -3178,6 +3181,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     #endif
 
     private func shuttleRoute(from departure: HomeDeparture, to destination: HomeDestination) -> HomeShuttleRoute? {
+        // A route name ending in "D" terminates at the dormitory and one ending in "S"
+        // terminates at shuttlecock. Both serve riders from stops located before
+        // shuttlecock_i; only "D" routes remain usable when boarding at shuttlecock_i.
+        let campusDirectionRoute: (HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool = {
+            $0.route.name.hasSuffix("D") || $0.route.name.hasSuffix("S")
+        }
         let dormitoryRoute: (HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) -> Bool = {
             $0.route.name.hasSuffix("D")
         }
@@ -3198,15 +3207,15 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         case (.shuttlecock, .dormitory):
             return HomeShuttleRoute(stop: "shuttlecock_i", destination: "CAMPUS", routeFilter: dormitoryRoute)
         case (.station, .dormitory):
-            return HomeShuttleRoute(stop: "station", destination: "CAMPUS", routeFilter: dormitoryRoute)
+            return HomeShuttleRoute(stop: "station", destination: "CAMPUS", routeFilter: campusDirectionRoute)
         case (.station, .terminal):
             return HomeShuttleRoute(stop: "station", destination: "TERMINAL", routeFilter: nil)
         case (.station, .jungang):
             return HomeShuttleRoute(stop: "station", destination: "JUNGANG", routeFilter: nil)
         case (.terminal, .dormitory):
-            return HomeShuttleRoute(stop: "terminal", destination: "CAMPUS", routeFilter: dormitoryRoute)
+            return HomeShuttleRoute(stop: "terminal", destination: "CAMPUS", routeFilter: campusDirectionRoute)
         case (.jungang, .dormitory):
-            return HomeShuttleRoute(stop: "jungang_stn", destination: "CAMPUS", routeFilter: dormitoryRoute)
+            return HomeShuttleRoute(stop: "jungang_stn", destination: "CAMPUS", routeFilter: campusDirectionRoute)
         default:
             return nil
         }
