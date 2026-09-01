@@ -676,10 +676,10 @@ private final class HomeQuickSettingsVC: UIViewController {
         textStack.axis = .vertical
         textStack.spacing = 4
         let title = UILabel()
-        title.text = String(localized: "home.quick_settings.seoul_bus_stop.title")
+        title.text = String(localized: "home.quick_settings.destination_eta.title")
         title.font = .godo(size: 16, weight: .bold)
         let subtitle = UILabel()
-        subtitle.text = String(localized: "home.quick_settings.seoul_bus_stop.subtitle")
+        subtitle.text = String(localized: "home.quick_settings.destination_eta.subtitle")
         subtitle.font = .godo(size: 13, weight: .regular)
         subtitle.textColor = .secondaryLabel
         subtitle.numberOfLines = 0
@@ -687,11 +687,21 @@ private final class HomeQuickSettingsVC: UIViewController {
         textStack.addArrangedSubview(subtitle)
         header.addArrangedSubview(textStack)
         header.addArrangedSubview(showSeoulBusStopSwitch)
+        let destinationTitle = UILabel()
+        destinationTitle.text = String(localized: "home.quick_settings.seoul_bus_stop.title")
+        destinationTitle.font = .godo(size: 14, weight: .bold)
+        let destinationSubtitle = UILabel()
+        destinationSubtitle.text = String(localized: "home.quick_settings.seoul_bus_stop.subtitle")
+        destinationSubtitle.font = .godo(size: 12, weight: .regular)
+        destinationSubtitle.textColor = .secondaryLabel
+        destinationSubtitle.numberOfLines = 0
         seoulBusStopControl.setTitleTextAttributes([.font: UIFont.godo(size: 12, weight: .regular)], for: .normal)
         seoulBusStopControl.setTitleTextAttributes([.font: UIFont.godo(size: 12, weight: .bold)], for: .selected)
         stack.addArrangedSubview(header)
+        stack.addArrangedSubview(destinationTitle)
+        stack.addArrangedSubview(destinationSubtitle)
         stack.addArrangedSubview(seoulBusStopControl)
-        stack.snp.makeConstraints { make in make.height.equalTo(118) }
+        stack.snp.makeConstraints { make in make.height.equalTo(164) }
         return stack
     }
 
@@ -3602,10 +3612,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
-        if case .seoul = group {
-            return HomeSettings.showSeoulBusStop
-        }
-        return destinationStopID(routeID: routeID, group: group) != nil
+        HomeSettings.showSeoulBusStop
     }
 
     private func updateHomeBusDestinationMenu() {
