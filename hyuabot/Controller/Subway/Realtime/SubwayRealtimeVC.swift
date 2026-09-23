@@ -13,7 +13,8 @@ enum SubwayPayloadSelection {
         }
         switch tab {
         case 1: return [station("K251", ["up", "down"], 4)]
-        case 2: return [
+        case 2:
+            return [
                 station("K449", ["down"], 4), station("K251", ["down"], 4),
                 station("K258", ["down"], nil), station("S26", ["up"], nil)
             ]

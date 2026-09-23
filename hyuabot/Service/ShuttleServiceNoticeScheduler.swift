@@ -28,12 +28,10 @@ final class ShuttleServiceNoticeScheduler {
 
     /// Skips the network round trip when notices were already synced today within `minimumSyncInterval`.
     func syncIfStale() async {
-        if let lastSyncedAt,
-           calendar.isDate(lastSyncedAt, inSameDayAs: Foundation.Date()),
-           Foundation.Date().timeIntervalSince(lastSyncedAt) < minimumSyncInterval
-        {
-            return
-        }
+        let syncedRecently = lastSyncedAt.map {
+            calendar.isDate($0, inSameDayAs: Foundation.Date()) && Foundation.Date().timeIntervalSince($0) < minimumSyncInterval
+        } ?? false
+        if syncedRecently { return }
         await sync()
     }
 

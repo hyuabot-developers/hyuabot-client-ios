@@ -285,11 +285,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private func attemptNearestStopSelection() {
         guard let location = lastLocation else { return }
         guard let allBuses = try? BusRealtimeData.shared.busStopCoordinatesData.value(), !allBuses.isEmpty else { return }
-        if let lastNearestSelectionLocation,
-           location.distance(from: lastNearestSelectionLocation) < nearestStopReselectDistance
-        {
-            return
-        }
+        let movedDistance = lastNearestSelectionLocation.map { location.distance(from: $0) } ?? .infinity
+        if movedDistance < nearestStopReselectDistance { return }
         lastNearestSelectionLocation = location
 
         func coordinate(_ seq: Int32) -> (lat: Double, lng: Double)? {
