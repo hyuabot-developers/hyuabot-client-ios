@@ -20,10 +20,35 @@ final class ShuttleServiceNoticeScheduler {
 
     private let center = UNUserNotificationCenter.current()
     private let scheduledIDsKey = "shuttle.serviceNotice.scheduledIDs"
+    private let minimumSyncInterval: TimeInterval = 30 * 60
+    private var lastSyncedAt: Foundation.Date?
+    private var inFlightSync: Task<Void, Never>?
 
     private init() {}
 
+    /// Skips the network round trip when notices were already synced today within `minimumSyncInterval`.
+    func syncIfStale() async {
+        if let lastSyncedAt,
+           calendar.isDate(lastSyncedAt, inSameDayAs: Foundation.Date()),
+           Foundation.Date().timeIntervalSince(lastSyncedAt) < minimumSyncInterval
+        {
+            return
+        }
+        await sync()
+    }
+
     func sync() async {
+        if let inFlightSync {
+            await inFlightSync.value
+            return
+        }
+        let task = Task { await performSync() }
+        inFlightSync = task
+        await task.value
+        inFlightSync = nil
+    }
+
+    private func performSync() async {
         let start = Foundation.Date()
         guard let end = calendar.date(byAdding: .day, value: 30, to: start) else { return }
         let queryDateFormatter = DateFormatter().then {
@@ -46,6 +71,7 @@ final class ShuttleServiceNoticeScheduler {
         notices.forEach(schedule)
         let noticeIDs: [String] = notices.map(\.id)
         UserDefaults.standard.set(noticeIDs, forKey: scheduledIDsKey)
+        lastSyncedAt = start
     }
 
     private func schedule(_ notice: ShuttleServiceNoticeQuery.Data.Shuttle.ServiceNotice) {
