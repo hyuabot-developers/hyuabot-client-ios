@@ -2,8 +2,11 @@ query ShuttleRealtimePageQuery(
     $language: String!
     $subwayLanguage: String!
     $after: LocalTime
-    $weekday: String!
-    $logDates: [Date!]
+    $shuttleStops: [ShuttleStopInput!]!
+    $subwayKeys: [SubwayStationInput!]!
+    $subwayTimetableKeys: [SubwayStationInput!]!
+    $transferBusInput: [BusRouteStopInput!]!
+    $alternativeInput: [BusRouteStopInput!]!
 ) {
     notices(input: {language: $language, category: "셔틀,날씨"}) {
         notices {
@@ -13,14 +16,7 @@ query ShuttleRealtimePageQuery(
         }
     },
     shuttle(input: {
-        stops: [
-            { name: "dormitory_o", limit: { order: 100, destination: 100 } },
-            { name: "shuttlecock_o", limit: { order: 100, destination: 100 } },
-            { name: "station", limit: { order: 100, destination: 100 } },
-            { name: "terminal", limit: { order: 100, destination: 100 } },
-            { name: "jungang_stn", limit: { order: 100, destination: 100 } },
-            { name: "shuttlecock_i", limit: { order: 100, destination: 100 } },
-        ],
+        stops: $shuttleStops,
         after: $after
     }) {
         initialStopRules {
@@ -67,13 +63,7 @@ query ShuttleRealtimePageQuery(
             }
         }
     }
-    subway(input: { language: $subwayLanguage, keys: [
-        { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
-        { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
-        { stationID: "K450", direction: ["up", "down"], weekdays: [$weekday], limit: 12 },
-        { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 },
-        { stationID: "S26", direction: ["up"], weekdays: [$weekday] },
-    ]}) {
+    subway(input: { language: $subwayLanguage, keys: $subwayKeys }) {
         stationID
         arrival {
             direction
@@ -88,6 +78,10 @@ query ShuttleRealtimePageQuery(
                 }
             }
         }
+
+    }
+    subwayTimetable: subway(input: {language: $subwayLanguage, keys: $subwayTimetableKeys}) {
+        stationID
         timetable {
             weekday
             direction
@@ -98,10 +92,7 @@ query ShuttleRealtimePageQuery(
             }
         }
     }
-    transferBus: bus(input: [
-        { route: 216000075, stop: 216000759, limit: 12, dates: $logDates },
-        { route: 216000075, stop: 216000117, limit: 12, dates: $logDates },
-    ]) {
+    transferBus: bus(input: $transferBusInput) {
         route {
             seq
             name
@@ -119,20 +110,7 @@ query ShuttleRealtimePageQuery(
             time
         }
     }
-    alternativeBus: bus(input: [
-        { route: 216000068, stop: 216000383, limit: 1 },
-        { route: 216000068, stop: 216000379, limit: 1 },
-        { route: 216000068, stop: 216000138, limit: 1 },
-        { route: 216000081, stop: 216000028, limit: 1 },
-        { route: 216000101, stop: 216000028, limit: 1 },
-        { route: 216000016, stop: 216000152, limit: 1 },
-        { route: 216000082, stop: 216000077, limit: 1 },
-        { route: 216000102, stop: 216000077, limit: 1 },
-        { route: 216000016, stop: 216000074, limit: 1 },
-        { route: 216000082, stop: 217000140, limit: 1 },
-        { route: 216000102, stop: 217000140, limit: 1 },
-        { route: 216000016, stop: 217000264, limit: 1 },
-    ]) {
+    alternativeBus: bus(input: $alternativeInput) {
         route { seq }
         stop { seq name latitude longitude }
         arrival { stops seats minutes lowFloor isRealtime time }

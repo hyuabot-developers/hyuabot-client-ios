@@ -139,26 +139,26 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
         return footerView
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if showsSkeleton {
             return section == 0 ? 3 : 2
         }
         guard let data = try? SubwayRealtimeData.shared.combinedRealtimeData.value() else { return 1 }
-        guard let campusBlue = data.campusBlue, let campusYellow = data.campusYellow else { return 1 }
         if tabType == .line4 {
             if section == 0 {
-                let arrivals = campusBlue.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+                let arrivals = data.campusBlue?.arrival.first(where: { $0.direction == "up" })?.entries ?? []
                 return arrivals.isEmpty ? 1 : arrivals.count
             } else if section == 1 {
-                let arrivals = campusBlue.arrival.first(where: { $0.direction == "down" })?.entries ?? []
+                let arrivals = data.campusBlue?.arrival.first(where: { $0.direction == "down" })?.entries ?? []
                 return arrivals.isEmpty ? 1 : arrivals.count
             }
         } else if tabType == .lineSuin {
             if section == 0 {
-                let arrivals = campusYellow.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+                let arrivals = data.campusYellow?.arrival.first(where: { $0.direction == "up" })?.entries ?? []
                 return arrivals.isEmpty ? 1 : arrivals.count
             } else if section == 1 {
-                let arrivals = campusYellow.arrival.first(where: { $0.direction == "down" })?.entries ?? []
+                let arrivals = data.campusYellow?.arrival.first(where: { $0.direction == "down" })?.entries ?? []
                 return arrivals.isEmpty ? 1 : arrivals.count
             }
         } else if tabType == .transfer {
@@ -173,6 +173,7 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
         return 1
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard subwayRealtimeSection.indices.contains(indexPath.section) else { return UITableViewCell() }
         if showsSkeleton {
@@ -181,24 +182,23 @@ extension SubwayRealtimeTabVC: UITableViewDataSource, UITableViewDelegate {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: SubwayRealtimeCellView.reuseIdentifier) as? SubwayRealtimeCellView
         else { return UITableViewCell() }
         guard let data = try? SubwayRealtimeData.shared.combinedRealtimeData.value() else { return UITableViewCell() }
-        guard let campusBlue = data.campusBlue, let campusYellow = data.campusYellow else { return UITableViewCell() }
         if tabType == .line4 {
             if indexPath.section == 0 {
-                let arrivals = campusBlue.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+                let arrivals = data.campusBlue?.arrival.first(where: { $0.direction == "up" })?.entries ?? []
                 guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
                 cell.setupUI(tabType: tabType, item: arrivals[indexPath.row])
             } else if indexPath.section == 1 {
-                let arrivals = campusBlue.arrival.first(where: { $0.direction == "down" })?.entries ?? []
+                let arrivals = data.campusBlue?.arrival.first(where: { $0.direction == "down" })?.entries ?? []
                 guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
                 cell.setupUI(tabType: tabType, item: arrivals[indexPath.row])
             }
         } else if tabType == .lineSuin {
             if indexPath.section == 0 {
-                let arrivals = campusYellow.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+                let arrivals = data.campusYellow?.arrival.first(where: { $0.direction == "up" })?.entries ?? []
                 guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
                 cell.setupUI(tabType: tabType, item: arrivals[indexPath.row])
             } else if indexPath.section == 1 {
-                let arrivals = campusYellow.arrival.first(where: { $0.direction == "down" })?.entries ?? []
+                let arrivals = data.campusYellow?.arrival.first(where: { $0.direction == "down" })?.entries ?? []
                 guard arrivals.indices.contains(indexPath.row) else { return emptyCell(tableView) }
                 cell.setupUI(tabType: tabType, item: arrivals[indexPath.row])
             }

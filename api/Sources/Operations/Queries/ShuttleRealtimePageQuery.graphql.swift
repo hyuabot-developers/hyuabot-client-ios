@@ -8,35 +8,47 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleRealtimePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $weekday: String!, $logDates: [Date!]) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 100, destination: 100 } } { name: "shuttlecock_o", limit: { order: 100, destination: 100 } } { name: "station", limit: { order: 100, destination: 100 } } { name: "terminal", limit: { order: 100, destination: 100 } } { name: "jungang_stn", limit: { order: 100, destination: 100 } } { name: "shuttlecock_i", limit: { order: 100, destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename latitude longitude name timetable { __typename order { __typename seq route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } subway( input: { language: $subwayLanguage keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K450" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 12, dates: $logDates } { route: 216000075, stop: 216000117, limit: 12, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops isRealtime } log { __typename date time } } alternativeBus: bus( input: [ { route: 216000068, stop: 216000383, limit: 1 } { route: 216000068, stop: 216000379, limit: 1 } { route: 216000068, stop: 216000138, limit: 1 } { route: 216000081, stop: 216000028, limit: 1 } { route: 216000101, stop: 216000028, limit: 1 } { route: 216000016, stop: 216000152, limit: 1 } { route: 216000082, stop: 216000077, limit: 1 } { route: 216000102, stop: 216000077, limit: 1 } { route: 216000016, stop: 216000074, limit: 1 } { route: 216000082, stop: 217000140, limit: 1 } { route: 216000102, stop: 217000140, limit: 1 } { route: 216000016, stop: 217000264, limit: 1 } ] ) { __typename route { __typename seq } stop { __typename seq name latitude longitude } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
+      #"query ShuttleRealtimePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $shuttleStops: [ShuttleStopInput!]!, $subwayKeys: [SubwayStationInput!]!, $subwayTimetableKeys: [SubwayStationInput!]!, $transferBusInput: [BusRouteStopInput!]!, $alternativeInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle(input: { stops: $shuttleStops, after: $after }) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename latitude longitude name timetable { __typename order { __typename seq route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } subway(input: { language: $subwayLanguage, keys: $subwayKeys }) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops terminal { __typename stationID name } } } } subwayTimetable: subway( input: { language: $subwayLanguage, keys: $subwayTimetableKeys } ) { __typename stationID timetable { __typename weekday direction time terminal { __typename stationID name } } } transferBus: bus(input: $transferBusInput) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops isRealtime } log { __typename date time } } alternativeBus: bus(input: $alternativeInput) { __typename route { __typename seq } stop { __typename seq name latitude longitude } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
     ))
 
   public var language: String
   public var subwayLanguage: String
   public var after: GraphQLNullable<LocalTime>
-  public var weekday: String
-  public var logDates: GraphQLNullable<[Date]>
+  public var shuttleStops: [ShuttleStopInput]
+  public var subwayKeys: [SubwayStationInput]
+  public var subwayTimetableKeys: [SubwayStationInput]
+  public var transferBusInput: [BusRouteStopInput]
+  public var alternativeInput: [BusRouteStopInput]
 
   public init(
     language: String,
     subwayLanguage: String,
     after: GraphQLNullable<LocalTime>,
-    weekday: String,
-    logDates: GraphQLNullable<[Date]>
+    shuttleStops: [ShuttleStopInput],
+    subwayKeys: [SubwayStationInput],
+    subwayTimetableKeys: [SubwayStationInput],
+    transferBusInput: [BusRouteStopInput],
+    alternativeInput: [BusRouteStopInput]
   ) {
     self.language = language
     self.subwayLanguage = subwayLanguage
     self.after = after
-    self.weekday = weekday
-    self.logDates = logDates
+    self.shuttleStops = shuttleStops
+    self.subwayKeys = subwayKeys
+    self.subwayTimetableKeys = subwayTimetableKeys
+    self.transferBusInput = transferBusInput
+    self.alternativeInput = alternativeInput
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "language": language,
     "subwayLanguage": subwayLanguage,
     "after": after,
-    "weekday": weekday,
-    "logDates": logDates
+    "shuttleStops": shuttleStops,
+    "subwayKeys": subwayKeys,
+    "subwayTimetableKeys": subwayTimetableKeys,
+    "transferBusInput": transferBusInput,
+    "alternativeInput": alternativeInput
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -50,133 +62,19 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
         "category": "셔틀,날씨"
       ]]),
       .field("shuttle", Shuttle.self, arguments: ["input": [
-        "stops": [[
-          "name": "dormitory_o",
-          "limit": [
-            "order": 100,
-            "destination": 100
-          ]
-        ], [
-          "name": "shuttlecock_o",
-          "limit": [
-            "order": 100,
-            "destination": 100
-          ]
-        ], [
-          "name": "station",
-          "limit": [
-            "order": 100,
-            "destination": 100
-          ]
-        ], [
-          "name": "terminal",
-          "limit": [
-            "order": 100,
-            "destination": 100
-          ]
-        ], [
-          "name": "jungang_stn",
-          "limit": [
-            "order": 100,
-            "destination": 100
-          ]
-        ], [
-          "name": "shuttlecock_i",
-          "limit": [
-            "order": 100,
-            "destination": 100
-          ]
-        ]],
+        "stops": .variable("shuttleStops"),
         "after": .variable("after")
       ]]),
       .field("subway", [Subway].self, arguments: ["input": [
         "language": .variable("subwayLanguage"),
-        "keys": [[
-          "stationID": "K449",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "K251",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "K450",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "K258",
-          "direction": ["down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "S26",
-          "direction": ["up"],
-          "weekdays": [.variable("weekday")]
-        ]]
+        "keys": .variable("subwayKeys")
       ]]),
-      .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": [[
-        "route": 216000075,
-        "stop": 216000759,
-        "limit": 12,
-        "dates": .variable("logDates")
-      ], [
-        "route": 216000075,
-        "stop": 216000117,
-        "limit": 12,
-        "dates": .variable("logDates")
-      ]]]),
-      .field("bus", alias: "alternativeBus", [AlternativeBus].self, arguments: ["input": [[
-        "route": 216000068,
-        "stop": 216000383,
-        "limit": 1
-      ], [
-        "route": 216000068,
-        "stop": 216000379,
-        "limit": 1
-      ], [
-        "route": 216000068,
-        "stop": 216000138,
-        "limit": 1
-      ], [
-        "route": 216000081,
-        "stop": 216000028,
-        "limit": 1
-      ], [
-        "route": 216000101,
-        "stop": 216000028,
-        "limit": 1
-      ], [
-        "route": 216000016,
-        "stop": 216000152,
-        "limit": 1
-      ], [
-        "route": 216000082,
-        "stop": 216000077,
-        "limit": 1
-      ], [
-        "route": 216000102,
-        "stop": 216000077,
-        "limit": 1
-      ], [
-        "route": 216000016,
-        "stop": 216000074,
-        "limit": 1
-      ], [
-        "route": 216000082,
-        "stop": 217000140,
-        "limit": 1
-      ], [
-        "route": 216000102,
-        "stop": 217000140,
-        "limit": 1
-      ], [
-        "route": 216000016,
-        "stop": 217000264,
-        "limit": 1
-      ]]]),
+      .field("subway", alias: "subwayTimetable", [SubwayTimetable].self, arguments: ["input": [
+        "language": .variable("subwayLanguage"),
+        "keys": .variable("subwayTimetableKeys")
+      ]]),
+      .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": .variable("transferBusInput")]),
+      .field("bus", alias: "alternativeBus", [AlternativeBus].self, arguments: ["input": .variable("alternativeInput")]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
       ShuttleRealtimePageQuery.Data.self
@@ -185,6 +83,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
     public var notices: [Notice] { __data["notices"] }
     public var shuttle: Shuttle { __data["shuttle"] }
     public var subway: [Subway] { __data["subway"] }
+    public var subwayTimetable: [SubwayTimetable] { __data["subwayTimetable"] }
     public var transferBus: [TransferBus] { __data["transferBus"] }
     public var alternativeBus: [AlternativeBus] { __data["alternativeBus"] }
 
@@ -510,7 +409,6 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
         .field("__typename", String.self),
         .field("stationID", String.self),
         .field("arrival", [Arrival].self),
-        .field("timetable", [Timetable].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         ShuttleRealtimePageQuery.Data.Subway.self
@@ -518,7 +416,6 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
 
       public var stationID: String { __data["stationID"] }
       public var arrival: [Arrival] { __data["arrival"] }
-      public var timetable: [Timetable] { __data["timetable"] }
 
       /// Subway.Arrival
       ///
@@ -588,8 +485,29 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
           }
         }
       }
+    }
 
-      /// Subway.Timetable
+    /// SubwayTimetable
+    ///
+    /// Parent Type: `SubwayStation`
+    nonisolated public struct SubwayTimetable: Api.SelectionSet {
+      @_spi(Unsafe) public let __data: DataDict
+      @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+      @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayStation }
+      @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+        .field("__typename", String.self),
+        .field("stationID", String.self),
+        .field("timetable", [Timetable].self),
+      ] }
+      @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+        ShuttleRealtimePageQuery.Data.SubwayTimetable.self
+      ] }
+
+      public var stationID: String { __data["stationID"] }
+      public var timetable: [Timetable] { __data["timetable"] }
+
+      /// SubwayTimetable.Timetable
       ///
       /// Parent Type: `SubwayTimetable`
       nonisolated public struct Timetable: Api.SelectionSet {
@@ -605,7 +523,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
           .field("terminal", Terminal.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-          ShuttleRealtimePageQuery.Data.Subway.Timetable.self
+          ShuttleRealtimePageQuery.Data.SubwayTimetable.Timetable.self
         ] }
 
         public var weekday: String { __data["weekday"] }
@@ -613,7 +531,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
         public var time: Api.LocalTime { __data["time"] }
         public var terminal: Terminal { __data["terminal"] }
 
-        /// Subway.Timetable.Terminal
+        /// SubwayTimetable.Timetable.Terminal
         ///
         /// Parent Type: `SubwayOriginTerminal`
         nonisolated public struct Terminal: Api.SelectionSet {
@@ -627,7 +545,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
             .field("name", String.self),
           ] }
           @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-            ShuttleRealtimePageQuery.Data.Subway.Timetable.Terminal.self
+            ShuttleRealtimePageQuery.Data.SubwayTimetable.Timetable.Terminal.self
           ] }
 
           public var stationID: String { __data["stationID"] }

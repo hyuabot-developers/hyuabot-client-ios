@@ -924,7 +924,7 @@ final class ShuttleTransferInfoView: UIView {
             minimumTransferMinutes: inlineConnectorTravelMinutes ?? 0
         )
         let secondLegs = subwayTimetableCandidates(
-            data: data,
+            data: latestData?.subwayTimetable ?? [],
             line: seohae,
             direction: "up"
         ) {
@@ -1082,10 +1082,10 @@ final class ShuttleTransferInfoView: UIView {
     }
 
     private func subwayTimetableCandidates(
-        data: [ShuttleRealtimePageQuery.Data.Subway],
+        data: [ShuttleRealtimePageQuery.Data.SubwayTimetable],
         line: TransferLine,
         direction: String,
-        isEligible: (ShuttleRealtimePageQuery.Data.Subway.Timetable) -> Bool
+        isEligible: (ShuttleRealtimePageQuery.Data.SubwayTimetable.Timetable) -> Bool
     ) -> [SubwayTransferCandidate] {
         guard let station = data.first(where: { $0.stationID == line.stationID }) else { return [] }
         let now = Foundation.Date.now

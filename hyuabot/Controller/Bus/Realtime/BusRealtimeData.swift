@@ -23,6 +23,7 @@ class BusRealtimeData {
     private init() {}
     /// Realtime Query
     let busRealtimeData = BehaviorSubject<[BusRealtimePageQuery.Data.Bus]>(value: [])
+    let busStopCoordinatesData = BehaviorSubject<[BusStopCoordinatesQuery.Data.Bus]>(value: [])
     let busRealtimeCityFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
     let busRealtimeCityFromStation = BehaviorSubject<[BusArrivalItem]>(value: [])
     let busRealtimeSeoulFromCampus = BehaviorSubject<[BusArrivalItem]>(value: [])
@@ -61,4 +62,17 @@ class BusRealtimeData {
     let showSecondaryEta = BehaviorSubject<Bool>(value: BusRealtimeDisplaySettings.showsSecondaryEta)
     /// Seoul-bound destination used for the secondary ETA when the primary section is on campus
     let seoulTargetStop = BehaviorSubject<BusSeoulTargetStop>(value: BusRealtimeDisplaySettings.seoulTargetStop)
+}
+
+/// Coordinate probes remain independent of the currently displayed arrival routes.
+enum BusLocationInputs {
+    static var inputs: [BusRouteStopInput] {
+        let pairs: [(Int32, Int32)] = [
+            (216_000_068, 216_000_379), (216_000_068, 216_000_381), (216_000_068, 216_000_383),
+            (216_000_096, 216_000_719), (216_000_104, 216_000_070), (216_000_104, 202_000_106),
+            (216_000_061, 121_000_060), (216_000_061, 121_000_929), (216_000_061, 121_000_974),
+            (216_000_061, 121_000_970), (216_000_061, 121_000_220)
+        ]
+        return pairs.map { BusRouteStopInput(route: $0.0, stop: $0.1) }
+    }
 }

@@ -10,7 +10,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
     private var lastLocation: CLLocation?
+    /// Location used for the last nearest-stop pass; small GPS jitter below `nearestStopReselectDistance` is ignored.
+    private var lastNearestSelectionLocation: CLLocation?
+    private let nearestStopReselectDistance: CLLocationDistance = 75
+    private var lastAppliedRequestGeneration = 0
     private var hasLoadedInitialNotices = false
+    private var isFetchingCoordinates = false
+    private var latestRequestGeneration = 0
     private lazy var cityBusTabVC = BusRealtimeTabVC(
         tabType: .city,
         refreshMethod: fetchBusRealtimeData,
@@ -278,7 +284,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     /// data arrives, since either one may be the last piece needed.
     private func attemptNearestStopSelection() {
         guard let location = lastLocation else { return }
-        guard let allBuses = try? BusRealtimeData.shared.busRealtimeData.value(), !allBuses.isEmpty else { return }
+        guard let allBuses = try? BusRealtimeData.shared.busStopCoordinatesData.value(), !allBuses.isEmpty else { return }
+        if let lastNearestSelectionLocation,
+           location.distance(from: lastNearestSelectionLocation) < nearestStopReselectDistance
+        {
+            return
+        }
+        lastNearestSelectionLocation = location
 
         func coordinate(_ seq: Int32) -> (lat: Double, lng: Double)? {
             if let match = allBuses.first(where: { $0.stop.seq == seq }) {
@@ -302,8 +314,10 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         let campusStops: [Int32] = [216_000_379, 216_000_381, 216_000_383]
         let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
 
+        var selectionChanged = false
         func emitIfChanged(_ subject: BehaviorSubject<Int32>, defaultsKey: String, value: Int32) {
             guard (try? subject.value()) != value else { return }
+            selectionChanged = true
             UserDefaults.standard.set(value, forKey: defaultsKey)
             subject.onNext(value)
         }
@@ -320,6 +334,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         if let suwon = nearest([216_000_070, 202_000_106]) {
             emitIfChanged(BusRealtimeData.shared.suwonSelectedStopID, defaultsKey: "bus.suwonStopID", value: suwon)
         }
+        if selectionChanged { fetchBusRealtimeData() }
     }
 
     // swiftlint:disable:next function_body_length
@@ -579,8 +594,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 [suwonStop == 202_000_106 ? 216_000_141 : 202_000_208]
             ),
             input(216_000_075, 216_000_759, [213_000_487]),
-            input(216_000_075, 213_000_487, [216_000_117]),
-            input(216_000_016, 216_000_152)
+            input(216_000_075, 213_000_487, [216_000_117])
         ]
 
         // The second Seoul section contains three routes but shares one selected stop.
@@ -608,7 +622,27 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         return calendar.date(byAdding: .day, value: 1, to: today)
     }
 
+    private func fetchBusStopCoordinates() {
+        guard !isFetchingCoordinates,
+              ((try? BusRealtimeData.shared.busStopCoordinatesData.value()) ?? []).isEmpty else { return }
+        isFetchingCoordinates = true
+        Task {
+            let response = try? await Network.shared.client.fetch(
+                query: BusStopCoordinatesQuery(busInput: BusLocationInputs.inputs), cachePolicy: .networkOnly
+            )
+            await MainActor.run {
+                isFetchingCoordinates = false
+                guard let coordinates = response?.data?.bus, !coordinates.isEmpty else { return }
+                BusRealtimeData.shared.busStopCoordinatesData.onNext(coordinates)
+                attemptNearestStopSelection()
+            }
+        }
+    }
+
     private func fetchBusRealtimeData() {
+        fetchBusStopCoordinates()
+        latestRequestGeneration += 1
+        let requestGeneration = latestRequestGeneration
         var currentLanguage: String {
             Locale.current.language.languageCode?.identifier ?? "ko"
         }
@@ -627,6 +661,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 cachePolicy: .networkOnly
             )
             await MainActor.run {
+                // Timer ticks issue newer requests with identical inputs; keep applying a slow response unless the
+                // selected stops changed or a newer response was already rendered.
+                guard requestGeneration > lastAppliedRequestGeneration,
+                      busInput == busRealtimeInput(dates: dates) else { return }
+                lastAppliedRequestGeneration = requestGeneration
                 if let data = response?.data {
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
@@ -695,6 +734,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             BusRealtimeDisplaySettings.showsSecondaryEta = isOn
             self.updateQuickSettingsBarLabel()
             BusRealtimeData.shared.showSecondaryEta.onNext(isOn)
+            self.fetchBusRealtimeData()
             BusRealtimeData.shared.busRealtimeData.onNext((try? BusRealtimeData.shared.busRealtimeData.value()) ?? [])
         }
         vc.updateSeoulTarget = { target in

@@ -217,3 +217,165 @@ final class DomainLogicTests: XCTestCase {
         return components.date ?? Date(timeIntervalSince1970: 0)
     }
 }
+
+@MainActor
+extension DomainLogicTests {
+    func testShuttlePayloadOmitsHiddenAndInapplicableTransfers() {
+        for stop in ["station", "terminal", "jungang_stn", "shuttlecock_i"] {
+            let selection = ShuttlePayloadSelection(
+                stop: stop,
+                byDestination: true,
+                showBus: true,
+                showSubway: true,
+                subwayDestination: .seoul,
+                alternatives: .automatic
+            )
+            XCTAssertFalse(selection.needsBus)
+            XCTAssertTrue(selection.subwayPairs.isEmpty)
+        }
+        let timeView = ShuttlePayloadSelection(
+            stop: "dormitory_o",
+            byDestination: false,
+            showBus: true,
+            showSubway: true,
+            subwayDestination: .seoul,
+            alternatives: .hidden
+        )
+        XCTAssertFalse(timeView.needsBus)
+        XCTAssertTrue(timeView.subwayPairs.isEmpty)
+        XCTAssertTrue(timeView.alternativePairs.isEmpty)
+    }
+
+    func testShuttlePayloadKeepsRequiredTransferLegs() {
+        let expected: [(ShuttleSubwayTransferDestination, [String])] = [
+            (.seoul, ["K449:up", "K450:up"]),
+            (.suwonYongin, ["K251:up"]),
+            (.oido, ["K449:down", "K251:down", "K450:down"]),
+            (.incheon, ["K449:down", "K251:down", "K258:down"]),
+            (.sosa, ["K449:down", "K251:down", "S26:up", "K450:down"])
+        ]
+        for (destination, pairs) in expected {
+            let selection = ShuttlePayloadSelection(
+                stop: "shuttlecock_o",
+                byDestination: true,
+                showBus: true,
+                showSubway: true,
+                subwayDestination: destination,
+                alternatives: .automatic
+            )
+            XCTAssertTrue(selection.needsBus)
+            XCTAssertEqual(selection.subwayPairs.map { "\($0.0):\($0.1)" }, pairs)
+        }
+    }
+
+    func testShuttlePayloadOnlyIncludesSelectedStopAlternatives() {
+        let selection = ShuttlePayloadSelection(
+            stop: "station",
+            byDestination: true,
+            showBus: true,
+            showSubway: true,
+            subwayDestination: .seoul,
+            alternatives: .always
+        )
+        XCTAssertEqual(selection.alternativePairs.map { "\($0.0):\($0.1)" }, ["216000068:216000138"])
+        XCTAssertEqual(Set(BusLocationInputs.inputs.map(\.stop)).count, 11)
+    }
+}
+
+@MainActor
+extension DomainLogicTests {
+    func testSubwayLinePayloadOnlyIncludesDisplayedStation() {
+        for (tab, id) in [(0, "K449"), (1, "K251")] {
+            let keys = SubwayPayloadSelection.keys(tab: tab, weekday: "weekdays")
+            XCTAssertEqual(keys.count, 1)
+            XCTAssertEqual(keys.first?.stationID, id)
+            XCTAssertEqual(keys.first?.direction, ["up", "down"])
+            XCTAssertEqual(keys.first?.weekdays, ["weekdays"])
+            XCTAssertEqual(keys.first?.limit.unwrapped, 4)
+        }
+    }
+
+    func testSubwayTransferPayloadKeepsOnlyRequiredLegs() {
+        let keys = SubwayPayloadSelection.keys(tab: 2, weekday: "weekends")
+        XCTAssertEqual(keys.map(\.stationID), ["K449", "K251", "K258", "S26"])
+        XCTAssertEqual(keys.map(\.direction), [["down"], ["down"], ["down"], ["up"]])
+        XCTAssertTrue(keys.allSatisfy { $0.weekdays == ["weekends"] })
+        XCTAssertEqual(keys[0].limit.unwrapped, 4)
+        XCTAssertEqual(keys[1].limit.unwrapped, 4)
+        XCTAssertNil(keys[2].limit.unwrapped)
+        XCTAssertNil(keys[3].limit.unwrapped)
+    }
+}
+
+@MainActor
+extension DomainLogicTests {
+    func testHomePayloadOmitsHiddenOrInapplicableConnections() {
+        for stop in ["dormitory_o", "shuttlecock_o", "station", "terminal", "jungang_stn", "shuttlecock_i"] {
+            for destination in ["STATION", "TERMINAL", "JUNGANG", "CAMPUS"] {
+                for enabled in [false, true] {
+                    let selection = HomePayloadSelection(
+                        stop: stop,
+                        destination: destination,
+                        showBus50: enabled,
+                        showSubway: enabled,
+                        subwayDestination: .seoul
+                    )
+                    let outbound = ["dormitory_o", "shuttlecock_o"].contains(stop)
+                    XCTAssertEqual(selection.needsBus50, enabled && outbound && destination == "TERMINAL")
+                    XCTAssertEqual(
+                        !selection.subwayKeys(weekday: "weekdays").isEmpty,
+                        enabled && outbound && destination == "STATION"
+                    )
+                }
+            }
+        }
+    }
+
+    func testHomePayloadPreservesEachTransferDestinationAndWeekday() {
+        let expected: [(SubwayTransferDestination, [String])] = [
+            (.seoul, ["K449:up"]), (.suwonYongin, ["K251:up"]),
+            (.oido, ["K449:down", "K251:down"]),
+            (.incheon, ["K449:down", "K251:down", "K258:down"]),
+            (.sosa, ["K449:down", "K251:down", "S26:up"])
+        ]
+        for (destination, pairs) in expected {
+            let selection = HomePayloadSelection(
+                stop: "shuttlecock_o",
+                destination: "STATION",
+                showBus50: true,
+                showSubway: true,
+                subwayDestination: destination
+            )
+            let keys = selection.subwayKeys(weekday: "weekends")
+            XCTAssertEqual(keys.map { "\($0.stationID):\($0.direction.joined(separator: ","))" }, pairs)
+            XCTAssertTrue(keys.allSatisfy { $0.weekdays == ["weekends"] })
+            XCTAssertTrue(keys.filter { $0.stationID != "S26" }.allSatisfy { $0.limit.unwrapped == 12 })
+            XCTAssertTrue(keys.filter { $0.stationID == "S26" }.allSatisfy { $0.limit.unwrapped == nil })
+        }
+    }
+
+    func testHomeAlternativesOnlyRequestSelectedPath() {
+        // Keyed by "stop>destination".
+        let expected: [(String, [String])] = [
+            ("dormitory_o>STATION", ["216000068:216000383"]),
+            ("dormitory_o>TERMINAL", ["216000081:216000028", "216000101:216000028"]),
+            ("shuttlecock_o>TERMINAL", ["216000016:216000152"]),
+            ("station>CAMPUS", ["216000068:216000138"]),
+            ("terminal>CAMPUS", ["216000082:216000077", "216000102:216000077", "216000016:216000074"]),
+            ("jungang_stn>CAMPUS", ["216000082:217000140", "216000102:217000140", "216000016:217000264"]),
+            ("shuttlecock_i>CAMPUS", []), ("station>JUNGANG", [])
+        ]
+        for (path, pairs) in expected {
+            let parts = path.split(separator: ">").map(String.init)
+            let (stop, destination) = (parts[0], parts[1])
+            let selection = HomePayloadSelection(
+                stop: stop,
+                destination: destination,
+                showBus50: true,
+                showSubway: true,
+                subwayDestination: .seoul
+            )
+            XCTAssertEqual(selection.alternativePairs.map { "\($0.0):\($0.1)" }, pairs)
+        }
+    }
+}
