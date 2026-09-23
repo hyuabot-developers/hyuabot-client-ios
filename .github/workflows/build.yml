@@ -19,7 +19,7 @@ concurrency:
 env:
   PROJECT: hyuabot.xcodeproj
   SCHEME: hyuabot
-  DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro,OS=latest
+  DESTINATION: platform=iOS Simulator,name=iPhone 18 Pro,OS=latest
   DERIVED_DATA_PATH: .derivedData
 
 jobs:
