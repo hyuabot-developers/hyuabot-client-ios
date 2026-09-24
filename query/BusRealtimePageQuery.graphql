@@ -3,7 +3,6 @@ query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!)
         notices {
             title
             url
-            expiredAt
         }
     }
     bus(input: $busInput) {

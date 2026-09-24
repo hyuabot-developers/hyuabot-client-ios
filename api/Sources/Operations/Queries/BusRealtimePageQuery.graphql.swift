@@ -8,7 +8,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "BusRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url expiredAt } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } minimumDispatchIntervals { __typename weekday minutes } } }"#
+      #"query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } minimumDispatchIntervals { __typename weekday minutes } } }"#
     ))
 
   public var language: String
@@ -76,7 +76,6 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
           .field("__typename", String.self),
           .field("title", String.self),
           .field("url", String.self),
-          .field("expiredAt", Api.DateTime.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           BusRealtimePageQuery.Data.Notice.Notice.self
@@ -84,7 +83,6 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
 
         public var title: String { __data["title"] }
         public var url: String { __data["url"] }
-        public var expiredAt: Api.DateTime { __data["expiredAt"] }
       }
     }
 

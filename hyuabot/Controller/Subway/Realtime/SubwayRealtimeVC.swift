@@ -1,8 +1,32 @@
 import Api
+import ApolloAPI
 import RxSwift
 import UIKit
 
+enum SubwayPayloadSelection {
+    static func keys(tab: Int, weekday: String) -> [SubwayStationInput] {
+        func station(_ id: String, _ directions: [String], _ limit: Int?) -> SubwayStationInput {
+            SubwayStationInput(
+                stationID: id, direction: directions, weekdays: [weekday],
+                limit: limit.map { .some(Int32($0)) } ?? .null
+            )
+        }
+        switch tab {
+        case 1: return [station("K251", ["up", "down"], 4)]
+        case 2:
+            return [
+                station("K449", ["down"], 4), station("K251", ["down"], 4),
+                station("K258", ["down"], nil), station("S26", ["up"], nil)
+            ]
+        default: return [station("K449", ["up", "down"], 4)]
+        }
+    }
+}
+
 class SubwayRealtimeVC: UIViewController {
+    private var selectedTab = 0
+    private var requestGeneration = 0
+    private var lastAppliedGeneration = 0
     private static let chojiTravelMinutes = 8
     private static let chojiTransferBufferMinutes = 8
     private let disposeBag = DisposeBag()
@@ -34,6 +58,13 @@ class SubwayRealtimeVC: UIViewController {
             TabItem(title: String(localized: "subway.tab.yellow")),
             TabItem(title: String(localized: "subway.tab.transfer"))
         ]
+        viewPager.onPageChanged = { [weak self] index in
+            guard let self, selectedTab != index else { return }
+            selectedTab = index
+            SubwayRealtimeData.shared.realtimeData.onNext([])
+            SubwayRealtimeData.shared.isLoading.onNext(true)
+            fetchSubwayRealtimeData()
+        }
         return viewPager
     }()
 
@@ -116,7 +147,12 @@ class SubwayRealtimeVC: UIViewController {
                 let campusBlue = data.campusBlue,
                 let campusYellow = data.campusYellow,
                 let oidoYellow = data.oidoYellow,
-                let chojiSeohae = data.chojiSeohae else { return }
+                let chojiSeohae = data.chojiSeohae
+            else {
+                SubwayRealtimeData.shared.transferUp.onNext([])
+                SubwayRealtimeData.shared.transferDown.onNext([])
+                return
+            }
             guard let self else { return }
             SubwayRealtimeData.shared.transferUp.onNext(processIncheonDirection(
                 campusBlue: campusBlue,
@@ -222,16 +258,26 @@ class SubwayRealtimeVC: UIViewController {
         let weekday = (component == 1 || component == 7) ? "weekends" : "weekdays"
         let language = LanguageManager.shared.apiLanguageTag
         SubwayRealtimeData.shared.prepareForLanguage(language)
+        requestGeneration += 1
+        let generation = requestGeneration
+        let keys = SubwayPayloadSelection.keys(tab: selectedTab, weekday: weekday)
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: SubwayRealtimePageQuery(
-                    weekday: weekday,
+                    keys: keys,
                     language: language
                 ),
                 cachePolicy: .networkOnly
             )
             await MainActor.run {
+                // A slow response from an earlier timer tick is still applied while the tab (and thus the keys) is unchanged.
+                let currentDay = Calendar.current.component(.weekday, from: .now)
+                let currentWeekday = (currentDay == 1 || currentDay == 7) ? "weekends" : "weekdays"
+                guard generation > self.lastAppliedGeneration,
+                      keys == SubwayPayloadSelection.keys(tab: self.selectedTab, weekday: currentWeekday),
+                      language == LanguageManager.shared.apiLanguageTag else { return }
                 if let data = response?.data {
+                    self.lastAppliedGeneration = generation
                     SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
                     SubwayRealtimeData.shared.isLoading.onNext(false)
                     self.line4VC.reload()

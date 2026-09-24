@@ -8,43 +8,55 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
   public static let operationName: String = "HomePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HomePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $weekday: String!, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle( input: { stops: [ { name: "dormitory_o", limit: { destination: 100 } } { name: "shuttlecock_o", limit: { destination: 100 } } { name: "station", limit: { destination: 100 } } { name: "terminal", limit: { destination: 100 } } { name: "jungang_stn", limit: { destination: 100 } } { name: "shuttlecock_i", limit: { destination: 100 } } ] after: $after } ) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: [{ route: 216000075, stop: 216000759, limit: 2 }]) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway( input: { language: $subwayLanguage keys: [ { stationID: "K449" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K251" direction: ["up", "down"] weekdays: [$weekday] limit: 12 } { stationID: "K258", direction: ["down"], weekdays: [$weekday], limit: 12 } { stationID: "S26", direction: ["up"], weekdays: [$weekday] } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq name latitude longitude } arrival { __typename minutes stops seats isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
+      #"query HomePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $date: Date!, $campusID: Int!, $busInput: [BusRouteStopInput!]!, $shuttleStops: [ShuttleStopInput!]!, $transferBusInput: [BusRouteStopInput!]!, $subwayKeys: [SubwayStationInput!]!, $subwayTimetableKeys: [SubwayStationInput!]!) { homeWeather { __typename issuedAt expiresAt observedAt forecastUpdatedAt currentTemperature currentPrecipitationType currentPrecipitationAmount minimumTemperature maximumTemperature precipitationProbabilityMax precipitationStartAt precipitationEndAt precipitationType precipitationConfidence availableModelCount agreeingModelCount primaryCondition attribution } notices(input: { language: $language, category: "셔틀" }) { __typename notices { __typename title url expiredAt } } shuttle(input: { stops: $shuttleStops, after: $after }) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename name timetable { __typename destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } transferBus: bus(input: $transferBusInput) { __typename stop { __typename seq } arrival { __typename minutes stops isRealtime } } subway(input: { language: $subwayLanguage, keys: $subwayKeys }) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops status terminal { __typename stationID name } } } } subwayTimetable: subway( input: { language: $subwayLanguage, keys: $subwayTimetableKeys } ) { __typename stationID timetable { __typename weekday direction time terminal { __typename stationID name } } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq name } arrival { __typename minutes stops seats isRealtime arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } } } cafeteria(input: { date: $date, campus: $campusID }) { __typename seq runningTime { __typename breakfast lunch dinner } menus { __typename type food price } } }"#
     ))
 
   public var language: String
   public var subwayLanguage: String
   public var after: GraphQLNullable<LocalTime>
-  public var weekday: String
   public var date: Date
   public var campusID: Int32
   public var busInput: [BusRouteStopInput]
+  public var shuttleStops: [ShuttleStopInput]
+  public var transferBusInput: [BusRouteStopInput]
+  public var subwayKeys: [SubwayStationInput]
+  public var subwayTimetableKeys: [SubwayStationInput]
 
   public init(
     language: String,
     subwayLanguage: String,
     after: GraphQLNullable<LocalTime>,
-    weekday: String,
     date: Date,
     campusID: Int32,
-    busInput: [BusRouteStopInput]
+    busInput: [BusRouteStopInput],
+    shuttleStops: [ShuttleStopInput],
+    transferBusInput: [BusRouteStopInput],
+    subwayKeys: [SubwayStationInput],
+    subwayTimetableKeys: [SubwayStationInput]
   ) {
     self.language = language
     self.subwayLanguage = subwayLanguage
     self.after = after
-    self.weekday = weekday
     self.date = date
     self.campusID = campusID
     self.busInput = busInput
+    self.shuttleStops = shuttleStops
+    self.transferBusInput = transferBusInput
+    self.subwayKeys = subwayKeys
+    self.subwayTimetableKeys = subwayTimetableKeys
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "language": language,
     "subwayLanguage": subwayLanguage,
     "after": after,
-    "weekday": weekday,
     "date": date,
     "campusID": campusID,
-    "busInput": busInput
+    "busInput": busInput,
+    "shuttleStops": shuttleStops,
+    "transferBusInput": transferBusInput,
+    "subwayKeys": subwayKeys,
+    "subwayTimetableKeys": subwayTimetableKeys
   ] }
 
   nonisolated public struct Data: Api.SelectionSet {
@@ -59,54 +71,17 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         "category": "셔틀"
       ]]),
       .field("shuttle", Shuttle.self, arguments: ["input": [
-        "stops": [[
-          "name": "dormitory_o",
-          "limit": ["destination": 100]
-        ], [
-          "name": "shuttlecock_o",
-          "limit": ["destination": 100]
-        ], [
-          "name": "station",
-          "limit": ["destination": 100]
-        ], [
-          "name": "terminal",
-          "limit": ["destination": 100]
-        ], [
-          "name": "jungang_stn",
-          "limit": ["destination": 100]
-        ], [
-          "name": "shuttlecock_i",
-          "limit": ["destination": 100]
-        ]],
+        "stops": .variable("shuttleStops"),
         "after": .variable("after")
       ]]),
-      .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": [[
-        "route": 216000075,
-        "stop": 216000759,
-        "limit": 2
-      ]]]),
+      .field("bus", alias: "transferBus", [TransferBus].self, arguments: ["input": .variable("transferBusInput")]),
       .field("subway", [Subway].self, arguments: ["input": [
         "language": .variable("subwayLanguage"),
-        "keys": [[
-          "stationID": "K449",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "K251",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "K258",
-          "direction": ["down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 12
-        ], [
-          "stationID": "S26",
-          "direction": ["up"],
-          "weekdays": [.variable("weekday")]
-        ]]
+        "keys": .variable("subwayKeys")
+      ]]),
+      .field("subway", alias: "subwayTimetable", [SubwayTimetable].self, arguments: ["input": [
+        "language": .variable("subwayLanguage"),
+        "keys": .variable("subwayTimetableKeys")
       ]]),
       .field("bus", [Bus].self, arguments: ["input": .variable("busInput")]),
       .field("cafeteria", [Cafeterium].self, arguments: ["input": [
@@ -123,6 +98,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
     public var shuttle: Shuttle { __data["shuttle"] }
     public var transferBus: [TransferBus] { __data["transferBus"] }
     public var subway: [Subway] { __data["subway"] }
+    public var subwayTimetable: [SubwayTimetable] { __data["subwayTimetable"] }
     public var bus: [Bus] { __data["bus"] }
     public var cafeteria: [Cafeterium] { __data["cafeteria"] }
 
@@ -491,7 +467,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         .field("__typename", String.self),
         .field("stationID", String.self),
         .field("arrival", [Arrival].self),
-        .field("timetable", [Timetable].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         HomePageQuery.Data.Subway.self
@@ -499,7 +474,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
       public var stationID: String { __data["stationID"] }
       public var arrival: [Arrival] { __data["arrival"] }
-      public var timetable: [Timetable] { __data["timetable"] }
 
       /// Subway.Arrival
       ///
@@ -571,8 +545,29 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
           }
         }
       }
+    }
 
-      /// Subway.Timetable
+    /// SubwayTimetable
+    ///
+    /// Parent Type: `SubwayStation`
+    nonisolated public struct SubwayTimetable: Api.SelectionSet {
+      @_spi(Unsafe) public let __data: DataDict
+      @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+      @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayStation }
+      @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+        .field("__typename", String.self),
+        .field("stationID", String.self),
+        .field("timetable", [Timetable].self),
+      ] }
+      @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+        HomePageQuery.Data.SubwayTimetable.self
+      ] }
+
+      public var stationID: String { __data["stationID"] }
+      public var timetable: [Timetable] { __data["timetable"] }
+
+      /// SubwayTimetable.Timetable
       ///
       /// Parent Type: `SubwayTimetable`
       nonisolated public struct Timetable: Api.SelectionSet {
@@ -588,7 +583,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
           .field("terminal", Terminal.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-          HomePageQuery.Data.Subway.Timetable.self
+          HomePageQuery.Data.SubwayTimetable.Timetable.self
         ] }
 
         public var weekday: String { __data["weekday"] }
@@ -596,7 +591,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         public var time: Api.LocalTime { __data["time"] }
         public var terminal: Terminal { __data["terminal"] }
 
-        /// Subway.Timetable.Terminal
+        /// SubwayTimetable.Timetable.Terminal
         ///
         /// Parent Type: `SubwayOriginTerminal`
         nonisolated public struct Terminal: Api.SelectionSet {
@@ -610,7 +605,7 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
             .field("name", String.self),
           ] }
           @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-            HomePageQuery.Data.Subway.Timetable.Terminal.self
+            HomePageQuery.Data.SubwayTimetable.Timetable.Terminal.self
           ] }
 
           public var stationID: String { __data["stationID"] }
@@ -632,7 +627,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         .field("route", Route.self),
         .field("stop", Stop.self),
         .field("arrival", [Arrival].self),
-        .field("log", [Log].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         HomePageQuery.Data.Bus.self
@@ -641,7 +635,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
       public var route: Route { __data["route"] }
       public var stop: Stop { __data["stop"] }
       public var arrival: [Arrival] { __data["arrival"] }
-      public var log: [Log] { __data["log"] }
 
       /// Bus.Route
       ///
@@ -676,8 +669,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
           .field("__typename", String.self),
           .field("seq", Int.self),
           .field("name", String.self),
-          .field("latitude", Double.self),
-          .field("longitude", Double.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           HomePageQuery.Data.Bus.Stop.self
@@ -685,8 +676,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
 
         public var seq: Int { __data["seq"] }
         public var name: String { __data["name"] }
-        public var latitude: Double { __data["latitude"] }
-        public var longitude: Double { __data["longitude"] }
       }
 
       /// Bus.Arrival
@@ -703,10 +692,8 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
           .field("stops", Int?.self),
           .field("seats", Int?.self),
           .field("isRealtime", Bool.self),
-          .field("time", Api.LocalTime?.self),
           .field("arrivalTime", Api.LocalTime?.self),
           .field("destinationTravelMinutes", [DestinationTravelMinute].self),
-          .field("destinationArrivalTime", Api.LocalTime?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           HomePageQuery.Data.Bus.Arrival.self
@@ -716,11 +703,8 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
         public var stops: Int? { __data["stops"] }
         public var seats: Int? { __data["seats"] }
         public var isRealtime: Bool { __data["isRealtime"] }
-        public var time: Api.LocalTime? { __data["time"] }
         public var arrivalTime: Api.LocalTime? { __data["arrivalTime"] }
         public var destinationTravelMinutes: [DestinationTravelMinute] { __data["destinationTravelMinutes"] }
-        /// Deprecated. Use destinationTravelMinutes instead.
-        public var destinationArrivalTime: Api.LocalTime? { __data["destinationArrivalTime"] }
 
         /// Bus.Arrival.DestinationTravelMinute
         ///
@@ -742,29 +726,6 @@ nonisolated public struct HomePageQuery: GraphQLQuery {
           public var destinationStopId: Int { __data["destinationStopId"] }
           public var minutes: Int { __data["minutes"] }
         }
-      }
-
-      /// Bus.Log
-      ///
-      /// Parent Type: `BusDepartureLog`
-      nonisolated public struct Log: Api.SelectionSet {
-        @_spi(Unsafe) public let __data: DataDict
-        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
-
-        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusDepartureLog }
-        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
-          .field("__typename", String.self),
-          .field("date", Api.Date.self),
-          .field("time", Api.LocalTime.self),
-          .field("vehicle", String.self),
-        ] }
-        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-          HomePageQuery.Data.Bus.Log.self
-        ] }
-
-        public var date: Api.Date { __data["date"] }
-        public var time: Api.LocalTime { __data["time"] }
-        public var vehicle: String { __data["vehicle"] }
       }
     }
 

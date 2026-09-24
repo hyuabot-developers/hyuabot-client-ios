@@ -329,7 +329,7 @@ private enum HomeBusDestination: CaseIterable {
     }
 }
 
-private enum HomeBusGroup {
+private enum HomeBusGroup: Equatable {
     case campus
     case kitch
     case dormitory
@@ -425,7 +425,50 @@ private enum HomeSettings {
     }
 }
 
-private enum SubwayTransferDestination: String, CaseIterable {
+/// Request inputs for the visible Home shuttle route and enabled connections.
+struct HomePayloadSelection {
+    let stop: String
+    let destination: String
+    let showBus50: Bool
+    let showSubway: Bool
+    let subwayDestination: SubwayTransferDestination
+
+    private var outbound: Bool {
+        ["dormitory_o", "shuttlecock_o"].contains(stop)
+    }
+
+    var needsBus50: Bool {
+        showBus50 && outbound && destination == "TERMINAL"
+    }
+
+    var alternativePairs: [(Int32, Int32)] {
+        switch (stop, destination) {
+        case ("dormitory_o", "STATION"): [(216_000_068, 216_000_383)]
+        case ("dormitory_o", "TERMINAL"), ("dormitory_o", "JUNGANG"): [(216_000_081, 216_000_028), (216_000_101, 216_000_028)]
+        case ("shuttlecock_o", "TERMINAL"), ("shuttlecock_o", "JUNGANG"): [(216_000_016, 216_000_152)]
+        case ("station", "CAMPUS"): [(216_000_068, 216_000_138)]
+        case ("terminal", "CAMPUS"): [(216_000_082, 216_000_077), (216_000_102, 216_000_077), (216_000_016, 216_000_074)]
+        case ("jungang_stn", "CAMPUS"): [(216_000_082, 217_000_140), (216_000_102, 217_000_140), (216_000_016, 217_000_264)]
+        default: []
+        }
+    }
+
+    func subwayKeys(weekday: String) -> [SubwayStationInput] {
+        guard showSubway, outbound, destination == "STATION" else { return [] }
+        let pairs: [(String, String)] = switch subwayDestination {
+        case .seoul: [("K449", "up")]
+        case .suwonYongin: [("K251", "up")]
+        case .oido: [("K449", "down"), ("K251", "down")]
+        case .incheon: [("K449", "down"), ("K251", "down"), ("K258", "down")]
+        case .sosa: [("K449", "down"), ("K251", "down"), ("S26", "up")]
+        }
+        return pairs.map {
+            SubwayStationInput(stationID: $0.0, direction: [$0.1], weekdays: [weekday], limit: $0.0 == "S26" ? nil : 12)
+        }
+    }
+}
+
+enum SubwayTransferDestination: String, CaseIterable {
     case seoul
     case suwonYongin
     case incheon
@@ -469,6 +512,7 @@ private enum SubwayTransferDestination: String, CaseIterable {
     }
 #endif
 
+// swiftlint:disable:next type_body_length
 private final class HomeQuickSettingsVC: UIViewController {
     var openLegacyShuttle: (() -> Void)?
     var openInquiry: (() -> Void)?
@@ -478,15 +522,39 @@ private final class HomeQuickSettingsVC: UIViewController {
     var updateSubwayTransferDestination: ((SubwayTransferDestination) -> Void)?
     var updateShowSeoulBusStop: ((Bool) -> Void)?
     var updateSeoulBusStop: ((BusSeoulTargetStop) -> Void)?
-    let preferredSheetHeight: CGFloat = 650
 
     private let contentStack = UIStackView()
+    private let sheetTitleLabel = UILabel()
     private let showPresenceStatusSwitch = UISwitch()
     private let showBus50TransferSwitch = UISwitch()
     private let showSubwayTransferSwitch = UISwitch()
     private let subwayDestinationControl = UISegmentedControl()
     private let showSeoulBusStopSwitch = UISwitch()
     private let seoulBusStopControl = UISegmentedControl()
+
+    var calculatedSheetHeight: CGFloat {
+        view.layoutIfNeeded()
+
+        let contentWidth = max(view.bounds.width - 40, 1)
+        let fittingSize = CGSize(width: contentWidth, height: UIView.layoutFittingCompressedSize.height)
+        let titleHeight = sheetTitleLabel.systemLayoutSizeFitting(
+            fittingSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        let arrangedHeight = contentStack.arrangedSubviews.reduce(CGFloat.zero) { height, subview in
+            height + subview.systemLayoutSizeFitting(
+                fittingSize,
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            ).height
+        }
+        let spacingHeight = CGFloat(max(contentStack.arrangedSubviews.count - 1, 0)) * contentStack.spacing
+        let marginsHeight = contentStack.layoutMargins.top + contentStack.layoutMargins.bottom
+        let safetyPadding: CGFloat = 8
+
+        return 28 + titleHeight + 14 + marginsHeight + arrangedHeight + spacingHeight + safetyPadding
+    }
 
     init(
         showPresenceStatus: Bool,
@@ -526,20 +594,26 @@ private final class HomeQuickSettingsVC: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
 
+        sheetTitleLabel.text = String(localized: "home.quick_settings.title")
+        sheetTitleLabel.font = .godo(size: 20, weight: .bold)
+        sheetTitleLabel.textColor = .label
+
+        view.addSubview(sheetTitleLabel)
+        sheetTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(28)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(28)
+        }
+
         view.addSubview(contentStack)
         contentStack.axis = .vertical
         contentStack.spacing = 14
-        contentStack.layoutMargins = UIEdgeInsets(top: 22, left: 20, bottom: 24, right: 20)
+        contentStack.layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 24, right: 20)
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.snp.makeConstraints { make in
-            make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
-            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(sheetTitleLabel.snp.bottom).offset(4)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
-
-        let title = UILabel()
-        title.text = String(localized: "home.quick_settings.title")
-        title.font = .godo(size: 20, weight: .bold)
-        title.textColor = .label
 
         showPresenceStatusSwitch.addTarget(self, action: #selector(onChangeShowPresenceStatus), for: .valueChanged)
         showBus50TransferSwitch.addTarget(self, action: #selector(onChangeShowBus50Transfer), for: .valueChanged)
@@ -548,7 +622,11 @@ private final class HomeQuickSettingsVC: UIViewController {
         showSeoulBusStopSwitch.addTarget(self, action: #selector(onChangeShowSeoulBusStop), for: .valueChanged)
         seoulBusStopControl.addTarget(self, action: #selector(onChangeSeoulBusStop), for: .valueChanged)
 
-        contentStack.addArrangedSubview(title)
+        let titleToCardsSpacer = UIView()
+        titleToCardsSpacer.setContentHuggingPriority(.defaultLow, for: .vertical)
+        titleToCardsSpacer.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        contentStack.addArrangedSubview(titleToCardsSpacer)
+
         contentStack.addArrangedSubview(settingRow(
             title: String(localized: "shuttle.quick_settings.presence.title"),
             subtitle: String(localized: "shuttle.quick_settings.presence.subtitle"),
@@ -560,6 +638,12 @@ private final class HomeQuickSettingsVC: UIViewController {
             subtitle: String(localized: "home.quick_settings.bus50_transfer.subtitle"),
             control: showBus50TransferSwitch,
             identifier: "home.quick_settings.bus50_transfer_row"
+        ))
+        contentStack.addArrangedSubview(settingRow(
+            title: String(localized: "home.quick_settings.destination_eta.title"),
+            subtitle: String(localized: "home.quick_settings.destination_eta.subtitle"),
+            control: showSeoulBusStopSwitch,
+            identifier: "home.quick_settings.show_destination_eta"
         ))
         contentStack.addArrangedSubview(seoulBusStopRow())
         contentStack.addArrangedSubview(subwayTransferRow())
@@ -609,7 +693,7 @@ private final class HomeQuickSettingsVC: UIViewController {
     private func subwayTransferRow() -> UIView {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 10
+        stack.spacing = 12
         stack.accessibilityIdentifier = "home.quick_settings.subway_transfer_row"
         stack.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
         stack.isLayoutMarginsRelativeArrangement = true
@@ -618,23 +702,29 @@ private final class HomeQuickSettingsVC: UIViewController {
 
         let header = UIStackView()
         header.axis = .horizontal
-        header.alignment = .center
-        header.spacing = 12
+        header.alignment = .top
+        header.spacing = 8
+        header.setContentHuggingPriority(.required, for: .vertical)
+        header.setContentCompressionResistancePriority(.required, for: .vertical)
 
         let textStack = UIStackView()
         textStack.axis = .vertical
         textStack.spacing = 4
+        textStack.setContentHuggingPriority(.required, for: .vertical)
+        textStack.setContentCompressionResistancePriority(.required, for: .vertical)
 
         let titleLabel = UILabel()
         titleLabel.text = String(localized: "home.quick_settings.subway_transfer.title")
         titleLabel.font = .godo(size: 16, weight: .bold)
         titleLabel.textColor = .label
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = String(localized: "home.quick_settings.subway_transfer.subtitle")
         subtitleLabel.font = .godo(size: 13, weight: .regular)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.numberOfLines = 0
+        subtitleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(subtitleLabel)
@@ -647,12 +737,12 @@ private final class HomeQuickSettingsVC: UIViewController {
         subwayDestinationControl.setTitleTextAttributes([
             .font: UIFont.godo(size: 12, weight: .bold)
         ], for: .selected)
+        subwayDestinationControl.snp.makeConstraints { make in
+            make.height.equalTo(32)
+        }
 
         stack.addArrangedSubview(header)
         stack.addArrangedSubview(subwayDestinationControl)
-        stack.snp.makeConstraints { make in
-            make.height.equalTo(118)
-        }
         stack.setContentHuggingPriority(.required, for: .vertical)
         stack.setContentCompressionResistancePriority(.required, for: .vertical)
         return stack
@@ -661,7 +751,7 @@ private final class HomeQuickSettingsVC: UIViewController {
     private func seoulBusStopRow() -> UIView {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 10
+        stack.spacing = 8
         stack.accessibilityIdentifier = "home.quick_settings.seoul_bus_stop_row"
         stack.layoutMargins = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
         stack.isLayoutMarginsRelativeArrangement = true
@@ -670,28 +760,47 @@ private final class HomeQuickSettingsVC: UIViewController {
 
         let header = UIStackView()
         header.axis = .horizontal
-        header.alignment = .center
-        header.spacing = 12
+        header.alignment = .top
+        header.spacing = 4
+        header.setContentHuggingPriority(.required, for: .vertical)
+        header.setContentCompressionResistancePriority(.required, for: .vertical)
+
         let textStack = UIStackView()
         textStack.axis = .vertical
         textStack.spacing = 4
-        let title = UILabel()
-        title.text = String(localized: "home.quick_settings.seoul_bus_stop.title")
-        title.font = .godo(size: 16, weight: .bold)
-        let subtitle = UILabel()
-        subtitle.text = String(localized: "home.quick_settings.seoul_bus_stop.subtitle")
-        subtitle.font = .godo(size: 13, weight: .regular)
-        subtitle.textColor = .secondaryLabel
-        subtitle.numberOfLines = 0
-        textStack.addArrangedSubview(title)
-        textStack.addArrangedSubview(subtitle)
+        textStack.setContentHuggingPriority(.required, for: .vertical)
+        textStack.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let titleLabel = UILabel()
+        titleLabel.text = String(localized: "home.quick_settings.seoul_bus_stop.title")
+        titleLabel.font = .godo(size: 16, weight: .bold)
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = String(localized: "home.quick_settings.seoul_bus_stop.subtitle")
+        subtitleLabel.font = .godo(size: 13, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 0
+        subtitleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        textStack.addArrangedSubview(titleLabel)
+        textStack.addArrangedSubview(subtitleLabel)
         header.addArrangedSubview(textStack)
-        header.addArrangedSubview(showSeoulBusStopSwitch)
-        seoulBusStopControl.setTitleTextAttributes([.font: UIFont.godo(size: 12, weight: .regular)], for: .normal)
-        seoulBusStopControl.setTitleTextAttributes([.font: UIFont.godo(size: 12, weight: .bold)], for: .selected)
+
+        seoulBusStopControl.setTitleTextAttributes([
+            .font: UIFont.godo(size: 12, weight: .regular)
+        ], for: .normal)
+        seoulBusStopControl.setTitleTextAttributes([
+            .font: UIFont.godo(size: 12, weight: .bold)
+        ], for: .selected)
+        seoulBusStopControl.snp.makeConstraints { make in
+            make.height.equalTo(32)
+        }
+
         stack.addArrangedSubview(header)
         stack.addArrangedSubview(seoulBusStopControl)
-        stack.snp.makeConstraints { make in make.height.equalTo(118) }
+        stack.setContentHuggingPriority(.required, for: .vertical)
+        stack.setContentCompressionResistancePriority(.required, for: .vertical)
         return stack
     }
 
@@ -1275,6 +1384,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var homeBusRowsCache: [HomeBusDestination: [UIView]] = [:]
     private var isHomeBusRefreshing = false
     private var pendingHomeDataRefresh = false
+    private var homeStopCoordinates: [BusStopCoordinatesQuery.Data.Bus] = []
+    private var isFetchingHomeCoordinates = false
+    /// Group whose arrivals the last completed fetch actually requested. Used to
+    /// detect when a location update has moved the user into a different group so
+    /// the fetch pipeline can pull the newly-relevant (route, stop) pairs.
+    private var lastFetchedHomeBusGroup: HomeBusGroup?
+    /// Selection the rendered `shuttleData` / `homeBusData` was requested for. While a request for a newer
+    /// selection is in flight, the narrowed payload cannot answer it, so a skeleton is shown instead of an empty state.
+    private var lastFetchedShuttleRouteKey: String?
+    private var lastFetchedHomeBusDestination: HomeBusDestination?
     private var bus50TerminalLogTimes: [LocalTime] = []
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
@@ -1974,7 +2093,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             selectedDestination.title
         )
         updateDepartureSelector()
-        if shuttleData == nil {
+        let isAwaitingShuttleSelection = isLoading &&
+            lastFetchedShuttleRouteKey != Self.shuttleRouteKey(shuttleRoute(from: selectedDeparture, to: selectedDestination))
+        if shuttleData == nil || isAwaitingShuttleSelection {
             replaceSubviews(in: shuttleOptionStack, with: [
                 makeSkeletonRow(widthRatio: 0.72),
                 makeSkeletonRow(widthRatio: 0.54)
@@ -2592,7 +2713,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let line4 = subwayList.first { $0.stationID == "K449" }
         let suin = subwayList.first { $0.stationID == "K251" }
         let oidoSuin = subwayList.first { $0.stationID == "K258" }
-        let chojiSeohae = subwayList.first { $0.stationID == "S26" }
+        let chojiSeohae = shuttleData?.subwayTimetable.first { $0.stationID == "S26" }
         let blue = UIColor.subwaySkyblue
         let yellow = UIColor.homeSubwayYellow
         let green = UIColor.homeSubwaySeohae
@@ -2691,11 +2812,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func subwayTimetableOptions(
-        subway: HomePageQuery.Data.Subway?,
+        subway: HomePageQuery.Data.SubwayTimetable?,
         direction: String,
         badge: String,
         tintColor: UIColor,
-        isEligible: (HomePageQuery.Data.Subway.Timetable) -> Bool
+        isEligible: (HomePageQuery.Data.SubwayTimetable.Timetable) -> Bool
     ) -> [HomeSubwayArrival] {
         subway?.timetable
             .filter { $0.direction == direction }
@@ -3022,6 +3143,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     // swiftlint:disable:next function_body_length
     private func fetchHomeData(showsLoadingState: Bool = true) {
+        fetchHomeStopCoordinates()
         guard !isLoading else {
             pendingHomeDataRefresh = true
             return
@@ -3031,14 +3153,23 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         isHomeBusRefreshing = true
         initialStopRules = nil
         homeBusRowsCache.removeAll()
+        let requestedContext = homeRequestContext()
+        // Snapshot the group the request is being built for. `homeBusInput()`
+        // reads `nearestHomeBusGroup()` once for its (route, stop) shape; we
+        // capture the same value so `lastFetchedHomeBusGroup` reflects what the
+        // response actually contains once it lands.
+        let requestedHomeBusGroup = nearestHomeBusGroup()
+        let requestedRoute = shuttleRoute(from: selectedDeparture, to: selectedDestination)
         let requestedHomeBusDestination = selectedHomeBusDestination
+        let needsBus50 = homePayloadSelection().needsBus50
+        let busInput = homeBusInput()
+        let subwayKeys = homeSubwayKeys(weekday: currentSubwayWeekday())
         if showsLoadingState || shuttleData == nil {
             renderLoadingState()
         }
 
         let mealPeriod = isMealPeriodManuallySelected ? activeMealPeriod() : currentMealPeriod()
         displayedMealPeriod = mealPeriod
-        let weekday = currentSubwayWeekday()
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
 
@@ -3048,21 +3179,24 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     language: currentNoticeLanguage(),
                     subwayLanguage: LanguageManager.shared.apiLanguageTag,
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: Foundation.Date.now)),
-                    weekday: weekday,
                     date: mealPeriod.queryDate.toLocalDateString(),
                     campusID: Int32(campusID),
-                    busInput: homeBusInput()
+                    busInput: busInput,
+                    shuttleStops: requestedRoute.map {
+                        [ShuttleStopInput(name: $0.stop, limit: ShuttleLimitInput(destination: 100), destinations: .some([$0.destination]))]
+                    } ?? [],
+                    transferBusInput: needsBus50 ? [BusRouteStopInput(route: 216_000_075, stop: 216_000_759, limit: 2)] : [],
+                    subwayKeys: subwayKeys.filter { $0.stationID != "S26" },
+                    subwayTimetableKeys: subwayKeys.filter { $0.stationID == "S26" }
                 ),
                 cachePolicy: .networkOnly
             )
-            let bus50TerminalLogTimes = await fetchBus50TerminalLogTimes()
+            let bus50TerminalLogTimes = needsBus50 ? await fetchBus50TerminalLogTimes() : []
 
             await MainActor.run {
-                guard requestedHomeBusDestination == selectedHomeBusDestination else {
+                guard requestedContext == homeRequestContext() else {
                     isLoading = false
-                    if pendingHomeDataRefresh {
-                        fetchHomeData(showsLoadingState: false)
-                    }
+                    fetchHomeData(showsLoadingState: false)
                     return
                 }
                 initialStopRules =
@@ -3079,11 +3213,15 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 if let data = response?.data {
                     shuttleData = data
                     homeBusData = data.bus
+                    lastFetchedHomeBusGroup = requestedHomeBusGroup
+                    lastFetchedHomeBusDestination = requestedHomeBusDestination
+                    lastFetchedShuttleRouteKey = Self.shuttleRouteKey(requestedRoute)
+                    homeBusRowsCache.removeAll()
                     busAlternatives = buildBusAlternatives(data.bus)
                     self.bus50TerminalLogTimes = bus50TerminalLogTimes
                     mealSections = buildMealSections(data.cafeteria, mealPeriod: activeMealPeriod())
                     Task {
-                        await ShuttleServiceNoticeScheduler.shared.sync()
+                        await ShuttleServiceNoticeScheduler.shared.syncIfStale()
                     }
                 }
                 isHomeBusRefreshing = false
@@ -3180,6 +3318,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     #endif
 
+    private static func shuttleRouteKey(_ route: HomeShuttleRoute?) -> String {
+        route.map { "\($0.stop)|\($0.destination)" } ?? "none"
+    }
+
     private func shuttleRoute(from departure: HomeDeparture, to destination: HomeDestination) -> HomeShuttleRoute? {
         // A route name ending in "D" terminates at the dormitory and one ending in "S"
         // terminates at shuttlecock. Both serve riders from stops located before
@@ -3223,64 +3365,124 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
     private func homeBusInput() -> [BusRouteStopInput] {
         let dates = BusRecentDates.sameWeekdayType(count: 4)
-        // Keep this list in lockstep with Android's HomeViewModel.homeBusInput().
-        // The home alternative cards use stops that are not part of the location
-        // preview itself (80A/80B and 62 transfer stops in particular).
-        let inputs: [(Int32, Int32)] = [
-            (216_000_068, 216_000_383), (216_000_068, 216_000_138),
-            (216_000_104, 216_000_141), (200_000_015, 216_000_141),
-            (216_000_081, 216_000_028), (216_000_101, 216_000_028),
-            (216_000_016, 216_000_152),
-            (216_000_082, 216_000_077), (216_000_102, 216_000_077),
-            (216_000_016, 216_000_074),
-            (216_000_082, 217_000_140), (216_000_102, 217_000_140),
-            (216_000_016, 217_000_264),
-            (216_000_068, 216_000_379), (216_000_068, 216_000_719),
-            (216_000_068, 216_000_070), (216_000_068, 216_000_381),
-            (216_000_061, 216_000_379), (216_000_061, 216_000_378),
-            (216_000_061, 216_000_381), (216_000_061, 216_000_383),
-            (216_000_061, 216_000_719),
-            (216_000_026, 216_000_719), (216_000_043, 216_000_719),
-            (216_000_096, 216_000_719),
-            (216_000_096, 216_000_048), (216_000_026, 216_000_048),
-            (216_000_043, 216_000_048),
-            (216_000_026, 226_000_042), (216_000_096, 226_000_042),
-            (216_000_043, 225_000_116),
-            (216_000_104, 216_000_070), (200_000_015, 216_000_070),
-            (216_000_104, 202_000_106), (200_000_015, 202_000_106),
-            (216_000_061, 121_000_060), (216_000_061, 121_000_929),
-            (216_000_061, 121_000_974), (216_000_061, 121_000_970),
-            (216_000_061, 121_000_220),
-            (216_000_026, 121_000_060), (216_000_026, 121_000_929),
-            (216_000_026, 121_000_974), (216_000_026, 121_000_970),
-            (216_000_026, 121_000_220),
-            (216_000_043, 121_000_060), (216_000_043, 121_000_929),
-            (216_000_043, 121_000_974), (216_000_043, 121_000_970),
-            (216_000_043, 121_000_220),
-            (216_000_096, 121_000_060), (216_000_096, 121_000_929),
-            (216_000_096, 121_000_974), (216_000_096, 121_000_970),
-            (216_000_096, 121_000_220)
-        ]
-        return inputs.map { route, stop in
+        struct Pair: Hashable { let route: Int32; let stop: Int32 }
+
+        var pairs = Set<Pair>()
+        for (route, stop) in homeBusAlternativePairs() {
+            pairs.insert(Pair(route: route, stop: stop))
+        }
+        if let group = nearestHomeBusGroup() {
+            for (route, stop) in homeBusGroupPairs(group: group, destination: selectedHomeBusDestination) {
+                pairs.insert(Pair(route: route, stop: stop))
+            }
+        }
+        return pairs.map { pair in
             BusRouteStopInput(
-                route: route,
-                stop: stop,
-                destinationStops: homeBusDestinationStopIDs(routeID: route, stopID: stop),
+                route: pair.route,
+                stop: pair.stop,
+                destinationStops: homeBusDestinationStopIDs(routeID: pair.route, stopID: pair.stop),
                 limit: 3,
                 dates: .some(dates)
             )
         }
     }
 
+    private func homePayloadSelection() -> HomePayloadSelection {
+        let route = shuttleRoute(from: selectedDeparture, to: selectedDestination)
+        return HomePayloadSelection(
+            stop: route?.stop ?? "", destination: route?.destination ?? "",
+            showBus50: HomeSettings.showBus50Transfer, showSubway: HomeSettings.showSubwayTransfer,
+            subwayDestination: HomeSettings.subwayTransferDestination
+        )
+    }
+
+    private func homeBusAlternativePairs() -> [(Int32, Int32)] {
+        homePayloadSelection().alternativePairs
+    }
+
+    private func homeSubwayKeys(weekday: String) -> [SubwayStationInput] {
+        homePayloadSelection().subwayKeys(weekday: weekday)
+    }
+
+    private func homeRequestContext() -> [String] {
+        [
+            String(describing: selectedDeparture),
+            String(describing: selectedDestination),
+            String(describing: nearestHomeBusGroup()),
+            String(describing: selectedHomeBusDestination),
+            String(HomeSettings.showBus50Transfer),
+            String(HomeSettings.showSubwayTransfer),
+            String(describing: HomeSettings.subwayTransferDestination),
+            String(HomeSettings.showSeoulBusStop),
+            String(HomeSettings.seoulBusStop.stopID)
+        ]
+    }
+
+    private func fetchHomeStopCoordinates() {
+        guard homeStopCoordinates.isEmpty, !isFetchingHomeCoordinates else { return }
+        isFetchingHomeCoordinates = true
+        Task {
+            let response = try? await Network.shared.client.fetch(
+                query: BusStopCoordinatesQuery(busInput: BusLocationInputs.inputs),
+                cachePolicy: .networkOnly
+            )
+            await MainActor.run {
+                isFetchingHomeCoordinates = false
+                guard let coordinates = response?.data?.bus, !coordinates.isEmpty else { return }
+                homeStopCoordinates = coordinates
+                if nearestHomeBusGroup() != lastFetchedHomeBusGroup {
+                    fetchHomeData(showsLoadingState: false)
+                }
+            }
+        }
+    }
+
+    /// (route, stop) pairs whose arrivals actually get rendered for a given GPS
+    /// group + user-selected destination. Must stay in lockstep with the switch
+    /// inside `homeBusSourceBuses(for:)` — that function decides which items
+    /// from `homeBusData` reach the UI, so the request must cover exactly those.
+    private func homeBusGroupPairs(
+        group: HomeBusGroup,
+        destination: HomeBusDestination
+    ) -> [(Int32, Int32)] {
+        switch group {
+        case .campus:
+            switch destination {
+            case .sangnoksu: [(216_000_068, 216_000_379)]
+            case .gangnam: [(216_000_061, 216_000_379), (216_000_096, 216_000_719)]
+            case .suwon: [(216_000_104, 216_000_070), (200_000_015, 216_000_070)]
+            case .uiwang: [(216_000_026, 216_000_719), (216_000_096, 216_000_719)]
+            case .gunpo: [(216_000_043, 216_000_719)]
+            }
+        case .kitch:
+            [(216_000_068, 216_000_381), (216_000_061, 216_000_381)]
+        case .dormitory:
+            [(216_000_068, 216_000_383), (216_000_061, 216_000_383)]
+        case .suwon:
+            [(216_000_104, 202_000_106), (200_000_015, 202_000_106)]
+        case let .seoul(stop):
+            [
+                (216_000_061, stop),
+                (216_000_026, stop),
+                (216_000_043, stop),
+                (216_000_096, stop)
+            ]
+        }
+    }
+
     private func homeBusDestinationStopIDs(routeID: Int32, stopID: Int32) -> GraphQLNullable<[Int32]> {
+        // Destination travel minutes only feed the destination ETA, which is hidden with this setting off.
+        guard HomeSettings.showSeoulBusStop else { return .none }
         let seoulDestinationStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
         let destinations: [Int32] = switch (routeID, stopID) {
         case (216_000_068, 216_000_383), (216_000_068, 216_000_381), (216_000_068, 216_000_379):
             [216_000_138]
         case (216_000_061, 216_000_383), (216_000_061, 216_000_381), (216_000_061, 216_000_379):
-            seoulDestinationStops
+            HomeSettings.showSeoulBusStop ? [HomeSettings.seoulBusStop.stopID] : []
         case (216_000_096, 216_000_719):
-            seoulDestinationStops + [226_000_042]
+            selectedHomeBusDestination == .uiwang
+                ? [226_000_042]
+                : (HomeSettings.showSeoulBusStop ? [HomeSettings.seoulBusStop.stopID] : [])
         case (216_000_026, 216_000_719):
             [226_000_042]
         case (216_000_043, 216_000_719):
@@ -3419,7 +3621,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             replaceSubviews(in: busOptionStack, with: [])
             return
         }
-        if isHomeBusRefreshing, homeBusData.isEmpty {
+        let isAwaitingBusSelection = isHomeBusRefreshing &&
+            (lastFetchedHomeBusGroup != group || lastFetchedHomeBusDestination != selectedHomeBusDestination)
+        if isHomeBusRefreshing, homeBusData.isEmpty || isAwaitingBusSelection {
             replaceSubviews(in: busOptionStack, with: [makeSkeletonRow(widthRatio: 0.68), makeSkeletonRow(widthRatio: 0.52)])
             return
         }
@@ -3602,10 +3806,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func showsHomeBusDestinationETA(_ group: HomeBusGroup, routeID: Int32) -> Bool {
-        if case .seoul = group {
-            return HomeSettings.showSeoulBusStop
-        }
-        return destinationStopID(routeID: routeID, group: group) != nil
+        HomeSettings.showSeoulBusStop
     }
 
     private func updateHomeBusDestinationMenu() {
@@ -3632,6 +3833,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 homeBusRowsCache.removeAll()
                 updateHomeBusDestinationMenu()
                 renderHomeBus(for: nearestHomeBusGroup())
+                // The narrowed `homeBusInput()` no longer contains arrivals for
+                // destinations the user is not currently viewing, so switching
+                // destinations must re-issue the query. Swap in the new rows as
+                // soon as the response lands (silent refresh — the header title
+                // already flipped to the new destination via the menu update).
+                fetchHomeData(showsLoadingState: false)
             }
         })
     }
@@ -3781,7 +3988,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             .seoul(121_000_970), .seoul(121_000_220)
         ]
         let nearest = groups.compactMap { group -> (HomeBusGroup, CLLocationDistance)? in
-            guard let stop = homeBusData.first(where: {
+            guard let stop = homeStopCoordinates.first(where: {
                 group.sourceStops.contains(Int32($0.stop.seq)) &&
                     $0.stop.latitude != 0 && $0.stop.longitude != 0
             }) else { return nil }
@@ -4150,6 +4357,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         updateDestinationControl()
         renderMovement()
         refreshPresenceStatus()
+        fetchHomeData(showsLoadingState: false)
     }
 
     private func selectDepartureManually(_ departure: HomeDeparture) {
@@ -4209,6 +4417,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
         renderMovement()
         refreshPresenceStatus()
+        fetchHomeData(showsLoadingState: false)
     }
 
     @objc private func refresh() {
@@ -4236,14 +4445,17 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
         vc.updateShowBus50Transfer = { [weak self] isOn in
             HomeSettings.showBus50Transfer = isOn
+            self?.fetchHomeData(showsLoadingState: false)
             self?.renderMovement()
         }
         vc.updateShowSubwayTransfer = { [weak self] isOn in
             HomeSettings.showSubwayTransfer = isOn
+            self?.fetchHomeData(showsLoadingState: false)
             self?.renderMovement()
         }
         vc.updateSubwayTransferDestination = { [weak self] destination in
             HomeSettings.subwayTransferDestination = destination
+            self?.fetchHomeData(showsLoadingState: false)
             self?.renderMovement()
         }
         vc.updateShowSeoulBusStop = { [weak self] isOn in
@@ -4255,8 +4467,10 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             self?.refreshHomeContext(showsLoadingState: false)
         }
         if let sheet = vc.sheetPresentationController {
+            vc.loadViewIfNeeded()
+            let preferredHeight = vc.calculatedSheetHeight
             sheet.detents = [.custom { context in
-                min(vc.preferredSheetHeight, context.maximumDetentValue)
+                min(preferredHeight, context.maximumDetentValue)
             }]
             sheet.prefersGrabberVisible = true
         }
@@ -4469,6 +4683,14 @@ extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
         lastLocation = location
         renderMovement()
         pendingDepartureLocation = location
+        // A location update can move the user into a different `HomeBusGroup`,
+        // in which case the previous fetch no longer covers the (route, stop)
+        // pairs the newly-selected group needs. Trigger a silent refresh so the
+        // arrivals for the new group land as soon as possible.
+        let currentHomeBusGroup = nearestHomeBusGroup()
+        if currentHomeBusGroup != lastFetchedHomeBusGroup {
+            fetchHomeData(showsLoadingState: false)
+        }
         guard initialStopRules != nil else { return }
         pendingDepartureLocation = nil
         applyAutomaticDeparture(for: location)
@@ -4507,6 +4729,7 @@ extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
             updateDestinationControl()
             renderMovement()
             refreshPresenceStatus()
+            fetchHomeData(showsLoadingState: false)
         } else {
             updateDeparture(initialDeparture)
         }

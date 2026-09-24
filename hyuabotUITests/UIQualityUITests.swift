@@ -288,9 +288,14 @@ final class UIQualityUITests: XCTestCase {
 
     private func exerciseViewPagerTabs(pageName: String, app: XCUIApplication) -> [String] {
         var issues: [String] = []
-        let tabs = app.otherElements.matching(NSPredicate(format: "identifier BEGINSWITH %@", "viewpager.tab."))
+        let tabs = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "viewpager.tab."))
             .allElementsBoundByIndex
             .filter { $0.exists && $0.isHittable }
+
+        if pageName == "subway", tabs.count != 3 {
+            capture("subway-missing-tabs", app: app)
+            return ["subway: expected 3 interactive tabs, found \(tabs.count)"]
+        }
 
         for (index, tab) in tabs.prefix(8).enumerated() {
             let label = tab.label.isEmpty ? "tab-\(index)" : tab.label
@@ -321,7 +326,13 @@ final class UIQualityUITests: XCTestCase {
             }
         case "bus":
             issues.append(contentsOf: tapAndAudit(
-                identifier: "bus.open_help",
+                identifier: "bus.quick_settings",
+                name: "bus-quick-settings",
+                app: app,
+                auditAfterTap: false
+            ))
+            issues.append(contentsOf: tapAndAudit(
+                identifier: "bus.quick_settings.open_help",
                 name: "bus-help-sheet",
                 app: app,
                 closeAfter: true,

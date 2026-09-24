@@ -8,22 +8,22 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "SubwayRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayRealtimePageQuery($weekday: String!, $language: String!) { subway( input: { language: $language keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 4 } { stationID: "K456" direction: ["up", "down"] weekdays: [$weekday] limit: null } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 4 } { stationID: "K258" direction: ["up", "down"] weekdays: [$weekday] limit: null } { stationID: "S26", direction: ["up"], weekdays: [$weekday], limit: null } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } } }"#
+      #"query SubwayRealtimePageQuery($keys: [SubwayStationInput!]!, $language: String!) { subway(input: { language: $language, keys: $keys }) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } } }"#
     ))
 
-  public var weekday: String
+  public var keys: [SubwayStationInput]
   public var language: String
 
   public init(
-    weekday: String,
+    keys: [SubwayStationInput],
     language: String
   ) {
-    self.weekday = weekday
+    self.keys = keys
     self.language = language
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
-    "weekday": weekday,
+    "keys": keys,
     "language": language
   ] }
 
@@ -35,32 +35,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
       .field("subway", [Subway].self, arguments: ["input": [
         "language": .variable("language"),
-        "keys": [[
-          "stationID": "K449",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 4
-        ], [
-          "stationID": "K456",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": .null
-        ], [
-          "stationID": "K251",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": 4
-        ], [
-          "stationID": "K258",
-          "direction": ["up", "down"],
-          "weekdays": [.variable("weekday")],
-          "limit": .null
-        ], [
-          "stationID": "S26",
-          "direction": ["up"],
-          "weekdays": [.variable("weekday")],
-          "limit": .null
-        ]]
+        "keys": .variable("keys")
       ]]),
     ] }
     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
