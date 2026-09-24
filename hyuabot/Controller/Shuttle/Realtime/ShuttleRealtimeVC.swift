@@ -893,8 +893,8 @@ class ShuttleRealtimeVC: UIViewController {
                     applyInitialStop(for: pendingInitialStopLocation)
                 }
                 guard selection == currentPayloadSelection() else { return }
-                lastAppliedDataRequest = request
                 if let data = response?.data {
+                    lastAppliedDataRequest = request
                     dataDelegate.transferData.onNext(data)
                     self.hasLoadedInitialNotices = true
                     dataDelegate.notices.onNext(data.notices.flatMap(\.notices))

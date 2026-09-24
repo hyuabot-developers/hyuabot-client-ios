@@ -271,10 +271,13 @@ class SubwayRealtimeVC: UIViewController {
             )
             await MainActor.run {
                 // A slow response from an earlier timer tick is still applied while the tab (and thus the keys) is unchanged.
+                let currentDay = Calendar.current.component(.weekday, from: .now)
+                let currentWeekday = (currentDay == 1 || currentDay == 7) ? "weekends" : "weekdays"
                 guard generation > self.lastAppliedGeneration,
-                      keys == SubwayPayloadSelection.keys(tab: self.selectedTab, weekday: weekday) else { return }
-                self.lastAppliedGeneration = generation
+                      keys == SubwayPayloadSelection.keys(tab: self.selectedTab, weekday: currentWeekday),
+                      language == LanguageManager.shared.apiLanguageTag else { return }
                 if let data = response?.data {
+                    self.lastAppliedGeneration = generation
                     SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
                     SubwayRealtimeData.shared.isLoading.onNext(false)
                     self.line4VC.reload()

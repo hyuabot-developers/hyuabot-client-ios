@@ -662,8 +662,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 // selected stops changed or a newer response was already rendered.
                 guard requestGeneration > lastAppliedRequestGeneration,
                       busInput == busRealtimeInput(dates: dates) else { return }
-                lastAppliedRequestGeneration = requestGeneration
                 if let data = response?.data {
+                    lastAppliedRequestGeneration = requestGeneration
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))
