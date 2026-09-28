@@ -17,6 +17,7 @@ final class InquiryChatVC: UIViewController {
     private var lastAdminMessageId = 0
     private var hasLoaded = false
     private var didReportFailure = false
+    private var noticeDismissed = false
     private var pollingTimer: Timer?
     private var streamTask: Task<Void, Never>?
     private let entryScreen: String
@@ -68,6 +69,13 @@ final class InquiryChatVC: UIViewController {
         $0.isHidden = true
     }
 
+    private let conversationStack = UIStackView().then {
+        $0.axis = .vertical
+        $0.spacing = 8
+    }
+
+    private let noticeView = ShuttleLostItemNoticeView()
+
     private let inputContainer = UIView().then {
         $0.backgroundColor = .secondarySystemGroupedBackground
     }
@@ -98,6 +106,9 @@ final class InquiryChatVC: UIViewController {
         tableView.delegate = self
         inputField.delegate = self
         sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
+        noticeView.onDismiss = { [weak self] in
+            self?.noticeDismissed = true
+        }
         configureLayout()
     }
 
@@ -116,9 +127,11 @@ final class InquiryChatVC: UIViewController {
     }
 
     private func configureLayout() {
-        view.addSubview(tableView)
+        view.addSubview(conversationStack)
         view.addSubview(inputContainer)
         view.addSubview(emptyLabel)
+        conversationStack.addArrangedSubview(noticeView)
+        conversationStack.addArrangedSubview(tableView)
         inputContainer.addSubview(inputField)
         inputContainer.addSubview(sendButton)
 
@@ -138,7 +151,7 @@ final class InquiryChatVC: UIViewController {
             make.width.equalTo(64)
             make.height.equalTo(inputField)
         }
-        tableView.snp.makeConstraints { make in
+        conversationStack.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(inputContainer.snp.top)
@@ -307,6 +320,14 @@ extension InquiryChatVC: UITableViewDataSource {
 extension InquiryChatVC: UITableViewDelegate {}
 
 extension InquiryChatVC: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        noticeView.isHidden = true
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        noticeView.isHidden = noticeDismissed
+    }
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         handleSend()
         return true
