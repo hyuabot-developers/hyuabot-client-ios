@@ -848,10 +848,10 @@ class ShuttleRealtimeVC: UIViewController {
         let currentLanguage = LanguageManager.shared.apiLanguageTag
         let noticeLanguage = currentLanguage.starts(with: "ko") ? "KOREAN" : "ENGLISH"
         dataDelegate.prepareForSubwayLanguage(currentLanguage)
-        if lastAppliedPayloadSelection != selection ||
-            lastAppliedNoticeLanguage != noticeLanguage ||
-            lastAppliedSubwayLanguage != currentLanguage
-        {
+        let selectionChanged = lastAppliedPayloadSelection != selection
+        let noticeLanguageChanged = lastAppliedNoticeLanguage != noticeLanguage
+        let subwayLanguageChanged = lastAppliedSubwayLanguage != currentLanguage
+        if selectionChanged || noticeLanguageChanged || subwayLanguageChanged {
             dataDelegate.isLoading.onNext(true)
         }
         Task {
