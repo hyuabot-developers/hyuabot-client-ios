@@ -9302,25 +9302,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lost items on the shuttle"
+            "value" : "Did you leave something on the shuttle?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "シャトルバスの忘れ物"
+            "value" : "シャトルバスに忘れ物をしましたか？"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "셔틀버스 분실물 안내"
+            "value" : "셔틀버스에 물건을 두고 내리셨나요?"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "校车失物招领"
+            "value" : "在校车上遗落东西了吗？"
           }
         }
       }
@@ -9330,25 +9330,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shuttle bus office, 1F Education Building behind the dormitory\n031-400-4412"
+            "value" : "Please visit the shuttle bus office on the first floor of the Education Building behind the dormitory, or call 031-400-4412."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "寮の裏にある教育棟1階・シャトルバス事務所\n031-400-4412"
+            "value" : "寮の裏にある教育棟1階のシャトルバス事務所へお越しいただくか、031-400-4412にお電話ください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기숙사 뒤 교육동 1층 · 셔틀버스 사무실\n031-400-4412"
+            "value" : "기숙사 뒤 교육동 1층 셔틀버스 사무실로 오시거나, 031-400-4412로 전화해 주세요."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "宿舍后方教育楼1层·校车办公室\n031-400-4412"
+            "value" : "请到宿舍后方教育楼1层的校车办公室询问，或拨打031-400-4412。"
           }
         }
       }

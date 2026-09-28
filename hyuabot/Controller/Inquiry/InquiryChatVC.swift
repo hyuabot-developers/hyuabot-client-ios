@@ -195,9 +195,12 @@ final class InquiryChatVC: UIViewController {
         conversationStack.addArrangedSubview(noticeContainer)
         conversationStack.addArrangedSubview(tableView)
         noticeContainer.addSubview(noticeCard)
-        noticeCard.addSubview(noticeTitleLabel)
+        let titleRow = UIStackView(arrangedSubviews: [noticeTitleLabel, noticeCloseButton])
+        titleRow.axis = .horizontal
+        titleRow.alignment = .center
+        titleRow.spacing = 8
+        noticeCard.addSubview(titleRow)
         noticeCard.addSubview(noticeDetailLabel)
-        noticeCard.addSubview(noticeCloseButton)
         noticeCard.addSubview(officeMapView)
         let actionRow = UIStackView(arrangedSubviews: [officeMapButton, officeCallButton])
         actionRow.axis = .horizontal
@@ -212,17 +215,16 @@ final class InquiryChatVC: UIViewController {
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview()
         }
-        noticeTitleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(14)
+        titleRow.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(4)
             make.leading.equalToSuperview().inset(12)
-            make.trailing.equalTo(noticeCloseButton.snp.leading).offset(-8)
+            make.trailing.equalToSuperview().inset(4)
         }
         noticeCloseButton.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(4)
             make.width.height.equalTo(44)
         }
         noticeDetailLabel.snp.makeConstraints { make in
-            make.top.equalTo(noticeCloseButton.snp.bottom).offset(2)
+            make.top.equalTo(titleRow.snp.bottom).offset(2)
             make.leading.trailing.equalToSuperview().inset(12)
         }
         officeMapView.snp.makeConstraints { make in
