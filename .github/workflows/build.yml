@@ -25,10 +25,17 @@ env:
 jobs:
   portable-checks:
     name: Portable Checks
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","Linux","X64","docker"]') }}
+    container:
+      image: node:24-bookworm
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v7
+
+      - name: Install Ruby
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ruby
 
       - name: Check workflow syntax
         run: ruby -e "require 'yaml'; Dir['.github/workflows/*.{yml,yaml}'].each { |path| YAML.load_file(path); puts \"#{path} ok\" }"
