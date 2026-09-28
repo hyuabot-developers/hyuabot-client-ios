@@ -3,16 +3,10 @@
 //  hyuabot
 //
 
-import MapKit
 import SnapKit
 import UIKit
 
 final class InquiryChatVC: UIViewController {
-    private static let officeCoordinate = CLLocationCoordinate2D(
-        latitude: 37.29275316695924,
-        longitude: 126.83714484865253
-    )
-
     private struct MessageSection {
         let date: Date
         var messages: [InquiryMessageDTO]
@@ -80,62 +74,7 @@ final class InquiryChatVC: UIViewController {
         $0.spacing = 8
     }
 
-    private let noticeContainer = UIView()
-
-    private let noticeCard = UIView().then {
-        $0.backgroundColor = .secondarySystemGroupedBackground
-        $0.layer.cornerRadius = 16
-        $0.layer.cornerCurve = .continuous
-    }
-
-    private let noticeTitleLabel = UILabel().then {
-        $0.text = String(localized: "inquiry.shuttleLost.title")
-        $0.font = .godo(size: 16, weight: .bold)
-        $0.textColor = .label
-        $0.numberOfLines = 0
-    }
-
-    private let noticeDetailLabel = UILabel().then {
-        $0.text = String(localized: "inquiry.shuttleLost.detail")
-        $0.font = .godo(size: 14, weight: .regular)
-        $0.textColor = .secondaryLabel
-        $0.numberOfLines = 0
-    }
-
-    private let noticeCloseButton = UIButton(type: .system).then {
-        $0.setImage(UIImage(systemName: "xmark"), for: .normal)
-        $0.tintColor = .secondaryLabel
-        $0.accessibilityLabel = String(localized: "inquiry.shuttleLost.close")
-        $0.accessibilityIdentifier = "inquiry.shuttle_lost.dismiss"
-    }
-
-    private let officeMapView = MKMapView().then {
-        $0.isZoomEnabled = false
-        $0.isScrollEnabled = false
-        $0.isPitchEnabled = false
-        $0.isRotateEnabled = false
-        $0.isUserInteractionEnabled = false
-        $0.layer.cornerRadius = 10
-        $0.layer.cornerCurve = .continuous
-        $0.clipsToBounds = true
-        $0.accessibilityIdentifier = "inquiry.shuttle_lost.map_preview"
-    }
-
-    private let officeMapButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.tinted()
-        configuration.title = String(localized: "inquiry.shuttleLost.map")
-        configuration.baseForegroundColor = .hanyangBlue
-        $0.configuration = configuration
-        $0.accessibilityIdentifier = "inquiry.shuttle_lost.open_map"
-    }
-
-    private let officeCallButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.filled()
-        configuration.title = String(localized: "inquiry.shuttleLost.call")
-        configuration.baseBackgroundColor = .hanyangBlue
-        $0.configuration = configuration
-        $0.accessibilityIdentifier = "inquiry.shuttle_lost.call"
-    }
+    private let noticeView = ShuttleLostItemNoticeView()
 
     private let inputContainer = UIView().then {
         $0.backgroundColor = .secondarySystemGroupedBackground
@@ -167,11 +106,10 @@ final class InquiryChatVC: UIViewController {
         tableView.delegate = self
         inputField.delegate = self
         sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
-        noticeCloseButton.addTarget(self, action: #selector(dismissNotice), for: .touchUpInside)
-        officeMapButton.addTarget(self, action: #selector(openOfficeMap), for: .touchUpInside)
-        officeCallButton.addTarget(self, action: #selector(callOffice), for: .touchUpInside)
+        noticeView.onDismiss = { [weak self] in
+            self?.noticeDismissed = true
+        }
         configureLayout()
-        configureOfficeMap()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -192,52 +130,10 @@ final class InquiryChatVC: UIViewController {
         view.addSubview(conversationStack)
         view.addSubview(inputContainer)
         view.addSubview(emptyLabel)
-        conversationStack.addArrangedSubview(noticeContainer)
+        conversationStack.addArrangedSubview(noticeView)
         conversationStack.addArrangedSubview(tableView)
-        noticeContainer.addSubview(noticeCard)
-        let titleRow = UIStackView(arrangedSubviews: [noticeTitleLabel, noticeCloseButton])
-        titleRow.axis = .horizontal
-        titleRow.alignment = .center
-        titleRow.spacing = 8
-        noticeCard.addSubview(titleRow)
-        noticeCard.addSubview(noticeDetailLabel)
-        noticeCard.addSubview(officeMapView)
-        let actionRow = UIStackView(arrangedSubviews: [officeMapButton, officeCallButton])
-        actionRow.axis = .horizontal
-        actionRow.distribution = .fillEqually
-        actionRow.spacing = 8
-        noticeCard.addSubview(actionRow)
         inputContainer.addSubview(inputField)
         inputContainer.addSubview(sendButton)
-
-        noticeCard.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(12)
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.bottom.equalToSuperview()
-        }
-        titleRow.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(4)
-            make.leading.equalToSuperview().inset(12)
-            make.trailing.equalToSuperview().inset(4)
-        }
-        noticeCloseButton.snp.makeConstraints { make in
-            make.width.height.equalTo(44)
-        }
-        noticeDetailLabel.snp.makeConstraints { make in
-            make.top.equalTo(titleRow.snp.bottom).offset(2)
-            make.leading.trailing.equalToSuperview().inset(12)
-        }
-        officeMapView.snp.makeConstraints { make in
-            make.top.equalTo(noticeDetailLabel.snp.bottom).offset(10)
-            make.leading.trailing.equalToSuperview().inset(12)
-            make.height.equalTo(88)
-        }
-        actionRow.snp.makeConstraints { make in
-            make.top.equalTo(officeMapView.snp.bottom).offset(10)
-            make.leading.trailing.equalToSuperview().inset(12)
-            make.bottom.equalToSuperview().inset(12)
-            make.height.equalTo(44)
-        }
 
         inputContainer.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
@@ -264,39 +160,6 @@ final class InquiryChatVC: UIViewController {
             make.center.equalTo(tableView)
             make.leading.trailing.equalTo(tableView).inset(40)
         }
-    }
-
-    private func configureOfficeMap() {
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = Self.officeCoordinate
-        annotation.title = String(localized: "inquiry.shuttleLost.office")
-        officeMapView.addAnnotation(annotation)
-        officeMapView.setRegion(
-            MKCoordinateRegion(
-                center: Self.officeCoordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.0012, longitudeDelta: 0.0012)
-            ),
-            animated: false
-        )
-    }
-
-    @objc
-    private func dismissNotice() {
-        noticeDismissed = true
-        noticeContainer.isHidden = true
-    }
-
-    @objc
-    private func openOfficeMap() {
-        let office = MKMapItem(placemark: MKPlacemark(coordinate: Self.officeCoordinate))
-        office.name = String(localized: "inquiry.shuttleLost.office")
-        office.openInMaps()
-    }
-
-    @objc
-    private func callOffice() {
-        guard let url = URL(string: "tel:0314004412") else { return }
-        UIApplication.shared.open(url)
     }
 
     private func loadInitialIfNeeded() {
@@ -458,11 +321,11 @@ extension InquiryChatVC: UITableViewDelegate {}
 
 extension InquiryChatVC: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        noticeContainer.isHidden = true
+        noticeView.isHidden = true
     }
 
     func textFieldDidEndEditing(_ textField: UITextField) {
-        noticeContainer.isHidden = noticeDismissed
+        noticeView.isHidden = noticeDismissed
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
