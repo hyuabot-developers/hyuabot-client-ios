@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -66,7 +66,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout docs site
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: hyuabot-developers/hyuabot-developers.github.io
           token: ${{ secrets.DOCS_SYNC_TOKEN }}

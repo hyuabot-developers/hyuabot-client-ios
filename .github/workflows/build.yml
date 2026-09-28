@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check workflow syntax
         run: ruby -e "require 'yaml'; Dir['.github/workflows/*.{yml,yaml}'].each { |path| YAML.load_file(path); puts \"#{path} ok\" }"
@@ -42,7 +42,7 @@ jobs:
     needs: portable-checks
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install tools
         run: |
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: xcode-test-results
           path: ${{ env.DERIVED_DATA_PATH }}/Logs/Test/
@@ -137,7 +137,7 @@ jobs:
     needs: quality
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Create GoogleService-Info.plist
         run: |
@@ -159,7 +159,7 @@ jobs:
             clean archive
 
       - name: Upload archive artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hyuabot-xcarchive
           path: build/hyuabot.xcarchive
