@@ -9297,118 +9297,6 @@
         }
       }
     },
-    "inquiry.shuttleLost.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Did you leave something on the shuttle?"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "シャトルバスに忘れ物をしましたか？"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "셔틀버스에 물건을 두고 내리셨나요?"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在校车上遗落东西了吗？"
-          }
-        }
-      }
-    },
-    "inquiry.shuttleLost.detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please visit the shuttle bus office on the first floor of the Education Building behind the dormitory, or call 031-400-4412."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "寮の裏にある教育棟1階のシャトルバス事務所へお越しいただくか、031-400-4412にお電話ください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기숙사 뒤 교육동 1층 셔틀버스 사무실로 오시거나, 031-400-4412로 전화해 주세요."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请到宿舍后方教育楼1层的校车办公室询问，或拨打031-400-4412。"
-          }
-        }
-      }
-    },
-    "inquiry.shuttleLost.office" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shuttle bus office"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "シャトルバス事務所"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "셔틀버스 사무실"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "校车办公室"
-          }
-        }
-      }
-    },
-    "inquiry.shuttleLost.map" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View map"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "地図を見る"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지도 보기"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "查看地图"
-          }
-        }
-      }
-    },
     "inquiry.shuttleLost.call" : {
       "localizations" : {
         "en" : {
@@ -9461,6 +9349,118 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "关闭提示"
+          }
+        }
+      }
+    },
+    "inquiry.shuttleLost.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Please visit the shuttle bus office on the first floor of the Education Building behind the dormitory, or call 031-400-4412."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "寮の裏にある教育棟1階のシャトルバス事務所へお越しいただくか、031-400-4412にお電話ください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기숙사 뒤 교육동 1층 셔틀버스 사무실에 방문하시거나, 031-400-4412로 전화해 주세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "请到宿舍后方教育楼1层的校车办公室询问，或拨打031-400-4412。"
+          }
+        }
+      }
+    },
+    "inquiry.shuttleLost.map" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View map"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地図を見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도 보기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看地图"
+          }
+        }
+      }
+    },
+    "inquiry.shuttleLost.office" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuttle bus office"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルバス事務所"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스 사무실"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "校车办公室"
+          }
+        }
+      }
+    },
+    "inquiry.shuttleLost.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did you leave something on the shuttle?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルバスに忘れ物をしましたか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스에 물건을 두고 내리셨나요?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在校车上遗落东西了吗？"
           }
         }
       }
