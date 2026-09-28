@@ -17,6 +17,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private var hasLoadedInitialNotices = false
     private var isFetchingCoordinates = false
     private var latestRequestGeneration = 0
+    private var lastAppliedBusInput: [BusRouteStopInput]?
+    private var lastAppliedNoticeLanguage: String?
     private lazy var cityBusTabVC = BusRealtimeTabVC(
         tabType: .city,
         refreshMethod: fetchBusRealtimeData,
@@ -652,6 +654,9 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         }
         let dates = BusRecentDates.sameWeekdayType(count: 4)
         let busInput = busRealtimeInput(dates: dates)
+        if lastAppliedBusInput != busInput || lastAppliedNoticeLanguage != noticeLanguage {
+            BusRealtimeData.shared.isLoading.onNext(true)
+        }
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: BusRealtimePageQuery(language: noticeLanguage, busInput: busInput),
@@ -664,6 +669,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                       busInput == busRealtimeInput(dates: dates) else { return }
                 if let data = response?.data {
                     lastAppliedRequestGeneration = requestGeneration
+                    lastAppliedBusInput = busInput
+                    lastAppliedNoticeLanguage = noticeLanguage
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))

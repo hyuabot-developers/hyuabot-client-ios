@@ -61,8 +61,8 @@ class SubwayRealtimeVC: UIViewController {
         viewPager.onPageChanged = { [weak self] index in
             guard let self, selectedTab != index else { return }
             selectedTab = index
-            SubwayRealtimeData.shared.realtimeData.onNext([])
             SubwayRealtimeData.shared.isLoading.onNext(true)
+            SubwayRealtimeData.shared.realtimeData.onNext([])
             fetchSubwayRealtimeData()
         }
         return viewPager

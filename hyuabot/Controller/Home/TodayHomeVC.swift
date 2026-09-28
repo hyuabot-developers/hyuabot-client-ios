@@ -3146,6 +3146,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         fetchHomeStopCoordinates()
         guard !isLoading else {
             pendingHomeDataRefresh = true
+            renderHomeBus(for: nearestHomeBusGroup())
             return
         }
         isLoading = true
@@ -3164,6 +3165,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let needsBus50 = homePayloadSelection().needsBus50
         let busInput = homeBusInput()
         let subwayKeys = homeSubwayKeys(weekday: currentSubwayWeekday())
+        renderHomeBus(for: nearestHomeBusGroup())
         if showsLoadingState || shuttleData == nil {
             renderLoadingState()
         }

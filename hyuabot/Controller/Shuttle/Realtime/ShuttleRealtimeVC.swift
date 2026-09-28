@@ -242,6 +242,9 @@ class ShuttleRealtimeVC: UIViewController {
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
+    private var lastAppliedPayloadSelection: ShuttlePayloadSelection?
+    private var lastAppliedNoticeLanguage: String?
+    private var lastAppliedSubwayLanguage: String?
     private var pendingInitialStopLocation: CLLocation?
     private var initialStopRules: [ShuttleInitialStopRuleCandidate]?
     private var hasCompletedInitialLocationSelection = false
@@ -842,17 +845,14 @@ class ShuttleRealtimeVC: UIViewController {
         let now = Date.now
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let dataDelegate = ShuttleRealtimeData.shared
-        var currentLanguage: String {
-            LanguageManager.shared.apiLanguageTag
-        }
-        var noticeLanguage: String {
-            if currentLanguage.starts(with: "ko") {
-                "KOREAN"
-            } else {
-                "ENGLISH"
-            }
-        }
+        let currentLanguage = LanguageManager.shared.apiLanguageTag
+        let noticeLanguage = currentLanguage.starts(with: "ko") ? "KOREAN" : "ENGLISH"
         dataDelegate.prepareForSubwayLanguage(currentLanguage)
+        if lastAppliedPayloadSelection != selection ||
+            lastAppliedNoticeLanguage != noticeLanguage ||
+            lastAppliedSubwayLanguage != currentLanguage {
+            dataDelegate.isLoading.onNext(true)
+        }
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: ShuttleRealtimePageQuery(
@@ -895,6 +895,9 @@ class ShuttleRealtimeVC: UIViewController {
                 guard selection == currentPayloadSelection() else { return }
                 if let data = response?.data {
                     lastAppliedDataRequest = request
+                    lastAppliedPayloadSelection = selection
+                    lastAppliedNoticeLanguage = noticeLanguage
+                    lastAppliedSubwayLanguage = currentLanguage
                     dataDelegate.transferData.onNext(data)
                     self.hasLoadedInitialNotices = true
                     dataDelegate.notices.onNext(data.notices.flatMap(\.notices))
