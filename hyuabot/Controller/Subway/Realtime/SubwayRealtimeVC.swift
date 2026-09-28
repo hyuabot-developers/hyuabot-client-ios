@@ -4,24 +4,6 @@ import RxSwift
 import UIKit
 
 enum SubwayPayloadSelection {
-    static func keys(tab: Int, weekday: String) -> [SubwayStationInput] {
-        func station(_ id: String, _ directions: [String], _ limit: Int?) -> SubwayStationInput {
-            SubwayStationInput(
-                stationID: id, direction: directions, weekdays: [weekday],
-                limit: limit.map { .some(Int32($0)) } ?? .null
-            )
-        }
-        switch tab {
-        case 1: return [station("K251", ["up", "down"], 4)]
-        case 2:
-            return [
-                station("K449", ["down"], 4), station("K251", ["down"], 4),
-                station("K258", ["down"], nil), station("S26", ["up"], nil)
-            ]
-        default: return [station("K449", ["up", "down"], 4)]
-        }
-    }
-
     static func allKeys(weekday: String) -> [SubwayStationInput] {
         func station(_ id: String, _ directions: [String], _ limit: Int?) -> SubwayStationInput {
             SubwayStationInput(

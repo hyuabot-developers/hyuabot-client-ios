@@ -220,21 +220,18 @@ final class DomainLogicTests: XCTestCase {
 
 @MainActor
 extension DomainLogicTests {
-    func testShuttlePayloadOmitsHiddenAndInapplicableTransfers() {
-        for stop in ["station", "terminal", "jungang_stn", "shuttlecock_i"] {
-            let selection = ShuttlePayloadSelection(
-                stop: stop,
-                byDestination: true,
-                showBus: true,
-                showSubway: true,
-                subwayDestination: .seoul,
-                alternatives: .automatic
-            )
-            XCTAssertFalse(selection.needsBus)
-            XCTAssertTrue(selection.subwayPairs.isEmpty)
-        }
+    func testShuttlePayloadIncludesTransfersForEveryStopTab() {
+        let selection = ShuttlePayloadSelection(
+            byDestination: true,
+            showBus: true,
+            showSubway: true,
+            subwayDestination: .seoul,
+            alternatives: .automatic
+        )
+        XCTAssertTrue(selection.needsBus)
+        XCTAssertEqual(selection.subwayPairs.map { "\($0.0):\($0.1)" }, ["K449:up", "K450:up"])
+
         let timeView = ShuttlePayloadSelection(
-            stop: "dormitory_o",
             byDestination: false,
             showBus: true,
             showSubway: true,
@@ -256,7 +253,6 @@ extension DomainLogicTests {
         ]
         for (destination, pairs) in expected {
             let selection = ShuttlePayloadSelection(
-                stop: "shuttlecock_o",
                 byDestination: true,
                 showBus: true,
                 showSubway: true,
@@ -268,37 +264,27 @@ extension DomainLogicTests {
         }
     }
 
-    func testShuttlePayloadOnlyIncludesSelectedStopAlternatives() {
+    func testShuttlePayloadIncludesAlternativesForEveryStopTab() {
         let selection = ShuttlePayloadSelection(
-            stop: "station",
             byDestination: true,
             showBus: true,
             showSubway: true,
             subwayDestination: .seoul,
             alternatives: .always
         )
-        XCTAssertEqual(selection.alternativePairs.map { "\($0.0):\($0.1)" }, ["216000068:216000138"])
+        XCTAssertEqual(selection.alternativePairs.count, 12)
+        XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_068 && $0.1 == 216_000_138 })
+        XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_068 && $0.1 == 216_000_379 })
         XCTAssertEqual(Set(BusLocationInputs.inputs.map(\.stop)).count, 11)
     }
 }
 
 @MainActor
 extension DomainLogicTests {
-    func testSubwayLinePayloadOnlyIncludesDisplayedStation() {
-        for (tab, id) in [(0, "K449"), (1, "K251")] {
-            let keys = SubwayPayloadSelection.keys(tab: tab, weekday: "weekdays")
-            XCTAssertEqual(keys.count, 1)
-            XCTAssertEqual(keys.first?.stationID, id)
-            XCTAssertEqual(keys.first?.direction, ["up", "down"])
-            XCTAssertEqual(keys.first?.weekdays, ["weekdays"])
-            XCTAssertEqual(keys.first?.limit.unwrapped, 4)
-        }
-    }
-
-    func testSubwayTransferPayloadKeepsOnlyRequiredLegs() {
-        let keys = SubwayPayloadSelection.keys(tab: 2, weekday: "weekends")
+    func testSubwayPayloadIncludesTheDataNeededByEveryTab() {
+        let keys = SubwayPayloadSelection.allKeys(weekday: "weekends")
         XCTAssertEqual(keys.map(\.stationID), ["K449", "K251", "K258", "S26"])
-        XCTAssertEqual(keys.map(\.direction), [["down"], ["down"], ["down"], ["up"]])
+        XCTAssertEqual(keys.map(\.direction), [["up", "down"], ["up", "down"], ["down"], ["up"]])
         XCTAssertTrue(keys.allSatisfy { $0.weekdays == ["weekends"] })
         XCTAssertEqual(keys[0].limit.unwrapped, 4)
         XCTAssertEqual(keys[1].limit.unwrapped, 4)
