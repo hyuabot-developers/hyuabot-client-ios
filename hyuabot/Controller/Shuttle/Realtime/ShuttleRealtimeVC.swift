@@ -850,7 +850,8 @@ class ShuttleRealtimeVC: UIViewController {
         dataDelegate.prepareForSubwayLanguage(currentLanguage)
         if lastAppliedPayloadSelection != selection ||
             lastAppliedNoticeLanguage != noticeLanguage ||
-            lastAppliedSubwayLanguage != currentLanguage {
+            lastAppliedSubwayLanguage != currentLanguage
+        {
             dataDelegate.isLoading.onNext(true)
         }
         Task {
