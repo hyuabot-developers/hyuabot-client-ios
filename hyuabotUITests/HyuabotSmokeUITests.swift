@@ -5,6 +5,7 @@
 
 import XCTest
 
+@MainActor
 final class HyuabotSmokeUITests: XCTestCase {
     override func setUp() {
         super.setUp()

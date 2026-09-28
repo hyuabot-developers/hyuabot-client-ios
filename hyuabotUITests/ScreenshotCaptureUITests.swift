@@ -10,6 +10,7 @@
 
 import XCTest
 
+@MainActor
 final class ScreenshotCaptureUITests: XCTestCase {
     // MARK: - Main test
 

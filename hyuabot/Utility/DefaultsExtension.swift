@@ -1,4 +1,4 @@
-import RxSwift
+@preconcurrency import RxSwift
 import UIKit
 
 func observeUserDefaultsStringArray(forKey key: String) -> Observable<[String]> {
