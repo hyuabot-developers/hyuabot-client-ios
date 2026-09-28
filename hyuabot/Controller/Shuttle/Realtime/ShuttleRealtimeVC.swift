@@ -242,6 +242,9 @@ class ShuttleRealtimeVC: UIViewController {
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
     private var pendingGPSTabIndex: Int?
+    private var lastAppliedPayloadSelection: ShuttlePayloadSelection?
+    private var lastAppliedNoticeLanguage: String?
+    private var lastAppliedSubwayLanguage: String?
     private var pendingInitialStopLocation: CLLocation?
     private var initialStopRules: [ShuttleInitialStopRuleCandidate]?
     private var hasCompletedInitialLocationSelection = false
@@ -285,9 +288,7 @@ class ShuttleRealtimeVC: UIViewController {
             hasCompletedInitialLocationSelection = true
             pendingGPSTabIndex = nil
             locationManager.stopUpdatingLocation()
-            let changed = selectedPresenceIndex != index
             selectedPresenceIndex = index
-            if changed { fetchShuttleRealtimeData() }
             updatePresenceStatus(viewerCount: nil)
             reportPresence()
         }
@@ -751,7 +752,7 @@ class ShuttleRealtimeVC: UIViewController {
             let shared = ShuttleRealtimeData.shared
             typealias Entry = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
             typealias Order = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
-            /// Only the selected stop is requested; other stops are cleared so returning to a tab never shows departed shuttles.
+            /// Publish every stop from the shared response and omit destination departures that have already passed.
             func publish(
                 _ stopName: String,
                 order: BehaviorSubject<[Order]>,
@@ -825,7 +826,6 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func currentPayloadSelection() -> ShuttlePayloadSelection {
         ShuttlePayloadSelection(
-            stop: Self.presenceStopIds[selectedPresenceIndex],
             byDestination: !UserDefaults.standard.bool(forKey: "showArrivalByTime"),
             showBus: ShuttleTransferDisplaySettings.showsBusTransfer,
             showSubway: ShuttleTransferDisplaySettings.showsSubwayTransfer,
@@ -842,24 +842,24 @@ class ShuttleRealtimeVC: UIViewController {
         let now = Date.now
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let dataDelegate = ShuttleRealtimeData.shared
-        var currentLanguage: String {
-            LanguageManager.shared.apiLanguageTag
-        }
-        var noticeLanguage: String {
-            if currentLanguage.starts(with: "ko") {
-                "KOREAN"
-            } else {
-                "ENGLISH"
-            }
-        }
+        let currentLanguage = LanguageManager.shared.apiLanguageTag
+        let noticeLanguage = currentLanguage.starts(with: "ko") ? "KOREAN" : "ENGLISH"
         dataDelegate.prepareForSubwayLanguage(currentLanguage)
+        let selectionChanged = lastAppliedPayloadSelection != selection
+        let noticeLanguageChanged = lastAppliedNoticeLanguage != noticeLanguage
+        let subwayLanguageChanged = lastAppliedSubwayLanguage != currentLanguage
+        if selectionChanged || noticeLanguageChanged || subwayLanguageChanged {
+            dataDelegate.isLoading.onNext(true)
+        }
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: ShuttleRealtimePageQuery(
                     language: noticeLanguage,
                     subwayLanguage: currentLanguage,
                     after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now)),
-                    shuttleStops: [ShuttleStopInput(name: selection.stop, limit: ShuttleLimitInput(order: 100, destination: 100))],
+                    shuttleStops: Self.presenceStopIds.map {
+                        ShuttleStopInput(name: $0, limit: ShuttleLimitInput(order: 100, destination: 100))
+                    },
                     subwayKeys: selection.subwayPairs.filter { $0.0 != "S26" }.map {
                         SubwayStationInput(stationID: $0.0, direction: [$0.1], weekdays: [currentWeekdayString()], limit: 12)
                     },
@@ -895,6 +895,9 @@ class ShuttleRealtimeVC: UIViewController {
                 guard selection == currentPayloadSelection() else { return }
                 if let data = response?.data {
                     lastAppliedDataRequest = request
+                    lastAppliedPayloadSelection = selection
+                    lastAppliedNoticeLanguage = noticeLanguage
+                    lastAppliedSubwayLanguage = currentLanguage
                     dataDelegate.transferData.onNext(data)
                     self.hasLoadedInitialNotices = true
                     dataDelegate.notices.onNext(data.notices.flatMap(\.notices))
@@ -1400,9 +1403,7 @@ extension ShuttleRealtimeVC {
 
     private func selectStop(at index: Int) {
         guard viewPager.tabView.tabs.indices.contains(index) else { return }
-        let changed = selectedPresenceIndex != index
         selectedPresenceIndex = index
-        if changed { fetchShuttleRealtimeData() }
         viewPager.tabView.moveToTab(index: index)
         viewPager.contentView.moveToPage(index: index)
         updatePresenceStatus(viewerCount: nil)

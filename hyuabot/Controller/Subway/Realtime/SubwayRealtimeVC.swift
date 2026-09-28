@@ -4,27 +4,23 @@ import RxSwift
 import UIKit
 
 enum SubwayPayloadSelection {
-    static func keys(tab: Int, weekday: String) -> [SubwayStationInput] {
+    static func allKeys(weekday: String) -> [SubwayStationInput] {
         func station(_ id: String, _ directions: [String], _ limit: Int?) -> SubwayStationInput {
             SubwayStationInput(
                 stationID: id, direction: directions, weekdays: [weekday],
                 limit: limit.map { .some(Int32($0)) } ?? .null
             )
         }
-        switch tab {
-        case 1: return [station("K251", ["up", "down"], 4)]
-        case 2:
-            return [
-                station("K449", ["down"], 4), station("K251", ["down"], 4),
-                station("K258", ["down"], nil), station("S26", ["up"], nil)
-            ]
-        default: return [station("K449", ["up", "down"], 4)]
-        }
+        return [
+            station("K449", ["up", "down"], 4),
+            station("K251", ["up", "down"], 4),
+            station("K258", ["down"], nil),
+            station("S26", ["up"], nil)
+        ]
     }
 }
 
 class SubwayRealtimeVC: UIViewController {
-    private var selectedTab = 0
     private var requestGeneration = 0
     private var lastAppliedGeneration = 0
     private static let chojiTravelMinutes = 8
@@ -58,13 +54,6 @@ class SubwayRealtimeVC: UIViewController {
             TabItem(title: String(localized: "subway.tab.yellow")),
             TabItem(title: String(localized: "subway.tab.transfer"))
         ]
-        viewPager.onPageChanged = { [weak self] index in
-            guard let self, selectedTab != index else { return }
-            selectedTab = index
-            SubwayRealtimeData.shared.realtimeData.onNext([])
-            SubwayRealtimeData.shared.isLoading.onNext(true)
-            fetchSubwayRealtimeData()
-        }
         return viewPager
     }()
 
@@ -260,7 +249,7 @@ class SubwayRealtimeVC: UIViewController {
         SubwayRealtimeData.shared.prepareForLanguage(language)
         requestGeneration += 1
         let generation = requestGeneration
-        let keys = SubwayPayloadSelection.keys(tab: selectedTab, weekday: weekday)
+        let keys = SubwayPayloadSelection.allKeys(weekday: weekday)
         Task {
             let response = try? await Network.shared.client.fetch(
                 query: SubwayRealtimePageQuery(
@@ -274,7 +263,7 @@ class SubwayRealtimeVC: UIViewController {
                 let currentDay = Calendar.current.component(.weekday, from: .now)
                 let currentWeekday = (currentDay == 1 || currentDay == 7) ? "weekends" : "weekdays"
                 guard generation > self.lastAppliedGeneration,
-                      keys == SubwayPayloadSelection.keys(tab: self.selectedTab, weekday: currentWeekday),
+                      keys == SubwayPayloadSelection.allKeys(weekday: currentWeekday),
                       language == LanguageManager.shared.apiLanguageTag else { return }
                 if let data = response?.data {
                     self.lastAppliedGeneration = generation
