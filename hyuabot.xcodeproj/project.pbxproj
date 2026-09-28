@@ -558,7 +558,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nif [ \"${SKIP_INSTALL}\" = \"YES\" ]; then\n  exit 0\nfi\n\nmkdir -p \"${DWARF_DSYM_FOLDER_PATH}\"\n\nfor framework in FirebaseAnalytics GoogleAdsOnDeviceConversion GoogleAppMeasurement GoogleAppMeasurementIdentitySupport; do\n  binary=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/${framework}.framework/${framework}\"\n  output=\"${DWARF_DSYM_FOLDER_PATH}/${framework}.framework.dSYM\"\n\n  if [ ! -f \"${binary}\" ]; then\n    echo \"warning: ${framework}.framework binary not found at ${binary}\"\n    continue\n  fi\n\n  dsymutil \"${binary}\" -o \"${output}\"\ndone\n";
+			shellScript = "set -e\n\nif [ \"${SKIP_INSTALL}\" = \"YES\" ]; then\n  exit 0\nfi\n\nmkdir -p \"${DWARF_DSYM_FOLDER_PATH}\"\n\nfor framework in FirebaseAnalytics GoogleAdsOnDeviceConversion GoogleAppMeasurement GoogleAppMeasurementIdentitySupport; do\n  binary=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/${framework}.framework/${framework}\"\n  output=\"${DWARF_DSYM_FOLDER_PATH}/${framework}.framework.dSYM\"\n\n  if [ ! -f \"${binary}\" ]; then\n    echo \"warning: ${framework}.framework binary not found at ${binary}\"\n    continue\n  fi\n\n  if ! xcrun dwarfdump --debug-info \"${binary}\" | grep -q 'DW_TAG_'; then\n    echo \"Skipping dSYM generation for ${framework}: binary has no DWARF debug info\"\n    continue\n  fi\n\n  dsymutil \"${binary}\" -o \"${output}\"\ndone\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -957,7 +957,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -977,7 +977,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -996,7 +996,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabotUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
@@ -1010,7 +1010,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabotUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;

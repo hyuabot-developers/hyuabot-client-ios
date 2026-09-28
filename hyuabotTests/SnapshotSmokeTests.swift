@@ -8,6 +8,7 @@ import SnapshotTesting
 import UIKit
 import XCTest
 
+@MainActor
 final class SnapshotSmokeTests: XCTestCase {
     func testReadingRoomEmptyCellSnapshot() {
         let cell = ReadingRoomSkeletonCellView(style: .default, reuseIdentifier: ReadingRoomSkeletonCellView.reuseIdentifier)
@@ -29,10 +30,10 @@ final class SnapshotSmokeTests: XCTestCase {
     }
 
     private var darkTraits: UITraitCollection {
-        UITraitCollection(traitsFrom: [
-            UITraitCollection(displayScale: 3),
-            UITraitCollection(userInterfaceStyle: .dark)
-        ])
+        UITraitCollection(mutations: { traits in
+            traits.displayScale = 3
+            traits.userInterfaceStyle = .dark
+        })
     }
 
     private func setHeaderSnapshotText(in view: UIView) {

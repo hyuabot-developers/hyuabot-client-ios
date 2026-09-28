@@ -90,7 +90,9 @@ class NoticeCarouselView: UIView {
         stopAutoScroll()
         guard notices.count > 1, !manuallyScrolled else { return }
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            self?.scrollToNext()
+            Task { @MainActor [weak self] in
+                self?.scrollToNext()
+            }
         }
     }
 

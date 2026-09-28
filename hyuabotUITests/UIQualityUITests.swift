@@ -4,10 +4,11 @@
 //
 
 // swiftlint:disable file_length
+// swiftlint:disable type_body_length
 
 import XCTest
 
-// swiftlint:disable:next type_body_length
+@MainActor
 final class UIQualityUITests: XCTestCase {
     private let screenshotLifetime: XCTAttachment.Lifetime = .keepAlways
 
@@ -605,6 +606,8 @@ final class UIQualityUITests: XCTestCase {
         return issues
     }
 }
+
+// swiftlint:enable type_body_length
 
 private struct Page {
     let name: String

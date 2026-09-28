@@ -16,8 +16,8 @@ private final class ExtendedHitAreaButton: UIButton {
 class ReadingRoomCellView: UITableViewCell {
     static let reuseIdentifier = "ReadingRoomCellView"
     private var item: ReadingRoomPageQuery.Data.ReadingRoom?
-    private var showSubscribeToastMessage: ((String) -> Void)?
-    private var showUnsubscribeToastMessage: ((String) -> Void)?
+    private var showSubscribeToastMessage: (@MainActor @Sendable (String) -> Void)?
+    private var showUnsubscribeToastMessage: (@MainActor @Sendable (String) -> Void)?
     private let nameLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
         $0.numberOfLines = 1
@@ -82,8 +82,8 @@ class ReadingRoomCellView: UITableViewCell {
 
     func setupUI(
         item: ReadingRoomPageQuery.Data.ReadingRoom,
-        showSubscribeToastMessage: @escaping (String) -> Void,
-        showUnsubscribeToastMessage: @escaping (String) -> Void
+        showSubscribeToastMessage: @escaping @MainActor @Sendable (String) -> Void,
+        showUnsubscribeToastMessage: @escaping @MainActor @Sendable (String) -> Void
     ) {
         self.item = item
         self.showSubscribeToastMessage = showSubscribeToastMessage
@@ -123,16 +123,22 @@ class ReadingRoomCellView: UITableViewCell {
         let notifiedRooms = UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []
         if notifiedRooms.contains(itemKey) {
             UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
-            Messaging.messaging().unsubscribe(fromTopic: itemKey) { _ in
-                showUnsubscribeToastMessage(self.getLocalizedString(readingRoomID: item.seq))
+            Messaging.messaging().unsubscribe(fromTopic: itemKey) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    showUnsubscribeToastMessage(getLocalizedString(readingRoomID: item.seq))
+                }
             }
             alarmButton.setImage(UIImage(systemName: "bell"), for: .normal)
         } else {
             var newNotifiedRooms = notifiedRooms
             newNotifiedRooms.append(itemKey)
             UserDefaults.standard.set(newNotifiedRooms, forKey: "readingRoomNotificationArray")
-            Messaging.messaging().subscribe(toTopic: itemKey) { _ in
-                showSubscribeToastMessage(self.getLocalizedString(readingRoomID: item.seq))
+            Messaging.messaging().subscribe(toTopic: itemKey) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    showSubscribeToastMessage(getLocalizedString(readingRoomID: item.seq))
+                }
             }
             alarmButton.setImage(UIImage(systemName: "bell.fill"), for: .normal)
         }
