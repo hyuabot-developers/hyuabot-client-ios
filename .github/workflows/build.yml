@@ -124,7 +124,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Run unused code analysis
-        run: periphery scan --config .periphery.yml
+        run: periphery scan --config .periphery.yml --clean-build
 
       - name: Build release configuration
         run: |
