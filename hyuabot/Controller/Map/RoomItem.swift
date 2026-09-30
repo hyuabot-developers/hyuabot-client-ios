@@ -4,4 +4,6 @@ struct RoomItem {
     let building: String
     let latitude: Double
     let longitude: Double
+    let url: String?
+    let seq: String?
 }

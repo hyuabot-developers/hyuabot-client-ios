@@ -17,6 +17,7 @@ final class CoachMarkManager {
         "contact",
         "map",
         "readingroom",
+        "root.campus",
         "root.more",
         "setting",
         "shuttle.realtime",

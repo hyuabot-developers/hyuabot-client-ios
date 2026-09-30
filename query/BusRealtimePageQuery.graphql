@@ -9,6 +9,9 @@ query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!)
         route { seq, name }
         stop { seq, latitude, longitude }
         order
+        realtime {
+            updatedAt
+        }
         arrival {
             stops
             seats

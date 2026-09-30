@@ -4,6 +4,7 @@ import UIKit
 class ShuttleTimetableCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleTimetableCellView"
     var item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order?
+    private let routeMarkerView = UIView().then { $0.layer.cornerRadius = 2 }
     private let shuttleTypeLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .regular)
     }
@@ -23,11 +24,18 @@ class ShuttleTimetableCellView: UITableViewCell {
     }
 
     private func setupUI() {
+        contentView.addSubview(routeMarkerView)
         contentView.addSubview(shuttleTypeLabel)
         contentView.addSubview(shuttleTimeLabel)
         selectionStyle = .none
-        shuttleTypeLabel.snp.makeConstraints { make in
+        routeMarkerView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(4)
+            make.height.equalTo(24)
+        }
+        shuttleTypeLabel.snp.makeConstraints { make in
+            make.leading.equalTo(routeMarkerView.snp.trailing).offset(8)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
         }
@@ -37,6 +45,7 @@ class ShuttleTimetableCellView: UITableViewCell {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     func setupUI(option: ShuttleTimetableOptions, item: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order) {
         if option.start == "shuttle.stop.dormitory.out" || option.start == "shuttle.stop.shuttlecock.out" {
             if option.end == "shuttle.destination.shorten.station" {
@@ -104,6 +113,9 @@ class ShuttleTimetableCellView: UITableViewCell {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
             }
         }
+        shuttleTypeLabel.textColor = .label
+        routeMarkerView.backgroundColor = item.route.tag == "DJ" ? .hanyangGreen
+            : (item.route.tag == "C" || item.route.name.hasSuffix("D") ? .busBlue : .busRed)
         self.item = item
         let components = Calendar.current.dateComponents([.hour, .minute], from: item.time.toLocalTime())
         shuttleTimeLabel.text = String(

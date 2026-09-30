@@ -27,6 +27,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "BusDepartureLog": Api.Objects.BusDepartureLog,
     "BusDestinationTravelMinutes": Api.Objects.BusDestinationTravelMinutes,
     "BusMinimumDispatchInterval": Api.Objects.BusMinimumDispatchInterval,
+    "BusRealtime": Api.Objects.BusRealtime,
     "BusRoute": Api.Objects.BusRoute,
     "BusRouteStop": Api.Objects.BusRouteStop,
     "BusRunningTime": Api.Objects.BusRunningTime,
@@ -61,6 +62,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "SubwayArrival": Api.Objects.SubwayArrival,
     "SubwayArrivalGroup": Api.Objects.SubwayArrivalGroup,
     "SubwayOriginTerminal": Api.Objects.SubwayOriginTerminal,
+    "SubwayRealtime": Api.Objects.SubwayRealtime,
     "SubwayStation": Api.Objects.SubwayStation,
     "SubwayTimetable": Api.Objects.SubwayTimetable
   ]

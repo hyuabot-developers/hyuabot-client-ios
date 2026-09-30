@@ -8,7 +8,7 @@ nonisolated public struct MapPageSearchQuery: GraphQLQuery {
   public static let operationName: String = "MapPageSearchQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query MapPageSearchQuery($keyword: String!) { building(roomInput: { name: $keyword }) { __typename name latitude longitude rooms { __typename name number } } }"#
+      #"query MapPageSearchQuery($keyword: String!) { building(roomInput: { name: $keyword }) { __typename name latitude longitude url seq rooms { __typename name number } } }"#
     ))
 
   public var keyword: String
@@ -46,6 +46,8 @@ nonisolated public struct MapPageSearchQuery: GraphQLQuery {
         .field("name", String.self),
         .field("latitude", Double.self),
         .field("longitude", Double.self),
+        .field("url", String?.self),
+        .field("seq", String?.self),
         .field("rooms", [Room].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -55,6 +57,8 @@ nonisolated public struct MapPageSearchQuery: GraphQLQuery {
       public var name: String { __data["name"] }
       public var latitude: Double { __data["latitude"] }
       public var longitude: Double { __data["longitude"] }
+      public var url: String? { __data["url"] }
+      public var seq: String? { __data["seq"] }
       public var rooms: [Room] { __data["rooms"] }
 
       /// Building.Room

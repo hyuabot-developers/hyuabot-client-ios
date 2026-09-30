@@ -1,11 +1,14 @@
 import Api
 import Foundation
-import RxSwift
 import UIKit
 
 class BusRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "BusRealtimeCellView"
-    private let calendar = Calendar.current
+
+    private let routeMarkerView = UIView().then {
+        $0.layer.cornerRadius = 2
+    }
+
     private let busRouteLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
@@ -13,7 +16,7 @@ class BusRealtimeCellView: UITableViewCell {
     private let lowFloorBadgeLabel = UILabel().then {
         $0.text = String(localized: "bus.realtime.low.floor")
         $0.font = .godo(size: 11, weight: .bold)
-        $0.textColor = .white
+        $0.textColor = .black
         $0.textAlignment = .center
         $0.backgroundColor = .hanyangGreen
         $0.layer.cornerRadius = 4
@@ -21,7 +24,7 @@ class BusRealtimeCellView: UITableViewCell {
         $0.isHidden = true
     }
 
-    private lazy var routeStackView = UIStackView(arrangedSubviews: [busRouteLabel, lowFloorBadgeLabel]).then {
+    private lazy var routeStackView = UIStackView(arrangedSubviews: [routeMarkerView, busRouteLabel, lowFloorBadgeLabel]).then {
         $0.axis = .horizontal
         $0.alignment = .center
         $0.spacing = 6
@@ -29,12 +32,23 @@ class BusRealtimeCellView: UITableViewCell {
 
     private let busTimeLabel = UILabel().then {
         $0.font = .godo(size: 15, weight: .regular)
+        $0.textColor = .label
         $0.textAlignment = .right
-        $0.numberOfLines = 1
-        $0.adjustsFontSizeToFitWidth = true
-        $0.minimumScaleFactor = 0.85
-        $0.setContentHuggingPriority(.required, for: .horizontal)
-        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
+        $0.numberOfLines = 0
+    }
+
+    private let secondaryDestinationLabel = UILabel().then {
+        $0.font = .godo(size: 13, weight: .regular)
+        $0.textColor = .label
+        $0.textAlignment = .right
+        $0.numberOfLines = 0
+        $0.isHidden = true
+    }
+
+    private lazy var timeStackView = UIStackView(arrangedSubviews: [busTimeLabel, secondaryDestinationLabel]).then {
+        $0.axis = .vertical
+        $0.alignment = .trailing
+        $0.spacing = 3
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -47,96 +61,97 @@ class BusRealtimeCellView: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setupUI() {
-        contentView.addSubview(routeStackView)
-        contentView.addSubview(busTimeLabel)
+    private func setupUI() {
         selectionStyle = .none
+        contentView.addSubview(routeStackView)
+        contentView.addSubview(timeStackView)
         routeStackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
-            make.trailing.lessThanOrEqualTo(self.busTimeLabel.snp.leading).offset(-10)
+            make.trailing.lessThanOrEqualTo(timeStackView.snp.leading).offset(-10)
+        }
+        routeMarkerView.snp.makeConstraints { make in
+            make.width.equalTo(4)
+            make.height.equalTo(22)
         }
         lowFloorBadgeLabel.snp.makeConstraints { make in
             make.width.greaterThanOrEqualTo(32)
             make.height.equalTo(20)
         }
-        busTimeLabel.snp.makeConstraints { make in
+        timeStackView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
+            make.verticalEdges.equalToSuperview().inset(12)
+            make.leading.greaterThanOrEqualTo(routeStackView.snp.trailing).offset(10)
+        }
+        contentView.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(48)
         }
     }
 
     func setupUI(item: BusArrivalItem, showSecondary: Bool = true) {
         busRouteLabel.text = item.route
         lowFloorBadgeLabel.isHidden = item.item.lowFloor != true
-        setRouteColor(routeName: item.route)
+        busRouteLabel.textColor = .label
+        routeMarkerView.backgroundColor = item.route == "10-1" || item.route == "50" ? .busGreen : .busRed
         setUITimeLabel(item: item, showSecondary: showSecondary)
     }
 
-    func setRouteColor(routeName: String) {
-        if routeName == "10-1" || routeName == "50" {
-            busRouteLabel.textColor = .busGreen
-        } else {
-            busRouteLabel.textColor = .busRed
-        }
-    }
-
-    func setUITimeLabel(item: BusArrivalItem, showSecondary: Bool = true) {
-        busTimeLabel.attributedText = nil
-        busTimeLabel.textColor = .label
-        let secondarySuffix = if showSecondary, let secondaryTime = item.secondaryConvertedTime {
-            String(format: String(localized: "bus.realtime.secondary.%@"), secondaryTime)
-        } else {
-            ""
-        }
-        let scheduledSource: Api.LocalTime? = item.scheduledTime ?? (item.item.isRealtime ? nil : item.item.arrivalTime)
+    private func setUITimeLabel(item: BusArrivalItem, showSecondary: Bool) {
+        let arrival = item.item
+        let scheduledSource: Api.LocalTime? = item.scheduledTime ?? (arrival.isRealtime ? nil : arrival.arrivalTime)
         if let scheduledSource {
-            let remainingMinutes = (scheduledSource.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
-            busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
-            busTimeLabel.textColor = .secondaryLabel
-        } else if item.item.isRealtime {
-            if item.item.seats! < 0 {
-                if item.item.stops! <= 1 {
-                    setRealtimeAttributedText(
-                        String(format: String(localized: "bus.realtime.arriving.%lld"), item.item.stops!) + secondarySuffix
-                    )
-                } else {
-                    setRealtimeAttributedText(String(
-                        format: String(localized: "bus.realtime.no.seat.%lld.%lld"),
-                        Int(item.item.minutes!),
-                        item.item.stops!
-                    ) + secondarySuffix)
-                }
+            let minutes = (scheduledSource.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
+            busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), minutes)
+        } else if arrival.isRealtime, let stops = arrival.stops {
+            let seats = arrival.seats ?? -1
+            if stops <= 1 {
+                busTimeLabel.text = seats < 0
+                    ? String(format: String(localized: "bus.realtime.arriving.%lld"), stops)
+                    : String(format: String(localized: "bus.realtime.arriving.%lld.%lld"), stops, seats)
+            } else if let minutes = arrival.minutes {
+                busTimeLabel.text = seats < 0
+                    ? String(format: String(localized: "bus.realtime.no.seat.%lld.%lld"), Int(minutes), stops)
+                    : String(format: String(localized: "bus.realtime.seat.%lld.%lld.%lld"), Int(minutes), stops, seats)
             } else {
-                if item.item.stops! <= 1 {
-                    setRealtimeAttributedText(String(
-                        format: String(localized: "bus.realtime.arriving.%lld.%lld"),
-                        item.item.stops!,
-                        item.item.seats!
-                    ) + secondarySuffix)
-                } else {
-                    setRealtimeAttributedText(String(
-                        format: String(localized: "bus.realtime.seat.%lld.%lld.%lld"),
-                        Int(item.item.minutes!),
-                        item.item.stops!,
-                        item.item.seats!
-                    ) + secondarySuffix)
-                }
+                busTimeLabel.text = nil
             }
+        } else {
+            busTimeLabel.text = nil
         }
+
+        let secondaryText = showSecondary ? Self.secondaryDestinationText(item) : nil
+        secondaryDestinationLabel.text = secondaryText
+        secondaryDestinationLabel.isHidden = secondaryText == nil
     }
 
-    private func setRealtimeAttributedText(_ text: String) {
-        let attributeString = NSMutableAttributedString(string: text)
-        attributeString.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: attributeString.length))
-        attributeString.addAttribute(
-            .foregroundColor,
-            value: UIColor.red, range: NSRange(
-                location: 0,
-                length: text.distance(from: text.startIndex, to: text.firstIndex(of: "(")!) - 1
-            )
-        )
-        busTimeLabel.attributedText = attributeString
+    private static func secondaryDestinationText(_ item: BusArrivalItem) -> String? {
+        guard let time = item.secondaryConvertedTime,
+              let stopID = item.destinationStopID,
+              let stopName = BusDestinationStopName.localized(stopID) else { return nil }
+        return String(format: String(localized: "bus.realtime.secondary.destination.%@.%@"), stopName, time)
+    }
+}
+
+enum BusDestinationStopName {
+    static func localized(_ stopID: Int32) -> String? {
+        let key: String.LocalizationValue? = switch stopID {
+        case 216_000_138: "bus.stop.sangnoksu_station"
+        case 216_000_378: "bus.stop.convention"
+        case 216_000_048: "bus.stop.hanyang_university"
+        case 216_000_141: "bus.stop.entrance"
+        case 202_000_208: "bus.stop.suwon_station"
+        case 216_000_117: "bus.stop.seongpo"
+        case 226_000_042: "bus.stop.uiwang_city_hall"
+        case 225_000_116: "bus.stop.gunpo_city_hall"
+        case 213_000_487: "home.destination.gwangmyeong"
+        case 121_000_060: "bus.stop.seocho"
+        case 121_000_929: "bus.stop.gyodae"
+        case 121_000_974: "bus.stop.gangnam"
+        case 121_000_970: "bus.stop.yangjae"
+        case 121_000_220: "bus.stop.yangjae_forest"
+        default: nil
+        }
+        guard let key else { return nil }
+        return String(localized: key)
     }
 }

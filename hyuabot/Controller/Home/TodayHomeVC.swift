@@ -1,6 +1,7 @@
 import Api
 import ApolloAPI
 import CoreLocation
+import Network
 import RxSwift
 import SnapKit
 import Then
@@ -299,6 +300,7 @@ private struct HomeBusArrival {
     let date: Foundation.Date
     let minutes: Int
     let stops: Int?
+    let isRealtime: Bool
 }
 
 private struct HomeBusRowData {
@@ -1329,23 +1331,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private let homeWeatherIconView = HomeWeatherIconView()
-    private var homeWeatherIconSizeConstraints: [NSLayoutConstraint] = []
-    private var homeWeatherTextTrailingConstraints: [NSLayoutConstraint] = []
-    private lazy var legacyBar = UIView().then {
-        $0.backgroundColor = .clear
-    }
+    private var homeWeatherDetailText = ""
+    private let homeErrorStatusView = TransitStatusView()
 
-    private let legacyBarTopBorder = UIView().then {
-        $0.backgroundColor = .separator
-    }
-
-    private lazy var legacyBarLabel = UILabel().then {
-        $0.text = String(localized: "home.quick_settings.action_bar.title")
-        $0.textColor = .secondaryLabel
-        $0.font = .godo(size: 13, weight: .bold)
-    }
-
-    private lazy var legacyButton = UIButton(type: .system).then {
+    /// Header settings button
+    private lazy var headerSettingsButton = UIButton(type: .system).then {
         var config = UIButton.Configuration.plain()
         config.background.backgroundColor = .homeActionButtonBackground
         config.baseForegroundColor = .hanyangBlue
@@ -1354,15 +1344,16 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             pointSize: 16,
             weight: .semibold
         ))
-        config.attributedTitle = AttributedString(String(localized: "home.quick_settings.button"), attributes: AttributeContainer([
+        config.attributedTitle = AttributedString(String(localized: "home.settings.action"), attributes: AttributeContainer([
             .font: UIFont.godo(size: 14, weight: .bold)
         ]))
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
         $0.configuration = config
         $0.addTarget(self, action: #selector(openQuickSettings), for: .touchUpInside)
-        $0.accessibilityLabel = String(localized: "home.quick_settings.title")
+        $0.accessibilityLabel = String(localized: "home.settings.action")
         $0.accessibilityIdentifier = "home.quick_settings"
+        $0.accessibilityTraits = .button
     }
 
     private var selectedDeparture: HomeDeparture = .dormitory
@@ -1374,6 +1365,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     private var selectedDestination: HomeDestination = .station
     private var selectedHomeBusDestination: HomeBusDestination = .gangnam
     private var lastLocation: CLLocation?
+    private var locationTimeout: DispatchWorkItem?
     private var availableDestinations: [HomeDestination] {
         selectedDeparture.destinations
     }
@@ -1394,6 +1386,12 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     /// selection is in flight, the narrowed payload cannot answer it, so a skeleton is shown instead of an empty state.
     private var lastFetchedShuttleRouteKey: String?
     private var lastFetchedHomeBusDestination: HomeBusDestination?
+    // Properties for tracking home bus freshness status
+    private var lastHomeBusSuccessfulCheckAt: Foundation.Date?
+    private var isHomeBusLoading = false
+    private var hasHomeBusError = false
+    private var isHomeBusOffline = false
+    private let homeNetworkMonitor = NWPathMonitor()
     private var bus50TerminalLogTimes: [LocalTime] = []
     private var mealSections: [HomeMealSection] = []
     private var displayedMealPeriod: HomeMealPeriod?
@@ -1409,6 +1407,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        homeNetworkMonitor.start(queue: DispatchQueue(label: "home.transit.network"))
         #if DEBUG
             applyDebugRouteOverride()
         #endif
@@ -1417,14 +1416,6 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         updateMealPeriodSelector()
         observeApplicationActivation()
         refreshHomeContext()
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        let iconSize: CGFloat = view.bounds.width <= 375 ? 88 : 96
-        for constraint in homeWeatherIconSizeConstraints where constraint.constant != iconSize {
-            constraint.constant = iconSize
-        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -1447,6 +1438,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     deinit {
+        homeNetworkMonitor.cancel()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -1457,32 +1449,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
         view.addSubview(scrollView)
-        view.addSubview(legacyBar)
-        legacyBar.addSubview(legacyBarTopBorder)
-        legacyBar.addSubview(legacyBarLabel)
-        legacyBar.addSubview(legacyButton)
         scrollView.snp.makeConstraints { make in
             make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
-            make.bottom.equalTo(legacyBar.snp.top)
-        }
-        legacyBar.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-            make.height.equalTo(54)
-        }
-        legacyBarTopBorder.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(1 / UIScreen.main.scale)
-        }
-        legacyBarLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(legacyButton.snp.leading).offset(-12)
-        }
-        legacyButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.height.equalTo(36)
         }
 
         scrollView.addSubview(contentStack)
@@ -1496,6 +1465,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
 
         contentStack.addArrangedSubview(makeHeaderView())
+        homeErrorStatusView.isHidden = true
+        homeErrorStatusView.onRetry = { [weak self] in self?.fetchHomeData(showsLoadingState: false) }
+        contentStack.addArrangedSubview(homeErrorStatusView)
         contentStack.addArrangedSubview(makeNoticeView())
         contentStack.addArrangedSubview(makeDestinationControlView())
         contentStack.addArrangedSubview(makeMovementCard())
@@ -1510,7 +1482,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let container = UIView()
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = 8
 
         let topRow = UIStackView()
         topRow.axis = .horizontal
@@ -1522,70 +1494,51 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         eyebrow.font = .godo(size: 13, weight: .regular)
         eyebrow.textColor = .secondaryLabel
 
+        let weatherRow = UIStackView()
+        weatherRow.axis = .horizontal
+        weatherRow.alignment = .center
+        weatherRow.spacing = 6
+
+        weatherRow.addArrangedSubview(homeWeatherIconView)
+        homeWeatherIconView.snp.makeConstraints { make in
+            make.width.height.equalTo(24)
+        }
+
+        weatherRow.addArrangedSubview(homeHeroTitleLabel)
+        weatherRow.addArrangedSubview(homeHeroSubtitleButton)
+        homeHeroSubtitleButton.snp.makeConstraints { make in
+            make.width.equalTo(96)
+            make.height.equalTo(44)
+        }
+
         topRow.addArrangedSubview(eyebrow)
         topRow.addArrangedSubview(UIView())
+        topRow.addArrangedSubview(headerSettingsButton)
+        headerSettingsButton.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(44)
+        }
 
         homeHeroTitleLabel.text = String(localized: "home.hero.title")
-        homeHeroTitleLabel.font = .godo(size: 28, weight: .bold)
+        homeHeroTitleLabel.font = .godo(size: 15, weight: .bold)
         homeHeroTitleLabel.textColor = .label
-        homeHeroTitleLabel.numberOfLines = 0
+        homeHeroTitleLabel.numberOfLines = 1
+        homeHeroTitleLabel.adjustsFontSizeToFitWidth = true
+        homeHeroTitleLabel.minimumScaleFactor = 0.8
+        homeHeroTitleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         homeWeatherIconView.isHidden = true
         homeWeatherIconView.isAccessibilityElement = false
 
-        let titleRow = UIView()
-        titleRow.addSubview(homeHeroTitleLabel)
-        let subtitleRow = UIView()
-        subtitleRow.addSubview(homeHeroSubtitleButton)
-
         stack.addArrangedSubview(topRow)
-        stack.addArrangedSubview(titleRow)
-        stack.addArrangedSubview(subtitleRow)
-        stack.setCustomSpacing(16, after: topRow)
-        stack.setCustomSpacing(4, after: titleRow)
-        container.addSubview(homeWeatherIconView)
+        stack.addArrangedSubview(weatherRow)
+        stack.setCustomSpacing(8, after: topRow)
+
         container.addSubview(stack)
-
         stack.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview()
-            make.top.greaterThanOrEqualToSuperview()
-        }
-        homeHeroTitleLabel.snp.makeConstraints { make in
-            make.top.bottom.leading.equalToSuperview()
-            make.trailing.lessThanOrEqualToSuperview()
-        }
-        homeHeroSubtitleButton.snp.makeConstraints { make in
-            make.top.bottom.leading.equalToSuperview()
-            make.trailing.lessThanOrEqualToSuperview()
+            make.edges.equalToSuperview()
         }
 
-        constrainWeatherIcon(in: container)
         return container
-    }
-
-    private func constrainWeatherIcon(in container: UIView) {
-        homeWeatherIconView.translatesAutoresizingMaskIntoConstraints = false
-        let initialIconSize: CGFloat = view.bounds.width <= 375 ? 88 : 96
-        homeWeatherIconSizeConstraints = [
-            homeWeatherIconView.widthAnchor.constraint(equalToConstant: initialIconSize),
-            homeWeatherIconView.heightAnchor.constraint(equalToConstant: initialIconSize)
-        ]
-        NSLayoutConstraint.activate(homeWeatherIconSizeConstraints + [
-            homeWeatherIconView.topAnchor.constraint(greaterThanOrEqualTo: container.topAnchor),
-            homeWeatherIconView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            homeWeatherIconView.bottomAnchor.constraint(equalTo: homeHeroSubtitleButton.bottomAnchor)
-        ])
-
-        homeWeatherTextTrailingConstraints = [
-            homeHeroTitleLabel.trailingAnchor.constraint(
-                lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
-                constant: 3
-            ),
-            homeHeroSubtitleButton.trailingAnchor.constraint(
-                lessThanOrEqualTo: homeWeatherIconView.leadingAnchor,
-                constant: 3
-            )
-        ]
     }
 
     private func makeDestinationControlView() -> UIView {
@@ -1909,6 +1862,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         guard let weather = shuttleData?.homeWeather else {
             homeHeroTitleLabel.text = String(localized: "home.hero.title")
             setWeatherSubtitle(String(localized: "home.hero.subtitle"), includesAttribution: false)
+            homeHeroTitleLabel.accessibilityLabel = String(localized: "home.hero.subtitle")
             setHomeWeatherIconHidden(true)
             return
         }
@@ -1947,6 +1901,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         } else {
             homeHeroTitleLabel.text = String(localized: titleStyle.localizationKey)
         }
+        if let temperature = weather.currentTemperature {
+            homeHeroTitleLabel.text = "\(Int(temperature.rounded()))° · \(homeHeroTitleLabel.text ?? "")"
+        }
+        homeHeroTitleLabel.accessibilityLabel = [homeHeroTitleLabel.text ?? "", weatherSubtitle(for: weather)]
+            .filter { !$0.isEmpty }.joined(separator: " · ")
         homeWeatherIconView.setWeatherCondition(weather.condition)
         setHomeWeatherIconHidden(false)
         setWeatherSubtitle(
@@ -1964,26 +1923,32 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func setWeatherSubtitle(_ subtitle: String, includesAttribution: Bool) {
-        var title = AttributedString(subtitle)
-        title.font = .godo(size: 15, weight: .regular)
-        if includesAttribution {
-            var attribution = AttributedString(" · \(String(localized: "home.weather.attribution"))")
-            attribution.font = .godo(size: 12, weight: .regular)
-            title.append(attribution)
-        }
-
+        homeWeatherDetailText = subtitle
         var configuration = homeHeroSubtitleButton.configuration ?? .plain()
-        configuration.attributedTitle = title
+        configuration.attributedTitle = AttributedString(
+            String(localized: "home.weather.attribution"),
+            attributes: AttributeContainer([.font: UIFont.godo(size: 11, weight: .regular)])
+        )
         homeHeroSubtitleButton.configuration = configuration
+        homeHeroSubtitleButton.isHidden = !includesAttribution
         homeHeroSubtitleButton.isUserInteractionEnabled = includesAttribution
-        homeHeroSubtitleButton.accessibilityTraits = includesAttribution ? .link : .staticText
-        homeHeroSubtitleButton.accessibilityLabel = String(title.characters)
+        homeHeroSubtitleButton.accessibilityTraits = .button
+        homeHeroSubtitleButton.accessibilityLabel = "\(subtitle) · \(String(localized: "home.weather.attribution"))"
     }
 
     @objc
     private func openWeatherAttribution() {
-        guard let url = URL(string: "https://open-meteo.com/") else { return }
-        UIApplication.shared.open(url)
+        let alert = UIAlertController(
+            title: homeHeroTitleLabel.text,
+            message: homeWeatherDetailText,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "setting.language.system.cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "home.weather.attribution"), style: .default) { _ in
+            guard let url = URL(string: "https://open-meteo.com/") else { return }
+            UIApplication.shared.open(url)
+        })
+        present(alert, animated: true)
     }
 
     private func baseWeatherSubtitle(for weather: HomeWeatherRenderInput) -> String {
@@ -2060,12 +2025,11 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         DateFormatter().then {
             $0.locale = Locale.current
             $0.timeZone = TimeZone(identifier: "Asia/Seoul")
-            $0.setLocalizedDateFormatFromTemplate("j")
+            $0.dateFormat = "HH:mm"
         }
     }
 
     private func setHomeWeatherIconHidden(_ isHidden: Bool) {
-        homeWeatherTextTrailingConstraints.forEach { $0.isActive = !isHidden }
         homeWeatherIconView.isHidden = isHidden
     }
 
@@ -2410,18 +2374,24 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             .filter { $0.stop.seq == 216_000_759 }
             .flatMap(\.arrival)
             .compactMap { arrival -> HomeBusArrival? in
-                guard arrival.isRealtime, let minutes = arrival.minutes else { return nil }
+                let date = arrival.minutes
+                    .flatMap { arrival.isRealtime ? Foundation.Date.now.addingTimeInterval(TimeInterval($0 * 60)) : nil }
+                    ?? arrival.arrivalTime?.toLocalTimeOrNil()
+                guard let date else { return nil }
                 return HomeBusArrival(
-                    date: Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60)),
-                    minutes: minutes,
-                    stops: arrival.stops
+                    date: date,
+                    minutes: max(0, Int(ceil(date.timeIntervalSinceNow / 60))),
+                    stops: arrival.stops,
+                    isRealtime: arrival.isRealtime
                 )
             }
             .sorted { $0.date < $1.date } ?? []
         guard let busArrival = busArrivals.first(where: { $0.date >= terminalArrival }) else { return nil }
 
         let bufferMinutes = max(0, Int(floor(busArrival.date.timeIntervalSince(terminalArrival) / 60)))
-        let arrivalText = busRealtimeArrivalText(stops: busArrival.stops, minutes: busArrival.minutes)
+        let arrivalText = busArrival.isRealtime
+            ? busRealtimeArrivalText(stops: busArrival.stops, minutes: busArrival.minutes)
+            : arrivalClockText(busArrival.date, key: "home.transfer.subway.timetable.arrival")
         return HomeTransferConnection(
             badge: String(localized: "home.transfer.bus50.badge"),
             title: bus50DestinationTitle(),
@@ -2976,6 +2946,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return (String(localized: "home.badge.free"), .hanyangBlue)
     }
 
+    // swiftlint:disable:next function_body_length
     private func buildBusAlternatives(_ busList: [HomePageQuery.Data.Bus]) -> [String: [HomeTransitOption]] {
         func item(routeSeq: Int, stopSeq: Int) -> HomePageQuery.Data.Bus? {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
@@ -2988,13 +2959,21 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             direction: String,
             color: UIColor
         ) -> HomeTransitOption? {
-            guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
-            let subtitle = String(format: String(localized: "home.alt.bus_direction"), direction)
+            guard let bus else { return nil }
+            let candidates = bus.arrival.compactMap { arrival -> (Int, Bool)? in
+                let minutes = arrival.minutes ?? arrival.arrivalTime?.toLocalTimeOrNil()
+                    .map { Int(ceil($0.timeIntervalSinceNow / 60)) }
+                guard let minutes, minutes >= 0 else { return nil }
+                return (minutes, arrival.isRealtime)
+            }
+            guard let candidate = candidates.min(by: { $0.0 < $1.0 }) else { return nil }
+            let subtitle = String(format: String(localized: "home.alt.bus_direction"), direction) +
+                (candidate.1 ? "" : " · " + String(localized: "transit.scheduled"))
             return HomeTransitOption(
                 kind: .alternative,
                 title: stopName,
                 subtitle: subtitle,
-                minutes: minutes,
+                minutes: candidate.0,
                 badge: route,
                 tintColor: color
             )
@@ -3176,6 +3155,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
 
         Task {
+            isHomeBusLoading = true
+            isHomeBusOffline = homeNetworkMonitor.currentPath.status == .unsatisfied
+
             let response = try? await Network.shared.client.fetch(
                 query: HomePageQuery(
                     language: currentNoticeLanguage(),
@@ -3193,6 +3175,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 ),
                 cachePolicy: .networkOnly
             )
+
             let bus50TerminalLogTimes = needsBus50 ? await fetchBus50TerminalLogTimes() : []
 
             await MainActor.run {
@@ -3201,31 +3184,43 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                     fetchHomeData(showsLoadingState: false)
                     return
                 }
-                initialStopRules =
-                    response?.data?.shuttle.initialStopRules.map { rule in
-                        ShuttleInitialStopRuleCandidate(
-                            sequence: rule.seq,
-                            stopName: rule.stopName,
-                            priority: rule.priority,
-                            polygon: rule.polygon.map {
-                                ShuttleGeoCoordinate(latitude: $0.latitude, longitude: $0.longitude)
-                            }
-                        )
-                    } ?? []
-                if let data = response?.data {
-                    shuttleData = data
-                    homeBusData = data.bus
-                    lastFetchedHomeBusGroup = requestedHomeBusGroup
-                    lastFetchedHomeBusDestination = requestedHomeBusDestination
-                    lastFetchedShuttleRouteKey = Self.shuttleRouteKey(requestedRoute)
-                    homeBusRowsCache.removeAll()
-                    busAlternatives = buildBusAlternatives(data.bus)
-                    self.bus50TerminalLogTimes = bus50TerminalLogTimes
-                    mealSections = buildMealSections(data.cafeteria, mealPeriod: activeMealPeriod())
-                    Task {
-                        await ShuttleServiceNoticeScheduler.shared.syncIfStale()
+
+                isHomeBusLoading = false
+                if response?.data != nil {
+                    hasHomeBusError = false
+                    lastHomeBusSuccessfulCheckAt = Foundation.Date.now
+
+                    initialStopRules =
+                        response?.data?.shuttle.initialStopRules.map { rule in
+                            ShuttleInitialStopRuleCandidate(
+                                sequence: rule.seq,
+                                stopName: rule.stopName,
+                                priority: rule.priority,
+                                polygon: rule.polygon.map {
+                                    ShuttleGeoCoordinate(latitude: $0.latitude, longitude: $0.longitude)
+                                }
+                            )
+                        } ?? []
+
+                    if let data = response?.data {
+                        shuttleData = data
+                        homeBusData = data.bus
+                        lastFetchedHomeBusGroup = requestedHomeBusGroup
+                        lastFetchedHomeBusDestination = requestedHomeBusDestination
+                        lastFetchedShuttleRouteKey = Self.shuttleRouteKey(requestedRoute)
+                        homeBusRowsCache.removeAll()
+                        busAlternatives = buildBusAlternatives(data.bus)
+                        self.bus50TerminalLogTimes = bus50TerminalLogTimes
+                        mealSections = buildMealSections(data.cafeteria, mealPeriod: activeMealPeriod())
+                        Task {
+                            await ShuttleServiceNoticeScheduler.shared.syncIfStale()
+                        }
                     }
+                } else {
+                    hasHomeBusError = true
+                    isHomeBusOffline = homeNetworkMonitor.currentPath.status == .unsatisfied
                 }
+
                 isHomeBusRefreshing = false
                 isLoading = false
                 refreshControl.endRefreshing()
@@ -3270,7 +3265,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         autoRefreshSubscription = Observable<Int>
             .interval(.seconds(Self.autoRefreshIntervalSeconds), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
-                self?.refreshHomeContext(showsLoadingState: false)
+                self?.refreshHomeContext(showsLoadingState: false, requestsLocation: false)
             })
     }
 
@@ -3279,8 +3274,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         autoRefreshSubscription = nil
     }
 
-    private func refreshHomeContext(showsLoadingState: Bool = true) {
+    private func refreshHomeContext(showsLoadingState: Bool = true, requestsLocation: Bool = true) {
         fetchHomeData(showsLoadingState: showsLoadingState)
+        guard requestsLocation else { return }
         #if DEBUG
             if !usesDebugDeparture {
                 requestDepartureLocation()
@@ -3549,6 +3545,19 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return result
     }
 
+    private func contrastTextColor(for background: UIColor) -> UIColor {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard background.resolvedColor(with: traitCollection).getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
+            return .white
+        }
+        let channel = { (value: CGFloat) in value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4) }
+        let luminance = 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue)
+        return luminance > 0.179 ? .black : .white
+    }
+
     private func makeTransitRow(_ option: HomeTransitOption, emphasized: Bool, trailingText: String? = nil) -> UIView {
         let row = UIStackView()
         row.axis = .horizontal
@@ -3565,7 +3574,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let badge = HomePaddedLabel()
         badge.text = option.badge
         badge.font = .godo(size: 12, weight: .bold)
-        badge.textColor = .white
+        badge.textColor = contrastTextColor(for: option.tintColor)
         badge.textAlignment = .center
         badge.backgroundColor = option.tintColor
         badge.contentInsets = .zero
@@ -3602,7 +3611,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         minutes.text = trailingText ?? option.minutes
             .map { String(format: String(localized: "home.minutes"), $0) } ?? String(localized: "home.check")
         minutes.font = .godo(size: emphasized ? 20 : 17, weight: .bold)
-        minutes.textColor = option.tintColor
+        minutes.textColor = .label
         minutes.textAlignment = .right
         minutes.adjustsFontSizeToFitWidth = true
         minutes.minimumScaleFactor = 0.85
@@ -3615,6 +3624,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func renderHomeBus(for group: HomeBusGroup?) {
+        homeErrorStatusView.isHidden = !(hasHomeBusError && group == nil)
+        if hasHomeBusError, group == nil {
+            homeErrorStatusView.show(
+                String(localized: isHomeBusOffline ? "transit.offline" : "transit.error"),
+                retry: true
+            )
+        }
         busCard?.isHidden = group == nil
         if case .campus? = group, busHomeDestinationButton.menu == nil {
             updateHomeBusDestinationMenu()
@@ -3629,18 +3645,43 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             replaceSubviews(in: busOptionStack, with: [makeSkeletonRow(widthRatio: 0.68), makeSkeletonRow(widthRatio: 0.52)])
             return
         }
+
+        let rows: [UIView]
         if case .campus = group {
-            let rows: [UIView]
             if let cachedRows = homeBusRowsCache[selectedHomeBusDestination] {
                 rows = cachedRows
             } else {
                 rows = homeBusRows(group)
                 homeBusRowsCache[selectedHomeBusDestination] = rows
             }
-            replaceSubviews(in: busOptionStack, with: rows)
         } else {
-            replaceSubviews(in: busOptionStack, with: homeBusRows(group))
+            rows = homeBusRows(group)
         }
+
+        let selectedBuses = homeBusSourceBuses(for: group)
+        let freshnessText = RealtimeFreshness.statusText(
+            stationUpdates: selectedBuses.map { $0.realtime.map { Optional($0.updatedAt) } },
+            hasArrivals: selectedBuses.contains { !$0.arrival.isEmpty },
+            lastSuccessfulCheckAt: lastHomeBusSuccessfulCheckAt,
+            isLoading: isHomeBusLoading,
+            hasError: hasHomeBusError,
+            isOffline: isHomeBusOffline,
+            staleAfter: 120,
+            now: .now
+        )
+        let statusView = TransitStatusView()
+        statusView.show(freshnessText, retry: hasHomeBusError)
+        statusView.onRetry = { [weak self] in self?.fetchHomeData(showsLoadingState: false) }
+        let containerStack = UIStackView()
+        containerStack.axis = .vertical
+        containerStack.spacing = 8
+        containerStack.addArrangedSubview(statusView)
+        let rowsStack = UIStackView(arrangedSubviews: rows)
+        rowsStack.axis = .vertical
+        rowsStack.spacing = 8
+        containerStack.addArrangedSubview(rowsStack)
+
+        replaceSubviews(in: busOptionStack, with: [containerStack])
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -3689,23 +3730,35 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                         )
                     )
                     : nil
-                let details = if arrival.isRealtime, let seats = arrival.seats, seats >= 0, let destinationETA {
-                    String(format: String(localized: "home.bus.stops.seats.eta"), arrival.stops ?? 0, seats, destinationETA)
-                } else if arrival.isRealtime, let seats = arrival.seats, seats >= 0 {
+                let details = if arrival.isRealtime, let seats = arrival.seats, seats >= 0 {
                     String(format: String(localized: "home.bus.stops.seats"), arrival.stops ?? 0, seats)
-                } else if arrival.isRealtime, let destinationETA {
-                    String(format: String(localized: "home.bus.stops.eta"), arrival.stops ?? 0, destinationETA)
                 } else if arrival.isRealtime, let stops = arrival.stops {
                     String(format: String(localized: "home.bus.stops"), stops)
-                } else if let destinationETA {
-                    String(format: String(localized: "home.bus.eta"), destinationETA)
                 } else {
                     ""
                 }
+
+                // Keep the target stop and its arrival time on a distinct line.
+                let destinationLine: String? = {
+                    guard let destinationETA,
+                          let stopID = destinationStopID(
+                              routeID: Int32(bus.route.seq),
+                              group: group,
+                              sourceStopID: Int32(bus.stop.seq)
+                          ),
+                          let destinationName = BusDestinationStopName.localized(stopID) else { return nil }
+                    return String(
+                        format: String(localized: "bus.realtime.secondary.destination.%@.%@"),
+                        destinationName,
+                        destinationETA
+                    )
+                }()
+                let subtitle = [details, destinationLine].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "\n")
+
                 candidates.append(HomeBusRowData(
                     route: bus.route.name,
                     stopName: homeBusStopName(stopSeq: Int32(bus.stop.seq), fallback: bus.stop.name),
-                    subtitle: details,
+                    subtitle: subtitle,
                     trailing: arrival.isRealtime
                         ? String(format: String(localized: "home.minutes"), minutes)
                         : destinationFallbackTime(arrivalDate),
@@ -3859,7 +3912,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let badge = HomePaddedLabel()
         badge.text = data.route
         badge.font = .godo(size: 12, weight: .bold)
-        badge.textColor = .white
+        badge.textColor = contrastTextColor(for: data.tintColor)
         badge.textAlignment = .center
         badge.backgroundColor = data.tintColor
         badge.contentInsets = .zero
@@ -3893,7 +3946,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let trailing = UILabel()
         trailing.text = data.trailing
         trailing.font = .godo(size: 22, weight: .bold)
-        trailing.textColor = data.tintColor
+        trailing.textColor = .label
         trailing.textAlignment = .right
         trailing.adjustsFontSizeToFitWidth = true
         trailing.minimumScaleFactor = 0.64
@@ -3973,10 +4026,18 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func nearestHomeBusGroup() -> HomeBusGroup? {
-        guard let location = lastLocation else { return .campus }
-        // Suwon Station may not be present in the current response when both
-        // 7070/9090 have no live vehicle. Use the canonical stop coordinate so
-        // the home bus card does not disappear just because the payload is empty.
+        if isDepartureManuallySelected {
+            switch selectedDeparture {
+            case .dormitory: return .dormitory
+            case .shuttlecock: return .campus
+            case .station, .terminal, .jungang: break
+            }
+        }
+        guard let location = lastLocation else { return nil }
+
+        // Location age and accuracy are checked when the fix is accepted.
+        // Keep the selected group stable until the next accepted fix or foreground refresh.
+        // Suwon Station may not be present when both routes lack a live vehicle.
         let suwonStation = CLLocation(
             latitude: BusStopFallbackCoordinate.suwonStation.latitude,
             longitude: BusStopFallbackCoordinate.suwonStation.longitude
@@ -3997,9 +4058,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             let stopLocation = CLLocation(latitude: stop.stop.latitude, longitude: stop.stop.longitude)
             return (group, location.distance(from: stopLocation))
         }.min { $0.1 < $1.1 }
-        guard let nearest else {
-            return selectedDeparture == .dormitory ? .dormitory : .campus
-        }
+        guard let nearest else { return nil }
         guard nearest.1 <= 1500 else { return nil }
         return nearest.0
     }
@@ -4038,6 +4097,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
 
         container.addSubview(stack)
+        if option.connections.count > 1 {
+            let connectedShuttleLabel = UILabel()
+            connectedShuttleLabel.text = String(format: String(localized: "home.transfer.connected.shuttle"), option.title)
+            connectedShuttleLabel.font = .godo(size: 12, weight: .bold)
+            connectedShuttleLabel.textColor = .label
+            connectedShuttleLabel.numberOfLines = 0
+            stack.addArrangedSubview(connectedShuttleLabel)
+        }
         stack.addArrangedSubview(shuttleRow)
         transferRows.forEach(stack.addArrangedSubview)
 
@@ -4088,17 +4155,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         title.text = connection.title
         title.font = .godo(size: 15, weight: .bold)
         title.textColor = .label
-        title.numberOfLines = 1
-        title.adjustsFontSizeToFitWidth = true
-        title.minimumScaleFactor = 0.75
+        title.numberOfLines = 0
 
         let subtitle = UILabel()
         subtitle.text = connection.subtitle
         subtitle.font = .godo(size: 12, weight: .regular)
         subtitle.textColor = .secondaryLabel
-        subtitle.numberOfLines = 1
-        subtitle.adjustsFontSizeToFitWidth = true
-        subtitle.minimumScaleFactor = 0.75
+        subtitle.numberOfLines = 0
 
         let textStack = UIStackView(arrangedSubviews: [title, subtitle])
         textStack.axis = .vertical
@@ -4107,10 +4170,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let trailing = UILabel()
         trailing.text = connection.trailing
         trailing.font = .godo(size: 15, weight: .bold)
-        trailing.textColor = connection.tintColor
+        trailing.textColor = .label
         trailing.textAlignment = .right
-        trailing.adjustsFontSizeToFitWidth = true
-        trailing.minimumScaleFactor = 0.75
+        trailing.numberOfLines = 0
         trailing.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         row.addArrangedSubview(badge)
@@ -4123,7 +4185,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let badge = HomePaddedLabel()
         badge.text = connection.badge
         badge.font = .godo(size: 12, weight: .bold)
-        badge.textColor = .white
+        badge.textColor = contrastTextColor(for: connection.tintColor)
         badge.textAlignment = .center
         badge.backgroundColor = connection.tintColor
         badge.contentInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
@@ -4367,11 +4429,18 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         shouldRestoreAutomaticDepartureOnActivation = false
         hasResolvedInitialDepartureLocation = true
         pendingDepartureLocation = nil
+        locationManager.stopUpdatingLocation()
+        locationTimeout?.cancel()
+        locationTimeout = nil
+        lastLocation = nil
         guard selectedDeparture != departure else {
             updateDepartureSelector()
+            renderMovement()
+            refreshHomeContext(showsLoadingState: false)
             return
         }
         updateDeparture(departure)
+        requestDepartureLocation()
     }
 
     @objc
@@ -4392,6 +4461,13 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func requestDepartureLocation() {
+        if isDepartureManuallySelected, selectedDeparture == .dormitory || selectedDeparture == .shuttlecock {
+            locationManager.stopUpdatingLocation()
+            locationTimeout?.cancel()
+            locationTimeout = nil
+            renderMovement()
+            return
+        }
         switch locationManager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
             // requestLocation() may immediately return a cached simulator/device fix.
@@ -4400,10 +4476,22 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
             locationManager.desiredAccuracy = kCLLocationAccuracyBest
             locationManager.distanceFilter = kCLDistanceFilterNone
             locationManager.startUpdatingLocation()
+            locationTimeout?.cancel()
+            let timeout = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                locationManager.stopUpdatingLocation()
+                locationTimeout = nil
+                lastLocation = nil
+                pendingDepartureLocation = nil
+                renderMovement()
+            }
+            locationTimeout = timeout
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: timeout)
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         default:
-            break
+            lastLocation = nil
+            renderMovement()
         }
     }
 
@@ -4678,10 +4766,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
 
 extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard !isDepartureManuallySelected,
-              let location = locations.last
+        guard let location = locations.reversed().first(where: {
+            abs($0.timestamp.timeIntervalSinceNow) <= 60 &&
+                $0.horizontalAccuracy >= 0 && $0.horizontalAccuracy <= 200
+        })
         else { return }
         manager.stopUpdatingLocation()
+        locationTimeout?.cancel()
+        locationTimeout = nil
         lastLocation = location
         renderMovement()
         pendingDepartureLocation = location
@@ -4695,7 +4787,9 @@ extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
         }
         guard initialStopRules != nil else { return }
         pendingDepartureLocation = nil
-        applyAutomaticDeparture(for: location)
+        if !isDepartureManuallySelected {
+            applyAutomaticDeparture(for: location)
+        }
     }
 
     private func applyAutomaticDeparture(for location: CLLocation) {
@@ -4738,7 +4832,12 @@ extension TodayHomeVC: @preconcurrency CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        manager.stopUpdatingLocation()
+        locationTimeout?.cancel()
+        locationTimeout = nil
+        lastLocation = nil
         pendingDepartureLocation = nil
+        renderMovement()
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

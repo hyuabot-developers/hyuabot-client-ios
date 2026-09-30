@@ -3,6 +3,21 @@ import MapKit
 import RxSwift
 import UIKit
 
+private final class BuildingMapAnnotation: MKPointAnnotation {
+    let buildingName: String
+    let urlString: String?
+    let buildingID: String?
+
+    init(buildingName: String, urlString: String?, buildingID: String?, coordinate: CLLocationCoordinate2D, title: String) {
+        self.buildingName = buildingName
+        self.urlString = urlString
+        self.buildingID = buildingID
+        super.init()
+        self.coordinate = coordinate
+        self.title = title
+    }
+}
+
 class MapVC: UIViewController {
     private let disposeBag = DisposeBag()
     private lazy var searchController = UISearchController(searchResultsController: nil).then {
@@ -35,6 +50,8 @@ class MapVC: UIViewController {
     private lazy var searchResultView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
         $0.isHidden = true
+        $0.rowHeight = UITableView.automaticDimension
+        $0.estimatedRowHeight = 64
         $0.delegate = self
         $0.dataSource = self
         $0.register(SearchEmptyCellView.self, forCellReuseIdentifier: SearchEmptyCellView.reuseIdentifier)
@@ -97,17 +114,19 @@ class MapVC: UIViewController {
             Task {
                 let response = try? await Network.shared.client.fetch(query: MapPageSearchQuery(keyword: keyword))
                 if let data = response?.data {
-                    MapData.shared.searchResult.onNext(data.building.map { building in
+                    MapData.shared.searchResult.onNext(data.building.flatMap { building in
                         building.rooms.map { room in
                             RoomItem(
                                 name: room.name,
-                                number: room.name,
+                                number: room.number,
                                 building: building.name,
                                 latitude: building.latitude,
-                                longitude: building.longitude
+                                longitude: building.longitude,
+                                url: building.url,
+                                seq: building.seq
                             )
                         }
-                    }.flatMap { $0 })
+                    })
                 }
             }
         }).disposed(by: disposeBag)
@@ -132,12 +151,38 @@ class MapVC: UIViewController {
         MapData.shared.buildingResult.subscribe(onNext: { result in
             self.mapView.removeAnnotations(self.mapView.annotations)
             for building in result {
-                self.mapView.addAnnotation(MKPointAnnotation().with {
-                    $0.coordinate = CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude)
-                    $0.title = building.name
-                })
+                self.mapView.addAnnotation(BuildingMapAnnotation(
+                    buildingName: building.name,
+                    urlString: building.url,
+                    buildingID: nil,
+                    coordinate: CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude),
+                    title: building.name
+                ))
             }
         }).disposed(by: disposeBag)
+    }
+
+    private func showBuildingDetail(_ annotation: BuildingMapAnnotation) {
+        guard let urlString = annotation.urlString?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !urlString.isEmpty,
+              let url = URL(string: urlString),
+              url.scheme != nil
+        else {
+            let alert = UIAlertController(
+                title: annotation.buildingName,
+                message: String(localized: "map.building.detail.unavailable"),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: String(localized: "common.ok"), style: .default))
+            present(alert, animated: true)
+            return
+        }
+        let vc = BuildingVC(buildingName: annotation.buildingName, url: url)
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(vc, animated: true)
     }
 }
 
@@ -182,15 +227,21 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let item = try? MapData.shared.searchResult.value()[indexPath.row] else { return }
+        guard let searchResults = try? MapData.shared.searchResult.value(),
+              indexPath.row < searchResults.count else { return }
+        let item = searchResults[indexPath.row]
         AnalyticsManager.logSelect(.mapSelectSearchResult, type: .listItem, name: item.name)
         MapData.shared.searchMode.onNext(true)
+        let annotation = BuildingMapAnnotation(
+            buildingName: item.building,
+            urlString: item.url,
+            buildingID: item.seq,
+            coordinate: CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude),
+            title: "\(item.name) · \(item.building) · \(String(format: String(localized: "map.room.number.format"), item.number))"
+        )
         mapView.do {
             $0.removeAnnotations($0.annotations)
-            $0.addAnnotation(MKPointAnnotation().with {
-                $0.coordinate = CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude)
-                $0.title = "\(item.name) (\(item.number)호)"
-            })
+            $0.addAnnotation(annotation)
             $0.camera = MKMapCamera(
                 lookingAtCenter: CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude),
                 fromDistance: 2000,
@@ -198,8 +249,11 @@ extension MapVC: UITableViewDelegate, UITableViewDataSource {
                 heading: 0
             )
         }
+
         searchResultView.isHidden = true
-        searchController.isActive = false
+        searchController.dismiss(animated: true) { [weak self] in
+            self?.showBuildingDetail(annotation)
+        }
     }
 }
 
@@ -208,6 +262,9 @@ extension MapVC: MKMapViewDelegate {
         let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "marker")
         annotationView.markerTintColor = .hanyangBlue
         annotationView.glyphImage = UIImage(systemName: "building")
+        if let building = annotation as? BuildingMapAnnotation {
+            annotationView.accessibilityIdentifier = "map.building.\(building.buildingID ?? building.buildingName)"
+        }
         return annotationView
     }
 
@@ -227,18 +284,7 @@ extension MapVC: MKMapViewDelegate {
     }
 
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        guard let annotation = view.annotation else { return }
-        guard let buildings = try? MapData.shared.buildingResult.value() else { return }
-        guard let building = buildings.first(where: {
-            $0.latitude == annotation.coordinate.latitude && $0.longitude == annotation.coordinate.longitude
-        }) else { return }
-        guard let urlString = building.url else { return }
-        guard let url = URL(string: urlString) else { return }
-        let vc = BuildingVC(buildingName: building.name, url: url)
-        if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(vc, animated: true, completion: nil)
+        guard let building = view.annotation as? BuildingMapAnnotation else { return }
+        showBuildingDetail(building)
     }
 }

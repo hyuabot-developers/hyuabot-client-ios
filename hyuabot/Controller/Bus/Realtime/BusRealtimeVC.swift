@@ -1,10 +1,15 @@
 import Api
 import CoreLocation
+import Network
 import RxSwift
 import UIKit
 
 // swiftlint:disable:next type_body_length
 class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate {
+    private let transitStatusView = TransitStatusView()
+    private let networkMonitor = NWPathMonitor()
+    private var lastSuccessfulCheckAt: Foundation.Date?
+    private var hasTransitError = false
     private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
 
     private let disposeBag = DisposeBag()
@@ -119,6 +124,10 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             TabItem(title: String(localized: "bus.tab.suwon")),
             TabItem(title: String(localized: "bus.tab.other"))
         ]
+        viewPager.onPageChanged = { [weak self] index in
+            self?.updateQuickSettingsVisibility(for: index)
+            self?.renderTransitStatus()
+        }
         return viewPager
     }()
 
@@ -126,6 +135,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         super.viewDidAppear(animated)
         logScreenView(.busRealtime)
         showCoachMarksIfNeeded()
+        updateQuickSettingsVisibility()
     }
 
     private func showCoachMarksIfNeeded() {
@@ -187,8 +197,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        networkMonitor.start(queue: DispatchQueue(label: "bus.transit.network"))
         setupUI()
         observeSubjects()
+        updateQuickSettingsVisibility()
+        renderTransitStatus()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -198,6 +211,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         selectNearestBusStop()
         navigationController?.setNavigationBarHidden(true, animated: false)
         updateQuickSettingsBarLabel()
+        updateQuickSettingsVisibility()
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -221,14 +235,24 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         noticeView.stopAutoScroll()
     }
 
+    deinit {
+        networkMonitor.cancel()
+    }
+
     private func setupUI() {
         view.addSubview(viewPager)
+        view.addSubview(transitStatusView)
         view.addSubview(quickSettingsBar)
+        transitStatusView.onRetry = { [weak self] in self?.fetchBusRealtimeData() }
         quickSettingsBar.addSubview(quickSettingsBarTopBorder)
         quickSettingsBar.addSubview(quickSettingsBarLabel)
         quickSettingsBar.addSubview(quickSettingsButton)
         viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(self.transitStatusView.snp.top)
+        }
+        transitStatusView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.quickSettingsBar.snp.top)
         }
         quickSettingsBar.snp.makeConstraints { make in
@@ -410,6 +434,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             otherBusTabVC.reload()
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.onNext(false)
+
         }).disposed(by: disposeBag)
         BusRealtimeData.shared.notices.subscribe(onNext: { notices in
             if !self.hasLoadedInitialNotices, notices.isEmpty {
@@ -473,7 +498,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     arrival: arrival,
                     destinationStop: destinationStop,
                     showSecondary: showSecondary
-                )
+                ),
+                destinationStopID: destinationStop
             )
         }
         // Parse each log time once and reuse it for both dispatch-interval detection and
@@ -542,7 +568,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     destinationStop: destinationStop,
                     showSecondary: showSecondary
                 ),
-                scheduledTime: log.time
+                scheduledTime: log.time,
+                destinationStopID: destinationStop
             )
             lastDisplayedLogDate = serviceDate
             return (item, serviceDate)
@@ -668,20 +695,48 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 guard requestGeneration > lastAppliedRequestGeneration,
                       busInput == busRealtimeInput(dates: dates) else { return }
                 if let data = response?.data {
+                    hasTransitError = false
                     lastAppliedRequestGeneration = requestGeneration
                     lastAppliedBusInput = busInput
                     lastAppliedNoticeLanguage = noticeLanguage
+                    lastSuccessfulCheckAt = .now
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
+                    renderTransitStatus()
                     self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))
                     if data.bus.isEmpty {
                         BusRealtimeData.shared.isLoading.onNext(false)
                     }
                 } else {
+                    hasTransitError = true
+                    renderTransitStatus()
                     BusRealtimeData.shared.isLoading.onNext(false)
                 }
             }
         }
+    }
+
+    private func renderTransitStatus() {
+        let buses = (try? BusRealtimeData.shared.busRealtimeData.value()) ?? []
+        let visibleRoutes: Set<Int32> = switch viewPager.tabView.currentIndex {
+        case 0: [216_000_068]
+        case 1: [216_000_061, 216_000_043, 216_000_026, 216_000_096]
+        case 2: [216_000_104, 200_000_015]
+        default: [216_000_075]
+        }
+        let visibleBuses = buses.filter { visibleRoutes.contains(Int32($0.route.seq)) }
+        transitStatusView.show(
+            RealtimeFreshness.statusText(
+                stationUpdates: visibleBuses.map { $0.realtime.map { Optional($0.updatedAt) } },
+                hasArrivals: visibleBuses.contains { !$0.arrival.isEmpty },
+                lastSuccessfulCheckAt: lastSuccessfulCheckAt,
+                isLoading: (try? BusRealtimeData.shared.isLoading.value()) ?? false,
+                hasError: hasTransitError,
+                isOffline: networkMonitor.currentPath.status == .unsatisfied,
+                staleAfter: 120
+            ),
+            retry: hasTransitError
+        )
     }
 
     private func startPolling() {
@@ -766,6 +821,14 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             )
         } else {
             quickSettingsBarLabel.text = String(localized: "bus.quick_settings.action_bar.disabled")
+        }
+    }
+
+    private func updateQuickSettingsVisibility(for index: Int? = nil) {
+        let showsBar = (index ?? viewPager.tabView.currentIndex) == 1
+        quickSettingsBar.isHidden = !showsBar
+        quickSettingsBar.snp.updateConstraints { make in
+            make.height.equalTo(showsBar ? 54 : 0)
         }
     }
 

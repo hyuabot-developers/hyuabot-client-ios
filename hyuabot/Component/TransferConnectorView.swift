@@ -74,6 +74,6 @@ final class TransferConnectorView: UIStackView {
             .resolvedColor(with: traitCollection)
             .cgColor
         linkIcon.tintColor = isDarkMode ? .white : connectorTintColor.withAlphaComponent(0.72)
-        titleLabel.textColor = isDarkMode ? .white : connectorTintColor
+        titleLabel.textColor = .label
     }
 }

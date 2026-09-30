@@ -200,8 +200,8 @@ final class DomainLogicTests: XCTestCase {
         XCTAssertTrue(MapSearchLogic.isSearchResultVisible(keyword: "제1공학관"))
         XCTAssertEqual(MapSearchLogic.rowCount(for: [RoomItem]()), 1)
         XCTAssertEqual(MapSearchLogic.rowCount(for: [
-            RoomItem(name: "101", number: "101", building: "A", latitude: 1, longitude: 2),
-            RoomItem(name: "102", number: "102", building: "A", latitude: 1, longitude: 2)
+            RoomItem(name: "101", number: "101", building: "A", latitude: 1, longitude: 2, url: nil, seq: nil),
+            RoomItem(name: "102", number: "102", building: "A", latitude: 1, longitude: 2, url: nil, seq: nil)
         ]), 2)
     }
 

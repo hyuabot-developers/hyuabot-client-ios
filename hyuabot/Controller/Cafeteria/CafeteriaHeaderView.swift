@@ -79,7 +79,8 @@ class CafeteriaHeaderView: UITableViewHeaderFooterView {
                 runningTimeLabel.text = String(format: String(localized: "cafeteria.running.time.%@"), runningTime)
             }
         } else {
-            runningTimeLabel.text = String(localized: "cafeteria.running.time")
+            // Show a localized message when operating hours are missing
+            runningTimeLabel.text = String(localized: "cafeteria.running.time.missing")
         }
         nameStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(10)

@@ -29,8 +29,7 @@ class CafeteriaVC: UIViewController {
             TabItem(title: String(localized: "cafeteria.tab.dinner"))
         ]
         viewPager.onPageChanged = { [weak self] index in
-            self?.selectedMealIndex = index
-            self?.updateShareButtonVisibility()
+            self?.handlePageChange(index: index)
         }
         return viewPager
     }()
@@ -250,6 +249,8 @@ class CafeteriaVC: UIViewController {
                         CafeteriaData.shared.dinnerItems
                             .onNext(data.cafeteria.filter { $0.menus.contains(where: { $0.type.contains("석식") }) }
                                 .sorted(by: { $0.seq < $1.seq }))
+
+                        // Reload all views to ensure synchronization
                         self.breakfastVC.reload()
                         self.lunchVC.reload()
                         self.dinnerVC.reload()
@@ -317,6 +318,11 @@ class CafeteriaVC: UIViewController {
             openCafeteriaInfoVC(cafeteriaID: cafeteriaID)
         }
     #endif
+
+    private func handlePageChange(index: Int) {
+        selectedMealIndex = index
+        updateShareButtonVisibility()
+    }
 }
 
 extension CafeteriaVC {

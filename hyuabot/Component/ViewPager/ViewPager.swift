@@ -111,8 +111,9 @@ extension ViewPager: TabViewDelegate {
 
 extension ViewPager: ContentViewDelegate {
     func didMoveToPage(index: Int) {
+        // Prevent infinite loop by checking if tabView is already at the correct index
         guard tabView.currentIndex != index else { return }
-        tabView.moveToTab(index: index)
+        tabView.moveToTab(index: index, animated: false) // Use animated: false to prevent visual flickering
         onPageChanged?(index)
     }
 }

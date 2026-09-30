@@ -8,7 +8,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "BusRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } minimumDispatchIntervals { __typename weekday minutes } } }"#
+      #"query BusRealtimePageQuery($language: String!, $busInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "버스" }) { __typename notices { __typename title url } } bus(input: $busInput) { __typename route { __typename seq name } stop { __typename seq latitude longitude } order realtime { __typename updatedAt } arrival { __typename stops seats minutes lowFloor isRealtime time arrivalTime destinationTravelMinutes { __typename destinationStopId minutes } destinationArrivalTime } log { __typename date time vehicle } minimumDispatchIntervals { __typename weekday minutes } } }"#
     ))
 
   public var language: String
@@ -99,6 +99,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         .field("route", Route.self),
         .field("stop", Stop.self),
         .field("order", Int.self),
+        .field("realtime", [Realtime].self),
         .field("arrival", [Arrival].self),
         .field("log", [Log].self),
         .field("minimumDispatchIntervals", [MinimumDispatchInterval].self),
@@ -110,6 +111,7 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
       public var route: Route { __data["route"] }
       public var stop: Stop { __data["stop"] }
       public var order: Int { __data["order"] }
+      public var realtime: [Realtime] { __data["realtime"] }
       public var arrival: [Arrival] { __data["arrival"] }
       public var log: [Log] { __data["log"] }
       public var minimumDispatchIntervals: [MinimumDispatchInterval] { __data["minimumDispatchIntervals"] }
@@ -156,6 +158,25 @@ nonisolated public struct BusRealtimePageQuery: GraphQLQuery {
         public var seq: Int { __data["seq"] }
         public var latitude: Double { __data["latitude"] }
         public var longitude: Double { __data["longitude"] }
+      }
+
+      /// Bus.Realtime
+      ///
+      /// Parent Type: `BusRealtime`
+      nonisolated public struct Realtime: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusRealtime }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("updatedAt", Api.DateTime.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          BusRealtimePageQuery.Data.Bus.Realtime.self
+        ] }
+
+        public var updatedAt: Api.DateTime { __data["updatedAt"] }
       }
 
       /// Bus.Arrival

@@ -75,14 +75,21 @@ query HomePageQuery(
         stop {
             seq
         }
+        realtime {
+            updatedAt
+        }
         arrival {
             minutes
+            arrivalTime
             stops
             isRealtime
         }
     }
     subway(input: { language: $subwayLanguage, keys: $subwayKeys }) {
         stationID
+        realtime {
+            updatedAt
+        }
         arrival {
             direction
             entries {
@@ -119,6 +126,9 @@ query HomePageQuery(
         stop {
             seq
             name
+        }
+        realtime {
+            updatedAt
         }
         arrival {
             minutes

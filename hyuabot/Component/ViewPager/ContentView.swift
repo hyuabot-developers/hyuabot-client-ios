@@ -11,6 +11,7 @@ class ContentView: UIView {
     }
 
     weak var delegate: ContentViewDelegate?
+    private var pendingPageIndex: Int?
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout().then {
             $0.scrollDirection = .horizontal
@@ -47,8 +48,22 @@ class ContentView: UIView {
         }
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let index = pendingPageIndex, collectionView.bounds.width > 0 else { return }
+        pendingPageIndex = nil
+        collectionView.layoutIfNeeded()
+        collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: false)
+    }
+
     func moveToPage(index: Int, animated: Bool = true) {
         guard pages.indices.contains(index) else { return }
+        guard collectionView.bounds.width > 0 else {
+            pendingPageIndex = index
+            return
+        }
+        pendingPageIndex = nil
+        collectionView.layoutIfNeeded()
         collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: animated)
     }
 }

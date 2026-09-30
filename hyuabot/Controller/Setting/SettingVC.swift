@@ -90,7 +90,17 @@ class SettingVC: UIViewController {
     }
 
     private func openAppSetting() {
-        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+        let alert = UIAlertController(
+            title: String(localized: "setting.language"),
+            message: String(localized: "setting.language.system.explanation"),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "setting.language.system.cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "setting.language.system.open"), style: .default) { _ in
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+        })
+        present(alert, animated: true)
     }
 
     private func resetCoachMarks() {

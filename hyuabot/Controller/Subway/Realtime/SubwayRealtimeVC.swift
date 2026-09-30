@@ -1,5 +1,6 @@
 import Api
 import ApolloAPI
+import Network
 import RxSwift
 import UIKit
 
@@ -20,7 +21,12 @@ enum SubwayPayloadSelection {
     }
 }
 
+// swiftlint:disable:next type_body_length
 class SubwayRealtimeVC: UIViewController {
+    private let transitStatusView = TransitStatusView()
+    private let networkMonitor = NWPathMonitor()
+    private var lastSuccessfulCheckAt: Foundation.Date?
+    private var hasTransitError = false
     private var requestGeneration = 0
     private var lastAppliedGeneration = 0
     private static let chojiTravelMinutes = 8
@@ -54,6 +60,7 @@ class SubwayRealtimeVC: UIViewController {
             TabItem(title: String(localized: "subway.tab.yellow")),
             TabItem(title: String(localized: "subway.tab.transfer"))
         ]
+        viewPager.onPageChanged = { [weak self] _ in self?.renderTransitStatus() }
         return viewPager
     }()
 
@@ -82,8 +89,10 @@ class SubwayRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        networkMonitor.start(queue: DispatchQueue(label: "subway.transit.network"))
         setupUI()
         observeSubjects()
+        renderTransitStatus()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -111,10 +120,20 @@ class SubwayRealtimeVC: UIViewController {
         stopPolling()
     }
 
+    deinit {
+        networkMonitor.cancel()
+    }
+
     private func setupUI() {
         view.addSubview(viewPager)
+        view.addSubview(transitStatusView)
+        transitStatusView.onRetry = { [weak self] in self?.fetchSubwayRealtimeData() }
         viewPager.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(self.transitStatusView.snp.top)
+        }
+        transitStatusView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
     }
@@ -266,17 +285,44 @@ class SubwayRealtimeVC: UIViewController {
                       keys == SubwayPayloadSelection.allKeys(weekday: currentWeekday),
                       language == LanguageManager.shared.apiLanguageTag else { return }
                 if let data = response?.data {
+                    self.hasTransitError = false
                     self.lastAppliedGeneration = generation
+                    self.lastSuccessfulCheckAt = .now
                     SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
+                    self.renderTransitStatus()
                     SubwayRealtimeData.shared.isLoading.onNext(false)
                     self.line4VC.reload()
                     self.lineSuinVC.reload()
                     self.transferVC.reload()
                 } else {
+                    self.hasTransitError = true
+                    self.renderTransitStatus()
                     SubwayRealtimeData.shared.isLoading.onNext(false)
                 }
             }
         }
+    }
+
+    private func renderTransitStatus() {
+        let stations = (try? SubwayRealtimeData.shared.realtimeData.value()) ?? []
+        let visibleStationIDs: Set<String> = switch viewPager.tabView.currentIndex {
+        case 0: ["K449", "K456"]
+        case 1: ["K251", "K258"]
+        default: ["K449", "K456", "K251", "K258", "S26"]
+        }
+        let visibleStations = stations.filter { visibleStationIDs.contains($0.stationID) }
+        transitStatusView.show(
+            RealtimeFreshness.statusText(
+                stationUpdates: visibleStations.map { $0.realtime.map { Optional($0.updatedAt) } },
+                hasArrivals: visibleStations.contains { $0.arrival.contains { !$0.entries.isEmpty } },
+                lastSuccessfulCheckAt: lastSuccessfulCheckAt,
+                isLoading: (try? SubwayRealtimeData.shared.isLoading.value()) ?? false,
+                hasError: hasTransitError,
+                isOffline: networkMonitor.currentPath.status == .unsatisfied,
+                staleAfter: 180
+            ),
+            retry: hasTransitError
+        )
     }
 
     private func startPolling() {

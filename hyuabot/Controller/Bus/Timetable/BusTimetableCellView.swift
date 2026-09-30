@@ -3,6 +3,7 @@ import UIKit
 
 class BusTimetableCellView: UITableViewCell {
     static let reuseIdentifier = "BusTimetableCellView"
+    private let routeMarkerView = UIView().then { $0.layer.cornerRadius = 2 }
     private let busRouteLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
     }
@@ -22,11 +23,18 @@ class BusTimetableCellView: UITableViewCell {
     }
 
     func setupUI() {
+        contentView.addSubview(routeMarkerView)
         contentView.addSubview(busRouteLabel)
         contentView.addSubview(busTimeLabel)
         selectionStyle = .none
-        busRouteLabel.snp.makeConstraints { make in
+        routeMarkerView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(4)
+            make.height.equalTo(24)
+        }
+        busRouteLabel.snp.makeConstraints { make in
+            make.leading.equalTo(routeMarkerView.snp.trailing).offset(8)
             make.centerY.equalToSuperview()
             make.verticalEdges.equalToSuperview().inset(15)
         }
@@ -48,10 +56,7 @@ class BusTimetableCellView: UITableViewCell {
     }
 
     func setRouteColor(routeName: String) {
-        if routeName == "10-1" || routeName == "50" {
-            busRouteLabel.textColor = .busGreen
-        } else {
-            busRouteLabel.textColor = .busRed
-        }
+        busRouteLabel.textColor = .label
+        routeMarkerView.backgroundColor = routeName == "10-1" || routeName == "50" ? .busGreen : .busRed
     }
 }

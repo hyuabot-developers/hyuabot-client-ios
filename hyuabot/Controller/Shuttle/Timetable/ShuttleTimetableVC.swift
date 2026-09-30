@@ -21,6 +21,7 @@ class ShuttleTimetableVC: UIViewController {
     private lazy var filterButton = UIButton().then {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = .hanyangGreen
+        config.baseForegroundColor = .black
         config.cornerStyle = .medium
         config.image = UIImage(systemName: "line.3.horizontal.decrease")?.withConfiguration(UIImage.SymbolConfiguration(
             pointSize: 20,
@@ -28,6 +29,7 @@ class ShuttleTimetableVC: UIViewController {
         ))
         config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
         $0.configuration = config
+        $0.accessibilityLabel = String(localized: "shuttle.timetable.filter")
         $0.addTarget(self, action: #selector(openFilterVC), for: .touchUpInside)
     }
 
@@ -119,16 +121,14 @@ class ShuttleTimetableVC: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(viewPager)
-        view.addSubview(filterButton)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: filterButton)
         viewPager.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
         filterButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
-            make.width.height.equalTo(50)
+            make.width.height.equalTo(44)
         }
     }
 

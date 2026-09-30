@@ -6,16 +6,14 @@ class SearchResultCellView: UITableViewCell {
     static let reuseIdentifier = "SearchResultCellView"
     private let roomLabel = UILabel().then {
         $0.font = .godo(size: 16, weight: .bold)
-        $0.numberOfLines = 1
-        $0.lineBreakMode = .byTruncatingTail
+        $0.numberOfLines = 0
         $0.textAlignment = .left
     }
 
     private let buildingLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-        $0.numberOfLines = 1
-        $0.lineBreakMode = .byTruncatingMiddle
-        $0.textAlignment = .right
+        $0.font = .godo(size: 14, weight: .regular)
+        $0.numberOfLines = 0
+        $0.textAlignment = .left
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -33,19 +31,20 @@ class SearchResultCellView: UITableViewCell {
         contentView.addSubview(buildingLabel)
         roomLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
-            make.trailing.lessThanOrEqualTo(self.contentView.snp.centerX).offset(-10)
-            make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
+            make.trailing.equalToSuperview().inset(20)
+            make.top.equalToSuperview().inset(12)
         }
         buildingLabel.snp.makeConstraints { make in
-            make.leading.equalTo(self.contentView.snp.centerX).offset(10)
+            make.leading.equalToSuperview().inset(20)
             make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
+            make.top.equalTo(roomLabel.snp.bottom).offset(4)
+            make.bottom.equalToSuperview().inset(12)
         }
     }
 
     func setupUI(item: RoomItem) {
         roomLabel.setKoreanTranslatedText(item.name)
-        buildingLabel.setKoreanTranslatedText("\(item.building) (\(item.number)호)")
+        let roomNumber = String(format: String(localized: "map.room.number.format"), item.number)
+        buildingLabel.setKoreanTranslatedText("\(item.building) · \(roomNumber)")
     }
 }

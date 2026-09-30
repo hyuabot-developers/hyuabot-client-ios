@@ -8,7 +8,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "SubwayRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayRealtimePageQuery($keys: [SubwayStationInput!]!, $language: String!) { subway(input: { language: $language, keys: $keys }) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } } }"#
+      #"query SubwayRealtimePageQuery($keys: [SubwayStationInput!]!, $language: String!) { subway(input: { language: $language, keys: $keys }) { __typename stationID realtime { __typename updatedAt } arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } } }"#
     ))
 
   public var keys: [SubwayStationInput]
@@ -55,6 +55,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
         .field("stationID", String.self),
+        .field("realtime", [Realtime].self),
         .field("arrival", [Arrival].self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -62,7 +63,27 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
       ] }
 
       public var stationID: String { __data["stationID"] }
+      public var realtime: [Realtime] { __data["realtime"] }
       public var arrival: [Arrival] { __data["arrival"] }
+
+      /// Subway.Realtime
+      ///
+      /// Parent Type: `SubwayRealtime`
+      nonisolated public struct Realtime: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayRealtime }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("updatedAt", Api.DateTime.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          SubwayRealtimePageQuery.Data.Subway.Realtime.self
+        ] }
+
+        public var updatedAt: Api.DateTime { __data["updatedAt"] }
+      }
 
       /// Subway.Arrival
       ///
