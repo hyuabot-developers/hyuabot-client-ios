@@ -56,7 +56,17 @@ jobs:
           set -euo pipefail
           brew list swiftformat >/dev/null 2>&1 || brew install swiftformat
           brew list swiftlint >/dev/null 2>&1 || brew install swiftlint
-          brew list periphery >/dev/null 2>&1 || brew install peripheryapp/periphery/periphery
+          # Periphery is installed from its pinned GitHub release. The Homebrew tap cask is no longer installable.
+          PERIPHERY_VERSION=3.8.0
+          PERIPHERY_SHA256=07d4e286e31dd79164df39097e0b59f533c94badbe18158464a455ea88a166d7
+          PERIPHERY_DIR="$RUNNER_TEMP/periphery-$PERIPHERY_VERSION"
+          rm -rf "$PERIPHERY_DIR" && mkdir -p "$PERIPHERY_DIR"
+          curl -fsSL -o "$PERIPHERY_DIR/periphery.zip" \
+            "https://github.com/peripheryapp/periphery/releases/download/$PERIPHERY_VERSION/periphery-$PERIPHERY_VERSION.zip"
+          echo "$PERIPHERY_SHA256  $PERIPHERY_DIR/periphery.zip" | shasum -a 256 -c -
+          unzip -q "$PERIPHERY_DIR/periphery.zip" -d "$PERIPHERY_DIR"
+          chmod +x "$PERIPHERY_DIR/periphery"
+          echo "$PERIPHERY_DIR" >> "$GITHUB_PATH"
 
       - name: Create GoogleService-Info.plist
         run: |
