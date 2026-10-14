@@ -34,11 +34,18 @@ struct ShuttleComplicationView: View {
                             .font(.system(size: 25, weight: .bold, design: .rounded))
                             .minimumScaleFactor(0.5)
                             .lineLimit(1)
-                        // A blank label keeps one line of height so the countdown does not move.
-                        Text(stopRouteLabel(for: next).isEmpty ? " " : stopRouteLabel(for: next))
-                            .font(.system(size: 9, weight: .semibold))
-                            .minimumScaleFactor(0.5)
-                            .lineLimit(1)
+                        // Two lines under the countdown: stop, then route. Blank lines keep the height fixed
+                        // so the countdown does not move.
+                        VStack(spacing: 0) {
+                            Text(stopLine.isEmpty ? " " : stopLine)
+                                .font(.system(size: 8, weight: .regular))
+                                .minimumScaleFactor(0.5)
+                                .lineLimit(1)
+                            Text(label(for: next).isEmpty ? " " : label(for: next))
+                                .font(.system(size: 9, weight: .semibold))
+                                .minimumScaleFactor(0.5)
+                                .lineLimit(1)
+                        }
                     }
                     .widgetAccentable()
                 }
@@ -167,6 +174,11 @@ struct ShuttleComplicationView: View {
 
     // MARK: - Helpers
 
+    /// Circular's stop line: "정류장▶" so the arrow leads into the route line below, or "" when no stop is selected.
+    private var stopLine: String {
+        snapshot.stopID.map { "\(ComplicationText.stopName($0))▶" } ?? ""
+    }
+
     private var stopName: String {
         snapshot.stopID.map { ComplicationText.stopName($0) } ?? ComplicationText.text("placeholder")
     }
@@ -181,7 +193,7 @@ struct ShuttleComplicationView: View {
         )
     }
 
-    /// Circular and corner: "정류장▶노선명". Rows without a route label stay empty.
+    /// Corner only: "정류장▶노선명". Rows without a route label stay empty.
     private func stopRouteLabel(for departure: Departure) -> String {
         let routeLabel = label(for: departure)
         guard !routeLabel.isEmpty, let stopID = snapshot.stopID else { return routeLabel }
