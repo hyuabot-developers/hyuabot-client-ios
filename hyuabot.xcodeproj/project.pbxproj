@@ -171,6 +171,13 @@
 			);
 			target = C72A95E02DAA961500979B22 /* watch */;
 		};
+		C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WatchNearestStopPolicy.swift,
+			);
+			target = C7D5B0102FEF100100000010 /* hyuabotTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -187,6 +194,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */,
+				C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */,
 			);
 			path = watch;
 			sourceTree = "<group>";

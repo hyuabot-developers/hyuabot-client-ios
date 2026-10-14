@@ -29,19 +29,24 @@ struct ShuttleComplicationProvider: TimelineProvider {
     }
 
     /// Builds the timeline from the selected stop. Falls back to the cached schedule when the network fails, marked stale.
+    /// Shows the nearest stop the watch app last found. Falls back to the stop the user last picked when there is none.
+    /// A nearest result older than `ComplicationStore.maximumNearestAge` is marked stale.
     static func makeTimeline(now: Date) async -> Timeline<ShuttleComplicationEntry> {
-        guard let stopID = ComplicationStore.selectedStopID(), let stop = ComplicationStops.find(stopID) else {
+        let nearestStopID = ComplicationStore.nearestStopID()
+        let stopID = nearestStopID ?? ComplicationStore.selectedStopID()
+        guard let stopID, let stop = ComplicationStops.find(stopID) else {
             return timeline(
                 ComplicationTimeline.snapshots(now: now, stopID: nil, schedule: nil, isStale: false),
                 refreshAt: now.addingTimeInterval(ComplicationTimeline.window)
             )
         }
+        let nearestStale = nearestStopID != nil && isNearestOutdated(now: now)
 
         do {
             let schedule = try await ComplicationFetcher.schedule(for: stop, now: now)
             ComplicationStore.save(CachedSchedule(stopID: stopID, fetchedAt: now, schedule: schedule))
             return timeline(
-                ComplicationTimeline.snapshots(now: now, stopID: stopID, schedule: schedule, isStale: false),
+                ComplicationTimeline.snapshots(now: now, stopID: stopID, schedule: schedule, isStale: nearestStale),
                 refreshAt: ComplicationTimeline.refreshDate(now: now, coverageEnd: schedule.coverageEnd)
             )
         } catch {
@@ -53,10 +58,15 @@ struct ShuttleComplicationProvider: TimelineProvider {
                 )
             }
             return timeline(
-                ComplicationTimeline.snapshots(now: now, stopID: stopID, schedule: nil, isStale: false),
+                ComplicationTimeline.snapshots(now: now, stopID: stopID, schedule: nil, isStale: nearestStale),
                 refreshAt: now.addingTimeInterval(ComplicationTimeline.retryInterval)
             )
         }
+    }
+
+    private static func isNearestOutdated(now: Date) -> Bool {
+        guard let checkedAt = ComplicationStore.nearestCheckedAt() else { return true }
+        return now.timeIntervalSince(checkedAt) > ComplicationStore.maximumNearestAge
     }
 
     private static func timeline(_ snapshots: [ComplicationSnapshot], refreshAt: Date) -> Timeline<ShuttleComplicationEntry> {

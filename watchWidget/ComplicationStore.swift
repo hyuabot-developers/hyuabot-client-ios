@@ -4,6 +4,11 @@ import Foundation
 enum ComplicationStore {
     static let appGroupSuiteName = "group.net.jaram.hyuabot"
     static let selectedStopKey = "watch_recent_stop_id"
+    /// Keys written by the watch app's nearest-stop check. Must match `WatchStopStore`.
+    static let nearestStopKey = "watch_nearest_stop_id"
+    static let nearestCheckedAtKey = "watch_nearest_checked_at"
+    /// A nearest-stop result older than this is shown with the stale marker.
+    static let maximumNearestAge: TimeInterval = 3 * 60 * 60
     /// v2 discards caches written before the shuttlecock complication stopped querying shuttlecock_i.
     static let scheduleKeyPrefix = "watch_complication_schedule_v2_"
     /// Last known schedules older than this are treated as unavailable rather than stale.
@@ -17,6 +22,17 @@ enum ComplicationStore {
         guard let stopID = defaults.string(forKey: selectedStopKey),
               ComplicationStops.find(stopID) != nil else { return nil }
         return stopID
+    }
+
+    /// The stop the watch app last found nearest, if any.
+    static func nearestStopID() -> String? {
+        guard let stopID = defaults.string(forKey: nearestStopKey),
+              ComplicationStops.find(stopID) != nil else { return nil }
+        return stopID
+    }
+
+    static func nearestCheckedAt() -> Date? {
+        defaults.object(forKey: nearestCheckedAtKey) as? Date
     }
 
     static func cachedSchedule(for stopID: String) -> CachedSchedule? {
