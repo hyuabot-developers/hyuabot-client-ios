@@ -24,78 +24,194 @@ final class WatchLocationModel: NSObject, ObservableObject {
     }
 
     @Published private(set) var resolution: Resolution = .locating
-    private(set) var nearestStopID: String?
+    @Published private(set) var nearestStopID: String?
+    /// True while a measurement is running, including while the permission prompt is up.
+    @Published private(set) var isLocating = false
+    /// Why the last measurement did not produce a nearest stop. nil after a successful one.
+    @Published private(set) var failureReason: WatchFailureReason?
 
     private let locationManager = CLLocationManager()
-    private let defaults = UserDefaults.standard
+    private var resolver = WatchLocationResolver()
+    private var deadlineTask: Task<Void, Never>?
+    private var lastCheckedAt: Date?
 
     override init() {
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
     }
 
+    /// Starts a measurement unless one is running or a recent result is still fresh.
     func resolve() {
-        guard resolution == .locating else { return }
-        guard CLLocationManager.locationServicesEnabled() else {
-            resolveFallback()
+        dispatch(.start(
+            auth: Self.map(locationManager.authorizationStatus),
+            servicesEnabled: CLLocationManager.locationServicesEnabled(),
+            cached: locationManager.location.map(Self.sample),
+            now: Date()
+        ))
+    }
+
+    /// Called when the screen appears or the app becomes active. Re-measures when the last result is old or missing.
+    func resumeIfNeeded() {
+        let isFresh = resolver.phase.hasFreshOutcome
+            && lastCheckedAt.map { Date().timeIntervalSince($0) < Self.recheckInterval } == true
+        if isFresh {
             return
         }
+        resolve()
+    }
 
-        switch locationManager.authorizationStatus {
-        case .authorizedAlways, .authorizedWhenInUse:
-            locationManager.requestLocation()
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        case .denied, .restricted:
-            resolveFallback()
-        @unknown default:
-            resolveFallback()
-        }
+    /// Stops a running measurement, e.g. when the app leaves the foreground.
+    func cancel() {
+        dispatch(.cancel)
     }
 
     func remember(_ stop: WatchShuttleStop) {
-        defaults.set(stop.id, forKey: Self.recentStopKey)
+        WatchStopStore.save(stopID: stop.id)
+    }
+
+    private func dispatch(_ event: WatchLocationResolver.Event) {
+        let before = resolver.phase
+        let effects = resolver.handle(event, stops: Self.candidates)
+        apply(effects)
+
+        var isStart = false
+        if case .start = event {
+            isStart = true
+        }
+        let after = resolver.phase
+        if after.isTerminal && (after != before || !effects.isEmpty || isStart) {
+            publishOutcome()
+        }
+        isLocating = after == .updating || after == .awaitingAuthorization
+    }
+
+    private func apply(_ effects: [WatchLocationResolver.Effect]) {
+        for effect in effects {
+            switch effect {
+            case .requestAuthorization:
+                locationManager.requestWhenInUseAuthorization()
+            case .startUpdating:
+                locationManager.startUpdatingLocation()
+            case .stopUpdating:
+                locationManager.stopUpdatingLocation()
+            case .scheduleDeadline:
+                scheduleDeadline()
+            case .cancelDeadline:
+                deadlineTask?.cancel()
+                deadlineTask = nil
+            }
+        }
+    }
+
+    private func scheduleDeadline() {
+        deadlineTask?.cancel()
+        deadlineTask = Task { [weak self] in
+            try? await Task.sleep(for: WatchNearestStopPolicy.timeout)
+            guard !Task.isCancelled else { return }
+            self?.dispatch(.deadline)
+        }
+    }
+
+    /// Publishes the finished measurement to the UI and to the App Group.
+    /// The manual selection (`watch_recent_stop_id`) is never changed here.
+    private func publishOutcome() {
+        switch resolver.phase {
+        case let .resolved(stopID):
+            let now = Date()
+            lastCheckedAt = now
+            nearestStopID = stopID
+            failureReason = nil
+            WatchStopStore.saveNearest(stopID: stopID, at: now)
+            resolution = .nearest(stopID)
+        case let .failed(reason):
+            failureReason = reason
+            if reason == .noStopNearby {
+                lastCheckedAt = Date()
+                nearestStopID = nil
+                WatchStopStore.clearNearest()
+            }
+            // Keep the last known nearest stop on other failures. The complication then shows it as stale.
+            if resolution == .locating {
+                resolveFallback()
+            }
+        case .idle, .awaitingAuthorization, .updating:
+            break
+        }
     }
 
     private func resolveFallback() {
-        if let stopID = defaults.string(forKey: Self.recentStopKey), WatchShuttleStop.all.contains(where: { $0.id == stopID }) {
+        if let stopID = WatchStopStore.selectedStopID() {
             resolution = .recent(stopID)
         } else {
             resolution = .stopList
         }
     }
 
-    private static let recentStopKey = "watch_recent_stop_id"
-    private static let maximumAccuracy: CLLocationAccuracy = 500
-    private static let maximumStopDistance: CLLocationDistance = 3000
+    private static let recheckInterval: TimeInterval = 5 * 60
+
+    private static var candidates: [WatchStopCandidate] {
+        WatchShuttleStop.all.map { WatchStopCandidate(id: $0.id, latitude: $0.latitude, longitude: $0.longitude) }
+    }
+
+    private static func sample(_ location: CLLocation) -> WatchLocationSample {
+        WatchLocationSample(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            horizontalAccuracy: location.horizontalAccuracy,
+            timestamp: location.timestamp
+        )
+    }
+
+    private static func map(_ status: CLAuthorizationStatus) -> WatchLocationResolver.Authorization {
+        switch status {
+        case .notDetermined: .notDetermined
+        case .authorizedAlways, .authorizedWhenInUse: .authorized
+        case .denied, .restricted: .denied
+        @unknown default: .denied
+        }
+    }
+
+    private static func map(_ error: any Error) -> WatchLocationResolver.ErrorKind {
+        guard let code = (error as? CLError)?.code else { return .other }
+        switch code {
+        case .locationUnknown: return .locationUnknown
+        case .denied: return .denied
+        default: return .other
+        }
+    }
+}
+
+extension WatchLocationResolver.Phase {
+    fileprivate var isTerminal: Bool {
+        switch self {
+        case .resolved, .failed: true
+        case .idle, .awaitingAuthorization, .updating: false
+        }
+    }
+
+    /// A finished result that is still valid for the recheck interval: a found stop or a confirmed "no stop nearby".
+    var hasFreshOutcome: Bool {
+        switch self {
+        case .resolved, .failed(.noStopNearby): true
+        case .idle, .awaitingAuthorization, .updating, .failed: false
+        }
+    }
 }
 
 extension WatchLocationModel: @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last,
-              location.horizontalAccuracy >= 0,
-              location.horizontalAccuracy <= Self.maximumAccuracy,
-              let stop = WatchShuttleStop.all.min(by: {
-                  $0.location.distance(from: location) < $1.location.distance(from: location)
-              }),
-              stop.location.distance(from: location) <= Self.maximumStopDistance
-        else {
-            resolveFallback()
-            return
+        let now = Date()
+        for location in locations {
+            dispatch(.sample(Self.sample(location), now: now))
         }
-
-        nearestStopID = stop.id
-        remember(stop)
-        resolution = .nearest(stop.id)
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-        resolveFallback()
+        dispatch(.error(Self.map(error)))
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        guard resolution == .locating else { return }
-        resolve()
+        dispatch(.authorizationChanged(Self.map(manager.authorizationStatus)))
     }
 }

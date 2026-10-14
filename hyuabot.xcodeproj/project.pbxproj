@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		84A0F92C899B2C767D2DFB59 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F5CF8C7DAD541FEFEA8CD24 /* Foundation.framework */; };
+		8C5DD1B310E2262BA176A139 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 5B8719AB3DC8A3183BB7EEBF /* Apollo */; };
 		C70119632D2954670077A1A5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = C70119622D2954670077A1A5 /* SnapKit */; };
 		C72A95EB2DAA961600979B22 /* watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C72A95E12DAA961500979B22 /* watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C73CB62D2D4100F3005E9731 /* RealmSwift */; };
@@ -28,9 +30,18 @@
 		C7E468962DAE2DDD00E8975E /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468952DAE2DDD00E8975E /* Apollo */; };
 		C7E4689D2DAE2ED500E8975E /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7E4689C2DAE2ED500E8975E /* Then */; };
 		C7E468A12DAE2F1800E8975E /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7E468A02DAE2F1800E8975E /* RxSwift */; };
+		E3F23DA9291711304C421FB1 /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = CDAA100B96CD7B1D067AC177 /* Api */; };
+		E79550532FFF2FB536D21DE9 /* watchWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BBB2C2D3315F58ACF655B93C /* watchWidget.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0AC53C3B3E0724CC5297C038 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C056E32D277910007A228B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE01C3C32BD8840DDC54034D;
+			remoteInfo = watchWidget;
+		};
 		C72A95E92DAA961600979B22 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = C7C056E32D277910007A228B /* Project object */;
@@ -62,6 +73,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		B7CF170478377859B08D0050 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E79550532FFF2FB536D21DE9 /* watchWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C72A95EC2DAA961600979B22 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -98,6 +120,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4F5CF8C7DAD541FEFEA8CD24 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		BBB2C2D3315F58ACF655B93C /* watchWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = watchWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C72A95E12DAA961500979B22 /* watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C79048C52FC947FD005BF1C1 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C79048C62FC947FD005BF1C1 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -108,6 +132,24 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		558178DD9A6E4CF6C941B2FC /* Exceptions for "watchWidget" folder in "hyuabotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ComplicationFetcher.swift,
+				ComplicationViews.swift,
+				Info.plist,
+				ShuttleComplication.swift,
+				watchWidgetBundle.swift,
+			);
+			target = C7D5B0102FEF100100000010 /* hyuabotTests */;
+		};
+		9FCB98531FDA4A48C787B0F8 /* Exceptions for "watchWidget" folder in "watchWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FE01C3C32BD8840DDC54034D /* watchWidget */;
+		};
 		C79048DF2FC947FE005BF1C1 /* Exceptions for "widget" folder in "widgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -129,13 +171,30 @@
 			);
 			target = C72A95E02DAA961500979B22 /* watch */;
 		};
+		C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WatchNearestStopPolicy.swift,
+			);
+			target = C7D5B0102FEF100100000010 /* hyuabotTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		428347005D74FEF49E1FC300 /* watchWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				558178DD9A6E4CF6C941B2FC /* Exceptions for "watchWidget" folder in "hyuabotTests" target */,
+				9FCB98531FDA4A48C787B0F8 /* Exceptions for "watchWidget" folder in "watchWidget" target */,
+			);
+			path = watchWidget;
+			sourceTree = "<group>";
+		};
 		C72A95E22DAA961500979B22 /* watch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */,
+				C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */,
 			);
 			path = watch;
 			sourceTree = "<group>";
@@ -169,6 +228,16 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		210B9715CEAFDC1493994357 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84A0F92C899B2C767D2DFB59 /* Foundation.framework in Frameworks */,
+				E3F23DA9291711304C421FB1 /* Api in Frameworks */,
+				8C5DD1B310E2262BA176A139 /* Apollo in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C72A95DE2DAA961500979B22 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -225,6 +294,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9A5177E57EC4B2B9C2693284 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				4F5CF8C7DAD541FEFEA8CD24 /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
 		C7C056E22D277910007A228B = {
 			isa = PBXGroup;
 			children = (
@@ -235,6 +312,7 @@
 				C79048CA2FC947FD005BF1C1 /* widget */,
 				C7CBC01A2F91E85A00010444 /* Frameworks */,
 				C7C056EC2D277910007A228B /* Products */,
+				428347005D74FEF49E1FC300 /* watchWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -246,6 +324,7 @@
 				C7D5B0212FEF100100000021 /* hyuabotUITests.xctest */,
 				C72A95E12DAA961500979B22 /* watch.app */,
 				C79048C52FC947FD005BF1C1 /* widgetExtension.appex */,
+				BBB2C2D3315F58ACF655B93C /* watchWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -255,6 +334,7 @@
 			children = (
 				C79048C62FC947FD005BF1C1 /* WidgetKit.framework */,
 				C79048C82FC947FD005BF1C1 /* SwiftUI.framework */,
+				9A5177E57EC4B2B9C2693284 /* watchOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -269,10 +349,12 @@
 				C72A95DD2DAA961500979B22 /* Sources */,
 				C72A95DE2DAA961500979B22 /* Frameworks */,
 				C72A95DF2DAA961500979B22 /* Resources */,
+				B7CF170478377859B08D0050 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				62034F33C5EB6DA494080F28 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C72A95E22DAA961500979B22 /* watch */,
@@ -364,6 +446,7 @@
 				C7D5B0332FEF100100000033 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				428347005D74FEF49E1FC300 /* watchWidget */,
 				C7D5B0122FEF100100000012 /* hyuabotTests */,
 			);
 			name = hyuabotTests;
@@ -391,11 +474,33 @@
 				C7D5B0222FEF100100000022 /* hyuabotUITests */,
 			);
 			name = hyuabotUITests;
-			packageProductDependencies = (
-			);
 			productName = hyuabotUITests;
 			productReference = C7D5B0212FEF100100000021 /* hyuabotUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		FE01C3C32BD8840DDC54034D /* watchWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C4FA5067C28FF07C0CC08ECE /* Build configuration list for PBXNativeTarget "watchWidget" */;
+			buildPhases = (
+				930CD08501DF3F0A5F38236C /* Sources */,
+				210B9715CEAFDC1493994357 /* Frameworks */,
+				FE0170DAED7E28FBB96D20C9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				428347005D74FEF49E1FC300 /* watchWidget */,
+			);
+			name = watchWidget;
+			packageProductDependencies = (
+				CDAA100B96CD7B1D067AC177 /* Api */,
+				5B8719AB3DC8A3183BB7EEBF /* Apollo */,
+			);
+			productName = watchWidget;
+			productReference = BBB2C2D3315F58ACF655B93C /* watchWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -458,6 +563,7 @@
 				C7D5B0202FEF100100000020 /* hyuabotUITests */,
 				C72A95E02DAA961500979B22 /* watch */,
 				C79048C42FC947FD005BF1C1 /* widgetExtension */,
+				FE01C3C32BD8840DDC54034D /* watchWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -492,6 +598,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C7D5B0252FEF100100000025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE0170DAED7E28FBB96D20C9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -563,6 +676,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		930CD08501DF3F0A5F38236C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C72A95DD2DAA961500979B22 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -601,6 +721,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		62034F33C5EB6DA494080F28 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = watchWidget;
+			target = FE01C3C32BD8840DDC54034D /* watchWidget */;
+			targetProxy = 0AC53C3B3E0724CC5297C038 /* PBXContainerItemProxy */;
+		};
 		C72A95EA2DAA961600979B22 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C72A95E02DAA961500979B22 /* watch */;
@@ -624,14 +750,80 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2EC8206647FA64F3E1165F4F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = watchWidget/watchWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 26.10.14;
+				DEVELOPMENT_TEAM = 9YYP5T2RL4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = watchWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = watchWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 26.10.14;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp.watchwidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		94610925FD569FB3FDEA09EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = watchWidget/watchWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 26.10.14;
+				DEVELOPMENT_TEAM = 9YYP5T2RL4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = watchWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = watchWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 26.10.14;
+				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp.watchwidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
 		C72A95ED2DAA961600979B22 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphonesimulator*]" = "";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = watch/watch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26.09.29;
+				CURRENT_PROJECT_VERSION = 26.10.14;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = watch/Info.plist;
@@ -644,7 +836,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09.29;
+				MARKETING_VERSION = 26.10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -662,8 +854,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphonesimulator*]" = "";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = watch/watch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26.09.29;
+				CURRENT_PROJECT_VERSION = 26.10.14;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = watch/Info.plist;
@@ -676,7 +869,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09.29;
+				MARKETING_VERSION = 26.10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -695,7 +888,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26.09.29;
+				CURRENT_PROJECT_VERSION = 26.10.14;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = widget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = widget;
@@ -706,7 +899,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.09.29;
+				MARKETING_VERSION = 26.10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -726,7 +919,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26.09.29;
+				CURRENT_PROJECT_VERSION = 26.10.14;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = widget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = widget;
@@ -737,7 +930,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.09.29;
+				MARKETING_VERSION = 26.10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -757,7 +950,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = hyuabot/hyuabot.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26.09.29;
+				CURRENT_PROJECT_VERSION = 26.10.14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = hyuabot/Info.plist;
@@ -775,7 +968,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09.29;
+				MARKETING_VERSION = 26.10.14;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -792,7 +985,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = hyuabot/hyuabot.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26.09.29;
+				CURRENT_PROJECT_VERSION = 26.10.14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = hyuabot/Info.plist;
@@ -810,7 +1003,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09.29;
+				MARKETING_VERSION = 26.10.14;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1022,6 +1215,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C4FA5067C28FF07C0CC08ECE /* Build configuration list for PBXNativeTarget "watchWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94610925FD569FB3FDEA09EC /* Release */,
+				2EC8206647FA64F3E1165F4F /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C72A95EF2DAA961600979B22 /* Build configuration list for PBXNativeTarget "watch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1145,6 +1347,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5B8719AB3DC8A3183BB7EEBF /* Apollo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */;
+			productName = Apollo;
+		};
 		C70119622D2954670077A1A5 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */;
@@ -1223,6 +1430,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
+		};
+		CDAA100B96CD7B1D067AC177 /* Api */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7C51A752F8D02550002329A /* XCLocalSwiftPackageReference "api" */;
+			productName = Api;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

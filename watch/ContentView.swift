@@ -42,10 +42,6 @@ struct WatchShuttleStop: Hashable {
             latitude: 37.31487247528457, longitude: 126.83963540399434
         )
     ]
-
-    var location: CLLocation {
-        CLLocation(latitude: latitude, longitude: longitude)
-    }
 }
 
 enum WatchLocalization {
@@ -66,6 +62,10 @@ enum WatchLocalization {
             "route.direct": "직행",
             "no.scheduled.shuttle": "도착 예정인\n셔틀이 없습니다.",
             "finding.nearest.stop": "가까운 정류장을 찾고 있습니다",
+            "location.failed": "위치를 확인하지 못했습니다",
+            "location.denied": "설정에서 위치 권한을 허용해 주세요",
+            "location.noStopNearby": "가까운 정류장이 없습니다",
+            "location.retry": "다시 찾기",
             "nearest.stop": "가장 가까운 정류장",
             "other.stops": "다른 정류장 보기",
             "load.failed": "시간표를 불러오지 못했습니다.",
@@ -81,6 +81,10 @@ enum WatchLocalization {
             "route.direct": "Direct",
             "no.scheduled.shuttle": "No scheduled\nshuttle.",
             "finding.nearest.stop": "Finding the nearest stop",
+            "location.failed": "Couldn't determine your location",
+            "location.denied": "Allow location access in Settings",
+            "location.noStopNearby": "No stop nearby",
+            "location.retry": "Try again",
             "nearest.stop": "Nearest stop",
             "other.stops": "Other stops",
             "load.failed": "Couldn’t load the timetable.",
@@ -96,6 +100,10 @@ enum WatchLocalization {
             "route.direct": "直行",
             "no.scheduled.shuttle": "予定されている\nシャトルがありません。",
             "finding.nearest.stop": "最寄りの停留所を検索中",
+            "location.failed": "位置情報を確認できませんでした",
+            "location.denied": "設定で位置情報の許可をしてください",
+            "location.noStopNearby": "近くに停留所がありません",
+            "location.retry": "再検索",
             "nearest.stop": "最寄りの停留所",
             "other.stops": "他の停留所を見る",
             "load.failed": "時刻表を読み込めませんでした。",
@@ -111,6 +119,10 @@ enum WatchLocalization {
             "route.direct": "直达",
             "no.scheduled.shuttle": "暂无预定\n校车。",
             "finding.nearest.stop": "正在查找最近的车站",
+            "location.failed": "无法确定您的位置",
+            "location.denied": "请在设置中允许位置权限",
+            "location.noStopNearby": "附近没有车站",
+            "location.retry": "重新查找",
             "nearest.stop": "最近的车站",
             "other.stops": "查看其他车站",
             "load.failed": "无法载入时刻表。",
@@ -121,6 +133,8 @@ enum WatchLocalization {
 
 struct ContentView: View {
     @StateObject private var locationModel = WatchLocationModel()
+    @Environment(\.scenePhase)
+    private var scenePhase
     @State private var path: [WatchShuttleStop] = []
     @State private var didApplyInitialStop = false
 
@@ -136,13 +150,19 @@ struct ContentView: View {
                     }
                     .padding()
                 } else {
-                    StopListView { stop in
-                        locationModel.remember(stop)
-                        path.append(stop)
-                        Task {
-                            await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
+                    StopListView(
+                        isLocating: locationModel.isLocating,
+                        failureReason: locationModel.failureReason,
+                        onRetry: { locationModel.resolve() },
+                        onSelect: { stop in
+                            didApplyInitialStop = true
+                            locationModel.remember(stop)
+                            path.append(stop)
+                            Task {
+                                await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
+                            }
                         }
-                    }
+                    )
                 }
             }
             .navigationDestination(for: WatchShuttleStop.self) { stop in
@@ -154,11 +174,28 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            locationModel.resolve()
+            locationModel.resumeIfNeeded()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                locationModel.resumeIfNeeded()
+            } else {
+                locationModel.cancel()
+            }
         }
         .onReceive(locationModel.$resolution) { resolution in
-            guard !didApplyInitialStop,
-                  let stopID = resolution.stopID,
+            // Only the first finished result moves the user automatically. Later re-checks never change the screen.
+            // The initial move does not overwrite the manual selection; the nearest stop has its own key.
+            guard !didApplyInitialStop, resolution != .locating else { return }
+            didApplyInitialStop = true
+            guard let stopID = resolution.stopID,
+                  let stop = WatchShuttleStop.all.first(where: { $0.id == stopID }) else { return }
+            path = [stop]
+        }
+        .onOpenURL { url in
+            // Opened by the complication: show the departure list for the stop it displays.
+            // Do not save it as the manual selection; the complication's stop is usually the nearest one.
+            guard let stopID = WatchStopStore.stopID(from: url),
                   let stop = WatchShuttleStop.all.first(where: { $0.id == stopID }) else { return }
             didApplyInitialStop = true
             path = [stop]
@@ -167,10 +204,29 @@ struct ContentView: View {
 }
 
 private struct StopListView: View {
+    let isLocating: Bool
+    let failureReason: WatchFailureReason?
+    let onRetry: () -> Void
     let onSelect: (WatchShuttleStop) -> Void
 
     var body: some View {
         List {
+            if isLocating {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text(WatchLocalization.text("finding.nearest.stop"))
+                        .font(.footnote)
+                }
+            } else if let failureReason {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(failureMessage(failureReason))
+                        .font(.footnote)
+                    if isRetryable(failureReason) {
+                        Button(WatchLocalization.text("location.retry"), action: onRetry)
+                            .font(.footnote)
+                    }
+                }
+            }
             ForEach(WatchShuttleStop.all, id: \.self) { stop in
                 Button {
                     onSelect(stop)
@@ -186,6 +242,22 @@ private struct StopListView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    /// Denied and disabled services fail the same way on retry, so only a settings hint is shown.
+    private func isRetryable(_ reason: WatchFailureReason) -> Bool {
+        switch reason {
+        case .denied, .servicesDisabled: false
+        case .timedOut, .unavailable, .noStopNearby: true
+        }
+    }
+
+    private func failureMessage(_ reason: WatchFailureReason) -> String {
+        switch reason {
+        case .denied, .servicesDisabled: WatchLocalization.text("location.denied")
+        case .noStopNearby: WatchLocalization.text("location.noStopNearby")
+        case .timedOut, .unavailable: WatchLocalization.text("location.failed")
         }
     }
 }
