@@ -72,38 +72,39 @@ struct ShuttleComplicationView: View {
             .widgetAccentable()
     }
 
-    // MARK: - Rectangular: clock time and route
+    // MARK: - Rectangular: stop on the left, up to two "route · countdown" rows on the right
 
     private var rectangular: some View {
-        VStack(alignment: .leading, spacing: 1) {
+        HStack(alignment: .center, spacing: 6) {
+            // Stop name pinned to the leading edge.
             Text(stopName)
                 .font(.headline)
                 .lineLimit(1)
-            switch snapshot.status {
-            case .departures, .placeholder:
-                if let next = snapshot.upcoming.first {
-                    Text("\(ShuttleClock.displayTime(next.date)) \(label(for: next))")
-                        .font(.body.weight(.semibold))
-                        .lineLimit(1)
-                    Text(Countdown(departure: next, at: snapshot.date).long)
-                        .font(.caption)
+                .minimumScaleFactor(0.6)
+            Spacer(minLength: 0)
+            // Route · countdown rows pinned to the trailing edge.
+            VStack(alignment: .trailing, spacing: 1) {
+                switch snapshot.status {
+                case .departures, .placeholder:
+                    ForEach(Array(rectangularDepartures.enumerated()), id: \.offset) { _, departure in
+                        Text(rowText(for: departure))
+                            .font(.footnote.weight(.semibold))
+                            .multilineTextAlignment(.trailing)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
+                case .noStop:
+                    Text(ComplicationText.text("noStop")).font(.caption).lineLimit(2)
+                case .offline:
+                    Text(ComplicationText.text("offline")).font(.caption)
+                case .empty:
+                    Text(ComplicationText.text("empty")).font(.caption)
+                case .unknown, .expired:
+                    Text(ComplicationText.text("updating")).font(.caption)
                 }
-                if let second = snapshot.upcoming.dropFirst().first {
-                    Text("\(ShuttleClock.displayTime(second.date)) \(label(for: second))")
-                        .font(.caption2)
-                        .lineLimit(1)
+                if snapshot.isStale {
+                    Text(ComplicationText.text("stale")).font(.caption2)
                 }
-            case .noStop:
-                Text(ComplicationText.text("noStop")).font(.caption).lineLimit(2)
-            case .offline:
-                Text(ComplicationText.text("offline")).font(.caption)
-            case .empty:
-                Text(ComplicationText.text("empty")).font(.caption)
-            case .unknown, .expired:
-                Text(ComplicationText.text("updating")).font(.caption)
-            }
-            if snapshot.isStale {
-                Text(ComplicationText.text("stale")).font(.caption2)
             }
         }
     }
@@ -176,6 +177,34 @@ struct ShuttleComplicationView: View {
     }
 
     // MARK: - Helpers
+
+    /// Rectangular rows: the first upcoming departure of each route, in time order, at most two.
+    /// If the stop has only one route, the second row is that route's next departure.
+    /// Rows without a route label count as their own route, so they are never merged.
+    private var rectangularDepartures: [Departure] {
+        var seenRoutes = Set<String>()
+        var firstPerRoute: [Departure] = []
+        var laterDepartures: [Departure] = []
+        for departure in snapshot.upcoming {
+            let route = label(for: departure)
+            let key = route.isEmpty ? "time-\(departure.date.timeIntervalSince1970)" : route
+            if seenRoutes.insert(key).inserted {
+                firstPerRoute.append(departure)
+            } else {
+                laterDepartures.append(departure)
+            }
+        }
+        return (firstPerRoute + laterDepartures)
+            .prefix(2)
+            .sorted { $0.date < $1.date }
+    }
+
+    /// Rectangular row: "노선명 · 카운트다운". Rows without a route label fall back to the departure time.
+    private func rowText(for departure: Departure) -> String {
+        let route = label(for: departure)
+        let head = route.isEmpty ? ShuttleClock.displayTime(departure.date) : route
+        return "\(head) · \(Countdown(departure: departure, at: snapshot.date).short)"
+    }
 
     /// Circular's stop line: "정류장▶" so the arrow leads into the route line below, or "" when no stop is selected.
     private var stopLine: String {

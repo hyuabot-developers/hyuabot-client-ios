@@ -201,7 +201,10 @@ struct ComplicationSnapshot: Equatable, Sendable {
     let date: Date
     let status: Status
     let stopID: String?
-    /// The next departures after `date`, nearest first (at most two).
+    /// Enough upcoming departures to pick one per route. Each view decides how many to show.
+    static let maxUpcoming = 10
+
+    /// The next departures after `date`, nearest first (at most `maxUpcoming`).
     let upcoming: [Departure]
     let isStale: Bool
 
@@ -256,7 +259,7 @@ enum ComplicationTimeline {
                 date: time,
                 status: status(upcoming: upcoming, schedule: schedule, isStale: isStale),
                 stopID: stopID,
-                upcoming: Array(upcoming.prefix(2)),
+                upcoming: Array(upcoming.prefix(ComplicationSnapshot.maxUpcoming)),
                 isStale: isStale
             )
         }
