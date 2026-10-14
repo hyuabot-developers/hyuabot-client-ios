@@ -35,7 +35,7 @@ struct ShuttleComplicationView: View {
                             .minimumScaleFactor(0.5)
                             .lineLimit(1)
                         // A blank label keeps one line of height so the countdown does not move.
-                        Text(label(for: next).isEmpty ? " " : label(for: next))
+                        Text(stopRouteLabel(for: next).isEmpty ? " " : stopRouteLabel(for: next))
                             .font(.system(size: 9, weight: .semibold))
                             .minimumScaleFactor(0.5)
                             .lineLimit(1)
@@ -139,7 +139,10 @@ struct ShuttleComplicationView: View {
                         .font(.title3.bold())
                         .widgetCurvesContent()
                         .widgetLabel {
-                            Text(cornerLabel("\(ShuttleClock.displayTime(next.date)) \(label(for: next))"))
+                            // Countdown is the curved text; the label is one line, stop▶route.
+                            // Rows without a route label fall back to the departure time so the label is not blank.
+                            let route = stopRouteLabel(for: next)
+                            Text(cornerLabel(route.isEmpty ? ShuttleClock.displayTime(next.date) : route))
                         }
                 }
             case .noStop:
@@ -176,6 +179,13 @@ struct ShuttleComplicationView: View {
         return ComplicationText.routeLabel(
             stopID: stopID, routeTag: departure.routeTag, routeName: departure.routeName
         )
+    }
+
+    /// Circular and corner: "정류장▶노선명". Rows without a route label stay empty.
+    private func stopRouteLabel(for departure: Departure) -> String {
+        let routeLabel = label(for: departure)
+        guard !routeLabel.isEmpty, let stopID = snapshot.stopID else { return routeLabel }
+        return "\(ComplicationText.stopName(stopID))▶\(routeLabel)"
     }
 }
 
