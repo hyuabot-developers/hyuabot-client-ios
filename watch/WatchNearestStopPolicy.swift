@@ -1,6 +1,6 @@
 //
 //  WatchNearestStopPolicy.swift
-//  watch Watch App
+//  hyuabot watch
 //
 //  Pure nearest-stop logic. Foundation only, so the iOS unit tests can compile this file directly.
 //
@@ -53,7 +53,9 @@ enum WatchNearestStopPolicy {
     /// Keeps the more accurate sample. Equal accuracy keeps the newer one.
     static func better(_ current: WatchLocationSample?, _ candidate: WatchLocationSample) -> WatchLocationSample {
         guard let current else { return candidate }
-        if candidate.horizontalAccuracy < current.horizontalAccuracy { return candidate }
+        if candidate.horizontalAccuracy < current.horizontalAccuracy {
+            return candidate
+        }
         if candidate.horizontalAccuracy == current.horizontalAccuracy, candidate.timestamp > current.timestamp {
             return candidate
         }
@@ -63,7 +65,8 @@ enum WatchNearestStopPolicy {
     static func decide(_ sample: WatchLocationSample, maxAccuracy: Double, stops: [WatchStopCandidate]) -> Decision {
         guard sample.horizontalAccuracy >= 0, sample.horizontalAccuracy <= maxAccuracy else { return .unusable }
         guard let nearest = stops.min(by: { distance(sample, $0) < distance(sample, $1) }),
-              distance(sample, nearest) <= maximumStopDistance else {
+              distance(sample, nearest) <= maximumStopDistance
+        else {
             return .noStopNearby
         }
         return .nearest(nearest.id)
@@ -76,8 +79,8 @@ enum WatchNearestStopPolicy {
         let lat2 = stop.latitude * .pi / 180
         let dLat = (stop.latitude - sample.latitude) * .pi / 180
         let dLon = (stop.longitude - sample.longitude) * .pi / 180
-        let h = sin(dLat / 2) * sin(dLat / 2) + cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2)
-        return 2 * earthRadius * asin(min(1, sqrt(h)))
+        let hav = sin(dLat / 2) * sin(dLat / 2) + cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2)
+        return 2 * earthRadius * asin(min(1, sqrt(hav)))
     }
 }
 
@@ -126,17 +129,17 @@ struct WatchLocationResolver {
     mutating func handle(_ event: Event, stops: [WatchStopCandidate]) -> [Effect] {
         switch event {
         case let .start(auth, servicesEnabled, cached, now):
-            return start(auth: auth, servicesEnabled: servicesEnabled, cached: cached, now: now, stops: stops)
+            start(auth: auth, servicesEnabled: servicesEnabled, cached: cached, now: now, stops: stops)
         case let .authorizationChanged(auth):
-            return authorizationChanged(auth)
+            authorizationChanged(auth)
         case let .sample(sample, now):
-            return receive(sample, now: now, stops: stops)
+            receive(sample, now: now, stops: stops)
         case let .error(kind):
-            return receive(kind, stops: stops)
+            receive(kind, stops: stops)
         case .deadline:
-            return deadline(stops: stops)
+            deadline(stops: stops)
         case .cancel:
-            return cancel()
+            cancel()
         }
     }
 
@@ -162,8 +165,8 @@ struct WatchLocationResolver {
             phase = .awaitingAuthorization
             return [.requestAuthorization]
         case .authorized:
-            if let cached, WatchNearestStopPolicy.isUsable(cached, now: now),
-               cached.horizontalAccuracy <= WatchNearestStopPolicy.immediateAccuracy {
+            let cachedIsUsable = cached.map { WatchNearestStopPolicy.isUsable($0, now: now) } == true
+            if let cached, cachedIsUsable, cached.horizontalAccuracy <= WatchNearestStopPolicy.immediateAccuracy {
                 phase = result(WatchNearestStopPolicy.decide(
                     cached, maxAccuracy: WatchNearestStopPolicy.immediateAccuracy, stops: stops
                 ))
@@ -210,7 +213,9 @@ struct WatchLocationResolver {
             phase = .failed(.denied)
             return [.stopUpdating, .cancelDeadline]
         case .other:
-            if let effects = settleWithBest(stops: stops) { return effects }
+            if let effects = settleWithBest(stops: stops) {
+                return effects
+            }
             phase = .failed(.unavailable)
             return [.stopUpdating, .cancelDeadline]
         }
@@ -218,7 +223,9 @@ struct WatchLocationResolver {
 
     private mutating func deadline(stops: [WatchStopCandidate]) -> [Effect] {
         guard phase == .updating else { return [] }
-        if let effects = settleWithBest(stops: stops) { return effects }
+        if let effects = settleWithBest(stops: stops) {
+            return effects
+        }
         phase = .failed(.timedOut)
         return [.stopUpdating]
     }

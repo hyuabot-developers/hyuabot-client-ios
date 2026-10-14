@@ -6,7 +6,7 @@ struct ShuttleComplicationEntry: TimelineEntry, Sendable {
     let snapshot: ComplicationSnapshot
 
     init(snapshot: ComplicationSnapshot) {
-        self.date = snapshot.date
+        date = snapshot.date
         self.snapshot = snapshot
     }
 }
@@ -24,7 +24,7 @@ struct ShuttleComplicationProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<ShuttleComplicationEntry>) -> Void) {
         Task {
-            completion(await Self.makeTimeline(now: .now))
+            await completion(Self.makeTimeline(now: .now))
         }
     }
 
@@ -51,7 +51,8 @@ struct ShuttleComplicationProvider: TimelineProvider {
             )
         } catch {
             if let cached = ComplicationStore.cachedSchedule(for: stopID),
-               now.timeIntervalSince(cached.fetchedAt) <= ComplicationStore.maximumCacheAge {
+               now.timeIntervalSince(cached.fetchedAt) <= ComplicationStore.maximumCacheAge
+            {
                 return timeline(
                     ComplicationTimeline.snapshots(now: now, stopID: stopID, schedule: cached.schedule, isStale: true),
                     refreshAt: now.addingTimeInterval(ComplicationTimeline.retryInterval)

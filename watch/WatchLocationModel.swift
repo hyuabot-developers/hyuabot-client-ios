@@ -53,8 +53,9 @@ final class WatchLocationModel: NSObject, ObservableObject {
 
     /// Called when the screen appears or the app becomes active. Re-measures when the last result is old or missing.
     func resumeIfNeeded() {
-        if resolver.phase.hasFreshOutcome, let lastCheckedAt,
-           Date().timeIntervalSince(lastCheckedAt) < Self.recheckInterval {
+        let isFresh = resolver.phase.hasFreshOutcome
+            && lastCheckedAt.map { Date().timeIntervalSince($0) < Self.recheckInterval } == true
+        if isFresh {
             return
         }
         resolve()
@@ -75,7 +76,9 @@ final class WatchLocationModel: NSObject, ObservableObject {
         apply(effects)
 
         var isStart = false
-        if case .start = event { isStart = true }
+        if case .start = event {
+            isStart = true
+        }
         let after = resolver.phase
         if after.isTerminal && (after != before || !effects.isEmpty || isStart) {
             publishOutcome()
@@ -179,8 +182,8 @@ final class WatchLocationModel: NSObject, ObservableObject {
     }
 }
 
-private extension WatchLocationResolver.Phase {
-    var isTerminal: Bool {
+extension WatchLocationResolver.Phase {
+    fileprivate var isTerminal: Bool {
         switch self {
         case .resolved, .failed: true
         case .idle, .awaitingAuthorization, .updating: false

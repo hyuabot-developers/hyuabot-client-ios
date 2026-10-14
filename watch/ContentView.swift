@@ -137,7 +137,8 @@ enum WatchLocalization {
 
 struct ContentView: View {
     @StateObject private var locationModel = WatchLocationModel()
-    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.scenePhase)
+    private var scenePhase
     @State private var path: [WatchShuttleStop] = []
     @State private var didApplyInitialStop = false
 
@@ -156,15 +157,16 @@ struct ContentView: View {
                     StopListView(
                         isLocating: locationModel.isLocating,
                         failureReason: locationModel.failureReason,
-                        onRetry: { locationModel.resolve() }
-                    ) { stop in
-                        didApplyInitialStop = true
-                        locationModel.remember(stop)
-                        path.append(stop)
-                        Task {
-                            await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
+                        onRetry: { locationModel.resolve() },
+                        onSelect: { stop in
+                            didApplyInitialStop = true
+                            locationModel.remember(stop)
+                            path.append(stop)
+                            Task {
+                                await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
+                            }
                         }
-                    }
+                    )
                 }
             }
             .navigationDestination(for: WatchShuttleStop.self) { stop in

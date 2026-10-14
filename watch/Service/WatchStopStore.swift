@@ -1,3 +1,8 @@
+//
+//  WatchStopStore.swift
+//  hyuabot watch
+//
+
 import Foundation
 import WidgetKit
 
@@ -65,10 +70,6 @@ enum WatchStopStore {
         defaults.removeObject(forKey: nearestStopKey)
         defaults.removeObject(forKey: nearestCheckedAtKey)
         WidgetCenter.shared.reloadAllTimelines()
-    }
-
-    static func deepLink(for stopID: String) -> URL {
-        URL(string: "\(urlScheme)://stop/\(stopID)")!
     }
 
     static func stopID(from url: URL) -> String? {
