@@ -119,7 +119,10 @@ struct ShuttleComplicationView: View {
         switch snapshot.status {
         case .departures, .placeholder:
             if let next = snapshot.upcoming.first {
-                text = "\(ShuttleClock.displayTime(next.date)) \(label(for: next)) · \(Countdown(departure: next, at: snapshot.date).short)"
+                // Leads with stop▶route; rows without a route label fall back to the departure time.
+                let route = stopRouteLabel(for: next)
+                let head = route.isEmpty ? ShuttleClock.displayTime(next.date) : route
+                text = "\(head) · \(Countdown(departure: next, at: snapshot.date).short)"
             } else {
                 text = ComplicationText.text("updating")
             }
@@ -176,7 +179,7 @@ struct ShuttleComplicationView: View {
 
     /// Circular's stop line: "정류장▶" so the arrow leads into the route line below, or "" when no stop is selected.
     private var stopLine: String {
-        snapshot.stopID.map { "\(ComplicationText.stopName($0))▶" } ?? ""
+        snapshot.stopID.map { "\(ComplicationText.stopName($0)) ▶" } ?? ""
     }
 
     private var stopName: String {
@@ -193,11 +196,11 @@ struct ShuttleComplicationView: View {
         )
     }
 
-    /// Corner only: "정류장▶노선명". Rows without a route label stay empty.
+    /// Corner and inline: "정류장▶노선명". Rows without a route label stay empty.
     private func stopRouteLabel(for departure: Departure) -> String {
         let routeLabel = label(for: departure)
         guard !routeLabel.isEmpty, let stopID = snapshot.stopID else { return routeLabel }
-        return "\(ComplicationText.stopName(stopID))▶\(routeLabel)"
+        return "\(ComplicationText.stopName(stopID)) ▶ \(routeLabel)"
     }
 }
 
