@@ -1215,8 +1215,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C72A95EF2DAA961600979B22 /* Build configuration list for PBXNativeTarget "watch" */ = {
-			isa = XCConfigurationList;
 		C4FA5067C28FF07C0CC08ECE /* Build configuration list for PBXNativeTarget "watchWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1226,6 +1224,8 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C72A95EF2DAA961600979B22 /* Build configuration list for PBXNativeTarget "watch" */ = {
+			isa = XCConfigurationList;
 			buildConfigurations = (
 				C72A95ED2DAA961600979B22 /* Debug */,
 				C72A95EE2DAA961600979B22 /* Release */,
@@ -1347,13 +1347,13 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C70119622D2954670077A1A5 /* SnapKit */ = {
-			isa = XCSwiftPackageProductDependency;
 		5B8719AB3DC8A3183BB7EEBF /* Apollo */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */;
 			productName = Apollo;
 		};
+		C70119622D2954670077A1A5 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
 			package = C70119612D2954670077A1A5 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
@@ -1431,12 +1431,12 @@
 			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
 		};
-/* End XCSwiftPackageProductDependency section */
-	};
 		CDAA100B96CD7B1D067AC177 /* Api */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C7C51A752F8D02550002329A /* XCLocalSwiftPackageReference "api" */;
 			productName = Api;
 		};
+/* End XCSwiftPackageProductDependency section */
+	};
 	rootObject = C7C056E32D277910007A228B /* Project object */;
 }
