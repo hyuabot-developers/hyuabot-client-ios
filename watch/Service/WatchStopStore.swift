@@ -43,17 +43,6 @@ enum WatchStopStore {
         WidgetCenter.shared.reloadAllTimelines()
     }
 
-    /// The stop last found nearest to the user. nil when the last check found no stop nearby, or never ran.
-    static func nearestStopID() -> String? {
-        guard let stopID = sharedDefaults.string(forKey: nearestStopKey),
-              WatchShuttleStop.all.contains(where: { $0.id == stopID }) else { return nil }
-        return stopID
-    }
-
-    static func nearestCheckedAt() -> Date? {
-        sharedDefaults.object(forKey: nearestCheckedAtKey) as? Date
-    }
-
     /// Records the nearest stop and when it was checked, then reloads complication timelines.
     /// The reload always runs so a re-check clears a stale marker even when the stop is unchanged.
     static func saveNearest(stopID: String, at date: Date) {

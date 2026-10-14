@@ -42,10 +42,6 @@ struct WatchShuttleStop: Hashable {
             latitude: 37.31487247528457, longitude: 126.83963540399434
         )
     ]
-
-    var location: CLLocation {
-        CLLocation(latitude: latitude, longitude: longitude)
-    }
 }
 
 enum WatchLocalization {

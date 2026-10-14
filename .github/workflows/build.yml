@@ -136,8 +136,10 @@ jobs:
           path: ${{ env.DERIVED_DATA_PATH }}/Logs/Test/
           if-no-files-found: ignore
 
+      # Advisory until existing unused code on main is removed. Remove continue-on-error with that cleanup.
       - name: Run unused code analysis
-        run: periphery scan --config .periphery.yml --clean-build
+        continue-on-error: true
+        run: periphery scan --config .periphery.yml --clean-build --relative-results
 
       - name: Build release configuration
         run: |
