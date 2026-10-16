@@ -98,6 +98,13 @@ input BuildingInput {
   west: Float
 }
 
+type BusApproachStation {
+  sequence: Int!
+  stopID: Int!
+  name: String!
+  vehicles: [BusVehicle!]!
+}
+
 type BusArrival {
   stops: Int
   seats: Int
@@ -110,6 +117,10 @@ type BusArrival {
 
   """Deprecated. Use destinationTravelMinutes instead."""
   destinationArrivalTime: LocalTime
+  currentStopName: String
+  plateNumber: String
+  crowded: Int
+  stateCode: Int
 }
 
 type BusCompany {
@@ -130,6 +141,11 @@ type BusDestinationTravelMinutes {
   minutes: Int!
 }
 
+type BusMinimumDispatchInterval {
+  weekday: String!
+  minutes: Int!
+}
+
 type BusRealtime {
   order: Int!
   stops: Int!
@@ -137,6 +153,10 @@ type BusRealtime {
   minutes: Int!
   lowFloor: Boolean!
   updatedAt: DateTime!
+  currentStopName: String
+  plateNumber: String
+  crowded: Int
+  stateCode: Int
 }
 
 type BusRoute {
@@ -158,6 +178,7 @@ type BusRouteStop {
   arrival: [BusArrival!]!
   log: [BusDepartureLog!]!
   minimumDispatchIntervals: [BusMinimumDispatchInterval!]!
+  approach(count: Int = 5): [BusApproachStation!]
 }
 
 """ 노선 버스 정보를 반환하는 쿼리입니다."""
@@ -197,15 +218,18 @@ type BusStop {
   longitude: Float!
 }
 
-type BusMinimumDispatchInterval {
-  weekday: String!
-  minutes: Int!
-}
-
 type BusTimetable {
   seq: Int!
   time: LocalTime!
   weekday: String!
+}
+
+type BusVehicle {
+  plateNumber: String!
+  crowded: Int
+  seats: Int
+  lowFloor: Boolean
+  updatedAt: DateTime!
 }
 
 type Cafeteria {
@@ -528,6 +552,23 @@ enum ErrorType {
   FAILED_PRECONDITION
 }
 
+type HomeAirQuality {
+  pm10Value: Int
+  pm10Grade: Int
+  pm25Value: Int
+  pm25Grade: Int
+  khaiValue: Int
+  khaiGrade: Int
+  stationName: String
+  measuredAt: DateTime
+}
+
+type HomeUvIndex {
+  value: Int
+  grade: String
+  forecastAt: DateTime
+}
+
 type HomeWeather {
   issuedAt: DateTime!
   expiresAt: DateTime!
@@ -547,6 +588,12 @@ type HomeWeather {
   agreeingModelCount: Int
   primaryCondition: String!
   attribution: String
+  humidity: Int
+  windSpeed: Float
+  snowAmount: Float
+  airQuality: HomeAirQuality
+  warnings: [WeatherWarning!]
+  uvIndex: HomeUvIndex
 }
 
 """
@@ -633,6 +680,7 @@ type ReadingRoom {
   reservable: Boolean!
   seats: ReadingRoomSeat!
   updatedAt: DateTime!
+  unableMessage: String
 }
 
 type ReadingRoomSeat {
@@ -768,11 +816,22 @@ type SubwayArrival {
   isExpress: Boolean
   isLast: Boolean
   status: Int
+  message: String
+  messageDetail: String
+  seconds: Int
+  arrivalCode: Int
 }
 
 type SubwayArrivalGroup {
   direction: String!
   entries: [SubwayArrival!]!
+}
+
+type SubwayFirstLast {
+  direction: String
+  weekday: String
+  first: LocalTime
+  last: LocalTime
 }
 
 """ 전철 정보를 반환하는 쿼리입니다."""
@@ -798,6 +857,10 @@ type SubwayRealtime {
   isLast: Boolean!
   status: Int!
   updatedAt: DateTime!
+  message: String
+  messageDetail: String
+  seconds: Int
+  arrivalCode: Int
 }
 
 type SubwayRoute {
@@ -814,6 +877,19 @@ type SubwayStation {
   realtime: [SubwayRealtime!]!
   timetable: [SubwayTimetable!]!
   arrival: [SubwayArrivalGroup!]!
+  facilities: [SubwayStationFacility!]
+  firstLast: [SubwayFirstLast!]
+}
+
+type SubwayStationFacility {
+  type: String
+  order: Int
+  exitNumber: String
+  fromPlace: String
+  toPlace: String
+  descriptionKorean: String
+  descriptionEnglish: String
+  source: String
 }
 
 input SubwayStationInput {
@@ -821,6 +897,7 @@ input SubwayStationInput {
   direction: [String!]!
   weekdays: [String!]!
   limit: Int
+  after: LocalTime
 }
 
 type SubwayTimetable {
@@ -830,6 +907,16 @@ type SubwayTimetable {
   direction: String!
   origin: SubwayOriginTerminal!
   terminal: SubwayOriginTerminal!
+}
+
+type WeatherWarning {
+  title: String
+  kind: String
+  level: String
+  area: String
+  issuedAt: DateTime
+  startsAt: DateTime
+  endsAt: DateTime
 }
 
 """"""

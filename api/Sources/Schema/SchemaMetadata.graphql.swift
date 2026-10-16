@@ -60,6 +60,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "ShuttleTimetableGroup": Api.Objects.ShuttleTimetableGroup,
     "SubwayArrival": Api.Objects.SubwayArrival,
     "SubwayArrivalGroup": Api.Objects.SubwayArrivalGroup,
+    "SubwayFirstLast": Api.Objects.SubwayFirstLast,
     "SubwayOriginTerminal": Api.Objects.SubwayOriginTerminal,
     "SubwayStation": Api.Objects.SubwayStation,
     "SubwayTimetable": Api.Objects.SubwayTimetable

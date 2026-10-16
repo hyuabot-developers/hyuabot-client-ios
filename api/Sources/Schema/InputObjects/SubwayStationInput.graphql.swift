@@ -14,13 +14,15 @@ nonisolated public struct SubwayStationInput: InputObject {
     stationID: String,
     direction: [String],
     weekdays: [String],
-    limit: GraphQLNullable<Int32> = nil
+    limit: GraphQLNullable<Int32> = nil,
+    after: GraphQLNullable<LocalTime> = nil
   ) {
     __data = InputDict([
       "stationID": stationID,
       "direction": direction,
       "weekdays": weekdays,
-      "limit": limit
+      "limit": limit,
+      "after": after
     ])
   }
 
@@ -42,5 +44,10 @@ nonisolated public struct SubwayStationInput: InputObject {
   public var limit: GraphQLNullable<Int32> {
     get { __data["limit"] }
     set { __data["limit"] = newValue }
+  }
+
+  public var after: GraphQLNullable<LocalTime> {
+    get { __data["after"] }
+    set { __data["after"] = newValue }
   }
 }

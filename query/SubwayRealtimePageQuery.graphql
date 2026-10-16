@@ -20,5 +20,11 @@ query SubwayRealtimePageQuery($keys: [SubwayStationInput!]!, $language: String!)
                 status
             }
         }
+        firstLast {
+            direction
+            weekday
+            first
+            last
+        }
     }
 }

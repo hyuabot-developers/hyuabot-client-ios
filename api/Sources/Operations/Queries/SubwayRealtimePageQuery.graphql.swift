@@ -8,7 +8,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "SubwayRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query SubwayRealtimePageQuery($keys: [SubwayStationInput!]!, $language: String!) { subway(input: { language: $language, keys: $keys }) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } } }"#
+      #"query SubwayRealtimePageQuery($keys: [SubwayStationInput!]!, $language: String!) { subway(input: { language: $language, keys: $keys }) { __typename stationID arrival { __typename direction entries { __typename minutes origin { __typename stationID name } terminal { __typename stationID name } isRealtime location stops trainNumber isExpress isLast status } } firstLast { __typename direction weekday first last } } }"#
     ))
 
   public var keys: [SubwayStationInput]
@@ -56,6 +56,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
         .field("__typename", String.self),
         .field("stationID", String.self),
         .field("arrival", [Arrival].self),
+        .field("firstLast", [FirstLast]?.self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         SubwayRealtimePageQuery.Data.Subway.self
@@ -63,6 +64,7 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
 
       public var stationID: String { __data["stationID"] }
       public var arrival: [Arrival] { __data["arrival"] }
+      public var firstLast: [FirstLast]? { __data["firstLast"] }
 
       /// Subway.Arrival
       ///
@@ -162,6 +164,31 @@ nonisolated public struct SubwayRealtimePageQuery: GraphQLQuery {
             public var name: String { __data["name"] }
           }
         }
+      }
+
+      /// Subway.FirstLast
+      ///
+      /// Parent Type: `SubwayFirstLast`
+      nonisolated public struct FirstLast: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.SubwayFirstLast }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("direction", String?.self),
+          .field("weekday", String?.self),
+          .field("first", Api.LocalTime?.self),
+          .field("last", Api.LocalTime?.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          SubwayRealtimePageQuery.Data.Subway.FirstLast.self
+        ] }
+
+        public var direction: String? { __data["direction"] }
+        public var weekday: String? { __data["weekday"] }
+        public var first: Api.LocalTime? { __data["first"] }
+        public var last: Api.LocalTime? { __data["last"] }
       }
     }
   }
