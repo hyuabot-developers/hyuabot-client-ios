@@ -75,7 +75,12 @@ enum AnalyticsParameter {
     static let elementID = "element_id"
     static let elementType = "element_type"
     static let destinationID = "destination_id"
+    static let kind = "kind"
+    static let sourceScreen = "source_screen"
 }
+
+/// GA4 event name for a state view (empty, ended, suspended, error, permission denied) being shown.
+let analyticsEventEmptyStateShown = "empty_state_shown"
 
 let analyticsSchemaVersion = "2"
 
@@ -221,6 +226,23 @@ enum AnalyticsManager {
             destinationID: destinationID
         )
         Analytics.logEvent(AnalyticsEventSelectContent, parameters: params)
+    }
+
+    /// Logs `empty_state_shown` for a state view presentation.
+    static func logEmptyStateShown(kind: StateKind, screen: AnalyticsScreen) {
+        guard isCollectionEnabled else { return }
+        Analytics.logEvent(
+            analyticsEventEmptyStateShown,
+            parameters: emptyStateParameters(kind: kind, screen: screen)
+        )
+    }
+
+    static func emptyStateParameters(kind: StateKind, screen: AnalyticsScreen) -> [String: Any] {
+        [
+            AnalyticsParameter.kind: kind.rawValue,
+            AnalyticsParameter.sourceScreen: screen.rawValue,
+            AnalyticsParameter.schemaVersion: analyticsSchemaVersion,
+        ]
     }
 
     static func selectionParameters(

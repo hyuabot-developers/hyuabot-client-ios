@@ -2,9 +2,10 @@ import UIKit
 
 class ContactSearchEmptyCellView: UITableViewCell {
     static let reuseIdentifier = "ContactSearchEmptyCellView"
-    private let emptyLabel = UILabel().then {
-        $0.text = String(localized: "contact.search.empty")
-        $0.font = .godo(size: 16, weight: .regular)
+    private let stateView = StateView(sourceScreen: .contact)
+
+    func configure(_ content: StateContent) {
+        stateView.apply(content)
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -18,11 +19,11 @@ class ContactSearchEmptyCellView: UITableViewCell {
     }
 
     private func setupUI() {
-        contentView.addSubview(emptyLabel)
+        contentView.addSubview(stateView)
         selectionStyle = .none
-        emptyLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(20)
+        stateView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
+        stateView.apply(.empty(message: String(localized: "contact.search.empty")))
     }
 }
