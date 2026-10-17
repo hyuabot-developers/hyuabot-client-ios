@@ -46,6 +46,7 @@ enum HyuColor {
         static let shuttleDJ = UIColor(named: "hanyangGreen")!
         static let shuttleC = UIColor(named: "busBlue")!
         static let busGreen = UIColor(named: "busGreen")!
+        static let busRed = UIColor(named: "busRed")!
         static let subwayLine4 = UIColor(named: "subwaySkyblue")!
         static let subwaySuinBundang = UIColor(named: "subwayYellow")!
         static let subwaySeohae = UIColor(named: "routeSubwaySeohae")!
