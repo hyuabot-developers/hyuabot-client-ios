@@ -1,3 +1,8 @@
+//
+//  HyuFont.swift
+//  hyuabot
+//
+
 import UIKit
 
 enum HyuTextStyle {
@@ -68,12 +73,20 @@ enum HyuTextStyle {
 
 enum HyuFont {
     static func font(_ style: HyuTextStyle, compatibleWith traits: UITraitCollection? = nil) -> UIFont {
-        let baseFont = UIFont(name: style.fontName, size: style.size)!
+        let baseFont = loadFont(named: style.fontName, size: style.size)
         let metrics = UIFontMetrics(forTextStyle: style.textStyle)
         if let maximumPointSize = style.maximumPointSize {
             return metrics.scaledFont(for: baseFont, maximumPointSize: maximumPointSize, compatibleWith: traits)
         }
         return metrics.scaledFont(for: baseFont, compatibleWith: traits)
+    }
+
+    private static func loadFont(named name: String, size: CGFloat) -> UIFont {
+        guard let font = UIFont(name: name, size: size) else {
+            assertionFailure("Missing font: \(name)")
+            return UIFont.systemFont(ofSize: size)
+        }
+        return font
     }
 }
 
