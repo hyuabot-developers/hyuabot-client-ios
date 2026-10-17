@@ -127,4 +127,45 @@ final class StateViewTests: XCTestCase {
         XCTAssertEqual(ContactSearchEmptyCellView.reuseIdentifier, "ContactSearchEmptyCellView")
         XCTAssertEqual(SearchEmptyCellView.reuseIdentifier, "SearchEmptyCellView")
     }
+
+    /// WCAG AA requires 4.5:1 for body text. The description label uses HYUColor.Text.secondary,
+    /// and StateView sits on the system background, so check the light-mode pair from resolved components.
+    func testLightModeDescriptionColorMeetsContrastAgainstBackground() {
+        let light = UITraitCollection(userInterfaceStyle: .light)
+        let text = HYUColor.Text.secondary.resolvedColor(with: light)
+        let background = UIColor.systemBackground.resolvedColor(with: light)
+        let ratio = contrastRatio(text, background)
+        XCTAssertGreaterThanOrEqual(ratio, 4.5, "Light description contrast is \(ratio), below WCAG AA 4.5:1")
+    }
+
+    /// Dark mode must keep the system secondary label so the change does not regress it.
+    func testDarkModeDescriptionColorKeepsSystemSecondaryLabel() {
+        let dark = UITraitCollection(userInterfaceStyle: .dark)
+        let text = HYUColor.Text.secondary.resolvedColor(with: dark)
+        let expected = UIColor.secondaryLabel.resolvedColor(with: dark)
+        XCTAssertEqual(components(text), components(expected))
+    }
+
+    private func components(_ color: UIColor) -> [CGFloat] {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        return [red, green, blue, alpha]
+    }
+
+    /// WCAG 2.x contrast ratio: (L1 + 0.05) / (L2 + 0.05), using sRGB relative luminance.
+    private func contrastRatio(_ first: UIColor, _ second: UIColor) -> CGFloat {
+        let luminanceA = relativeLuminance(first)
+        let luminanceB = relativeLuminance(second)
+        return (max(luminanceA, luminanceB) + 0.05) / (min(luminanceA, luminanceB) + 0.05)
+    }
+
+    private func relativeLuminance(_ color: UIColor) -> CGFloat {
+        let rgb = components(color).prefix(3).map { channel -> CGFloat in
+            channel <= 0.03928 ? channel / 12.92 : pow((channel + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
+    }
 }

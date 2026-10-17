@@ -19,7 +19,14 @@ enum HYUColor {
 
     enum Text {
         static let primary = UIColor.label
-        static let secondary = UIColor.secondaryLabel
+        /// Light mode uses a fixed gray (#636366, 5.99:1 on white). The system `secondaryLabel` is only
+        /// about 3.4:1 on white in light mode, below WCAG AA 4.5:1. Dark mode keeps the system color.
+        static let secondary = UIColor(dynamicProvider: { traits in
+            if traits.userInterfaceStyle == .dark {
+                return UIColor.secondaryLabel.resolvedColor(with: traits)
+            }
+            return UIColor(red: 99.0 / 255.0, green: 99.0 / 255.0, blue: 102.0 / 255.0, alpha: 1.0)
+        })
         static let tertiary = UIColor.tertiaryLabel
     }
 

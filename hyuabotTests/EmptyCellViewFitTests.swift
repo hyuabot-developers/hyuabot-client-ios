@@ -12,7 +12,7 @@ import XCTest
 @MainActor
 final class EmptyCellViewFitTests: XCTestCase {
     private let width: CGFloat = 390
-    private let message = "표시할 항목이 없습니다."
+    private let message = "다른 조건으로 검색해 보세요."
 
     func testShuttleRealtimeEmptyCellFitsContent() {
         let cell = ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)

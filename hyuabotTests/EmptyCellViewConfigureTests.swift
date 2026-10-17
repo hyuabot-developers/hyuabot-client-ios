@@ -11,7 +11,7 @@ import XCTest
 /// These tests check that the forwarded content reaches the rendered UIContentUnavailableView.
 @MainActor
 final class EmptyCellViewConfigureTests: XCTestCase {
-    private let message = "표시할 항목이 없습니다."
+    private let message = "다른 조건으로 검색해 보세요."
 
     func testShuttleRealtimeEmptyCellForwardsConfiguration() {
         let cell = ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)

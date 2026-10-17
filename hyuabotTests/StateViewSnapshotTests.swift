@@ -14,20 +14,20 @@ final class StateViewSnapshotTests: XCTestCase {
     // AX5 text and the 64pt vertical padding need a taller canvas to show every element.
     private let axSize = CGSize(width: 390, height: 720)
 
-    func testEmptyLightSnapshot() { assertState(.empty(message: "표시할 항목이 없습니다. 다른 조건으로 검색해 보세요."), traits: lightTraits, name: "empty-light") }
+    func testEmptyLightSnapshot() { assertState(.empty(message: "다른 조건으로 검색해 보세요."), traits: lightTraits, name: "empty-light") }
     func testEndedLightSnapshot() { assertState(.ended(onShowTimetable: {}), traits: lightTraits, name: "ended-light") }
     func testSuspendedLightSnapshot() { assertState(.suspended(date: Date(timeIntervalSince1970: 1_700_000_000), onShowTimetable: {}), traits: lightTraits, name: "suspended-light") }
     func testErrorLightSnapshot() { assertState(.error(onRetry: {}), traits: lightTraits, name: "error-light") }
     func testPermissionDeniedLightSnapshot() { assertState(.permissionDenied(onOpenSettings: {}), traits: lightTraits, name: "permission-denied-light") }
 
-    func testEmptyDarkSnapshot() { assertState(.empty(message: "표시할 항목이 없습니다."), traits: darkTraits, name: "empty-dark") }
+    func testEmptyDarkSnapshot() { assertState(.empty(message: "다른 조건으로 검색해 보세요."), traits: darkTraits, name: "empty-dark") }
     func testErrorDarkSnapshot() { assertState(.error(onRetry: {}), traits: darkTraits, name: "error-dark") }
     func testEndedDarkSnapshot() { assertState(.ended(onShowTimetable: {}), traits: darkTraits, name: "ended-dark") }
     func testSuspendedDarkSnapshot() { assertState(.suspended(date: Date(timeIntervalSince1970: 1_700_000_000), onShowTimetable: {}), traits: darkTraits, name: "suspended-dark") }
     func testPermissionDeniedDarkSnapshot() { assertState(.permissionDenied(onOpenSettings: {}), traits: darkTraits, name: "permission-denied-dark") }
 
     func testEmptyAccessibilitySnapshot() {
-        assertState(.empty(message: "표시할 항목이 없습니다."), traits: axTraits, name: "empty-ax5")
+        assertState(.empty(message: "다른 조건으로 검색해 보세요."), traits: axTraits, name: "empty-ax5")
     }
 
     func testErrorAccessibilitySnapshot() {
