@@ -10,6 +10,14 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : true,
+    "commandLineArguments" : [
+      "-AppleLanguages",
+      "(ko)",
+      "-AppleLocale",
+      "ko_KR"
+    ],
+    "language" : "ko",
+    "region" : "KR",
     "targetForVariableExpansion" : {
       "containerPath" : "container:hyuabot.xcodeproj",
       "identifier" : "C7C056EA2D277910007A228B",
