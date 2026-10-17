@@ -34,6 +34,28 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
         nil
     }
 
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        // The empty-state row is a StateView, which needs more height than a 44pt information row.
+        if !showsInitialSkeleton, hasNoEntries {
+            return UITableView.automaticDimension
+        }
+        return ShuttleRealtimeCellView.informationRowHeight
+    }
+
+    private var hasNoEntries: Bool {
+        let shuttle = ShuttleRealtimeData.shared
+        let isEmpty: Bool? = switch stopID {
+        case .dormiotryOut: (try? shuttle.shuttleDormitoryData.value())?.isEmpty
+        case .shuttlecockOut: (try? shuttle.shuttleShuttlecockData.value())?.isEmpty
+        case .station: (try? shuttle.shuttleStationData.value())?.isEmpty
+        case .terminal: (try? shuttle.shuttleTerminalData.value())?.isEmpty
+        case .jungangStation: (try? shuttle.shuttleJungangStationData.value())?.isEmpty
+        case .shuttlecockIn: (try? shuttle.shuttleShuttlecockInData.value())?.isEmpty
+        default: nil
+        }
+        return isEmpty ?? true
+    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if showsInitialSkeleton {
             return 6

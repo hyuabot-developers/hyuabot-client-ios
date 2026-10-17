@@ -50,6 +50,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.tableFooterView = self.tableFooterView1
         $0.rowHeight = ShuttleRealtimeCellView.informationRowHeight
+        $0.estimatedRowHeight = ShuttleRealtimeCellView.informationRowHeight
         $0.showsVerticalScrollIndicator = false
         $0.contentInset.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
         $0.verticalScrollIndicatorInsets.bottom = ShuttleRealtimeTabVC.floatingStatusClearance
@@ -72,6 +73,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.backgroundColor = .systemBackground
         $0.tableFooterView = self.tableFooterView2
         $0.rowHeight = ShuttleRealtimeCellView.informationRowHeight
+        $0.estimatedRowHeight = ShuttleRealtimeCellView.informationRowHeight
         $0.refreshControl = timetableRefreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.showsVerticalScrollIndicator = false
@@ -1368,7 +1370,28 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             + ShuttleRealtimeCellView.informationRowHeight * CGFloat(effectiveAlternativesCount)
     }
 
+    static func emptyRowHeight(
+        isShuttleRealtimeTable: Bool,
+        showsInitialSkeleton: Bool,
+        isTransferExpansionRow: Bool,
+        hasDestinationEntries: Bool
+    ) -> CGFloat? {
+        guard isShuttleRealtimeTable, !showsInitialSkeleton, !isTransferExpansionRow, !hasDestinationEntries else {
+            return nil
+        }
+        return UITableView.automaticDimension
+    }
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        // The empty-state row is a StateView, which needs more height than a 44pt information row.
+        if let height = Self.emptyRowHeight(
+            isShuttleRealtimeTable: tableView === shuttleRealtimeTableView,
+            showsInitialSkeleton: showsInitialSkeleton,
+            isTransferExpansionRow: isTransferExpansionRow(indexPath),
+            hasDestinationEntries: !destinationEntries(section: indexPath.section).isEmpty
+        ) {
+            return height
+        }
         guard tableView === shuttleRealtimeTableView,
               isTransferExpansionRow(indexPath),
               let expandedRow = expandedDataRow(section: indexPath.section)

@@ -55,6 +55,21 @@ final class AnalyticsConfigurationTests: XCTestCase {
         XCTAssertEqual(parameters[AnalyticsParameter.destinationID] as? String, "map")
     }
 
+    func testEmptyStateEventAndKindsAreReportable() {
+        XCTAssertTrue(isReportable(analyticsEventEmptyStateShown))
+        for kind in [StateKind.empty, .ended, .suspended, .error, .permissionDenied] {
+            XCTAssertTrue(isReportable(kind.rawValue), kind.rawValue)
+        }
+    }
+
+    func testEmptyStateParametersIncludeKindAndSourceScreen() {
+        let parameters = AnalyticsManager.emptyStateParameters(kind: .permissionDenied, screen: .shuttleTimetable)
+
+        XCTAssertEqual(parameters[AnalyticsParameter.kind] as? String, "permission_denied")
+        XCTAssertEqual(parameters[AnalyticsParameter.sourceScreen] as? String, "shuttle_timetable")
+        XCTAssertEqual(parameters[AnalyticsParameter.schemaVersion] as? String, analyticsSchemaVersion)
+    }
+
     private func loadInfoPlist() throws -> [String: Any] {
         let url = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

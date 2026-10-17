@@ -2,9 +2,10 @@ import UIKit
 
 class ShuttleRealtimeEmptyCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleRealtimeEmptyCellView"
-    private let emptyLabel = UILabel().then {
-        $0.text = String(localized: "shuttle.realtime.empty")
-        $0.font = .godo(size: 16, weight: .regular)
+    private let stateView = StateView(sourceScreen: .shuttleRealtime)
+
+    func configure(_ content: StateContent) {
+        stateView.apply(content)
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -20,11 +21,11 @@ class ShuttleRealtimeEmptyCellView: UITableViewCell {
     private func setupUI() {
         backgroundColor = .systemBackground
         contentView.backgroundColor = .systemBackground
-        contentView.addSubview(emptyLabel)
         selectionStyle = .none
-        emptyLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+        contentView.addSubview(stateView)
+        stateView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
+        stateView.apply(.empty(message: String(localized: "shuttle.realtime.empty")))
     }
 }
