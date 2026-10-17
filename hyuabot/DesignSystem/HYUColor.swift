@@ -1,11 +1,11 @@
 //
-//  HyuColor.swift
+//  HYUColor.swift
 //  hyuabot
 //
 
 import UIKit
 
-enum HyuColor {
+enum HYUColor {
     enum Background {
         static let canvas = UIColor.systemGroupedBackground
         static let card = UIColor.secondarySystemGroupedBackground

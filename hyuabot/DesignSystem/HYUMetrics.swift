@@ -1,11 +1,11 @@
 //
-//  HyuMetrics.swift
+//  HYUMetrics.swift
 //  hyuabot
 //
 
 import QuartzCore
 
-enum HyuMetrics {
+enum HYUMetrics {
     enum Space {
         static let xxs: CGFloat = 2
         static let xs: CGFloat = 4

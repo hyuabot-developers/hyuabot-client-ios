@@ -1,11 +1,11 @@
 //
-//  HyuFont.swift
+//  HYUFont.swift
 //  hyuabot
 //
 
 import UIKit
 
-enum HyuTextStyle {
+enum HYUTextStyle {
     case largeTitle
     case title1
     case title2
@@ -71,8 +71,8 @@ enum HyuTextStyle {
     }
 }
 
-enum HyuFont {
-    static func font(_ style: HyuTextStyle, compatibleWith traits: UITraitCollection? = nil) -> UIFont {
+enum HYUFont {
+    static func font(_ style: HYUTextStyle, compatibleWith traits: UITraitCollection? = nil) -> UIFont {
         let baseFont = loadFont(named: style.fontName, size: style.size)
         let metrics = UIFontMetrics(forTextStyle: style.textStyle)
         if let maximumPointSize = style.maximumPointSize {
@@ -91,8 +91,8 @@ enum HyuFont {
 }
 
 extension UILabel {
-    func apply(_ style: HyuTextStyle) {
-        font = HyuFont.font(style)
+    func apply(_ style: HYUTextStyle) {
+        font = HYUFont.font(style)
         adjustsFontForContentSizeCategory = true
     }
 }

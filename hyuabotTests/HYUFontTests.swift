@@ -1,5 +1,5 @@
 //
-//  HyuFontTests.swift
+//  HYUFontTests.swift
 //  hyuabot
 //
 
@@ -8,10 +8,10 @@ import UIKit
 import XCTest
 
 @MainActor
-final class HyuFontTests: XCTestCase {
+final class HYUFontTests: XCTestCase {
     func testCaption1FontIsCappedAtAccessibilityExtraExtraExtraLarge() {
         let traits = UITraitCollection(preferredContentSizeCategory: .accessibilityExtraExtraExtraLarge)
-        let font = HyuFont.font(.caption1, compatibleWith: traits)
+        let font = HYUFont.font(.caption1, compatibleWith: traits)
 
         XCTAssertLessThanOrEqual(font.pointSize, 22)
     }
