@@ -56,14 +56,17 @@ enum ShuttleIntentLogic {
             destination.times.compactMap { time -> IndexedDeparture? in
                 if direction.map({ $0.matches(destination: destination.destination) }) == false { return nil }
                 guard let minutes = IntentClock.minutesUntil(time, from: now, calendar: calendar) else { return nil }
-                return IndexedDeparture(minutes: minutes, destinationIndex: destinationIndex,
-            // swiftlint:disable:next vertical_parameter_alignment_on_call
-                    sequence: destination.times.firstIndex(of: time) ?? 0, departure: ShuttleNextDeparture(
-                    stopID: stop.stopID,
-                    destination: destination.destination,
-                    time: IntentClock.shortTime(time),
-                    minutes: minutes
-                ))
+                return IndexedDeparture(
+                    minutes: minutes,
+                    destinationIndex: destinationIndex,
+                    sequence: destination.times.firstIndex(of: time) ?? 0,
+                    departure: ShuttleNextDeparture(
+                        stopID: stop.stopID,
+                        destination: destination.destination,
+                        time: IntentClock.shortTime(time),
+                        minutes: minutes
+                    )
+                )
             }
         }
         return departures.sorted {
@@ -105,15 +108,26 @@ enum ShuttleIntentLogic {
         let note: String?
         let earliest: ShuttleNextDeparture?
         if let target {
-            let result = singleStopResult(target: target.stop, fromLocation: target.fromLocation, direction: direction,
-            // swiftlint:disable:next vertical_parameter_alignment_on_call
-                stops: stops, now: now, calendar: calendar)
+            let result = singleStopResult(
+                target: target.stop,
+                fromLocation: target.fromLocation,
+                direction: direction,
+                stops: stops,
+                now: now,
+                calendar: calendar
+            )
             rows = result.rows
             snippetTitle = target.stop.title
             note = result.note
             earliest = result.earliest
         } else {
-            let result = overviewResult(direction: direction, location: location, stops: stops, now: now, calendar: calendar)
+            let result = overviewResult(
+                direction: direction,
+                location: location,
+                stops: stops,
+                now: now,
+                calendar: calendar
+            )
             rows = result.rows
             snippetTitle = String(localized: "intent.shuttle.snippet.title.all")
             note = result.note
@@ -122,17 +136,22 @@ enum ShuttleIntentLogic {
         let subtitleParts = [direction?.title, note].compactMap { $0 }
         let subtitle = subtitleParts.isEmpty ? nil : subtitleParts.joined(separator: " · ")
         let dialog = dialog(for: earliest)
-        return IntentAnswer(dialog: dialog, snippet: IntentSnippetContent(
-            title: snippetTitle,
-            subtitle: subtitle,
-            rows: rows,
-            emptyMessage: String(localized: "intent.shuttle.dialog.none")
-        ))
+        return IntentAnswer(
+            dialog: dialog,
+            snippet: IntentSnippetContent(
+                title: snippetTitle,
+                subtitle: subtitle,
+                rows: rows,
+                emptyMessage: String(localized: "intent.shuttle.dialog.none")
+            )
+        )
     }
 
-    private static func resolvedTarget(stop: ShuttleStopOption?, direction: ShuttleDirectionOption?,
-            // swiftlint:disable:next vertical_parameter_alignment
-        location: IntentLocationResult?) -> Target? {
+    private static func resolvedTarget(
+        stop: ShuttleStopOption?,
+        direction: ShuttleDirectionOption?,
+        location: IntentLocationResult?
+    ) -> Target? {
         if let stop { return Target(stop: stop, fromLocation: false) }
         if case .coordinate(let coordinate)? = location, let nearest = nearestStop(to: coordinate, direction: direction) {
             return Target(stop: nearest, fromLocation: true)
@@ -163,9 +182,11 @@ enum ShuttleIntentLogic {
                 isRealtime: false
             )
         }
-        return AnswerRows(rows: rows, note: fromLocation ? String(localized: "intent.shuttle.nearest") : nil,
-            // swiftlint:disable:next vertical_parameter_alignment_on_call
-            earliest: departures.first)
+        return AnswerRows(
+            rows: rows,
+            note: fromLocation ? String(localized: "intent.shuttle.nearest") : nil,
+            earliest: departures.first
+        )
     }
 
     private static func overviewResult(
@@ -179,9 +200,12 @@ enum ShuttleIntentLogic {
         var earliest: ShuttleNextDeparture?
         for option in ShuttleStopOption.allCases {
             guard let data = stops.first(where: { $0.stopID == option.rawValue }),
-                  let departure = upcomingDepartures(in: data, direction: direction, now: now,
-            // swiftlint:disable:next vertical_parameter_alignment_on_call
-                      calendar: calendar).first else { continue }
+                  let departure = upcomingDepartures(
+                    in: data,
+                    direction: direction,
+                    now: now,
+                    calendar: calendar
+                  ).first else { continue }
             rows.append(IntentSnippetRow(
                 id: option.rawValue,
                 title: option.title,
@@ -206,17 +230,28 @@ enum ShuttleIntentLogic {
 
     private static func dialog(for departure: ShuttleNextDeparture?) -> String {
         guard let departure else { return String(localized: "intent.shuttle.dialog.none") }
-        return String(format: String(localized: "intent.shuttle.dialog.next"), stopName(for: departure.stopID),
-            // swiftlint:disable:next vertical_parameter_alignment_on_call
-            destinationName(for: departure.destination), "\(departure.minutes)", departure.time)
+        return String(
+            format: String(localized: "intent.shuttle.dialog.next"),
+            stopName(for: departure.stopID),
+            destinationName(for: departure.destination),
+            "\(departure.minutes)",
+            departure.time
+        )
     }
 }
 
 enum ShuttleIntentService {
     @MainActor
+    private static func locationIfNeeded(for stop: ShuttleStopOption?) async -> IntentLocationResult? {
+        guard stop == nil else { return nil }
+        return await IntentLocationProvider.currentLocation()
+    }
+
+    @MainActor
     static func answer(for stop: ShuttleStopOption?, direction: ShuttleDirectionOption?, now: Foundation.Date) async -> IntentAnswer {
         let calendar = IntentClock.seoulCalendar
         let after = IntentClock.timeString(from: now, calendar: calendar)
+        async let location = locationIfNeeded(for: stop)
         do {
             let response = try await Network.shared.client.fetch(
                 query: ShuttleWidgetQuery(after: .some(after)),
@@ -230,10 +265,15 @@ enum ShuttleIntentService {
                     }
                 )
             }
-            let location: IntentLocationResult? = stop == nil ? await IntentLocationProvider.currentLocation() : nil
-            return ShuttleIntentLogic.makeAnswer(stop: stop, direction: direction, location: location, stops: stops,
-            // swiftlint:disable:next vertical_parameter_alignment_on_call
-                now: now, calendar: calendar)
+            let resolvedLocation = await location
+            return ShuttleIntentLogic.makeAnswer(
+                stop: stop,
+                direction: direction,
+                location: resolvedLocation,
+                stops: stops,
+                now: now,
+                calendar: calendar
+            )
         } catch {
             return IntentAnswer.failure(title: stop?.title ?? String(localized: "intent.shuttle.title"))
         }

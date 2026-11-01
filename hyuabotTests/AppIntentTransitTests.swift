@@ -51,6 +51,34 @@ final class AppIntentTransitTests: XCTestCase {
         XCTAssertEqual(scheduled.dialog, String(format: String(localized: "intent.bus.dialog.scheduled"), "10-1", "14:05"))
     }
 
+    func testBusScheduledDialogUsesEarliestTime() {
+        let entries = [
+            BusArrivalEntry(
+                routeID: 1,
+                routeName: "3102",
+                stopID: 1,
+                minutes: nil,
+                stops: nil,
+                isRealtime: false,
+                time: "14:30:00"
+            ),
+            BusArrivalEntry(
+                routeID: 2,
+                routeName: "10-1",
+                stopID: 2,
+                minutes: nil,
+                stops: nil,
+                isRealtime: false,
+                time: "14:05:00"
+            )
+        ]
+        let answer = BusIntentLogic.makeAnswer(route: nil, entries: entries)
+        XCTAssertEqual(
+            answer.dialog,
+            String(format: String(localized: "intent.bus.dialog.scheduled"), "10-1", "14:05")
+        )
+    }
+
     func testBusFilterAndDefaults() {
         XCTAssertEqual(BusRouteOption.route3101.routeStops.count, 3)
         XCTAssertEqual(BusRouteOption.route10Dash1.routeStops, [BusIntentRouteStop(route: 216_000_068, stop: 216_000_379)])

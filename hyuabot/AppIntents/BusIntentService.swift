@@ -62,7 +62,9 @@ enum BusIntentLogic {
         let dialog: String
         if let entry = realtime, let minutes = entry.minutes {
             dialog = String(format: String(localized: "intent.bus.dialog.next"), entry.routeName, "\(minutes)")
-        } else if let scheduled = filtered.first(where: { $0.time != nil }), let time = scheduled.time {
+        } else if let scheduled = filtered.filter({ $0.time != nil }).min(by: {
+            IntentClock.shortTime($0.time ?? "") < IntentClock.shortTime($1.time ?? "")
+        }), let time = scheduled.time {
             dialog = String(format: String(localized: "intent.bus.dialog.scheduled"), scheduled.routeName, IntentClock.shortTime(time))
         } else {
             dialog = String(localized: "intent.bus.dialog.none")
@@ -81,8 +83,13 @@ enum BusIntentService {
     static func answer(route: BusRouteOption?) async -> IntentAnswer {
         let pairs = route?.routeStops ?? BusRouteOption.defaultRouteStops
         let inputs = pairs.map { BusRouteStopInput(route: $0.route, stop: $0.stop, limit: .some(3)) }
-        let currentLanguage = Bundle.main.preferredLocalizations.first ?? "ko"
-        let language = currentLanguage.starts(with: "ko") ? "KOREAN" : "ENGLISH"
+        let currentLanguage = Locale.current.language.languageCode?.identifier ?? "ko"
+        let language: String
+        if currentLanguage.starts(with: "ko") {
+            language = "KOREAN"
+        } else {
+            language = "ENGLISH"
+        }
         do {
             let response = try await Network.shared.client.fetch(
                 query: BusRealtimePageQuery(language: language, busInput: inputs),
