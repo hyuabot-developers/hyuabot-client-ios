@@ -315,6 +315,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if ProcessInfo.processInfo.arguments.contains("-UITestsDisableReviewPrompt") {
             return
         }
+        CafeteriaMenuIndexer.scheduleRefresh()
         if let windowScene = scene as? UIWindowScene {
             ReviewRequestManager.shared.requestReviewIfAppropriate(in: windowScene)
         }
