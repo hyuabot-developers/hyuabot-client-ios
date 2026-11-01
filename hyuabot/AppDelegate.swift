@@ -97,6 +97,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: @preconcurrency MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         print("Firebase registration token: \(fcmToken ?? "")")
+        guard let fcmToken, !fcmToken.isEmpty else { return }
+        Task { await InquiryService.shared.registerPushToken(fcmToken) }
     }
 
     func application(
@@ -156,6 +158,9 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
     ) async -> UNNotificationPresentationOptions {
         let userInfo = notification.request.content.userInfo
         Messaging.messaging().appDidReceiveMessage(userInfo)
+        if InquiryPush.isInquiryPayload(userInfo), InquiryPush.isChatVisible {
+            return []
+        }
         return [.list, .banner, .badge, .sound]
     }
 
@@ -166,8 +171,12 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
     ) {
         let userInfo = response.notification.request.content.userInfo
         Messaging.messaging().appDidReceiveMessage(userInfo)
-        if let urlString = userInfo["url"] as? String,
-           let url = URL(string: urlString)
+        if InquiryPush.isInquiryPayload(userInfo) {
+            if !InquiryPush.isChatVisible, let url = URL(string: InquiryPush.chatDeepLink) {
+                UIApplication.shared.open(url)
+            }
+        } else if let urlString = userInfo["url"] as? String,
+                  let url = URL(string: urlString)
         {
             UIApplication.shared.open(url)
         }
