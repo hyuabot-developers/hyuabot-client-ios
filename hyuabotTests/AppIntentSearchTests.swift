@@ -23,9 +23,15 @@ final class AppIntentSearchTests: XCTestCase {
         XCTAssertNil(HyuabotSearchLogic.request(for: "날씨"))
     }
 
-    func testNoResultAnswerIncludesTermAndEmptyRows() {
-        let answer = HyuabotSearchLogic.noResultAnswer(for: "날씨")
-        XCTAssertTrue(answer.dialog.contains("날씨"))
-        XCTAssertTrue(answer.snippet.rows.isEmpty)
+    func testURLsForSearchRequests() {
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .shuttle(stop: .dormitory)).absoluteString, "hyuabot://shuttle?stop=dormitory_o")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .shuttle(stop: nil)).absoluteString, "hyuabot://shuttle")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: .breakfast, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=breakfast")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: .lunch, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=lunch")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: .dinner, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=dinner")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: nil, restaurant: nil)).absoluteString, "hyuabot://cafeteria")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .subway(line: nil)).absoluteString, "hyuabot://subway")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .bus(route: nil)).absoluteString, "hyuabot://bus")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: nil).absoluteString, "hyuabot://home")
     }
 }

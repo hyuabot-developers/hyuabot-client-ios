@@ -5,6 +5,7 @@
 
 import AppIntents
 import Foundation
+import UIKit
 
 enum HyuabotSearchRequest: Equatable, Sendable {
     case shuttle(stop: ShuttleStopOption?)
@@ -14,6 +15,32 @@ enum HyuabotSearchRequest: Equatable, Sendable {
 }
 
 enum HyuabotSearchLogic {
+    static func url(for request: HyuabotSearchRequest?) -> URL {
+        var components = URLComponents()
+        components.scheme = "hyuabot"
+
+        switch request {
+        case .shuttle(let stop):
+            components.host = "shuttle"
+            if let stop {
+                components.queryItems = [URLQueryItem(name: "stop", value: stop.rawValue)]
+            }
+        case .cafeteria(_, let meal, _):
+            components.host = "cafeteria"
+            if let meal {
+                components.queryItems = [URLQueryItem(name: "tab", value: meal.rawValue)]
+            }
+        case .subway:
+            components.host = "subway"
+        case .bus:
+            components.host = "bus"
+        case nil:
+            components.host = "home"
+        }
+
+        return components.url ?? URL(fileURLWithPath: "/")
+    }
+
     static func request(for term: String) -> HyuabotSearchRequest? {
         let loweredTerm = term.lowercased()
         let route = BusRouteOption.allCases.sorted { $0.rawValue.count > $1.rawValue.count }
@@ -41,19 +68,6 @@ enum HyuabotSearchLogic {
         if let stop { return .shuttle(stop: stop) }
         if let line { return .subway(line: line) }
         return nil
-    }
-
-    static func noResultAnswer(for term: String) -> IntentAnswer {
-        let message = String(format: String(localized: "intent.search.dialog.none"), term)
-        return IntentAnswer(
-            dialog: message,
-            snippet: IntentSnippetContent(
-                title: String(localized: "intent.search.title"),
-                subtitle: term.isEmpty ? nil : term,
-                rows: [],
-                emptyMessage: message
-            )
-        )
     }
 
     private static func matchedStop(in term: String) -> ShuttleStopOption? {
@@ -100,20 +114,7 @@ struct HyuabotSearchIntent: ShowInAppSearchResultsIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        let answer: IntentAnswer
-        switch HyuabotSearchLogic.request(for: criteria.term) {
-        case .shuttle(let stop):
-            answer = await ShuttleIntentService.answer(for: stop, direction: nil, now: .now)
-        case let .cafeteria(day, meal, restaurant):
-            answer = await CafeteriaIntentService.answer(meal: meal, day: day, restaurant: restaurant, now: .now)
-        case .subway(let line):
-            answer = await SubwayIntentService.answer(line: line, direction: nil, now: .now)
-        case .bus(let route):
-            answer = await BusIntentService.answer(route: route)
-        case nil:
-            answer = HyuabotSearchLogic.noResultAnswer(for: criteria.term)
-        }
-        _ = answer
+        await UIApplication.shared.open(HyuabotSearchLogic.url(for: HyuabotSearchLogic.request(for: criteria.term)))
         return .result()
     }
 }
