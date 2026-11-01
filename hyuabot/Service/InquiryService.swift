@@ -57,6 +57,12 @@ private struct SendBody: Encodable {
     let body: String
 }
 
+private struct PushTokenBody: Encodable {
+    let provider: String
+    let token: String
+    let platform: String
+}
+
 actor InquiryService {
     static let shared = InquiryService()
 
@@ -70,6 +76,8 @@ actor InquiryService {
         UserDefaults.standard.set(generated, forKey: key)
         return generated
     }()
+
+    private var lastRegisteredPushToken: String?
 
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
@@ -156,6 +164,28 @@ actor InquiryService {
             method: "POST"
         ) else { return }
         _ = try? await URLSession.shared.data(for: request)
+    }
+
+    @discardableResult
+    func registerPushToken(_ token: String) async -> Bool {
+        guard !token.isEmpty else { return false }
+        if token == lastRegisteredPushToken {
+            return true
+        }
+        guard var request = makeRequest(path: "/api/v1/inquiry/push-token", method: "POST"),
+              let body = try? JSONEncoder().encode(
+                  PushTokenBody(
+                      provider: InquiryPush.providerFCM,
+                      token: token,
+                      platform: InquiryPush.platformIOS
+                  )
+              ) else { return false }
+        request.httpBody = body
+        guard let (_, response) = try? await URLSession.shared.data(for: request),
+              let http = response as? HTTPURLResponse,
+              (200 ..< 300).contains(http.statusCode) else { return false }
+        lastRegisteredPushToken = token
+        return true
     }
 
     func streamEvents(onEvent: @escaping @Sendable (InquiryStreamEvent) async -> Void) async {
