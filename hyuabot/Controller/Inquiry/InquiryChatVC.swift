@@ -3,8 +3,10 @@
 //  hyuabot
 //
 
+import FirebaseMessaging
 import SnapKit
 import UIKit
+import UserNotifications
 
 final class InquiryChatVC: UIViewController {
     private struct MessageSection {
@@ -20,6 +22,7 @@ final class InquiryChatVC: UIViewController {
     private var noticeDismissed = false
     private var pollingTimer: Timer?
     private var streamTask: Task<Void, Never>?
+    private var didBecomeActiveObserver: NSObjectProtocol?
     private let entryScreen: String
     private let entryScreenName: String
 
@@ -32,6 +35,10 @@ final class InquiryChatVC: UIViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        removeDidBecomeActiveObserver()
     }
 
     private var messageSections: [MessageSection] {
@@ -114,6 +121,9 @@ final class InquiryChatVC: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        InquiryPush.isChatVisible = true
+        clearDeliveredInquiryNotifications()
+        observeDidBecomeActive()
         navigationController?.setNavigationBarHidden(false, animated: false)
         loadInitialIfNeeded()
         startPolling()
@@ -121,6 +131,8 @@ final class InquiryChatVC: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        InquiryPush.isChatVisible = false
+        removeDidBecomeActiveObserver()
         stopPolling()
         streamTask?.cancel()
         streamTask = nil
@@ -183,6 +195,7 @@ final class InquiryChatVC: UIViewController {
             return
         }
         thread = resolved
+        preparePushNotifications()
         await refreshMessages(scrollToBottom: true)
         startStream(threadId: resolved.id)
     }
@@ -211,6 +224,43 @@ final class InquiryChatVC: UIViewController {
     private func stopPolling() {
         pollingTimer?.invalidate()
         pollingTimer = nil
+    }
+
+    private func observeDidBecomeActive() {
+        guard didBecomeActiveObserver == nil else { return }
+        didBecomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.clearDeliveredInquiryNotifications()
+        }
+    }
+
+    private func removeDidBecomeActiveObserver() {
+        guard let didBecomeActiveObserver else { return }
+        NotificationCenter.default.removeObserver(didBecomeActiveObserver)
+        self.didBecomeActiveObserver = nil
+    }
+
+    private func clearDeliveredInquiryNotifications() {
+        UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+            let identifiers = notifications
+                .filter { InquiryPush.isInquiryPayload($0.request.content.userInfo) }
+                .map(\.request.identifier)
+            guard !identifiers.isEmpty else { return }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+        }
+    }
+
+    private func preparePushNotifications() {
+        if let token = Messaging.messaging().fcmToken {
+            Task { await InquiryService.shared.registerPushToken(token) }
+        }
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            guard settings.authorizationStatus == .notDetermined else { return }
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+        }
     }
 
     @MainActor
