@@ -213,7 +213,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             default: nil
             }
             if let index = tabIndex {
-                rootVC.cafeteriaNC.showMeal(date: .now, mealIndex: index)
+                let dateQuery = params?.first(where: { $0.name == "date" })?.value
+                let date = dateQuery == "tomorrow" ? HyuabotSearchLogic.tomorrowDate(from: .now) : .now
+                rootVC.cafeteriaNC.showMeal(date: date, mealIndex: index)
             } else {
                 rootVC.cafeteriaNC.popToRootViewController(animated: false)
             }
@@ -315,6 +317,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if ProcessInfo.processInfo.arguments.contains("-UITestsDisableReviewPrompt") {
             return
         }
+        CafeteriaMenuIndexer.scheduleRefresh()
         if let windowScene = scene as? UIWindowScene {
             ReviewRequestManager.shared.requestReviewIfAppropriate(in: windowScene)
         }
