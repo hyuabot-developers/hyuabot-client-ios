@@ -45,9 +45,32 @@ final class AppIntentCafeteriaEntityTests: XCTestCase {
         let calendar = IntentClock.seoulCalendar
         let date = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 23, minute: 30)))
         XCTAssertEqual(CafeteriaMenuEntityLogic.indexDates(now: date, calendar: calendar), ["2026-11-01", "2026-11-02"])
-        XCTAssertTrue(CafeteriaMenuEntityLogic.shouldRefresh(lastRefresh: nil, now: date))
-        XCTAssertFalse(CafeteriaMenuEntityLogic.shouldRefresh(lastRefresh: date, now: date.addingTimeInterval(600)))
-        XCTAssertTrue(CafeteriaMenuEntityLogic.shouldRefresh(lastRefresh: date, now: date.addingTimeInterval(1800)))
+        XCTAssertTrue(CafeteriaMenuEntityLogic.shouldRefresh(lastCompleted: nil, now: date, inFlight: false))
+        XCTAssertFalse(CafeteriaMenuEntityLogic.shouldRefresh(lastCompleted: date, now: date.addingTimeInterval(600), inFlight: false))
+        XCTAssertTrue(CafeteriaMenuEntityLogic.shouldRefresh(lastCompleted: date, now: date.addingTimeInterval(1800), inFlight: false))
+        XCTAssertFalse(CafeteriaMenuEntityLogic.shouldRefresh(lastCompleted: nil, now: date, inFlight: true))
+    }
+
+    func testRefreshCompletionAdvancesOnlyAfterClearOrReplaceWithoutIndexError() throws {
+        let now = try XCTUnwrap(IntentClock.seoulCalendar.date(from: DateComponents(year: 2026, month: 11, day: 2)))
+        let previous = now.addingTimeInterval(-3600)
+        XCTAssertEqual(
+            CafeteriaMenuEntityLogic.completedRefreshDate(lastCompleted: previous, now: now, action: .keep, indexError: false),
+            previous
+        )
+        XCTAssertEqual(
+            CafeteriaMenuEntityLogic.completedRefreshDate(lastCompleted: previous, now: now, action: .replace([]), indexError: false),
+            now
+        )
+        XCTAssertEqual(
+            CafeteriaMenuEntityLogic.completedRefreshDate(lastCompleted: previous, now: now, action: .clear, indexError: false),
+            now
+        )
+        XCTAssertEqual(
+            CafeteriaMenuEntityLogic.completedRefreshDate(lastCompleted: previous, now: now, action: .replace([]), indexError: true),
+            previous
+        )
+        XCTAssertNil(CafeteriaMenuEntityLogic.completedRefreshDate(lastCompleted: nil, now: now, action: .keep, indexError: false))
     }
 
     func testSnapshotPolicyKeepsPartialFailuresAndHandlesCompleteResults() {

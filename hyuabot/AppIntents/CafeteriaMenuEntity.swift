@@ -88,9 +88,18 @@ enum CafeteriaMenuEntityLogic {
         }
     }
 
-    static func shouldRefresh(lastRefresh: Foundation.Date?, now: Foundation.Date) -> Bool {
-        guard let lastRefresh else { return true }
-        return now.timeIntervalSince(lastRefresh) >= 1800
+    static func shouldRefresh(lastCompleted: Foundation.Date?, now: Foundation.Date, inFlight: Bool) -> Bool {
+        guard !inFlight else { return false }
+        guard let lastCompleted else { return true }
+        return now.timeIntervalSince(lastCompleted) >= 1800
+    }
+
+    static func completedRefreshDate(
+        lastCompleted: Foundation.Date?, now: Foundation.Date, action: CafeteriaIndexAction, indexError: Bool
+    ) -> Foundation.Date? {
+        guard !indexError else { return lastCompleted }
+        guard case .keep = action else { return now }
+        return lastCompleted
     }
 
     static func snapshot(fetches: [CafeteriaMenuFetch]) -> CafeteriaMenuSnapshot {
@@ -158,15 +167,21 @@ enum CafeteriaMenuStore {
 
     @MainActor
     static func snapshot(dates: [String], campusIDs: [Int]) async -> CafeteriaMenuSnapshot {
-        var fetches: [CafeteriaMenuFetch] = []
-        for date in dates {
-            for campusID in campusIDs {
-                do {
-                    fetches.append(CafeteriaMenuFetch(date: date, menus: try await menus(date: date, campusID: campusID)))
-                } catch {
-                    fetches.append(CafeteriaMenuFetch(date: date, menus: nil))
+        let requests = dates.flatMap { date in campusIDs.map { (date, $0) } }
+        let fetches = await withTaskGroup(of: (Int, CafeteriaMenuFetch).self) { group in
+            for (index, request) in requests.enumerated() {
+                group.addTask {
+                    do {
+                        let result = try await menus(date: request.0, campusID: request.1)
+                        return (index, CafeteriaMenuFetch(date: request.0, menus: result))
+                    } catch {
+                        return (index, CafeteriaMenuFetch(date: request.0, menus: nil))
+                    }
                 }
             }
+            var results: [(Int, CafeteriaMenuFetch)] = []
+            for await result in group { results.append(result) }
+            return results.sorted { $0.0 < $1.0 }.map(\.1)
         }
         return CafeteriaMenuEntityLogic.snapshot(fetches: fetches)
     }
@@ -208,21 +223,26 @@ struct CafeteriaMenuEntityQuery: EntityStringQuery {
 
 enum CafeteriaMenuIndexer {
     @MainActor private static var lastRefresh: Foundation.Date?
+    @MainActor private static var refreshInFlight = false
 
     @MainActor
     static func scheduleRefresh(now: Foundation.Date = .now) {
-        guard CafeteriaMenuEntityLogic.shouldRefresh(lastRefresh: lastRefresh, now: now) else { return }
-        lastRefresh = now
+        guard CafeteriaMenuEntityLogic.shouldRefresh(
+            lastCompleted: lastRefresh, now: now, inFlight: refreshInFlight
+        ) else { return }
+        refreshInFlight = true
         Task { await refresh(now: now) }
     }
 
     @MainActor
     static func refresh(now: Foundation.Date) async {
+        defer { refreshInFlight = false }
         guard #available(iOS 18.0, *) else { return }
         let dates = CafeteriaMenuEntityLogic.indexDates(now: now, calendar: IntentClock.seoulCalendar)
         let snapshot = await CafeteriaMenuStore.snapshot(dates: dates, campusIDs: [1, 2])
+        let action = CafeteriaMenuEntityLogic.indexAction(for: snapshot)
         do {
-            switch CafeteriaMenuEntityLogic.indexAction(for: snapshot) {
+            switch action {
             case .keep:
                 return
             case .clear:
@@ -231,8 +251,13 @@ enum CafeteriaMenuIndexer {
                 try await CSSearchableIndex.default().deleteAppEntities(ofType: CafeteriaMenuEntity.self)
                 try await CSSearchableIndex.default().indexAppEntities(entities)
             }
+            lastRefresh = CafeteriaMenuEntityLogic.completedRefreshDate(
+                lastCompleted: lastRefresh, now: now, action: action, indexError: false
+            )
         } catch {
-            return
+            lastRefresh = CafeteriaMenuEntityLogic.completedRefreshDate(
+                lastCompleted: lastRefresh, now: now, action: action, indexError: true
+            )
         }
     }
 }
