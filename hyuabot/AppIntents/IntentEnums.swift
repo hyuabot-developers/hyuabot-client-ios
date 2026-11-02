@@ -215,14 +215,26 @@ enum BusRouteOption: String, AppEnum, CaseIterable {
     case route7070 = "7070"
     case route9090 = "9090"
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "intent.bus.route.type")
+    static let spokenSynonyms: [BusRouteOption: [String]] = [
+        .route10Dash1: ["10-1", "10-1번", "십의 일", "십다시일"],
+        .route3102: ["3102", "3102번", "삼천백이", "삼천백이번", "삼일공이"],
+        .route3100: ["3100", "3100번", "삼천백", "삼천백번", "삼일공공"],
+        .route3101: ["3101", "3101번", "삼천백일", "삼천백일번", "삼일공일"],
+        .route3100N: ["3100N", "3100 N", "3100 엔", "3100N번", "삼천백 엔"],
+        .route7070: ["7070", "7070번", "칠공칠공", "칠천칠십", "칠천칠십번"],
+        .route9090: ["9090", "9090번", "구공구공", "구천구십", "구천구십번"],
+    ]
+    private static func localizedSynonyms(for route: BusRouteOption) -> [LocalizedStringResource] {
+        spokenSynonyms[route, default: []].map { LocalizedStringResource(stringLiteral: $0) }
+    }
     static let caseDisplayRepresentations: [BusRouteOption: DisplayRepresentation] = [
-        .route10Dash1: DisplayRepresentation(title: "intent.bus.route.10-1"),
-        .route3102: DisplayRepresentation(title: "intent.bus.route.3102"),
-        .route3100: DisplayRepresentation(title: "intent.bus.route.3100"),
-        .route3101: DisplayRepresentation(title: "intent.bus.route.3101"),
-        .route3100N: DisplayRepresentation(title: "intent.bus.route.3100N"),
-        .route7070: DisplayRepresentation(title: "intent.bus.route.7070"),
-        .route9090: DisplayRepresentation(title: "intent.bus.route.9090"),
+        .route10Dash1: DisplayRepresentation(title: "intent.bus.route.10-1", synonyms: localizedSynonyms(for: .route10Dash1)),
+        .route3102: DisplayRepresentation(title: "intent.bus.route.3102", synonyms: localizedSynonyms(for: .route3102)),
+        .route3100: DisplayRepresentation(title: "intent.bus.route.3100", synonyms: localizedSynonyms(for: .route3100)),
+        .route3101: DisplayRepresentation(title: "intent.bus.route.3101", synonyms: localizedSynonyms(for: .route3101)),
+        .route3100N: DisplayRepresentation(title: "intent.bus.route.3100N", synonyms: localizedSynonyms(for: .route3100N)),
+        .route7070: DisplayRepresentation(title: "intent.bus.route.7070", synonyms: localizedSynonyms(for: .route7070)),
+        .route9090: DisplayRepresentation(title: "intent.bus.route.9090", synonyms: localizedSynonyms(for: .route9090)),
     ]
     var title: String {
         switch self {
