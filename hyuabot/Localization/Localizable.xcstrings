@@ -10641,6 +10641,118 @@
         }
       }
     },
+    "intent.open.bus.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Bus Arrivals"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バスの到着情報を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버스 도착 정보 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开公交到站信息"
+          }
+        }
+      }
+    },
+    "intent.open.cafeteria.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Cafeteria Menu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学食メニューを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학식 메뉴 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开食堂菜单"
+          }
+        }
+      }
+    },
+    "intent.open.shuttle.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Shuttle Arrivals"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルの到着情報を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀 도착 정보 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开班车到站信息"
+          }
+        }
+      }
+    },
+    "intent.open.subway.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Subway Arrivals"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地下鉄の到着情報を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지하철 도착 정보 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开地铁到站信息"
+          }
+        }
+      }
+    },
     "intent.search.title" : {
       "localizations": {
         "ko": {
@@ -10665,34 +10777,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "搜索结果"
-          }
-        }
-      }
-    },
-    "intent.search.dialog.none" : {
-      "localizations": {
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "'%@'에 대한 정보를 찾지 못했어요. 셔틀, 학식, 지하철, 버스에 대해 물어봐 주세요."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I couldn't find anything for '%@'. Try asking about the shuttle, cafeteria, subway or bus."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "「%@」に関する情報が見つかりませんでした。シャトル、学食、地下鉄、バスについて聞いてください。"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "没有找到与“%@”相关的信息。请询问班车、食堂、地铁或公交。"
           }
         }
       }

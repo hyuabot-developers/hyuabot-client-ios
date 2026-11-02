@@ -105,8 +105,11 @@ final class AppIntentLocalizationTests: XCTestCase {
         "intent.entity.shuttle.type",
         "intent.entity.subway.type",
         "intent.entity.bus.type",
+        "intent.open.bus.title",
+        "intent.open.cafeteria.title",
+        "intent.open.shuttle.title",
+        "intent.open.subway.title",
         "intent.search.title",
-        "intent.search.dialog.none",
     ]
 
     func testIntentKeysHaveAllLanguages() throws {
