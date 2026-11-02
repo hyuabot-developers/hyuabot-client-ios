@@ -43,6 +43,11 @@ struct HyuabotAppShortcuts: AppShortcutsProvider {
             phrases: [
                 "\(.applicationName) 전철 언제 와",
                 "\(.applicationName)에서 지하철 도착 정보 알려줘",
+                "\(.applicationName) \(\.$line) 지하철 언제 와",
+                "\(.applicationName) 지하철 시간 알려줘",
+                "\(.applicationName) 지하철 도착 정보",
+                "\(.applicationName) 전철 시간 알려줘",
+                "\(.applicationName) \(\.$direction) 지하철 언제 와",
                 "\(.applicationName) \(\.$line) 언제 와",
                 "\(.applicationName) \(\.$direction) 전철 언제 와",
                 "\(.applicationName) 지하철 언제 와",
