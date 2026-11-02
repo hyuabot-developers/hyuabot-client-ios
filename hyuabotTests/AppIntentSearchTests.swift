@@ -23,9 +23,25 @@ final class AppIntentSearchTests: XCTestCase {
         XCTAssertNil(HyuabotSearchLogic.request(for: "날씨"))
     }
 
+    func testTomorrowDateUsesSeoulCalendarAcrossMidnight() throws {
+        let input = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-01-01T15:30:00Z"))
+        let tomorrow = HyuabotSearchLogic.tomorrowDate(from: input)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Seoul"))
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: tomorrow)
+        XCTAssertEqual(components.year, 2026)
+        XCTAssertEqual(components.month, 1)
+        XCTAssertEqual(components.day, 3)
+        XCTAssertEqual(components.hour, 0)
+        XCTAssertEqual(components.minute, 30)
+    }
+
     func testURLsForSearchRequests() {
         XCTAssertEqual(HyuabotSearchLogic.url(for: .shuttle(stop: .dormitory)).absoluteString, "hyuabot://shuttle?stop=dormitory_o")
         XCTAssertEqual(HyuabotSearchLogic.url(for: .shuttle(stop: nil)).absoluteString, "hyuabot://shuttle")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: .tomorrow, meal: .breakfast, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=breakfast&date=tomorrow")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: .today, meal: .lunch, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=lunch")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: .tomorrow, meal: nil, restaurant: nil)).absoluteString, "hyuabot://cafeteria")
         XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: .breakfast, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=breakfast")
         XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: .lunch, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=lunch")
         XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: .dinner, restaurant: nil)).absoluteString, "hyuabot://cafeteria?tab=dinner")

@@ -15,6 +15,12 @@ enum HyuabotSearchRequest: Equatable, Sendable {
 }
 
 enum HyuabotSearchLogic {
+    static func tomorrowDate(from date: Foundation.Date) -> Foundation.Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return calendar.date(byAdding: .day, value: 1, to: date) ?? date
+    }
+
     static func url(for request: HyuabotSearchRequest?) -> URL {
         var components = URLComponents()
         components.scheme = "hyuabot"
@@ -25,10 +31,14 @@ enum HyuabotSearchLogic {
             if let stop {
                 components.queryItems = [URLQueryItem(name: "stop", value: stop.rawValue)]
             }
-        case .cafeteria(_, let meal, _):
+        case let .cafeteria(day, meal, _):
             components.host = "cafeteria"
+            // Line and restaurant are not representable in the existing deep links.
             if let meal {
                 components.queryItems = [URLQueryItem(name: "tab", value: meal.rawValue)]
+                if day == .tomorrow {
+                    components.queryItems?.append(URLQueryItem(name: "date", value: "tomorrow"))
+                }
             }
         case .subway:
             components.host = "subway"

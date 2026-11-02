@@ -213,7 +213,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             default: nil
             }
             if let index = tabIndex {
-                rootVC.cafeteriaNC.showMeal(date: .now, mealIndex: index)
+                let dateQuery = params?.first(where: { $0.name == "date" })?.value
+                let date = dateQuery == "tomorrow" ? HyuabotSearchLogic.tomorrowDate(from: .now) : .now
+                rootVC.cafeteriaNC.showMeal(date: date, mealIndex: index)
             } else {
                 rootVC.cafeteriaNC.popToRootViewController(animated: false)
             }
