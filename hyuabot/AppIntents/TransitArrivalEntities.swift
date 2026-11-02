@@ -34,6 +34,15 @@ enum TransitEntityLoader {
             return results.sorted { $0.0 < $1.0 }.map(\.1)
         }
     }
+
+    static func loadUsingSharedAnswer<Option: Sendable, Entity: Sendable>(
+        _ options: [Option],
+        fetch: @escaping @Sendable () async -> IntentAnswer,
+        make: @escaping @Sendable (Option, IntentAnswer) -> Entity
+    ) async -> [Entity] {
+        let answer = await fetch()
+        return options.map { make($0, answer) }
+    }
 }
 
 struct ShuttleArrivalEntity: AppEntity, Hashable, Sendable {
@@ -72,7 +81,11 @@ struct ShuttleArrivalEntityQuery: EntityStringQuery {
     }
 
     nonisolated func suggestedEntities() async throws -> [ShuttleArrivalEntity] {
-        try await entities(for: ShuttleStopOption.allCases.map(\.rawValue))
+        await TransitEntityLoader.loadUsingSharedAnswer(ShuttleStopOption.allCases, fetch: {
+            await ShuttleIntentService.answer(for: nil, direction: nil, now: Date())
+        }, make: { stop, answer in
+            ShuttleArrivalEntity(stop: stop, answer: answer)
+        })
     }
 }
 
@@ -112,7 +125,11 @@ struct SubwayArrivalEntityQuery: EntityStringQuery {
     }
 
     nonisolated func suggestedEntities() async throws -> [SubwayArrivalEntity] {
-        try await entities(for: SubwayLineOption.allCases.map(\.stationID))
+        await TransitEntityLoader.loadUsingSharedAnswer(SubwayLineOption.allCases, fetch: {
+            await SubwayIntentService.answer(line: nil, direction: nil, now: Date())
+        }, make: { line, answer in
+            SubwayArrivalEntity(line: line, answer: answer)
+        })
     }
 }
 
@@ -152,6 +169,10 @@ struct BusArrivalEntityQuery: EntityStringQuery {
     }
 
     nonisolated func suggestedEntities() async throws -> [BusArrivalEntity] {
-        try await entities(for: BusRouteOption.allCases.map(\.rawValue))
+        await TransitEntityLoader.loadUsingSharedAnswer(BusRouteOption.allCases, fetch: {
+            await BusIntentService.answer(route: nil)
+        }, make: { route, answer in
+            BusArrivalEntity(route: route, answer: answer)
+        })
     }
 }
