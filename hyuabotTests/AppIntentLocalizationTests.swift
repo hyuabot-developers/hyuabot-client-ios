@@ -139,7 +139,7 @@ final class AppIntentLocalizationTests: XCTestCase {
     func testAppShortcutPhrasesKeepPlaceholders() throws {
         let catalog = try loadCatalog(named: "AppShortcuts.xcstrings")
         let strings = try XCTUnwrap(catalog["strings"] as? [String: Any])
-        XCTAssertEqual(strings.count, 17)
+        XCTAssertEqual(strings.count, 29)
         for key in strings.keys {
             XCTAssertTrue(key.contains("${applicationName}"), key)
             let expected = placeholders(in: key)
