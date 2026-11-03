@@ -270,7 +270,10 @@ private struct StopListView: View {
                 .listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
             }
         }
-        .navigationTitle(WatchLocalization.text("stops.title"))
+        .navigationTitle {
+            Text(WatchLocalization.text("stops.title"))
+                .font(.godo(size: 19, weight: .bold))
+        }
     }
 
     /// Denied and disabled services fail the same way on retry, so only a settings hint is shown.
