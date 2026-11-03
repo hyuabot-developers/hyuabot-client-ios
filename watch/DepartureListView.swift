@@ -166,7 +166,7 @@ struct DepartureListView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 8)
-        .padding(.bottom, 13)
+        .padding(.bottom, 10)
         .listRowBackground(Color.clear)
     }
 
