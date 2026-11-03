@@ -270,9 +270,15 @@ private struct StopListView: View {
                 .listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
             }
         }
-        .navigationTitle {
-            Text(WatchLocalization.text("stops.title"))
-                .font(.godo(size: 19, weight: .bold))
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Text(WatchLocalization.text("stops.title"))
+                    .font(.godo(size: 14, weight: .semibold))
+                    .foregroundStyle(WatchPalette.accentBlue)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .accessibilityAddTraits(.isHeader)
+            }
         }
     }
 
