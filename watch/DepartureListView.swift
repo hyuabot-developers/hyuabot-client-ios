@@ -77,10 +77,17 @@ struct DepartureListView: View {
                 Text(WatchLocalization.text("retry"))
                     .font(.godo(size: 14, weight: .semibold))
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 40)
+                    .background(Capsule().fill(WatchPalette.primaryButton))
+                    .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .listRowBackground(Capsule().fill(WatchPalette.primaryButton))
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
         }
     }
 
@@ -150,7 +157,7 @@ struct DepartureListView: View {
     }
 
     private func statusRow(icon: String, color: Color, message: String) -> some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             statusIcon(systemName: icon, color: color)
             Text(WatchLocalization.text(message))
                 .font(.godo(size: 14, weight: .regular))
@@ -158,7 +165,8 @@ struct DepartureListView: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 13)
         .listRowBackground(Color.clear)
     }
 
@@ -183,10 +191,15 @@ struct DepartureListView: View {
             }
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .background(Capsule().fill(WatchPalette.secondaryButton))
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .listRowBackground(Capsule().fill(WatchPalette.secondaryButton))
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
     }
 
 }
