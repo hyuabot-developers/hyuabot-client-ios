@@ -66,6 +66,7 @@ struct DepartureListView: View {
                 TimelineView(.everyMinute) { context in
                     departureRow(for: item, now: context.date)
                 }
+                .listRowBackground(rowBackground)
             }
         case .empty:
             statusRow(icon: "moon.zzz.fill", color: WatchPalette.secondaryText, message: "no.scheduled.shuttle")
@@ -112,15 +113,18 @@ struct DepartureListView: View {
         let row: DepartureRow
         if let date = WatchDepartureTime.departureDate(from: item.time, now: now) {
             let minutes = WatchDepartureTime.minutesUntil(date, now: now)
-            let countdown = minutes == 0
-                ? WatchLocalization.text("countdown.now")
-                : String(format: WatchLocalization.text("countdown.minutes"), minutes)
+            let isPast = date < now
+            let countdown = isPast
+                ? WatchDepartureTime.clockText(date)
+                : minutes == 0
+                    ? WatchLocalization.text("countdown.now")
+                    : String(format: WatchLocalization.text("countdown.minutes"), minutes)
             row = DepartureRow(
                 tag: item.route.tag,
                 name: routeName(forTag: item.route.tag, fallback: item.route.name),
                 countdown: countdown,
-                clock: WatchDepartureTime.clockText(date),
-                isImminent: WatchDepartureTime.isImminent(minutes: minutes)
+                clock: isPast ? nil : WatchDepartureTime.clockText(date),
+                isImminent: !isPast && WatchDepartureTime.isImminent(minutes: minutes)
             )
         } else {
             row = DepartureRow(
@@ -131,7 +135,7 @@ struct DepartureListView: View {
                 isImminent: false
             )
         }
-        return row.listRowBackground(rowBackground)
+        return row
     }
 
     private var rowBackground: some View {
