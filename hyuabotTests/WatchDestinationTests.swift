@@ -83,6 +83,27 @@ final class WatchDestinationTests: XCTestCase {
             stopsAfterCurrent: ["shuttlecock_i", "dormitory_i"],
             equals: "stop.dormitory"
         )
+        assertLabel(
+            stopID: "terminal",
+            queryStop: "terminal",
+            tag: "C",
+            stopsAfterCurrent: ["shuttlecock_i", "dormitory_i"],
+            equals: "stop.dormitory"
+        )
+        assertLabel(
+            stopID: "terminal",
+            queryStop: "terminal",
+            tag: "C",
+            stopsAfterCurrent: ["shuttlecock_i"],
+            equals: "stop.shuttlecock"
+        )
+        assertLabel(
+            stopID: "terminal",
+            queryStop: "terminal",
+            tag: "XX",
+            stopsAfterCurrent: ["shuttlecock_i"],
+            equals: "stop.shuttlecock"
+        )
     }
 
     func testJungangAndFallbackLabelKeys() {

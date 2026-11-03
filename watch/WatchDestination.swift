@@ -54,10 +54,7 @@ enum WatchDestination {
             default: return nil
             }
         case "terminal":
-            switch tag {
-            case "DH", "DY": return destination
-            default: return "route.direct"
-            }
+            return destination
         case "jungang":
             return "stop.dormitory"
         default:
