@@ -69,7 +69,11 @@ enum WatchLocalization {
             "nearest.stop": "가장 가까운 정류장",
             "other.stops": "다른 정류장 보기",
             "load.failed": "시간표를 불러오지 못했습니다.",
-            "retry": "다시 시도"
+            "retry": "다시 시도",
+            "stops.title": "정류장",
+            "nearest.badge": "가장 가까움",
+            "countdown.now": "지금",
+            "countdown.minutes": "%d분"
         ],
         "en": [
             "stop.dormitory": "Dormitory",
@@ -88,7 +92,11 @@ enum WatchLocalization {
             "nearest.stop": "Nearest stop",
             "other.stops": "Other stops",
             "load.failed": "Couldn’t load the timetable.",
-            "retry": "Retry"
+            "retry": "Retry",
+            "stops.title": "Stops",
+            "nearest.badge": "Nearest",
+            "countdown.now": "Now",
+            "countdown.minutes": "%d min"
         ],
         "ja": [
             "stop.dormitory": "寮",
@@ -107,7 +115,11 @@ enum WatchLocalization {
             "nearest.stop": "最寄りの停留所",
             "other.stops": "他の停留所を見る",
             "load.failed": "時刻表を読み込めませんでした。",
-            "retry": "再試行"
+            "retry": "再試行",
+            "stops.title": "停留所",
+            "nearest.badge": "最寄り",
+            "countdown.now": "今",
+            "countdown.minutes": "%d分"
         ],
         "zh": [
             "stop.dormitory": "宿舍",
@@ -126,7 +138,11 @@ enum WatchLocalization {
             "nearest.stop": "最近的车站",
             "other.stops": "查看其他车站",
             "load.failed": "无法载入时刻表。",
-            "retry": "重试"
+            "retry": "重试",
+            "stops.title": "车站",
+            "nearest.badge": "最近",
+            "countdown.now": "现在",
+            "countdown.minutes": "%d分钟"
         ]
     ]
 }
