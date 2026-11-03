@@ -43,13 +43,13 @@ struct DepartureListView: View {
                 HStack(spacing: 4) {
                     Circle().fill(WatchPalette.accentBlue).frame(width: 7, height: 7)
                     Text(WatchLocalization.text("nearest.stop"))
-                        .font(.system(size: 11))
+                        .font(.godo(size: 11, weight: .regular))
                         .foregroundStyle(WatchPalette.secondaryText)
                         .lineLimit(1)
                 }
             }
             Text(stop.localizedName)
-                .font(.system(size: 19, weight: .bold))
+                .font(.godo(size: 19, weight: .bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
@@ -75,7 +75,7 @@ struct DepartureListView: View {
             statusRow(icon: "exclamationmark", color: WatchPalette.warning, message: "load.failed")
             Button { viewModel.retry() } label: {
                 Text(WatchLocalization.text("retry"))
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.godo(size: 14, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, minHeight: 40)
             }
@@ -153,7 +153,7 @@ struct DepartureListView: View {
         VStack(spacing: 10) {
             statusIcon(systemName: icon, color: color)
             Text(WatchLocalization.text(message))
-                .font(.system(size: 14))
+                .font(.godo(size: 14, weight: .regular))
                 .foregroundStyle(WatchPalette.messageText)
                 .multilineTextAlignment(.center)
         }
@@ -166,7 +166,7 @@ struct DepartureListView: View {
         ZStack {
             Circle().fill(WatchPalette.rowBackground).frame(width: 34, height: 34)
             Image(systemName: systemName)
-                .font(.system(size: 16, weight: .bold))
+                .font(.godo(size: 16, weight: .bold).weight(.bold))
                 .foregroundStyle(color)
         }
         .accessibilityHidden(true)
@@ -174,8 +174,13 @@ struct DepartureListView: View {
 
     private var otherStopsButton: some View {
         Button { onShowOtherStops() } label: {
-            Label(WatchLocalization.text("other.stops"), systemImage: "list.bullet")
-                .font(.system(size: 14, weight: .semibold))
+            Label {
+                Text(WatchLocalization.text("other.stops"))
+                    .font(.godo(size: 14, weight: .semibold))
+            } icon: {
+                Image(systemName: "list.bullet")
+                    .font(.godo(size: 14, weight: .semibold).weight(.semibold))
+            }
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity, minHeight: 40)
@@ -197,18 +202,18 @@ private struct DepartureRow: View {
         HStack(spacing: 8) {
             Circle().fill(WatchPalette.route(tag: tag)).frame(width: 8, height: 8)
             Text(name)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.godo(size: 15, weight: .semibold))
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .trailing, spacing: 0) {
                 Text(countdown)
-                    .font(.system(size: 16, weight: .bold, design: .rounded).monospacedDigit())
+                    .font(.godo(size: 16, weight: .bold))
                     .foregroundStyle(isImminent ? WatchPalette.imminent : Color.primary)
                     .lineLimit(1)
                 if let clock {
                     Text(clock)
-                        .font(.system(size: 11).monospacedDigit())
+                        .font(.godo(size: 11, weight: .regular))
                         .foregroundStyle(WatchPalette.secondaryText)
                 }
             }

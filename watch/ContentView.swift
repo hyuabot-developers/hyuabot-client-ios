@@ -221,17 +221,19 @@ private struct StopListView: View {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.mini).frame(width: 14, height: 14)
                     Text(WatchLocalization.text("finding.nearest.stop"))
-                        .font(.system(size: 12))
+                        .font(.godo(size: 12, weight: .regular))
                         .foregroundStyle(WatchPalette.messageText)
                         .lineLimit(2)
                 }
                 .listRowBackground(Color.clear)
             } else if let failureReason {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(failureMessage(failureReason)).font(.system(size: 12)).foregroundStyle(WatchPalette.messageText)
+                    Text(failureMessage(failureReason))
+                        .font(.godo(size: 12, weight: .regular))
+                        .foregroundStyle(WatchPalette.messageText)
                     if isRetryable(failureReason) {
                         Button(WatchLocalization.text("location.retry"), action: onRetry)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.godo(size: 13, weight: .semibold))
                             .foregroundStyle(WatchPalette.accentBlue)
                             .buttonStyle(.plain)
                     }
@@ -248,17 +250,19 @@ private struct StopListView: View {
                 } label: {
                     HStack {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(stop.localizedName).font(.system(size: 15)).lineLimit(1)
+                            Text(stop.localizedName)
+                                .font(.godo(size: 15, weight: .regular))
+                                .lineLimit(1)
                             if stop.id == nearestStopID {
                                 Text(WatchLocalization.text("nearest.badge"))
-                                    .font(.system(size: 10, weight: .semibold))
+                                    .font(.godo(size: 10, weight: .semibold))
                                     .foregroundStyle(WatchPalette.accentBlue)
                                     .lineLimit(1)
                             }
                         }
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 14))
+                            .font(.godo(size: 14, weight: .regular))
                             .foregroundStyle(WatchPalette.chevron)
                     }.frame(minHeight: 40).contentShape(Rectangle())
                 }
