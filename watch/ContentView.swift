@@ -156,31 +156,20 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Group {
-                if locationModel.resolution == .locating {
-                    VStack(spacing: 12) {
-                        ProgressView()
-                        Text(WatchLocalization.text("finding.nearest.stop"))
-                            .font(.body)
-                            .multilineTextAlignment(.center)
+            StopListView(
+                isLocating: locationModel.resolution == .locating || locationModel.isLocating,
+                failureReason: locationModel.failureReason,
+                nearestStopID: locationModel.nearestStopID,
+                onRetry: { locationModel.resolve() },
+                onSelect: { stop in
+                    didApplyInitialStop = true
+                    locationModel.remember(stop)
+                    path.append(stop)
+                    Task {
+                        await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
                     }
-                    .padding()
-                } else {
-                    StopListView(
-                        isLocating: locationModel.isLocating,
-                        failureReason: locationModel.failureReason,
-                        onRetry: { locationModel.resolve() },
-                        onSelect: { stop in
-                            didApplyInitialStop = true
-                            locationModel.remember(stop)
-                            path.append(stop)
-                            Task {
-                                await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
-                            }
-                        }
-                    )
                 }
-            }
+            )
             .navigationDestination(for: WatchShuttleStop.self) { stop in
                 DepartureListView(
                     stop: stop,
@@ -222,6 +211,7 @@ struct ContentView: View {
 private struct StopListView: View {
     let isLocating: Bool
     let failureReason: WatchFailureReason?
+    let nearestStopID: String?
     let onRetry: () -> Void
     let onSelect: (WatchShuttleStop) -> Void
 
@@ -229,36 +219,49 @@ private struct StopListView: View {
         List {
             if isLocating {
                 HStack(spacing: 8) {
-                    ProgressView()
+                    ProgressView().frame(width: 14, height: 14).scaleEffect(0.6)
                     Text(WatchLocalization.text("finding.nearest.stop"))
-                        .font(.footnote)
+                        .font(.system(size: 12))
+                        .foregroundStyle(WatchPalette.messageText)
+                        .lineLimit(2)
                 }
+                .listRowBackground(Color.clear)
             } else if let failureReason {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(failureMessage(failureReason))
-                        .font(.footnote)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(failureMessage(failureReason)).font(.system(size: 12)).foregroundStyle(WatchPalette.messageText)
                     if isRetryable(failureReason) {
                         Button(WatchLocalization.text("location.retry"), action: onRetry)
-                            .font(.footnote)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(WatchPalette.accentBlue)
+                            .buttonStyle(.plain)
                     }
-                }
+                }.padding(.vertical, 2).listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
             }
             ForEach(WatchShuttleStop.all, id: \.self) { stop in
                 Button {
                     onSelect(stop)
                 } label: {
                     HStack {
-                        Text(stop.localizedName)
-                            .font(.body)
-                            .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(stop.localizedName).font(.system(size: 15)).lineLimit(1)
+                            if stop.id == nearestStopID {
+                                Text(WatchLocalization.text("nearest.badge"))
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(WatchPalette.accentBlue)
+                                    .lineLimit(1)
+                            }
+                        }
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                    }
+                            .font(.system(size: 14))
+                            .foregroundStyle(WatchPalette.chevron)
+                    }.frame(minHeight: 40).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
             }
         }
+        .navigationTitle(WatchLocalization.text("stops.title"))
     }
 
     /// Denied and disabled services fail the same way on retry, so only a settings hint is shown.
@@ -272,8 +275,7 @@ private struct StopListView: View {
     private func failureMessage(_ reason: WatchFailureReason) -> String {
         switch reason {
         case .denied, .servicesDisabled: WatchLocalization.text("location.denied")
-        case .noStopNearby: WatchLocalization.text("location.noStopNearby")
-        case .timedOut, .unavailable: WatchLocalization.text("location.failed")
+        case .timedOut, .unavailable, .noStopNearby: WatchLocalization.text("location.failed")
         }
     }
 }
