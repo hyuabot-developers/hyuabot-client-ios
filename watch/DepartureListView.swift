@@ -38,7 +38,7 @@ struct DepartureListView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             if isNearest {
                 HStack(spacing: 4) {
                     Circle().fill(WatchPalette.accentBlue).frame(width: 7, height: 7)
@@ -53,6 +53,7 @@ struct DepartureListView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
+        .padding(.bottom, 6)
         .accessibilityElement(children: .combine)
         .listRowBackground(Color.clear)
     }

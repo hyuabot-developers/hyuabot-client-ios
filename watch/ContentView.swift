@@ -219,7 +219,7 @@ private struct StopListView: View {
         List {
             if isLocating {
                 HStack(spacing: 8) {
-                    ProgressView().frame(width: 14, height: 14).scaleEffect(0.6)
+                    ProgressView().controlSize(.mini).frame(width: 14, height: 14)
                     Text(WatchLocalization.text("finding.nearest.stop"))
                         .font(.system(size: 12))
                         .foregroundStyle(WatchPalette.messageText)
@@ -235,7 +235,12 @@ private struct StopListView: View {
                             .foregroundStyle(WatchPalette.accentBlue)
                             .buttonStyle(.plain)
                     }
-                }.padding(.vertical, 2).listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
+                }
+                .padding(.vertical, 9)
+                .padding(.horizontal, 11)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
             }
             ForEach(WatchShuttleStop.all, id: \.self) { stop in
                 Button {

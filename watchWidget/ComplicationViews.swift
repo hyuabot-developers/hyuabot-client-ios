@@ -45,11 +45,11 @@ struct ShuttleComplicationView: View {
                             Text(stopLine.isEmpty ? " " : stopLine)
                                 .font(.system(size: 8, weight: .regular))
                                 .foregroundStyle(.secondary)
-                                .minimumScaleFactor(0.5)
+                                .minimumScaleFactor(0.75)
                                 .lineLimit(1)
                             Text(label(for: next).isEmpty ? " " : label(for: next))
                                 .font(.system(size: 9, weight: .semibold))
-                                .minimumScaleFactor(0.5)
+                                .minimumScaleFactor(0.75)
                                 .lineLimit(1)
                         }
                     }
