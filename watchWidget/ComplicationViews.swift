@@ -36,19 +36,19 @@ struct ShuttleComplicationView: View {
                     let countdown = Countdown(departure: next, at: snapshot.date)
                     VStack(spacing: 1) {
                         Text(countdown.short)
-                            .font(.system(size: 25, weight: .bold, design: .rounded))
+                            .font(.godo(size: 25, weight: .bold))
                             .minimumScaleFactor(0.5)
                             .lineLimit(1)
                         // Two lines under the countdown: stop, then route. Blank lines keep the height fixed
                         // so the countdown does not move.
                         VStack(spacing: 0) {
                             Text(stopLine.isEmpty ? " " : stopLine)
-                                .font(.system(size: 8, weight: .regular))
+                                .font(.godo(size: 8, weight: .regular))
                                 .foregroundStyle(.secondary)
                                 .minimumScaleFactor(0.75)
                                 .lineLimit(1)
                             Text(label(for: next).isEmpty ? " " : label(for: next))
-                                .font(.system(size: 9, weight: .semibold))
+                                .font(.godo(size: 9, weight: .semibold))
                                 .minimumScaleFactor(0.75)
                                 .lineLimit(1)
                         }
@@ -83,7 +83,7 @@ struct ShuttleComplicationView: View {
         HStack(alignment: .center, spacing: 6) {
             // Stop name pinned to the leading edge.
             Text(stopName)
-                .font(.headline)
+                .font(.godo(size: 17, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Spacer(minLength: 0)
@@ -99,22 +99,22 @@ struct ShuttleComplicationView: View {
                                 Text(rowText(for: departure)).foregroundStyle(rowColor(for: departure))
                             }
                         }
-                            .font(.footnote.weight(.semibold))
+                            .font(.godo(size: 14, weight: .semibold))
                             .multilineTextAlignment(.trailing)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
                     }
                     if rectangularDepartures.isEmpty, snapshot.isStale {
-                        Text(ComplicationText.text("stale")).font(.caption).foregroundStyle(ComplicationPalette.stale)
+                        Text(ComplicationText.text("stale")).font(.godo(size: 16, weight: .regular)).foregroundStyle(ComplicationPalette.stale)
                     }
                 case .noStop:
-                    staleSuffixed(ComplicationText.text("noStop"), color: .primary).font(.caption).lineLimit(2)
+                    staleSuffixed(ComplicationText.text("noStop"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2)
                 case .offline:
-                    staleSuffixed(ComplicationText.text("offline"), color: .primary).font(.caption).lineLimit(2).minimumScaleFactor(0.7)
+                    staleSuffixed(ComplicationText.text("offline"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2).minimumScaleFactor(0.7)
                 case .empty:
-                    staleSuffixed(ComplicationText.text("empty"), color: .primary).font(.caption).lineLimit(2).minimumScaleFactor(0.7)
+                    staleSuffixed(ComplicationText.text("empty"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2).minimumScaleFactor(0.7)
                 case .unknown, .expired:
-                    staleSuffixed(ComplicationText.text("updating"), color: .primary).font(.caption).lineLimit(2).minimumScaleFactor(0.7)
+                    staleSuffixed(ComplicationText.text("updating"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2).minimumScaleFactor(0.7)
                 }
             }
         }
@@ -173,7 +173,7 @@ struct ShuttleComplicationView: View {
                 if let next = snapshot.upcoming.first {
                     let countdown = Countdown(departure: next, at: snapshot.date)
                     Text(countdown.short)
-                        .font(.title3.bold())
+                        .font(.godo(size: 20, weight: .bold))
                         .widgetCurvesContent()
                         .overlay(alignment: .topTrailing) { if snapshot.isStale { staleDot } }
                         .widgetLabel {
