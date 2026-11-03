@@ -175,6 +175,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				WatchDepartureTime.swift,
+				WatchDestination.swift,
 				WatchNearestStopPolicy.swift,
 			);
 			target = C7D5B0102FEF100100000010 /* hyuabotTests */;
