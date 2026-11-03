@@ -69,7 +69,11 @@ enum WatchLocalization {
             "nearest.stop": "가장 가까운 정류장",
             "other.stops": "다른 정류장 보기",
             "load.failed": "시간표를 불러오지 못했습니다.",
-            "retry": "다시 시도"
+            "retry": "다시 시도",
+            "stops.title": "정류장",
+            "nearest.badge": "가장 가까움",
+            "countdown.now": "지금",
+            "countdown.minutes": "%d분"
         ],
         "en": [
             "stop.dormitory": "Dormitory",
@@ -88,7 +92,11 @@ enum WatchLocalization {
             "nearest.stop": "Nearest stop",
             "other.stops": "Other stops",
             "load.failed": "Couldn’t load the timetable.",
-            "retry": "Retry"
+            "retry": "Retry",
+            "stops.title": "Stops",
+            "nearest.badge": "Nearest",
+            "countdown.now": "Now",
+            "countdown.minutes": "%d min"
         ],
         "ja": [
             "stop.dormitory": "寮",
@@ -107,7 +115,11 @@ enum WatchLocalization {
             "nearest.stop": "最寄りの停留所",
             "other.stops": "他の停留所を見る",
             "load.failed": "時刻表を読み込めませんでした。",
-            "retry": "再試行"
+            "retry": "再試行",
+            "stops.title": "停留所",
+            "nearest.badge": "最寄り",
+            "countdown.now": "今",
+            "countdown.minutes": "%d分"
         ],
         "zh": [
             "stop.dormitory": "宿舍",
@@ -126,7 +138,11 @@ enum WatchLocalization {
             "nearest.stop": "最近的车站",
             "other.stops": "查看其他车站",
             "load.failed": "无法载入时刻表。",
-            "retry": "重试"
+            "retry": "重试",
+            "stops.title": "车站",
+            "nearest.badge": "最近",
+            "countdown.now": "现在",
+            "countdown.minutes": "%d分钟"
         ]
     ]
 }
@@ -140,31 +156,20 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Group {
-                if locationModel.resolution == .locating {
-                    VStack(spacing: 12) {
-                        ProgressView()
-                        Text(WatchLocalization.text("finding.nearest.stop"))
-                            .font(.body)
-                            .multilineTextAlignment(.center)
+            StopListView(
+                isLocating: locationModel.resolution == .locating || locationModel.isLocating,
+                failureReason: locationModel.failureReason,
+                nearestStopID: locationModel.nearestStopID,
+                onRetry: { locationModel.resolve() },
+                onSelect: { stop in
+                    didApplyInitialStop = true
+                    locationModel.remember(stop)
+                    path.append(stop)
+                    Task {
+                        await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
                     }
-                    .padding()
-                } else {
-                    StopListView(
-                        isLocating: locationModel.isLocating,
-                        failureReason: locationModel.failureReason,
-                        onRetry: { locationModel.resolve() },
-                        onSelect: { stop in
-                            didApplyInitialStop = true
-                            locationModel.remember(stop)
-                            path.append(stop)
-                            Task {
-                                await WatchAnalyticsTracker.shared.trackStopSelected(stop.id)
-                            }
-                        }
-                    )
                 }
-            }
+            )
             .navigationDestination(for: WatchShuttleStop.self) { stop in
                 DepartureListView(
                     stop: stop,
@@ -206,6 +211,7 @@ struct ContentView: View {
 private struct StopListView: View {
     let isLocating: Bool
     let failureReason: WatchFailureReason?
+    let nearestStopID: String?
     let onRetry: () -> Void
     let onSelect: (WatchShuttleStop) -> Void
 
@@ -213,34 +219,65 @@ private struct StopListView: View {
         List {
             if isLocating {
                 HStack(spacing: 8) {
-                    ProgressView()
+                    ProgressView().controlSize(.mini).frame(width: 14, height: 14)
                     Text(WatchLocalization.text("finding.nearest.stop"))
-                        .font(.footnote)
+                        .font(.godo(size: 12, weight: .regular))
+                        .foregroundStyle(WatchPalette.messageText)
+                        .lineLimit(2)
                 }
+                .listRowBackground(Color.clear)
             } else if let failureReason {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(failureMessage(failureReason))
-                        .font(.footnote)
+                        .font(.godo(size: 12, weight: .regular))
+                        .foregroundStyle(WatchPalette.messageText)
                     if isRetryable(failureReason) {
                         Button(WatchLocalization.text("location.retry"), action: onRetry)
-                            .font(.footnote)
+                            .font(.godo(size: 13, weight: .semibold))
+                            .foregroundStyle(WatchPalette.accentBlue)
+                            .buttonStyle(.plain)
                     }
                 }
+                .padding(.vertical, 9)
+                .padding(.horizontal, 11)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
             }
             ForEach(WatchShuttleStop.all, id: \.self) { stop in
                 Button {
                     onSelect(stop)
                 } label: {
                     HStack {
-                        Text(stop.localizedName)
-                            .font(.body)
-                            .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(stop.localizedName)
+                                .font(.godo(size: 15, weight: .regular))
+                                .lineLimit(1)
+                            if stop.id == nearestStopID {
+                                Text(WatchLocalization.text("nearest.badge"))
+                                    .font(.godo(size: 10, weight: .semibold))
+                                    .foregroundStyle(WatchPalette.accentBlue)
+                                    .lineLimit(1)
+                            }
+                        }
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                    }
+                            .font(.godo(size: 14, weight: .regular))
+                            .foregroundStyle(WatchPalette.chevron)
+                    }.frame(minHeight: 40).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .listRowBackground(RoundedRectangle(cornerRadius: 13).fill(WatchPalette.rowBackground))
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Text(WatchLocalization.text("stops.title"))
+                    .font(.godo(size: 14, weight: .semibold))
+                    .foregroundStyle(WatchPalette.accentBlue)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .accessibilityAddTraits(.isHeader)
             }
         }
     }
@@ -256,8 +293,7 @@ private struct StopListView: View {
     private func failureMessage(_ reason: WatchFailureReason) -> String {
         switch reason {
         case .denied, .servicesDisabled: WatchLocalization.text("location.denied")
-        case .noStopNearby: WatchLocalization.text("location.noStopNearby")
-        case .timedOut, .unavailable: WatchLocalization.text("location.failed")
+        case .timedOut, .unavailable, .noStopNearby: WatchLocalization.text("location.failed")
         }
     }
 }

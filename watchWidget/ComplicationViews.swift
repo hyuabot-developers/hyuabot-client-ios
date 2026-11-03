@@ -1,6 +1,11 @@
 import SwiftUI
 import WidgetKit
 
+private enum ComplicationPalette {
+    static let stale = Color(red: 1.0, green: 0xB3 / 255.0, blue: 0x40 / 255.0)
+    static let imminent = Color(red: 1.0, green: 0x9F / 255.0, blue: 0x0A / 255.0)
+}
+
 struct ShuttleComplicationView: View {
     @Environment(\.widgetFamily) private var family
     let snapshot: ComplicationSnapshot
@@ -31,19 +36,20 @@ struct ShuttleComplicationView: View {
                     let countdown = Countdown(departure: next, at: snapshot.date)
                     VStack(spacing: 1) {
                         Text(countdown.short)
-                            .font(.system(size: 25, weight: .bold, design: .rounded))
+                            .font(.godo(size: 25, weight: .bold))
                             .minimumScaleFactor(0.5)
                             .lineLimit(1)
                         // Two lines under the countdown: stop, then route. Blank lines keep the height fixed
                         // so the countdown does not move.
                         VStack(spacing: 0) {
                             Text(stopLine.isEmpty ? " " : stopLine)
-                                .font(.system(size: 8, weight: .regular))
-                                .minimumScaleFactor(0.5)
+                                .font(.godo(size: 8, weight: .regular))
+                                .foregroundStyle(.secondary)
+                                .minimumScaleFactor(0.75)
                                 .lineLimit(1)
                             Text(label(for: next).isEmpty ? " " : label(for: next))
-                                .font(.system(size: 9, weight: .semibold))
-                                .minimumScaleFactor(0.5)
+                                .font(.godo(size: 9, weight: .semibold))
+                                .minimumScaleFactor(0.75)
                                 .lineLimit(1)
                         }
                     }
@@ -59,17 +65,16 @@ struct ShuttleComplicationView: View {
                 Image(systemName: "arrow.triangle.2.circlepath").font(.title3)
             }
             if snapshot.isStale {
-                staleBadge
+                staleDot
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .padding(4)
+                    .padding(.top, 5)
+                    .padding(.trailing, 7)
             }
         }
     }
 
-    private var staleBadge: some View {
-        Image(systemName: "clock.badge.exclamationmark")
-            .font(.system(size: 9))
-            .widgetAccentable()
+    private var staleDot: some View {
+        Circle().fill(ComplicationPalette.stale).frame(width: 6, height: 6)
     }
 
     // MARK: - Rectangular: stop on the left, up to two "route · countdown" rows on the right
@@ -78,7 +83,7 @@ struct ShuttleComplicationView: View {
         HStack(alignment: .center, spacing: 6) {
             // Stop name pinned to the leading edge.
             Text(stopName)
-                .font(.headline)
+                .font(.godo(size: 17, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Spacer(minLength: 0)
@@ -86,24 +91,30 @@ struct ShuttleComplicationView: View {
             VStack(alignment: .trailing, spacing: 1) {
                 switch snapshot.status {
                 case .departures, .placeholder:
-                    ForEach(Array(rectangularDepartures.enumerated()), id: \.offset) { _, departure in
-                        Text(rowText(for: departure))
-                            .font(.footnote.weight(.semibold))
+                    ForEach(Array(rectangularDepartures.enumerated()), id: \.offset) { index, departure in
+                        Group {
+                            if index == rectangularDepartures.count - 1 {
+                                staleSuffixed(rowText(for: departure), color: rowColor(for: departure))
+                            } else {
+                                Text(rowText(for: departure)).foregroundStyle(rowColor(for: departure))
+                            }
+                        }
+                            .font(.godo(size: 14, weight: .semibold))
                             .multilineTextAlignment(.trailing)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
                     }
+                    if rectangularDepartures.isEmpty, snapshot.isStale {
+                        Text(ComplicationText.text("stale")).font(.godo(size: 16, weight: .regular)).foregroundStyle(ComplicationPalette.stale)
+                    }
                 case .noStop:
-                    Text(ComplicationText.text("noStop")).font(.caption).lineLimit(2)
+                    staleSuffixed(ComplicationText.text("noStop"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2)
                 case .offline:
-                    Text(ComplicationText.text("offline")).font(.caption)
+                    staleSuffixed(ComplicationText.text("offline"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2).minimumScaleFactor(0.7)
                 case .empty:
-                    Text(ComplicationText.text("empty")).font(.caption)
+                    staleSuffixed(ComplicationText.text("empty"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2).minimumScaleFactor(0.7)
                 case .unknown, .expired:
-                    Text(ComplicationText.text("updating")).font(.caption)
-                }
-                if snapshot.isStale {
-                    Text(ComplicationText.text("stale")).font(.caption2)
+                    staleSuffixed(ComplicationText.text("updating"), color: .primary).font(.godo(size: 16, weight: .regular)).lineLimit(2).minimumScaleFactor(0.7)
                 }
             }
         }
@@ -113,6 +124,21 @@ struct ShuttleComplicationView: View {
 
     private var inline: some View {
         Text(inlineText)
+    }
+
+    private func isImminent(_ departure: Departure) -> Bool {
+        departure.date.timeIntervalSince(snapshot.date) <= 180
+    }
+
+    private func rowColor(for departure: Departure) -> Color {
+        isImminent(departure) ? ComplicationPalette.imminent : .primary
+    }
+
+    private func staleSuffixed(_ text: String, color: Color) -> Text {
+        let base = Text(text).foregroundStyle(color)
+        guard snapshot.isStale else { return base }
+        let suffix = Text(" · " + ComplicationText.text("stale")).foregroundStyle(ComplicationPalette.stale)
+        return Text("\(base)\(suffix)")
     }
 
     private var inlineText: String {
@@ -147,33 +173,34 @@ struct ShuttleComplicationView: View {
                 if let next = snapshot.upcoming.first {
                     let countdown = Countdown(departure: next, at: snapshot.date)
                     Text(countdown.short)
-                        .font(.title3.bold())
+                        .font(.godo(size: 20, weight: .bold))
                         .widgetCurvesContent()
+                        .overlay(alignment: .topTrailing) { if snapshot.isStale { staleDot } }
                         .widgetLabel {
                             // Countdown is the curved text; the label is one line, stop▶route.
                             // Rows without a route label fall back to the departure time so the label is not blank.
                             let route = stopRouteLabel(for: next)
-                            Text(cornerLabel(route.isEmpty ? ShuttleClock.displayTime(next.date) : route))
+                            Text(route.isEmpty ? ShuttleClock.displayTime(next.date) : route)
                         }
                 }
             case .noStop:
                 Image(systemName: "mappin.and.ellipse")
-                    .widgetLabel { Text(cornerLabel(ComplicationText.text("noStop"))) }
+                    .overlay(alignment: .topTrailing) { if snapshot.isStale { staleDot } }
+                    .widgetLabel { Text(ComplicationText.text("noStop")) }
             case .offline:
                 Image(systemName: "wifi.slash")
-                    .widgetLabel { Text(cornerLabel(ComplicationText.text("offline"))) }
+                    .overlay(alignment: .topTrailing) { if snapshot.isStale { staleDot } }
+                    .widgetLabel { Text(ComplicationText.text("offline")) }
             case .empty:
                 Image(systemName: "moon.zzz.fill")
-                    .widgetLabel { Text(cornerLabel(ComplicationText.text("empty"))) }
+                    .overlay(alignment: .topTrailing) { if snapshot.isStale { staleDot } }
+                    .widgetLabel { Text(ComplicationText.text("empty")) }
             case .unknown, .expired:
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .widgetLabel { Text(cornerLabel(ComplicationText.text("updating"))) }
+                    .overlay(alignment: .topTrailing) { if snapshot.isStale { staleDot } }
+                    .widgetLabel { Text(ComplicationText.text("updating")) }
             }
         }
-    }
-
-    private func cornerLabel(_ text: String) -> String {
-        snapshot.isStale ? "\(text) · \(ComplicationText.text("stale"))" : text
     }
 
     // MARK: - Helpers

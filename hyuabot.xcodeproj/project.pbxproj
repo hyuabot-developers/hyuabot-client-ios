@@ -174,9 +174,20 @@
 		C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				WatchDepartureTime.swift,
+				WatchDestination.swift,
 				WatchNearestStopPolicy.swift,
 			);
 			target = C7D5B0102FEF100100000010 /* hyuabotTests */;
+		};
+		C7E4689C2DAE2B6600E89763 /* Exceptions for "watch" folder in "watchWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Font/Font.swift,
+				Font/GodoB.otf,
+				Font/GodoM.otf,
+			);
+			target = FE01C3C32BD8840DDC54034D /* watchWidget */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -195,6 +206,7 @@
 			exceptions = (
 				C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */,
 				C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */,
+				C7E4689C2DAE2B6600E89763 /* Exceptions for "watch" folder in "watchWidget" target */,
 			);
 			path = watch;
 			sourceTree = "<group>";
