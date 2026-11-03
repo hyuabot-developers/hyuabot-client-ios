@@ -89,7 +89,12 @@ struct DepartureListView: View {
             ForEach(Self.placeholderTags[stop.id] ?? ["C"], id: \.self) { tag in
                 DepartureRow(
                     tag: tag,
-                    name: routeName(forTag: tag, fallback: ""),
+                    name: WatchDestination.labelKey(
+                        stopID: stop.id,
+                        queryStop: stop.queryStops.first ?? "",
+                        tag: tag,
+                        stopsAfterCurrent: [WatchDestination.dormitoryInbound]
+                    ).map { WatchLocalization.text($0) } ?? "",
                     countdown: "–",
                     clock: nil,
                     isImminent: false
@@ -108,11 +113,12 @@ struct DepartureListView: View {
     }
 
     private func departureRow(
-        for item: ShuttleRealtimePageWatchQuery.Data.Shuttle.Stop.Timetable.Order,
+        for item: WatchDepartureItem,
         now: Foundation.Date
     ) -> some View {
+        let order = item.order
         let row: DepartureRow
-        if let date = WatchDepartureTime.departureDate(from: item.time, now: now) {
+        if let date = WatchDepartureTime.departureDate(from: order.time, now: now) {
             let minutes = WatchDepartureTime.minutesUntil(date, now: now)
             let isPast = date < now
             let countdown = isPast
@@ -121,17 +127,17 @@ struct DepartureListView: View {
                     ? WatchLocalization.text("countdown.now")
                     : String(format: WatchLocalization.text("countdown.minutes"), minutes)
             row = DepartureRow(
-                tag: item.route.tag,
-                name: routeName(forTag: item.route.tag, fallback: item.route.name),
+                tag: order.route.tag,
+                name: item.labelKey.map { WatchLocalization.text($0) } ?? order.route.name,
                 countdown: countdown,
                 clock: isPast ? nil : WatchDepartureTime.clockText(date),
                 isImminent: !isPast && WatchDepartureTime.isImminent(minutes: minutes)
             )
         } else {
             row = DepartureRow(
-                tag: item.route.tag,
-                name: routeName(forTag: item.route.tag, fallback: item.route.name),
-                countdown: item.time,
+                tag: order.route.tag,
+                name: item.labelKey.map { WatchLocalization.text($0) } ?? order.route.name,
+                countdown: order.time,
                 clock: nil,
                 isImminent: false
             )
@@ -178,25 +184,6 @@ struct DepartureListView: View {
         .listRowBackground(Capsule().fill(WatchPalette.secondaryButton))
     }
 
-    private func routeName(forTag tag: String, fallback: String) -> String {
-        if stop.id == "dormitory" || stop.id == "shuttlecock" {
-            switch tag {
-            case "DH": return WatchLocalization.text("stop.station")
-            case "DY": return WatchLocalization.text("stop.terminal")
-            case "DJ": return WatchLocalization.text("stop.jungang")
-            case "C": return WatchLocalization.text("route.circular")
-            default: return fallback
-            }
-        } else if stop.id == "station" {
-            switch tag {
-            case "C": return WatchLocalization.text("route.circular")
-            case "DH": return WatchLocalization.text("route.direct")
-            case "DJ": return WatchLocalization.text("stop.jungang")
-            default: return fallback
-            }
-        }
-        return WatchLocalization.text("route.direct")
-    }
 }
 
 private struct DepartureRow: View {
