@@ -8,35 +8,7 @@ private let appGroupID = "group.net.jaram.hyuabot"
 
 // MARK: - Models
 
-enum MealType {
-    case breakfast, lunch, dinner, closed
-
-    var title: String {
-        switch self {
-        case .breakfast: String(localized: "meal.breakfast")
-        case .lunch: String(localized: "meal.lunch")
-        case .dinner: String(localized: "meal.dinner")
-        case .closed: String(localized: "meal.closed")
-        }
-    }
-
-    var typeString: String {
-        switch self {
-        case .breakfast, .closed: "조식"
-        case .lunch: "중식"
-        case .dinner: "석식"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .breakfast: "sunrise.fill"
-        case .lunch: "sun.max.fill"
-        case .dinner: "moon.stars.fill"
-        case .closed: "moon.zzz.fill"
-        }
-    }
-
+extension MealType {
     var deepLinkURL: URL {
         switch self {
         case .breakfast, .closed:
@@ -49,23 +21,13 @@ enum MealType {
     }
 }
 
-struct CafeteriaMenuRow: Identifiable {
-    let id = UUID()
-    let food: String
-    let price: String
-}
-
-struct CafeteriaMenuItem: Identifiable {
-    let id = UUID()
-    let cafeteriaName: String
-    let menus: [CafeteriaMenuRow]
-    let runningTime: String?
-}
-
 struct CafeteriaEntry: TimelineEntry {
     let date: Foundation.Date
     let mealType: MealType
     let items: [CafeteriaMenuItem]
+    let menuDate: Foundation.Date
+    var loadFailed: Bool = false
+    var isNextDay: Bool { mealType == .closed }
 }
 
 // MARK: - Helpers
@@ -78,6 +40,13 @@ private func currentMealType(for date: Foundation.Date = .now) -> MealType {
     case 15 ..< 20: return .dinner
     default: return .closed
     }
+}
+
+private func cafeteriaMenuDate(for date: Foundation.Date, mealType: MealType) -> Foundation.Date {
+    guard mealType == .closed else { return date }
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .gmt
+    return calendar.date(byAdding: .day, value: 1, to: date) ?? date
 }
 
 private func cafeteriaDisplayName(for seq: Int) -> String {
@@ -136,11 +105,24 @@ struct CafeteriaProvider: TimelineProvider {
                     CafeteriaMenuRow(food: "닭갈비", price: "6000"),
                     CafeteriaMenuRow(food: "쌀국수", price: "4500")
                 ], runningTime: "11:30~13:00")
-            ]
+            ],
+            menuDate: .now
         )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (CafeteriaEntry) -> Void) {
+#if DEBUG
+        if let name = WidgetQAFixture.selected(prefix: "cafeteria") {
+            if name == "cafeteria-placeholder" {
+                completion(placeholder(in: context))
+                return
+            }
+            if let entry = WidgetQAFixture.cafeteriaEntry(named: name) {
+                completion(entry)
+                return
+            }
+        }
+#endif
         if context.isPreview {
             completion(placeholder(in: context))
             return
@@ -154,11 +136,42 @@ struct CafeteriaProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<CafeteriaEntry>) -> Void) {
         let completion = WidgetCompletion(completion)
+#if DEBUG
+        if let name = WidgetQAFixture.selected(prefix: "cafeteria") {
+            if name == "cafeteria-placeholder" {
+                let placeholderEntry = placeholder(in: context)
+                Task {
+                    await WidgetQAFixture.holdForPlaceholderCapture()
+                    completion(Timeline(entries: [placeholderEntry], policy: .never))
+                }
+                return
+            }
+            if let entry = WidgetQAFixture.cafeteriaEntry(named: name) {
+                completion(Timeline(entries: [entry], policy: .never))
+                return
+            }
+        }
+#endif
         Task {
             let now = Foundation.Date.now
             let entry = await fetchEntry(for: now)
             let nextUpdate = nextMealTransition(after: now)
-            completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+            let dates = CafeteriaPresentation.timelineDates(
+                for: entry.items,
+                from: now,
+                until: nextUpdate,
+                isNextDay: entry.isNextDay
+            )
+            let entries = dates.map { date in
+                CafeteriaEntry(
+                    date: date,
+                    mealType: entry.mealType,
+                    items: entry.items,
+                    menuDate: entry.menuDate,
+                    loadFailed: entry.loadFailed
+                )
+            }
+            completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }
 
@@ -171,13 +184,14 @@ struct CafeteriaProvider: TimelineProvider {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        let dateString = dateFormatter.string(from: date)
+        let menuDate = cafeteriaMenuDate(for: date, mealType: mealType)
+        let dateString = dateFormatter.string(from: menuDate)
 
         do {
             let response = try await WidgetNetwork.shared.fetch(query: CafeteriaPageQuery(date: dateString, campusID: Int32(campusID)))
 
             guard let cafeteria = response.data?.cafeteria else {
-                return CafeteriaEntry(date: date, mealType: mealType, items: [])
+                return CafeteriaEntry(date: date, mealType: mealType, items: [], menuDate: menuDate, loadFailed: true)
             }
 
             let typeStr = mealType.typeString
@@ -219,100 +233,10 @@ struct CafeteriaProvider: TimelineProvider {
                     )
                 }
 
-            return CafeteriaEntry(date: date, mealType: mealType, items: items)
+            return CafeteriaEntry(date: date, mealType: mealType, items: items, menuDate: menuDate)
         } catch {
-            return CafeteriaEntry(date: date, mealType: mealType, items: [])
+            return CafeteriaEntry(date: date, mealType: mealType, items: [], menuDate: menuDate, loadFailed: true)
         }
-    }
-}
-
-// MARK: - Views
-
-struct CafeteriaLargeView: View {
-    let entry: CafeteriaEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: entry.mealType.icon)
-                    .foregroundStyle(.blue)
-                Text(entry.mealType.title)
-                    .font(.godoHeadline)
-                    .foregroundStyle(.blue)
-                Spacer()
-                HStack(spacing: 3) {
-                    Text(entry.date, style: .date)
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                    Text(entry.date, style: .time)
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                }
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                Button(intent: RefreshCafeteriaIntent()) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-
-            if entry.items.isEmpty {
-                Spacer()
-                VStack(spacing: 8) {
-                    Image(systemName: "tray")
-                        .font(.title3)
-                        .foregroundStyle(.tertiary)
-                    Text("cafeteria.no.data")
-                        .font(.godoBody)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                Spacer()
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(entry.items) { item in
-                        VStack(alignment: .leading, spacing: 3) {
-                            HStack {
-                                Text(item.cafeteriaName)
-                                    .font(.godoSubheadlineBold)
-                                if let rt = item.runningTime {
-                                    Text(rt)
-                                        .font(.godoCaption2)
-                                        .foregroundStyle(.tertiary)
-                                }
-                                Spacer()
-                            }
-                            ForEach(item.menus) { menu in
-                                HStack {
-                                    Text(menu.food)
-                                        .font(.godoCaption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                    Spacer(minLength: 6)
-                                    if !menu.price.isEmpty {
-                                        Text("\(menu.price)원")
-                                            .font(.godoCaption)
-                                            .foregroundStyle(Color("hanyangBlue"))
-                                            .lineLimit(1)
-                                            .fixedSize(horizontal: true, vertical: false)
-                                    }
-                                }
-                            }
-                        }
-                        Divider()
-                    }
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(12)
-        .widgetURL(entry.mealType.deepLinkURL)
     }
 }
 
@@ -323,16 +247,35 @@ struct CafeteriaWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CafeteriaProvider()) { entry in
-            CafeteriaLargeView(entry: entry)
-                .containerBackground(.background, for: .widget)
+            CafeteriaWidgetView(entry: entry)
+                .containerBackground(HYUWidgetColor.background, for: .widget)
+                .widgetURL(entry.mealType.deepLinkURL)
         }
         .configurationDisplayName("widget.cafeteria.name")
         .description("widget.cafeteria.description")
-        .supportedFamilies([.systemLarge, .systemExtraLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+        .contentMarginsDisabled()
     }
 }
 
 // MARK: - Preview
+
+#Preview("Small", as: .systemSmall) {
+    CafeteriaWidget()
+} timeline: {
+    CafeteriaEntry(date: .now, mealType: .lunch, items: [
+        CafeteriaMenuItem(cafeteriaName: "학생식당", menus: [CafeteriaMenuRow(food: "된장찌개", price: "2000")], runningTime: "11:00~13:30")
+    ], menuDate: .now)
+}
+
+#Preview("Medium", as: .systemMedium) {
+    CafeteriaWidget()
+} timeline: {
+    CafeteriaEntry(date: .now, mealType: .lunch, items: [
+        CafeteriaMenuItem(cafeteriaName: "학생식당", menus: [CafeteriaMenuRow(food: "된장찌개", price: "2000")], runningTime: "11:00~13:30"),
+        CafeteriaMenuItem(cafeteriaName: "창업보육센터", menus: [CafeteriaMenuRow(food: "뼈다귀탕", price: "5500")], runningTime: "11:30~13:30")
+    ], menuDate: .now)
+}
 
 #Preview("Large", as: .systemLarge) {
     CafeteriaWidget()
@@ -355,6 +298,7 @@ struct CafeteriaWidget: Widget {
                 CafeteriaMenuRow(food: "닭갈비", price: "6000"),
                 CafeteriaMenuRow(food: "쌀국수", price: "4500")
             ], runningTime: "11:30~13:00")
-        ]
+        ],
+        menuDate: .now
     )
 }

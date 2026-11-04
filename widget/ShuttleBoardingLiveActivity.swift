@@ -27,9 +27,10 @@ struct ShuttleBoardingLiveActivity: Widget {
                         .font(.godoTitle2)
                         .monospacedDigit()
                 }
+                .foregroundStyle(HYUWidgetColor.foreground)
             }
             .padding()
-            .activityBackgroundTint(Color(.systemBackground))
+            .activityBackgroundTint(HYUWidgetColor.background)
             .activitySystemActionForegroundColor(hanyangBlue)
         } dynamicIsland: { context in
             DynamicIsland {
@@ -101,7 +102,7 @@ struct ShuttleBoardingLiveActivity: Widget {
     }
 
     private var hanyangBlue: Color {
-        WidgetLiveActivityColor.hanyangBlue
+        HYUWidgetColor.brandFill
     }
 }
 
@@ -187,7 +188,7 @@ private struct ShuttleBoardingDynamicIslandProgress: View {
     let progress: Int
     let segments: [Int]
     private let spacing: CGFloat = 2
-    private let hanyangBlue = WidgetLiveActivityColor.hanyangBlue
+    private let hanyangBlue = HYUWidgetColor.brandFill
 
     var body: some View {
         GeometryReader { geometry in
@@ -233,7 +234,7 @@ private struct ShuttleBoardingStopLabels: View {
                     .font(.godoCaption2)
                     .lineLimit(1)
                     .minimumScaleFactor(0.65)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(HYUWidgetColor.muted)
                     .frame(width: labelWidth(totalWidth: geometry.size.width), alignment: alignment(for: index))
                     .position(
                         x: labelCenterX(index: index, totalWidth: geometry.size.width),
@@ -291,7 +292,7 @@ private struct ShuttleBoardingSegmentedProgress: View {
     let progress: Int
     let segments: [Int]
     private let spacing: CGFloat = 3
-    private let hanyangBlue = WidgetLiveActivityColor.hanyangBlue
+    private let hanyangBlue = HYUWidgetColor.brandFill
 
     var body: some View {
         GeometryReader { geometry in
@@ -361,8 +362,4 @@ private struct ShuttleBoardingSegmentedProgress: View {
         }
         return spacing * CGFloat(passedSegments)
     }
-}
-
-private enum WidgetLiveActivityColor {
-    static let hanyangBlue = Color(red: 0, green: 60 / 255, blue: 130 / 255)
 }

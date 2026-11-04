@@ -1,5 +1,3 @@
-// swiftlint:disable file_length
-
 import Api
 import Apollo
 import AppIntents
@@ -8,12 +6,6 @@ import SwiftUI
 import WidgetKit
 
 // MARK: - Models
-
-struct ShuttleDestinationGroup: Identifiable {
-    let id = UUID()
-    let destination: String
-    let times: [String]
-}
 
 struct ShuttleEntry: TimelineEntry {
     let date: Foundation.Date
@@ -26,7 +18,8 @@ struct ShuttleEntry: TimelineEntry {
 enum ShuttleErrorState {
     case none
     case noLocation
-    case noData
+    case ended
+    case error
 }
 
 // MARK: - Helpers
@@ -41,14 +34,6 @@ final class WidgetCompletion<Value>: @unchecked Sendable {
     func callAsFunction(_ value: Value) {
         completion(value)
     }
-}
-
-func maxTimesInWidth(_ width: CGFloat) -> Int {
-    let destWidth: CGFloat = 80
-    let timeWidth: CGFloat = 38
-    let spacing: CGFloat = 6
-    let raw = Int((width - destWidth + spacing) / (timeWidth + spacing))
-    return max(1, raw - 1)
 }
 
 func stopDisplayName(for stopID: String) -> String {
@@ -138,19 +123,40 @@ final class WidgetLocationFetcher: NSObject, CLLocationManagerDelegate, @uncheck
 struct ShuttleProvider: TimelineProvider {
     func placeholder(in context: Context) -> ShuttleEntry {
         ShuttleEntry(
-            date: .now,
+            date: ShuttleSampleData.referenceDate,
             stopDisplayName: "한대앞",
             stopID: "station",
             groups: [
-                ShuttleDestinationGroup(destination: "기숙사", times: ["15:30", "16:00", "16:30"]),
-                ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15"]),
-                ShuttleDestinationGroup(destination: "중앙역", times: ["16:10", "16:40"])
+                ShuttleDestinationGroup(
+                    destination: "기숙사", times: ["14:03", "14:20", "14:40"],
+                    destinationKey: "CAMPUS", serviceDate: ShuttleSampleData.referenceDate
+                ),
+                ShuttleDestinationGroup(
+                    destination: "예술인", times: ["14:12", "14:35"],
+                    destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+                ),
+                ShuttleDestinationGroup(
+                    destination: "중앙역", times: ["14:25", "14:55"],
+                    destinationKey: "JUNGANG", serviceDate: ShuttleSampleData.referenceDate
+                )
             ],
             errorState: .none
         )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ShuttleEntry) -> Void) {
+#if DEBUG
+        if let selected = WidgetQAFixture.selected(prefix: "shuttle") {
+            if selected == "shuttle-placeholder" {
+                completion(placeholder(in: context))
+                return
+            }
+            if let entry = ShuttleQAFixtures.shuttleEntry(named: selected) {
+                completion(entry)
+                return
+            }
+        }
+#endif
         if context.isPreview {
             completion(placeholder(in: context))
             return
@@ -164,33 +170,60 @@ struct ShuttleProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<ShuttleEntry>) -> Void) {
         let completion = WidgetCompletion(completion)
+#if DEBUG
+        if let selected = WidgetQAFixture.selected(prefix: "shuttle") {
+            if selected == "shuttle-placeholder" {
+                let placeholderEntry = placeholder(in: context)
+                Task {
+                    await WidgetQAFixture.holdForPlaceholderCapture()
+                    completion(Timeline(entries: [placeholderEntry], policy: .never))
+                }
+                return
+            }
+            if let entry = ShuttleQAFixtures.shuttleEntry(named: selected) {
+                completion(Timeline(entries: [entry], policy: .never))
+                return
+            }
+        }
+#endif
         Task {
             let entry = await fetchEntry()
-            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)!
-            completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)
+                ?? Foundation.Date.now.addingTimeInterval(300)
+            let entries = ShuttleDepartureMath.minuteTimelineDates(from: entry.date, count: 5).map {
+                ShuttleEntry(
+                    date: $0,
+                    stopDisplayName: entry.stopDisplayName,
+                    stopID: entry.stopID,
+                    groups: entry.groups,
+                    errorState: entry.errorState
+                )
+            }
+            completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }
 
     private func fetchEntry() async -> ShuttleEntry {
+        let fetchedAt = Foundation.Date.now
         let locationFetcher = WidgetLocationFetcher()
         let location = await locationFetcher.getCurrentLocation()
 
         guard let location else {
-            return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noLocation)
+            return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .noLocation)
         }
 
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         timeFormatter.locale = Locale(identifier: "en_US_POSIX")
         timeFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
+        let currentTimeStr = timeFormatter.string(from: fetchedAt)
 
         do {
             let response = try await WidgetNetwork.shared
                 .fetch(query: ShuttleWidgetQuery(after: GraphQLNullable(stringLiteral: currentTimeStr)))
 
             guard let stops = response.data?.shuttle.stops, !stops.isEmpty else {
-                return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
+                return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
             }
 
             let nearestStop = stops.min { a, b in
@@ -199,324 +232,40 @@ struct ShuttleProvider: TimelineProvider {
             }
 
             guard let stop = nearestStop else {
-                return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
+                return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
             }
 
-            func makeGroups(from timetable: ShuttleWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
-                timetable.destination.compactMap { group in
-                    let times = group.entries.prefix(6).map { formatTime($0.time) }
-                    guard !times.isEmpty else { return nil }
-                    return ShuttleDestinationGroup(
-                        destination: destinationDisplayName(for: group.destination),
-                        times: Array(times)
-                    )
-                }
+            func makeGroups(from stop: ShuttleWidgetQuery.Data.Shuttle.Stop) -> [ShuttleDestinationGroup] {
+                ShuttleDepartureMath.makeGroups(
+                    stopName: stop.name,
+                    order: stop.timetable.order.map { ($0.route.tag, $0.time) },
+                    destinations: stop.timetable.destination.map { ($0.destination, $0.entries.map(\.time)) },
+                    limit: 6,
+                    serviceDate: fetchedAt
+                )
             }
 
-            var groups = makeGroups(from: stop.timetable)
+            var groups = makeGroups(from: stop)
             var displayStopName = stopDisplayName(for: stop.name)
 
             if stop.name == "shuttlecock_o" || stop.name == "shuttlecock_i" {
                 let companionName = stop.name == "shuttlecock_o" ? "shuttlecock_i" : "shuttlecock_o"
                 if let companion = stops.first(where: { $0.name == companionName }) {
-                    groups += makeGroups(from: companion.timetable)
+                    groups += makeGroups(from: companion)
                 }
                 displayStopName = String(localized: "stop.shuttlecock")
             }
 
             return ShuttleEntry(
-                date: .now,
+                date: fetchedAt,
                 stopDisplayName: displayStopName,
                 stopID: stop.name,
                 groups: groups,
-                errorState: .none
+                errorState: groups.isEmpty ? .ended : .none
             )
         } catch {
-            return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
+            return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
         }
-    }
-}
-
-// MARK: - Views
-
-struct ShuttleWidgetView: View {
-    @Environment(\.widgetFamily) var family
-    let entry: ShuttleEntry
-
-    var body: some View {
-        switch family {
-        case .systemSmall:
-            ShuttleSmallView(entry: entry)
-        case .systemMedium:
-            ShuttleMediumView(entry: entry)
-        case .systemLarge:
-            ShuttleLargeView(entry: entry)
-        default:
-            ShuttleSmallView(entry: entry)
-        }
-    }
-}
-
-struct ShuttleSmallView: View {
-    let entry: ShuttleEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                if !entry.stopDisplayName.isEmpty {
-                    Text(entry.stopDisplayName)
-                        .font(.godoCaptionSemibold)
-                        .foregroundStyle(Color("hanyangBlue"))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                }
-                Spacer(minLength: 4)
-                Text(entry.date, style: .time)
-                    .font(.godoCaption2)
-                    .foregroundStyle(.tertiary)
-                Button(intent: RefreshShuttleIntent()) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.godoCaption2)
-                        .foregroundStyle(.tertiary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-
-            switch entry.errorState {
-            case .noLocation:
-                Spacer()
-                Image(systemName: "location.slash")
-                    .foregroundStyle(.secondary)
-                Text("shuttle.no.location")
-                    .font(.godoCaption2)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                Spacer()
-            case .noData:
-                Spacer()
-                Text("shuttle.no.data")
-                    .font(.godoCaption2)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            case .none:
-                if entry.groups.isEmpty {
-                    Spacer()
-                    Text("shuttle.no.data")
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                } else {
-                    VStack(alignment: .leading, spacing: 5) {
-                        ForEach(entry.groups.prefix(4)) { group in
-                            HStack(spacing: 8) {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .font(.godoCaption)
-                                    .foregroundStyle(Color("hanyangBlue").opacity(0.65))
-                                    .frame(width: 11)
-                                Text(group.destination)
-                                    .font(.godoCaptionSemibold)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 48, alignment: .leading)
-                                    .lineLimit(1)
-                                Spacer(minLength: 2)
-                                if let first = group.times.first {
-                                    Text(first)
-                                        .font(.godoCaptionSemibold)
-                                        .monospacedDigit()
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                        .frame(minWidth: 42, alignment: .trailing)
-                                }
-                            }
-                        }
-                    }
-                    Spacer(minLength: 0)
-                }
-            }
-        }
-        .padding(12)
-    }
-}
-
-struct ShuttleMediumView: View {
-    let entry: ShuttleEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: "bus.fill")
-                    .foregroundStyle(Color("hanyangBlue"))
-                    .font(.godoSubheadline)
-                Text("shuttle.title")
-                    .font(.godoSubheadlineBold)
-                    .foregroundStyle(Color("hanyangBlue"))
-                if !entry.stopDisplayName.isEmpty {
-                    Text("· \(entry.stopDisplayName)")
-                        .font(.godoSubheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text(entry.date, style: .time)
-                    .font(.godoCaption2)
-                    .foregroundStyle(.tertiary)
-                Button(intent: RefreshShuttleIntent()) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.godoCaption2)
-                        .foregroundStyle(.tertiary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-
-            switch entry.errorState {
-            case .noLocation:
-                HStack {
-                    Spacer()
-                    VStack(spacing: 4) {
-                        Image(systemName: "location.slash")
-                            .foregroundStyle(.secondary)
-                        Text("shuttle.location.required")
-                            .font(.godoCaption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                }
-            case .noData:
-                Text("shuttle.no.data")
-                    .font(.godoCaption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .none:
-                if entry.groups.isEmpty {
-                    Text("shuttle.no.data")
-                        .font(.godoCaption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    GeometryReader { geo in
-                        let count = maxTimesInWidth(geo.size.width)
-                        VStack(alignment: .leading, spacing: 4) {
-                            ForEach(entry.groups) { group in
-                                HStack(spacing: 8) {
-                                    Text(group.destination)
-                                        .font(.godoCaptionSemibold)
-                                        .foregroundStyle(.secondary)
-                                        .frame(width: 86, alignment: .leading)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.75)
-                                    Spacer(minLength: 8)
-                                    HStack(spacing: 6) {
-                                        ForEach(group.times.prefix(count), id: \.self) { time in
-                                            Text(time)
-                                                .font(.godoSubheadlineSemibold)
-                                                .monospacedDigit()
-                                                .lineLimit(1)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .frame(width: geo.size.width, alignment: .topLeading)
-                    }
-                }
-            }
-        }
-        .padding(12)
-    }
-}
-
-struct ShuttleLargeView: View {
-    let entry: ShuttleEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: "bus.fill")
-                    .foregroundStyle(Color("hanyangBlue"))
-                Text("shuttle.title")
-                    .font(.godoHeadline)
-                    .foregroundStyle(Color("hanyangBlue"))
-                if !entry.stopDisplayName.isEmpty {
-                    Text("· \(entry.stopDisplayName)")
-                        .font(.godoHeadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text(entry.date, style: .time)
-                    .font(.godoCaption2)
-                    .foregroundStyle(.tertiary)
-                Button(intent: RefreshShuttleIntent()) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.godoCaption2)
-                        .foregroundStyle(.tertiary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-
-            switch entry.errorState {
-            case .noLocation:
-                Spacer()
-                VStack(spacing: 8) {
-                    Image(systemName: "location.slash.fill")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
-                    Text("shuttle.location.required")
-                        .font(.godoSubheadline)
-                        .foregroundStyle(.secondary)
-                    Text("shuttle.location.guide")
-                        .font(.godoCaption)
-                        .foregroundStyle(.tertiary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                Spacer()
-            case .noData:
-                Spacer()
-                Text("shuttle.no.data")
-                    .font(.godoBody)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                Spacer()
-            case .none:
-                let sorted = entry.groups
-                    .flatMap { g in g.times.map { (dest: g.destination, time: $0) } }
-                    .sorted { $0.time < $1.time }
-                if sorted.isEmpty {
-                    Spacer()
-                    Text("shuttle.no.data")
-                        .font(.godoBody)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    Spacer()
-                } else {
-                    VStack(spacing: 0) {
-                        ForEach(Array(sorted.prefix(8).enumerated()), id: \.offset) { _, item in
-                            HStack {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "arrow.right.circle.fill")
-                                        .foregroundStyle(Color("hanyangBlue").opacity(0.7))
-                                        .font(.godoCaption)
-                                    Text(item.dest)
-                                        .font(.godoSubheadlineMedium)
-                                }
-                                Spacer()
-                                Text(item.time)
-                                    .font(.godoSubheadlineSemibold)
-                                    .monospacedDigit()
-                            }
-                            .padding(.vertical, 6)
-                            Divider()
-                        }
-                    }
-                } // else
-            }
-        }
-        .padding(12)
     }
 }
 
@@ -528,37 +277,47 @@ struct ShuttleWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ShuttleProvider()) { entry in
             ShuttleWidgetView(entry: entry)
-                .containerBackground(.background, for: .widget)
+                .containerBackground(HYUWidgetColor.background, for: .widget)
                 .widgetURL(entry.stopID.isEmpty ? nil : URL(string: "hyuabot://shuttle?stop=\(entry.stopID)"))
         }
         .configurationDisplayName("widget.shuttle.name")
         .description("widget.shuttle.description")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .contentMarginsDisabled()
     }
 }
 
 // MARK: - Preview
 
 private let previewGroups: [ShuttleDestinationGroup] = [
-    ShuttleDestinationGroup(destination: "기숙사", times: ["15:30", "16:00", "16:30", "17:00", "17:30", "18:00"]),
-    ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15", "16:45", "17:15"]),
-    ShuttleDestinationGroup(destination: "중앙역", times: ["16:10", "16:40", "17:10"])
+    ShuttleDestinationGroup(
+        destination: "기숙사", times: ["14:03", "14:20", "14:40", "15:00", "15:20", "15:40"],
+        destinationKey: "CAMPUS", serviceDate: ShuttleSampleData.referenceDate
+    ),
+    ShuttleDestinationGroup(
+        destination: "예술인", times: ["14:12", "14:35", "14:58", "15:21"],
+        destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+    ),
+    ShuttleDestinationGroup(
+        destination: "중앙역", times: ["14:25", "14:55", "15:25"],
+        destinationKey: "JUNGANG", serviceDate: ShuttleSampleData.referenceDate
+    )
 ]
 
 #Preview("Small", as: .systemSmall) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
+    ShuttleEntry(date: ShuttleSampleData.referenceDate, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
 
 #Preview("Medium", as: .systemMedium) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
+    ShuttleEntry(date: ShuttleSampleData.referenceDate, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
 
 #Preview("Large", as: .systemLarge) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
+    ShuttleEntry(date: ShuttleSampleData.referenceDate, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
