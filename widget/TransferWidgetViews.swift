@@ -234,7 +234,7 @@ private struct TransferMediumShuttleFallback: View {
     let entry: TransferEntry
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(verbatim: entry.stopDisplayName).font(.godo(size: 15, weight: .bold)).foregroundStyle(HYUWidgetColor.brand)
                 Text("shuttle.nearest.stop").font(.godo(size: 11, weight: .regular)).foregroundStyle(HYUWidgetColor.muted)
                 Spacer()
@@ -254,6 +254,7 @@ private struct TransferMediumHero: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(verbatim: entry.stopDisplayName).font(.godo(size: 13, weight: .bold)).foregroundStyle(HYUWidgetColor.brand).lineLimit(1)
+                .frame(minHeight: 18, alignment: .leading)
             Spacer(minLength: 4)
             if let hero {
                 HStack(spacing: 6) {
