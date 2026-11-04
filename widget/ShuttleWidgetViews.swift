@@ -119,10 +119,7 @@ struct ShuttleBoardContent: View {
     let now: Date
 
     private var columns: [[ShuttleDeparture]] {
-        Array(groups.compactMap { group in
-            let departures = ShuttleDepartureMath.upcoming(in: group, now: now)
-            return departures.isEmpty ? nil : departures
-        }.prefix(4))
+        Array(ShuttleDepartureMath.upcomingByGroup(in: groups, now: now).prefix(4))
     }
 
     var body: some View {

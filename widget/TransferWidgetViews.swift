@@ -91,9 +91,9 @@ private struct TransferShuttleList: View {
     let groups: [ShuttleDestinationGroup]
     let now: Date
     private var departures: [(ShuttleDestinationGroup, [ShuttleDeparture])] {
-        Array(groups.compactMap { group in
-            let items = ShuttleDepartureMath.upcoming(in: group, now: now)
-            return items.isEmpty ? nil : (group, items)
+        let lists = ShuttleDepartureMath.upcomingByGroup(in: groups, now: now)
+        return Array(lists.compactMap { items in
+            groups.first { $0.destinationKey == items[0].destinationKey && $0.destination == items[0].destination }.map { ($0, items) }
         }.prefix(3))
     }
 
@@ -127,7 +127,7 @@ private struct TransferShuttleRow: View {
                 maxWidth: .infinity,
                 alignment: .leading
             )
-            Text(verbatim: departures.dropFirst().prefix(2).map(\.time).joined(separator: " · ")).font(.godo(size: 11, weight: .regular))
+            Text(verbatim: departures.prefix(2).map(\.time).joined(separator: " · ")).font(.godo(size: 11, weight: .regular))
                 .foregroundStyle(HYUWidgetColor.muted).lineLimit(1)
             InlineMinutesText(minutes: first.minutes, size: 15, imminent: first.minutes <= 5).frame(width: 40, alignment: .trailing)
         }

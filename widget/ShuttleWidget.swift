@@ -235,26 +235,23 @@ struct ShuttleProvider: TimelineProvider {
                 return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
             }
 
-            func makeGroups(from timetable: ShuttleWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
-                timetable.destination.compactMap { group in
-                    let times = group.entries.prefix(6).map { formatTime($0.time) }
-                    guard !times.isEmpty else { return nil }
-                    return ShuttleDestinationGroup(
-                        destination: destinationDisplayName(for: group.destination),
-                        times: Array(times),
-                        destinationKey: group.destination,
-                        serviceDate: fetchedAt
-                    )
-                }
+            func makeGroups(from stop: ShuttleWidgetQuery.Data.Shuttle.Stop) -> [ShuttleDestinationGroup] {
+                ShuttleDepartureMath.makeGroups(
+                    stopName: stop.name,
+                    order: stop.timetable.order.map { ($0.route.tag, $0.time) },
+                    destinations: stop.timetable.destination.map { ($0.destination, $0.entries.map(\.time)) },
+                    limit: 6,
+                    serviceDate: fetchedAt
+                )
             }
 
-            var groups = makeGroups(from: stop.timetable)
+            var groups = makeGroups(from: stop)
             var displayStopName = stopDisplayName(for: stop.name)
 
             if stop.name == "shuttlecock_o" || stop.name == "shuttlecock_i" {
                 let companionName = stop.name == "shuttlecock_o" ? "shuttlecock_i" : "shuttlecock_o"
                 if let companion = stops.first(where: { $0.name == companionName }) {
-                    groups += makeGroups(from: companion.timetable)
+                    groups += makeGroups(from: companion)
                 }
                 displayStopName = String(localized: "stop.shuttlecock")
             }

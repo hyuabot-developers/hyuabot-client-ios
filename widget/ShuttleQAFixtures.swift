@@ -24,6 +24,12 @@ import Foundation
                     group("중앙역", "JUNGANG", ["14:15"]),
                     group("기숙사", "CAMPUS", ["14:05", "14:25"])
                 ])
+            case "shuttle-overlap":
+                shuttle(stop: "셔틀콕", id: "shuttlecock_o", groups: [
+                    group("한대앞", "STATION", ["14:02", "14:10", "14:25", "14:40"]),
+                    group("중앙역", "JUNGANG", ["14:10", "14:25", "14:50"]),
+                    group("기숙사", "CAMPUS", ["14:05", "14:05", "14:30"])
+                ])
             case "shuttle-expired":
                 shuttle(stop: "한대앞", id: "station", groups: [
                     group("기숙사", "CAMPUS", ["13:40", "13:55"])

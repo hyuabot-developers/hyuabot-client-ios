@@ -211,14 +211,14 @@ struct TransferProvider: TimelineProvider {
                 return emptyEntry(errorState: .error, date: fetchedAt)
             }
 
-            var shuttleGroups = makeShuttleGroups(nearestStop.timetable, serviceDate: fetchedAt)
+            var shuttleGroups = makeShuttleGroups(nearestStop, serviceDate: fetchedAt)
             var displayName = stopDisplayName(for: nearestStop.name)
             var stopID = nearestStop.name
 
             if nearestStop.name == "shuttlecock_o" || nearestStop.name == "shuttlecock_i" {
                 let companion = nearestStop.name == "shuttlecock_o" ? "shuttlecock_i" : "shuttlecock_o"
                 if let other = stops.first(where: { $0.name == companion }) {
-                    shuttleGroups += makeShuttleGroups(other.timetable, serviceDate: fetchedAt)
+                    shuttleGroups += makeShuttleGroups(other, serviceDate: fetchedAt)
                 }
                 displayName = String(localized: "stop.shuttlecock")
                 stopID = nearestStop.name
@@ -240,19 +240,16 @@ struct TransferProvider: TimelineProvider {
     }
 
     private func makeShuttleGroups(
-        _ timetable: ShuttleTransferWidgetQuery.Data.Shuttle.Stop.Timetable,
+        _ stop: ShuttleTransferWidgetQuery.Data.Shuttle.Stop,
         serviceDate: Foundation.Date
     ) -> [ShuttleDestinationGroup] {
-        timetable.destination.compactMap { group in
-            let times = group.entries.prefix(4).map { formatTime($0.time) }
-            guard !times.isEmpty else { return nil }
-            return ShuttleDestinationGroup(
-                destination: destinationDisplayName(for: group.destination),
-                times: Array(times),
-                destinationKey: group.destination,
-                serviceDate: serviceDate
-            )
-        }
+        ShuttleDepartureMath.makeGroups(
+            stopName: stop.name,
+            order: stop.timetable.order.map { ($0.route.tag, $0.time) },
+            destinations: stop.timetable.destination.map { ($0.destination, $0.entries.map(\.time)) },
+            limit: 4,
+            serviceDate: serviceDate
+        )
     }
 
     private func emptyEntry(errorState: ShuttleErrorState, date: Foundation.Date = .now) -> TransferEntry {
