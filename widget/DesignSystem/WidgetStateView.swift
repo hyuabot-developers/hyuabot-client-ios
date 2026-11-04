@@ -45,7 +45,6 @@ struct WidgetStateView<Intent: AppIntent>: View {
             .frame(maxWidth: .infinity)
             Spacer(minLength: 4)
         }
-        .padding(HYUWidgetMetrics.contentPadding)
     }
 
     private var shouldShowRefresh: Bool {

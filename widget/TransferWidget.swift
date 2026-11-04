@@ -127,6 +127,18 @@ struct TransferProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (TransferEntry) -> Void) {
+#if DEBUG
+        if let selected = WidgetQAFixture.selected(prefix: "transfer") {
+            if selected == "transfer-placeholder" {
+                completion(placeholder(in: context))
+                return
+            }
+            if let entry = ShuttleQAFixtures.transferEntry(named: selected) {
+                completion(entry)
+                return
+            }
+        }
+#endif
         if context.isPreview { completion(placeholder(in: context)); return }
         let completion = WidgetCompletion(completion)
         Task { await completion(fetchEntry()) }
@@ -134,6 +146,22 @@ struct TransferProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TransferEntry>) -> Void) {
         let completion = WidgetCompletion(completion)
+#if DEBUG
+        if let selected = WidgetQAFixture.selected(prefix: "transfer") {
+            if selected == "transfer-placeholder" {
+                let placeholderEntry = placeholder(in: context)
+                Task {
+                    await WidgetQAFixture.holdForPlaceholderCapture()
+                    completion(Timeline(entries: [placeholderEntry], policy: .never))
+                }
+                return
+            }
+            if let entry = ShuttleQAFixtures.transferEntry(named: selected) {
+                completion(Timeline(entries: [entry], policy: .never))
+                return
+            }
+        }
+#endif
         Task {
             let entry = await fetchEntry()
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)

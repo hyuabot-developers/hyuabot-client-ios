@@ -145,6 +145,18 @@ struct ShuttleProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ShuttleEntry) -> Void) {
+#if DEBUG
+        if let selected = WidgetQAFixture.selected(prefix: "shuttle") {
+            if selected == "shuttle-placeholder" {
+                completion(placeholder(in: context))
+                return
+            }
+            if let entry = ShuttleQAFixtures.shuttleEntry(named: selected) {
+                completion(entry)
+                return
+            }
+        }
+#endif
         if context.isPreview {
             completion(placeholder(in: context))
             return
@@ -158,6 +170,22 @@ struct ShuttleProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<ShuttleEntry>) -> Void) {
         let completion = WidgetCompletion(completion)
+#if DEBUG
+        if let selected = WidgetQAFixture.selected(prefix: "shuttle") {
+            if selected == "shuttle-placeholder" {
+                let placeholderEntry = placeholder(in: context)
+                Task {
+                    await WidgetQAFixture.holdForPlaceholderCapture()
+                    completion(Timeline(entries: [placeholderEntry], policy: .never))
+                }
+                return
+            }
+            if let entry = ShuttleQAFixtures.shuttleEntry(named: selected) {
+                completion(Timeline(entries: [entry], policy: .never))
+                return
+            }
+        }
+#endif
         Task {
             let entry = await fetchEntry()
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)
