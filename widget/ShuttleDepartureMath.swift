@@ -69,7 +69,11 @@ enum ShuttleDepartureMath {
     }
 
     static func upcoming(in groups: [ShuttleDestinationGroup], now: Date) -> [ShuttleDeparture] {
-        upcomingByGroup(in: groups, now: now).flatMap { $0 }
+        // The same bus can be listed under several destinations (e.g. circular, or a Jungang run that
+        // also stops at 한대앞), so keep one row per departure time, labeled by the first group.
+        var seen = Set<Date>()
+        return upcomingByGroup(in: groups, now: now).flatMap { $0 }
+            .filter { seen.insert($0.departure).inserted }
             .sorted { ($0.departure, $0.destination) < ($1.departure, $1.destination) }
     }
 
