@@ -56,7 +56,9 @@ enum HYUWidgetColor {
         case "STATION": Route.shuttleDH
         case "TERMINAL": Route.shuttleDY
         case "JUNGANG": Route.shuttleDJ
-        case "CAMPUS": Route.shuttleC
+        case "DORMITORY": Route.shuttleC
+        case "SHUTTLECOCK": Route.shuttleDH
+        case "CIRCULAR": Route.shuttleDY
         default: muted
         }
     }

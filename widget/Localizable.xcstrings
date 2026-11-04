@@ -438,7 +438,36 @@
         }
       }
     },
-    "destination.campus": {
+    "destination.circular": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circular"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "순환"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "循環"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "环形"
+          }
+        }
+      }
+    },
+    "destination.dormitory": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -492,6 +521,35 @@
           "stringUnit": {
             "state": "translated",
             "value": "中央站"
+          }
+        }
+      }
+    },
+    "destination.shuttlecock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shuttlecock"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "셔틀콕"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shuttlecock"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shuttlecock"
           }
         }
       }

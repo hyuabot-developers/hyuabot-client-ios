@@ -89,21 +89,68 @@ enum ShuttleDepartureMath {
 }
 
 extension ShuttleDepartureMath {
-    /// Route tag -> destination key for the stops where one shuttle is listed under several
-    /// destinations (campus-bound stops). The time-ordered `order` list the app uses lists each
-    /// physical shuttle once, so grouping it by route tag avoids duplicates (e.g. 한대앞 via 중앙역).
-    private static let orderedStops: Set<String> = ["dormitory_o", "shuttlecock_o"]
-    private static let routeDestinationKey = ["DH": "STATION", "DY": "TERMINAL", "DJ": "JUNGANG", "C": "CAMPUS"]
+    struct ShuttleEntryInput {
+        let tag: String
+        let name: String
+        let time: String
+    }
+
+    /// Display order of the destination groups for each stop, mirroring the app's destination sections.
+    private static let groupOrder: [String: [String]] = [
+        "dormitory_o": ["STATION", "TERMINAL", "JUNGANG"],
+        "shuttlecock_o": ["STATION", "TERMINAL", "JUNGANG"],
+        "station": ["DORMITORY", "SHUTTLECOCK", "CIRCULAR", "JUNGANG"],
+        "terminal": ["DORMITORY", "SHUTTLECOCK"],
+        "jungang_stn": ["DORMITORY"],
+        "shuttlecock_i": ["DORMITORY"]
+    ]
+
+    /// Maps one server entry to the widget destination key shown for the stop, or nil to skip it.
+    /// Uses the same tag and route-name suffix rules as the app's shuttle screen.
+    static func groupKey(stopName: String, bucket: String, tag: String, routeName: String) -> String? {
+        let isShuttlecockSide = routeName.hasSuffix("S")
+        switch stopName {
+        case "dormitory_o", "shuttlecock_o":
+            return bucket
+        case "station":
+            switch bucket {
+            case "CAMPUS":
+                switch tag {
+                case "C": return "CIRCULAR"
+                case "DJ": return "JUNGANG"
+                default: return isShuttlecockSide ? "SHUTTLECOCK" : "DORMITORY"
+                }
+            case "TERMINAL": return "CIRCULAR"
+            case "JUNGANG": return "JUNGANG"
+            default: return nil
+            }
+        case "terminal":
+            return isShuttlecockSide ? "SHUTTLECOCK" : "DORMITORY"
+        case "jungang_stn":
+            return "DORMITORY"
+        case "shuttlecock_i":
+            // Shuttlecock-side runs end at this stop, so only dormitory-bound runs are departures.
+            return isShuttlecockSide ? nil : "DORMITORY"
+        default:
+            return nil
+        }
+    }
 
     static func makeGroups(
         stopName: String,
-        order: [(tag: String, time: String)],
-        destinations: [(key: String, times: [String])],
+        destinations: [(key: String, entries: [ShuttleEntryInput])],
         limit: Int,
         serviceDate: Date
     ) -> [ShuttleDestinationGroup] {
-        func group(_ key: String, _ times: [String]) -> ShuttleDestinationGroup? {
-            let formatted = times.prefix(limit).map(formatTime)
+        var timesByKey: [String: Set<String>] = [:]
+        for bucket in destinations {
+            for entry in bucket.entries {
+                guard let key = groupKey(stopName: stopName, bucket: bucket.key, tag: entry.tag, routeName: entry.name) else { continue }
+                timesByKey[key, default: []].insert(entry.time)
+            }
+        }
+        return (groupOrder[stopName] ?? []).compactMap { key in
+            let formatted = (timesByKey[key] ?? []).sorted().prefix(limit).map(formatTime)
             guard !formatted.isEmpty else { return nil }
             return ShuttleDestinationGroup(
                 destination: destinationDisplayName(for: key),
@@ -112,11 +159,5 @@ extension ShuttleDepartureMath {
                 serviceDate: serviceDate
             )
         }
-        guard orderedStops.contains(stopName), !order.isEmpty else {
-            return destinations.compactMap { group($0.key, $0.times) }
-        }
-        let keys = ["STATION", "TERMINAL", "JUNGANG", "CAMPUS"]
-        let byKey = Dictionary(grouping: order.compactMap { item in routeDestinationKey[item.tag].map { ($0, item.time) } }, by: \.0)
-        return keys.compactMap { key in group(key, (byKey[key] ?? []).map(\.1)) }
     }
 }
