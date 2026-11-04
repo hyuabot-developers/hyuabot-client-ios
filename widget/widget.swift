@@ -111,6 +111,18 @@ struct CafeteriaProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (CafeteriaEntry) -> Void) {
+#if DEBUG
+        if let name = WidgetQAFixture.selected(prefix: "cafeteria") {
+            if name == "cafeteria-placeholder" {
+                completion(placeholder(in: context))
+                return
+            }
+            if let entry = WidgetQAFixture.cafeteriaEntry(named: name) {
+                completion(entry)
+                return
+            }
+        }
+#endif
         if context.isPreview {
             completion(placeholder(in: context))
             return
@@ -124,6 +136,22 @@ struct CafeteriaProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<CafeteriaEntry>) -> Void) {
         let completion = WidgetCompletion(completion)
+#if DEBUG
+        if let name = WidgetQAFixture.selected(prefix: "cafeteria") {
+            if name == "cafeteria-placeholder" {
+                let placeholderEntry = placeholder(in: context)
+                Task {
+                    await WidgetQAFixture.holdForPlaceholderCapture()
+                    completion(Timeline(entries: [placeholderEntry], policy: .never))
+                }
+                return
+            }
+            if let entry = WidgetQAFixture.cafeteriaEntry(named: name) {
+                completion(Timeline(entries: [entry], policy: .never))
+                return
+            }
+        }
+#endif
         Task {
             let now = Foundation.Date.now
             let entry = await fetchEntry(for: now)
