@@ -9,12 +9,6 @@ import WidgetKit
 
 // MARK: - Models
 
-struct ShuttleDestinationGroup: Identifiable {
-    let id = UUID()
-    let destination: String
-    let times: [String]
-}
-
 struct ShuttleEntry: TimelineEntry {
     let date: Foundation.Date
     let stopDisplayName: String
@@ -26,7 +20,8 @@ struct ShuttleEntry: TimelineEntry {
 enum ShuttleErrorState {
     case none
     case noLocation
-    case noData
+    case ended
+    case error
 }
 
 // MARK: - Helpers
@@ -138,13 +133,22 @@ final class WidgetLocationFetcher: NSObject, CLLocationManagerDelegate, @uncheck
 struct ShuttleProvider: TimelineProvider {
     func placeholder(in context: Context) -> ShuttleEntry {
         ShuttleEntry(
-            date: .now,
+            date: ShuttleSampleData.referenceDate,
             stopDisplayName: "한대앞",
             stopID: "station",
             groups: [
-                ShuttleDestinationGroup(destination: "기숙사", times: ["15:30", "16:00", "16:30"]),
-                ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15"]),
-                ShuttleDestinationGroup(destination: "중앙역", times: ["16:10", "16:40"])
+                ShuttleDestinationGroup(
+                    destination: "기숙사", times: ["14:03", "14:20", "14:40"],
+                    destinationKey: "CAMPUS", serviceDate: ShuttleSampleData.referenceDate
+                ),
+                ShuttleDestinationGroup(
+                    destination: "예술인", times: ["14:12", "14:35"],
+                    destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+                ),
+                ShuttleDestinationGroup(
+                    destination: "중앙역", times: ["14:25", "14:55"],
+                    destinationKey: "JUNGANG", serviceDate: ShuttleSampleData.referenceDate
+                )
             ],
             errorState: .none
         )
@@ -166,31 +170,42 @@ struct ShuttleProvider: TimelineProvider {
         let completion = WidgetCompletion(completion)
         Task {
             let entry = await fetchEntry()
-            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)!
-            completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)
+                ?? Foundation.Date.now.addingTimeInterval(300)
+            let entries = ShuttleDepartureMath.minuteTimelineDates(from: entry.date, count: 5).map {
+                ShuttleEntry(
+                    date: $0,
+                    stopDisplayName: entry.stopDisplayName,
+                    stopID: entry.stopID,
+                    groups: entry.groups,
+                    errorState: entry.errorState
+                )
+            }
+            completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }
 
     private func fetchEntry() async -> ShuttleEntry {
+        let fetchedAt = Foundation.Date.now
         let locationFetcher = WidgetLocationFetcher()
         let location = await locationFetcher.getCurrentLocation()
 
         guard let location else {
-            return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noLocation)
+            return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .noLocation)
         }
 
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         timeFormatter.locale = Locale(identifier: "en_US_POSIX")
         timeFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
+        let currentTimeStr = timeFormatter.string(from: fetchedAt)
 
         do {
             let response = try await WidgetNetwork.shared
                 .fetch(query: ShuttleWidgetQuery(after: GraphQLNullable(stringLiteral: currentTimeStr)))
 
             guard let stops = response.data?.shuttle.stops, !stops.isEmpty else {
-                return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
+                return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
             }
 
             let nearestStop = stops.min { a, b in
@@ -199,7 +214,7 @@ struct ShuttleProvider: TimelineProvider {
             }
 
             guard let stop = nearestStop else {
-                return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
+                return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
             }
 
             func makeGroups(from timetable: ShuttleWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
@@ -208,7 +223,9 @@ struct ShuttleProvider: TimelineProvider {
                     guard !times.isEmpty else { return nil }
                     return ShuttleDestinationGroup(
                         destination: destinationDisplayName(for: group.destination),
-                        times: Array(times)
+                        times: Array(times),
+                        destinationKey: group.destination,
+                        serviceDate: fetchedAt
                     )
                 }
             }
@@ -225,14 +242,14 @@ struct ShuttleProvider: TimelineProvider {
             }
 
             return ShuttleEntry(
-                date: .now,
+                date: fetchedAt,
                 stopDisplayName: displayStopName,
                 stopID: stop.name,
                 groups: groups,
-                errorState: .none
+                errorState: groups.isEmpty ? .ended : .none
             )
         } catch {
-            return ShuttleEntry(date: .now, stopDisplayName: "", stopID: "", groups: [], errorState: .noData)
+            return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
         }
     }
 }
@@ -294,7 +311,7 @@ struct ShuttleSmallView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Spacer()
-            case .noData:
+            case .ended, .error:
                 Spacer()
                 Text("shuttle.no.data")
                     .font(.godoCaption2)
@@ -384,7 +401,7 @@ struct ShuttleMediumView: View {
                     }
                     Spacer()
                 }
-            case .noData:
+            case .ended, .error:
                 Text("shuttle.no.data")
                     .font(.godoCaption)
                     .foregroundStyle(.secondary)
@@ -475,7 +492,7 @@ struct ShuttleLargeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 Spacer()
-            case .noData:
+            case .ended, .error:
                 Spacer()
                 Text("shuttle.no.data")
                     .font(.godoBody)
@@ -540,25 +557,34 @@ struct ShuttleWidget: Widget {
 // MARK: - Preview
 
 private let previewGroups: [ShuttleDestinationGroup] = [
-    ShuttleDestinationGroup(destination: "기숙사", times: ["15:30", "16:00", "16:30", "17:00", "17:30", "18:00"]),
-    ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15", "16:45", "17:15"]),
-    ShuttleDestinationGroup(destination: "중앙역", times: ["16:10", "16:40", "17:10"])
+    ShuttleDestinationGroup(
+        destination: "기숙사", times: ["14:03", "14:20", "14:40", "15:00", "15:20", "15:40"],
+        destinationKey: "CAMPUS", serviceDate: ShuttleSampleData.referenceDate
+    ),
+    ShuttleDestinationGroup(
+        destination: "예술인", times: ["14:12", "14:35", "14:58", "15:21"],
+        destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+    ),
+    ShuttleDestinationGroup(
+        destination: "중앙역", times: ["14:25", "14:55", "15:25"],
+        destinationKey: "JUNGANG", serviceDate: ShuttleSampleData.referenceDate
+    )
 ]
 
 #Preview("Small", as: .systemSmall) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
+    ShuttleEntry(date: ShuttleSampleData.referenceDate, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
 
 #Preview("Medium", as: .systemMedium) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
+    ShuttleEntry(date: ShuttleSampleData.referenceDate, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }
 
 #Preview("Large", as: .systemLarge) {
     ShuttleWidget()
 } timeline: {
-    ShuttleEntry(date: .now, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
+    ShuttleEntry(date: ShuttleSampleData.referenceDate, stopDisplayName: "한대앞", stopID: "station", groups: previewGroups, errorState: .none)
 }

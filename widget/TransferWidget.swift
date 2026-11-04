@@ -89,12 +89,22 @@ private let transferRouteLabelFont: Font = .godoCaptionSemibold
 struct TransferProvider: TimelineProvider {
     func placeholder(in context: Context) -> TransferEntry {
         TransferEntry(
-            date: .now,
+            date: ShuttleSampleData.referenceDate,
             stopDisplayName: "기숙사",
             stopID: "dormitory_o",
             shuttleGroups: [
-                ShuttleDestinationGroup(destination: "한대앞", times: ["15:30", "16:00"]),
-                ShuttleDestinationGroup(destination: "예술인", times: ["15:45"])
+                ShuttleDestinationGroup(
+                    destination: "한대앞", times: ["14:04", "14:24"],
+                    destinationKey: "STATION", serviceDate: ShuttleSampleData.referenceDate
+                ),
+                ShuttleDestinationGroup(
+                    destination: "예술인", times: ["14:15", "14:45"],
+                    destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+                ),
+                ShuttleDestinationGroup(
+                    destination: "중앙역", times: ["14:30"],
+                    destinationKey: "JUNGANG", serviceDate: ShuttleSampleData.referenceDate
+                )
             ],
             transitArrivals: [
                 TransitArrival(
@@ -130,22 +140,25 @@ struct TransferProvider: TimelineProvider {
         let completion = WidgetCompletion(completion)
         Task {
             let entry = await fetchEntry()
-            let next = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)!
-            completion(Timeline(entries: [entry], policy: .after(next)))
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Foundation.Date.now)
+                ?? Foundation.Date.now.addingTimeInterval(300)
+            let entries = ShuttleDepartureMath.minuteTimelineDates(from: entry.date, count: 5).map { entry.advanced(to: $0) }
+            completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }
 
     private func fetchEntry() async -> TransferEntry {
+        let fetchedAt = Foundation.Date.now
         let fetcher = WidgetLocationFetcher()
         guard let location = await fetcher.getCurrentLocation() else {
-            return emptyEntry(errorState: .noLocation)
+            return emptyEntry(errorState: .noLocation, date: fetchedAt)
         }
 
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         timeFormatter.locale = Locale(identifier: "en_US_POSIX")
         timeFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        let currentTimeStr = timeFormatter.string(from: Foundation.Date.now)
+        let currentTimeStr = timeFormatter.string(from: fetchedAt)
         let logDates = busLogReferenceDates()
 
         do {
@@ -159,35 +172,29 @@ struct TransferProvider: TimelineProvider {
             )
 
             guard let data = response.data else {
-                return emptyEntry(errorState: .noData)
+                return emptyEntry(errorState: .error, date: fetchedAt)
             }
 
             let stops = data.shuttle.stops
             guard !stops.isEmpty else {
-                return emptyEntry(errorState: .noData)
+                return emptyEntry(errorState: .error, date: fetchedAt)
             }
 
-            let nearestStop = stops.min {
+            guard let nearestStop = stops.min(by: {
                 CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(from: location)
                     < CLLocation(latitude: $1.latitude, longitude: $1.longitude).distance(from: location)
-            }!
-
-            func makeShuttleGroups(_ timetable: ShuttleTransferWidgetQuery.Data.Shuttle.Stop.Timetable) -> [ShuttleDestinationGroup] {
-                timetable.destination.compactMap { g in
-                    let times = g.entries.prefix(4).map { formatTime($0.time) }
-                    guard !times.isEmpty else { return nil }
-                    return ShuttleDestinationGroup(destination: destinationDisplayName(for: g.destination), times: Array(times))
-                }
+            }) else {
+                return emptyEntry(errorState: .error, date: fetchedAt)
             }
 
-            var shuttleGroups = makeShuttleGroups(nearestStop.timetable)
+            var shuttleGroups = makeShuttleGroups(nearestStop.timetable, serviceDate: fetchedAt)
             var displayName = stopDisplayName(for: nearestStop.name)
             var stopID = nearestStop.name
 
             if nearestStop.name == "shuttlecock_o" || nearestStop.name == "shuttlecock_i" {
                 let companion = nearestStop.name == "shuttlecock_o" ? "shuttlecock_i" : "shuttlecock_o"
                 if let other = stops.first(where: { $0.name == companion }) {
-                    shuttleGroups += makeShuttleGroups(other.timetable)
+                    shuttleGroups += makeShuttleGroups(other.timetable, serviceDate: fetchedAt)
                 }
                 displayName = String(localized: "stop.shuttlecock")
                 stopID = nearestStop.name
@@ -196,21 +203,37 @@ struct TransferProvider: TimelineProvider {
             let transitArrivals = buildTransit(for: stopID, data: data)
 
             return TransferEntry(
-                date: .now,
+                date: fetchedAt,
                 stopDisplayName: displayName,
                 stopID: stopID,
                 shuttleGroups: shuttleGroups,
                 transitArrivals: transitArrivals,
-                errorState: .none
+                errorState: shuttleGroups.isEmpty && transitArrivals.isEmpty ? .ended : .none
             )
         } catch {
-            return emptyEntry(errorState: .noData)
+            return emptyEntry(errorState: .error, date: fetchedAt)
         }
     }
 
-    private func emptyEntry(errorState: ShuttleErrorState) -> TransferEntry {
+    private func makeShuttleGroups(
+        _ timetable: ShuttleTransferWidgetQuery.Data.Shuttle.Stop.Timetable,
+        serviceDate: Foundation.Date
+    ) -> [ShuttleDestinationGroup] {
+        timetable.destination.compactMap { group in
+            let times = group.entries.prefix(4).map { formatTime($0.time) }
+            guard !times.isEmpty else { return nil }
+            return ShuttleDestinationGroup(
+                destination: destinationDisplayName(for: group.destination),
+                times: Array(times),
+                destinationKey: group.destination,
+                serviceDate: serviceDate
+            )
+        }
+    }
+
+    private func emptyEntry(errorState: ShuttleErrorState, date: Foundation.Date = .now) -> TransferEntry {
         TransferEntry(
-            date: .now,
+            date: date,
             stopDisplayName: "",
             stopID: "",
             shuttleGroups: [],
@@ -314,6 +337,35 @@ struct TransferProvider: TimelineProvider {
 
 // MARK: - Views
 
+extension TransferEntry {
+    func advanced(to date: Foundation.Date) -> TransferEntry {
+        let elapsed = max(0, Int(date.timeIntervalSince(self.date) / 60))
+        let arrivals = transitArrivals.compactMap { arrival -> TransitArrival? in
+            let up = arrival.upEntries
+                .map { TransitEntry(terminal: $0.terminal, minutes: $0.minutes - elapsed) }
+                .filter { $0.minutes >= 0 }
+            let down = arrival.downEntries
+                .map { TransitEntry(terminal: $0.terminal, minutes: $0.minutes - elapsed) }
+                .filter { $0.minutes >= 0 }
+            guard !up.isEmpty || !down.isEmpty else { return nil }
+            return TransitArrival(
+                name: arrival.name,
+                colorKey: arrival.colorKey,
+                upEntries: up,
+                downEntries: down
+            )
+        }
+        return TransferEntry(
+            date: date,
+            stopDisplayName: stopDisplayName,
+            stopID: stopID,
+            shuttleGroups: shuttleGroups,
+            transitArrivals: arrivals,
+            errorState: errorState
+        )
+    }
+}
+
 struct TransferWidgetView: View {
     let entry: TransferEntry
 
@@ -369,7 +421,7 @@ struct TransferLargeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 Spacer()
-            case .noData:
+            case .ended, .error:
                 Spacer()
                 Text("shuttle.no.data").font(.godoBody).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
@@ -712,13 +764,22 @@ struct TransferWidget: Widget {
 // MARK: - Preview
 
 private let transferPreviewEntry = TransferEntry(
-    date: .now,
+    date: ShuttleSampleData.referenceDate,
     stopDisplayName: "기숙사",
     stopID: "dormitory_o",
     shuttleGroups: [
-        ShuttleDestinationGroup(destination: "한대앞", times: ["15:30", "16:00"]),
-        ShuttleDestinationGroup(destination: "예술인", times: ["15:45", "16:15"]),
-        ShuttleDestinationGroup(destination: "중앙역", times: ["16:10"])
+        ShuttleDestinationGroup(
+            destination: "한대앞", times: ["14:04", "14:24"],
+            destinationKey: "STATION", serviceDate: ShuttleSampleData.referenceDate
+        ),
+        ShuttleDestinationGroup(
+            destination: "예술인", times: ["14:15", "14:45"],
+            destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+        ),
+        ShuttleDestinationGroup(
+            destination: "중앙역", times: ["14:30"],
+            destinationKey: "JUNGANG", serviceDate: ShuttleSampleData.referenceDate
+        )
     ],
     transitArrivals: [
         TransitArrival(

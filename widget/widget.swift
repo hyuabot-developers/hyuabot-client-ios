@@ -8,35 +8,7 @@ private let appGroupID = "group.net.jaram.hyuabot"
 
 // MARK: - Models
 
-enum MealType {
-    case breakfast, lunch, dinner, closed
-
-    var title: String {
-        switch self {
-        case .breakfast: String(localized: "meal.breakfast")
-        case .lunch: String(localized: "meal.lunch")
-        case .dinner: String(localized: "meal.dinner")
-        case .closed: String(localized: "meal.closed")
-        }
-    }
-
-    var typeString: String {
-        switch self {
-        case .breakfast, .closed: "조식"
-        case .lunch: "중식"
-        case .dinner: "석식"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .breakfast: "sunrise.fill"
-        case .lunch: "sun.max.fill"
-        case .dinner: "moon.stars.fill"
-        case .closed: "moon.zzz.fill"
-        }
-    }
-
+extension MealType {
     var deepLinkURL: URL {
         switch self {
         case .breakfast, .closed:
@@ -49,23 +21,13 @@ enum MealType {
     }
 }
 
-struct CafeteriaMenuRow: Identifiable {
-    let id = UUID()
-    let food: String
-    let price: String
-}
-
-struct CafeteriaMenuItem: Identifiable {
-    let id = UUID()
-    let cafeteriaName: String
-    let menus: [CafeteriaMenuRow]
-    let runningTime: String?
-}
-
 struct CafeteriaEntry: TimelineEntry {
     let date: Foundation.Date
     let mealType: MealType
     let items: [CafeteriaMenuItem]
+    let menuDate: Foundation.Date
+    var loadFailed: Bool = false
+    var isNextDay: Bool { mealType == .closed }
 }
 
 // MARK: - Helpers
@@ -78,6 +40,13 @@ private func currentMealType(for date: Foundation.Date = .now) -> MealType {
     case 15 ..< 20: return .dinner
     default: return .closed
     }
+}
+
+private func cafeteriaMenuDate(for date: Foundation.Date, mealType: MealType) -> Foundation.Date {
+    guard mealType == .closed else { return date }
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .gmt
+    return calendar.date(byAdding: .day, value: 1, to: date) ?? date
 }
 
 private func cafeteriaDisplayName(for seq: Int) -> String {
@@ -136,7 +105,8 @@ struct CafeteriaProvider: TimelineProvider {
                     CafeteriaMenuRow(food: "닭갈비", price: "6000"),
                     CafeteriaMenuRow(food: "쌀국수", price: "4500")
                 ], runningTime: "11:30~13:00")
-            ]
+            ],
+            menuDate: .now
         )
     }
 
@@ -158,7 +128,22 @@ struct CafeteriaProvider: TimelineProvider {
             let now = Foundation.Date.now
             let entry = await fetchEntry(for: now)
             let nextUpdate = nextMealTransition(after: now)
-            completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+            let dates = CafeteriaPresentation.timelineDates(
+                for: entry.items,
+                from: now,
+                until: nextUpdate,
+                isNextDay: entry.isNextDay
+            )
+            let entries = dates.map { date in
+                CafeteriaEntry(
+                    date: date,
+                    mealType: entry.mealType,
+                    items: entry.items,
+                    menuDate: entry.menuDate,
+                    loadFailed: entry.loadFailed
+                )
+            }
+            completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }
 
@@ -171,13 +156,14 @@ struct CafeteriaProvider: TimelineProvider {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        let dateString = dateFormatter.string(from: date)
+        let menuDate = cafeteriaMenuDate(for: date, mealType: mealType)
+        let dateString = dateFormatter.string(from: menuDate)
 
         do {
             let response = try await WidgetNetwork.shared.fetch(query: CafeteriaPageQuery(date: dateString, campusID: Int32(campusID)))
 
             guard let cafeteria = response.data?.cafeteria else {
-                return CafeteriaEntry(date: date, mealType: mealType, items: [])
+                return CafeteriaEntry(date: date, mealType: mealType, items: [], menuDate: menuDate, loadFailed: true)
             }
 
             let typeStr = mealType.typeString
@@ -219,9 +205,9 @@ struct CafeteriaProvider: TimelineProvider {
                     )
                 }
 
-            return CafeteriaEntry(date: date, mealType: mealType, items: items)
+            return CafeteriaEntry(date: date, mealType: mealType, items: items, menuDate: menuDate)
         } catch {
-            return CafeteriaEntry(date: date, mealType: mealType, items: [])
+            return CafeteriaEntry(date: date, mealType: mealType, items: [], menuDate: menuDate, loadFailed: true)
         }
     }
 }
@@ -355,6 +341,7 @@ struct CafeteriaWidget: Widget {
                 CafeteriaMenuRow(food: "닭갈비", price: "6000"),
                 CafeteriaMenuRow(food: "쌀국수", price: "4500")
             ], runningTime: "11:30~13:00")
-        ]
+        ],
+        menuDate: .now
     )
 }
