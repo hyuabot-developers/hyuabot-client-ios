@@ -52,7 +52,9 @@ func destinationDisplayName(for destination: String) -> String {
     switch destination {
     case "STATION": String(localized: "destination.station")
     case "TERMINAL": String(localized: "destination.terminal")
-    case "CAMPUS": String(localized: "destination.campus")
+    case "DORMITORY": String(localized: "destination.dormitory")
+    case "SHUTTLECOCK": String(localized: "destination.shuttlecock")
+    case "CIRCULAR": String(localized: "destination.circular")
     case "JUNGANG": String(localized: "destination.jungang")
     default: destination
     }
@@ -238,8 +240,9 @@ struct ShuttleProvider: TimelineProvider {
             func makeGroups(from stop: ShuttleWidgetQuery.Data.Shuttle.Stop) -> [ShuttleDestinationGroup] {
                 ShuttleDepartureMath.makeGroups(
                     stopName: stop.name,
-                    order: stop.timetable.order.map { ($0.route.tag, $0.time) },
-                    destinations: stop.timetable.destination.map { ($0.destination, $0.entries.map(\.time)) },
+                    destinations: stop.timetable.destination.map { bucket in
+                        (bucket.destination, bucket.entries.map { ($0.route.tag, $0.route.name, $0.time) })
+                    },
                     limit: 6,
                     serviceDate: fetchedAt
                 )

@@ -1,12 +1,12 @@
 query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!], $language: String!) {
     shuttle(input: {
         stops: [
-            { name: "dormitory_o", limit: { order: 12, destination: 8 } },
-            { name: "shuttlecock_o", limit: { order: 12, destination: 8 } },
-            { name: "station", limit: { order: 12, destination: 8 } },
-            { name: "terminal", limit: { order: 12, destination: 8 } },
-            { name: "jungang_stn", limit: { order: 12, destination: 8 } },
-            { name: "shuttlecock_i", limit: { order: 12, destination: 8 } }
+            { name: "dormitory_o", limit: { order: 12, destination: 16 } },
+            { name: "shuttlecock_o", limit: { order: 12, destination: 16 } },
+            { name: "station", limit: { order: 12, destination: 16 } },
+            { name: "terminal", limit: { order: 12, destination: 16 } },
+            { name: "jungang_stn", limit: { order: 12, destination: 16 } },
+            { name: "shuttlecock_i", limit: { order: 12, destination: 16 } }
         ],
         after: $after
     }) {
@@ -15,13 +15,12 @@ query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates
             longitude
             name
             timetable {
-                order {
-                    route { tag }
-                    time
-                }
                 destination {
                     destination
-                    entries { time }
+                    entries {
+                        route { tag name }
+                        time
+                    }
                 }
             }
         }
