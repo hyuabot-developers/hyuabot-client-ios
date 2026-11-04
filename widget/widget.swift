@@ -214,94 +214,6 @@ struct CafeteriaProvider: TimelineProvider {
 
 // MARK: - Views
 
-struct CafeteriaLargeView: View {
-    let entry: CafeteriaEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: entry.mealType.icon)
-                    .foregroundStyle(.blue)
-                Text(entry.mealType.title)
-                    .font(.godoHeadline)
-                    .foregroundStyle(.blue)
-                Spacer()
-                HStack(spacing: 3) {
-                    Text(entry.date, style: .date)
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                    Text(entry.date, style: .time)
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                }
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                Button(intent: RefreshCafeteriaIntent()) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.godoCaption2)
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-
-            if entry.items.isEmpty {
-                Spacer()
-                VStack(spacing: 8) {
-                    Image(systemName: "tray")
-                        .font(.title3)
-                        .foregroundStyle(.tertiary)
-                    Text("cafeteria.no.data")
-                        .font(.godoBody)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                Spacer()
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(entry.items) { item in
-                        VStack(alignment: .leading, spacing: 3) {
-                            HStack {
-                                Text(item.cafeteriaName)
-                                    .font(.godoSubheadlineBold)
-                                if let rt = item.runningTime {
-                                    Text(rt)
-                                        .font(.godoCaption2)
-                                        .foregroundStyle(.tertiary)
-                                }
-                                Spacer()
-                            }
-                            ForEach(item.menus) { menu in
-                                HStack {
-                                    Text(menu.food)
-                                        .font(.godoCaption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                    Spacer(minLength: 6)
-                                    if !menu.price.isEmpty {
-                                        Text("\(menu.price)원")
-                                            .font(.godoCaption)
-                                            .foregroundStyle(Color("hanyangBlue"))
-                                            .lineLimit(1)
-                                            .fixedSize(horizontal: true, vertical: false)
-                                    }
-                                }
-                            }
-                        }
-                        Divider()
-                    }
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(12)
-        .widgetURL(entry.mealType.deepLinkURL)
-    }
-}
-
 // MARK: - Widget
 
 struct CafeteriaWidget: Widget {
@@ -309,16 +221,35 @@ struct CafeteriaWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CafeteriaProvider()) { entry in
-            CafeteriaLargeView(entry: entry)
-                .containerBackground(.background, for: .widget)
+            CafeteriaWidgetView(entry: entry)
+                .containerBackground(HYUWidgetColor.background, for: .widget)
+                .widgetURL(entry.mealType.deepLinkURL)
         }
         .configurationDisplayName("widget.cafeteria.name")
         .description("widget.cafeteria.description")
-        .supportedFamilies([.systemLarge, .systemExtraLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+        .contentMarginsDisabled()
     }
 }
 
 // MARK: - Preview
+
+#Preview("Small", as: .systemSmall) {
+    CafeteriaWidget()
+} timeline: {
+    CafeteriaEntry(date: .now, mealType: .lunch, items: [
+        CafeteriaMenuItem(cafeteriaName: "학생식당", menus: [CafeteriaMenuRow(food: "된장찌개", price: "2000")], runningTime: "11:00~13:30")
+    ], menuDate: .now)
+}
+
+#Preview("Medium", as: .systemMedium) {
+    CafeteriaWidget()
+} timeline: {
+    CafeteriaEntry(date: .now, mealType: .lunch, items: [
+        CafeteriaMenuItem(cafeteriaName: "학생식당", menus: [CafeteriaMenuRow(food: "된장찌개", price: "2000")], runningTime: "11:00~13:30"),
+        CafeteriaMenuItem(cafeteriaName: "창업보육센터", menus: [CafeteriaMenuRow(food: "뼈다귀탕", price: "5500")], runningTime: "11:30~13:30")
+    ], menuDate: .now)
+}
 
 #Preview("Large", as: .systemLarge) {
     CafeteriaWidget()
