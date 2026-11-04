@@ -89,7 +89,11 @@ enum ShuttleDepartureMath {
 }
 
 extension ShuttleDepartureMath {
-    typealias ShuttleEntryInput = (tag: String, name: String, time: String)
+    struct ShuttleEntryInput {
+        let tag: String
+        let name: String
+        let time: String
+    }
 
     /// Display order of the destination groups for each stop, mirroring the app's destination sections.
     private static let groupOrder: [String: [String]] = [

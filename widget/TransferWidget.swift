@@ -246,7 +246,7 @@ struct TransferProvider: TimelineProvider {
         ShuttleDepartureMath.makeGroups(
             stopName: stop.name,
             destinations: stop.timetable.destination.map { bucket in
-                (bucket.destination, bucket.entries.map { ($0.route.tag, $0.route.name, $0.time) })
+                (bucket.destination, bucket.entries.map { .init(tag: $0.route.tag, name: $0.route.name, time: $0.time) })
             },
             limit: 4,
             serviceDate: serviceDate
