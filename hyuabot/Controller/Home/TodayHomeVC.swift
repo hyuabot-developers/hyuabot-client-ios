@@ -974,13 +974,10 @@ private final class HomeWeatherIconView: UIView {
         updateAnimationState()
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
-        updateColors()
-    }
-
     private func setupLayers() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _: UITraitCollection) in
+            view.updateColors()
+        }
         isAccessibilityElement = false
         isUserInteractionEnabled = false
         layer.addSublayer(artLayer)

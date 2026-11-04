@@ -254,9 +254,8 @@ final class InquiryChatVC: UIViewController {
     }
 
     private func preparePushNotifications() {
-        if let token = Messaging.messaging().fcmToken {
-            Task { await InquiryService.shared.registerPushToken(token) }
-        }
+        // The registration token is delivered to MessagingDelegate (AppDelegate), which uploads it.
+        Messaging.messaging().register { _ in }
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             guard settings.authorizationStatus == .notDetermined else { return }
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
