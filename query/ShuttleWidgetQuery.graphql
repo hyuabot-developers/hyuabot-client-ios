@@ -3,10 +3,10 @@ query ShuttleWidgetQuery($after: LocalTime) {
         stops: [
             { name: "dormitory_o", limit: { order: 12, destination: 16 } },
             { name: "shuttlecock_o", limit: { order: 12, destination: 16 } },
-            { name: "station", limit: { order: 12, destination: 16 } },
+            { name: "station", limit: { order: 12, destination: 50 } },
             { name: "terminal", limit: { order: 12, destination: 16 } },
             { name: "jungang_stn", limit: { order: 12, destination: 16 } },
-            { name: "shuttlecock_i", limit: { order: 12, destination: 16 } }
+            { name: "shuttlecock_i", limit: { order: 12, destination: 50 } }
         ],
         after: $after
     }) {

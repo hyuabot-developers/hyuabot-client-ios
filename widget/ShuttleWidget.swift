@@ -131,11 +131,11 @@ struct ShuttleProvider: TimelineProvider {
             groups: [
                 ShuttleDestinationGroup(
                     destination: "기숙사", times: ["14:03", "14:20", "14:40"],
-                    destinationKey: "CAMPUS", serviceDate: ShuttleSampleData.referenceDate
+                    destinationKey: "DORMITORY", serviceDate: ShuttleSampleData.referenceDate
                 ),
                 ShuttleDestinationGroup(
-                    destination: "예술인", times: ["14:12", "14:35"],
-                    destinationKey: "TERMINAL", serviceDate: ShuttleSampleData.referenceDate
+                    destination: "순환", times: ["14:12", "14:35"],
+                    destinationKey: "CIRCULAR", serviceDate: ShuttleSampleData.referenceDate
                 ),
                 ShuttleDestinationGroup(
                     destination: "중앙역", times: ["14:25", "14:55"],
@@ -295,7 +295,7 @@ struct ShuttleWidget: Widget {
 private let previewGroups: [ShuttleDestinationGroup] = [
     ShuttleDestinationGroup(
         destination: "기숙사", times: ["14:03", "14:20", "14:40", "15:00", "15:20", "15:40"],
-        destinationKey: "CAMPUS", serviceDate: ShuttleSampleData.referenceDate
+        destinationKey: "DORMITORY", serviceDate: ShuttleSampleData.referenceDate
     ),
     ShuttleDestinationGroup(
         destination: "예술인", times: ["14:12", "14:35", "14:58", "15:21"],

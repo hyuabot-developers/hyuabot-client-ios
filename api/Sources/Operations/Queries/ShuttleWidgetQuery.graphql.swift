@@ -8,7 +8,7 @@ nonisolated public struct ShuttleWidgetQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleWidgetQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleWidgetQuery($after: LocalTime) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 12, destination: 16 } } { name: "shuttlecock_o", limit: { order: 12, destination: 16 } } { name: "station", limit: { order: 12, destination: 16 } } { name: "terminal", limit: { order: 12, destination: 16 } } { name: "jungang_stn", limit: { order: 12, destination: 16 } } { name: "shuttlecock_i", limit: { order: 12, destination: 16 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time } } } } } }"#
+      #"query ShuttleWidgetQuery($after: LocalTime) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 12, destination: 16 } } { name: "shuttlecock_o", limit: { order: 12, destination: 16 } } { name: "station", limit: { order: 12, destination: 50 } } { name: "terminal", limit: { order: 12, destination: 16 } } { name: "jungang_stn", limit: { order: 12, destination: 16 } } { name: "shuttlecock_i", limit: { order: 12, destination: 50 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time } } } } } }"#
     ))
 
   public var after: GraphQLNullable<LocalTime>
@@ -42,7 +42,7 @@ nonisolated public struct ShuttleWidgetQuery: GraphQLQuery {
           "name": "station",
           "limit": [
             "order": 12,
-            "destination": 16
+            "destination": 50
           ]
         ], [
           "name": "terminal",
@@ -60,7 +60,7 @@ nonisolated public struct ShuttleWidgetQuery: GraphQLQuery {
           "name": "shuttlecock_i",
           "limit": [
             "order": 12,
-            "destination": 16
+            "destination": 50
           ]
         ]],
         "after": .variable("after")

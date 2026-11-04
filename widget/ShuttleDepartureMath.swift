@@ -89,9 +89,6 @@ enum ShuttleDepartureMath {
 }
 
 extension ShuttleDepartureMath {
-    /// Route tag -> destination key for the stops where one shuttle is listed under several
-    /// destinations (campus-bound stops). The time-ordered `order` list the app uses lists each
-    /// physical shuttle once, so grouping it by route tag avoids duplicates (e.g. 한대앞 via 중앙역).
     typealias ShuttleEntryInput = (tag: String, name: String, time: String)
 
     /// Display order of the destination groups for each stop, mirroring the app's destination sections.
@@ -158,4 +155,5 @@ extension ShuttleDepartureMath {
                 serviceDate: serviceDate
             )
         }
-    }}
+    }
+}

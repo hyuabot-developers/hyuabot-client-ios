@@ -8,7 +8,7 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTransferWidgetQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!], $language: String!) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 12, destination: 16 } } { name: "shuttlecock_o", limit: { order: 12, destination: 16 } } { name: "station", limit: { order: 12, destination: 16 } } { name: "terminal", limit: { order: 12, destination: 16 } } { name: "jungang_stn", limit: { order: 12, destination: 16 } } { name: "shuttlecock_i", limit: { order: 12, destination: 16 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time } } } } } subway( input: { language: $language keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 2, dates: $logDates } { route: 216000075, stop: 216000117, limit: 2, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops } log { __typename date time } } }"#
+      #"query ShuttleTransferWidgetQuery($after: LocalTime, $weekday: String!, $logDates: [Date!], $language: String!) { shuttle( input: { stops: [ { name: "dormitory_o", limit: { order: 12, destination: 16 } } { name: "shuttlecock_o", limit: { order: 12, destination: 16 } } { name: "station", limit: { order: 12, destination: 50 } } { name: "terminal", limit: { order: 12, destination: 16 } } { name: "jungang_stn", limit: { order: 12, destination: 16 } } { name: "shuttlecock_i", limit: { order: 12, destination: 50 } } ] after: $after } ) { __typename stops { __typename latitude longitude name timetable { __typename destination { __typename destination entries { __typename route { __typename tag name } time } } } } } subway( input: { language: $language keys: [ { stationID: "K449", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } { stationID: "K251", direction: ["up", "down"], weekdays: [$weekday], limit: 1 } ] } ) { __typename stationID arrival { __typename direction entries { __typename minutes terminal { __typename stationID name } } } } transferBus: bus( input: [ { route: 216000075, stop: 216000759, limit: 2, dates: $logDates } { route: 216000075, stop: 216000117, limit: 2, dates: $logDates } ] ) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops } log { __typename date time } } }"#
     ))
 
   public var after: GraphQLNullable<LocalTime>
@@ -58,7 +58,7 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
           "name": "station",
           "limit": [
             "order": 12,
-            "destination": 16
+            "destination": 50
           ]
         ], [
           "name": "terminal",
@@ -76,7 +76,7 @@ nonisolated public struct ShuttleTransferWidgetQuery: GraphQLQuery {
           "name": "shuttlecock_i",
           "limit": [
             "order": 12,
-            "destination": 16
+            "destination": 50
           ]
         ]],
         "after": .variable("after")
