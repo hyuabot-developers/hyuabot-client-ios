@@ -100,7 +100,7 @@ enum HYUWidgetMetrics {
     static let heroPaddingVertical: CGFloat = 10
     static let dotSize: CGFloat = 8
     static let badgeHeight: CGFloat = 18
-    static let badgeMinWidth: CGFloat = 24
+    static let badgeWidth: CGFloat = 34
     static let headerMinHeight: CGFloat = 18
     static let imminentMinutes = 5
 }

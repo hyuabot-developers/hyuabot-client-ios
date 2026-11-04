@@ -29,6 +29,7 @@ struct CafeteriaWidgetView: View {
                 content
             }
         }
+        .foregroundStyle(HYUWidgetColor.foreground)
         .padding(HYUWidgetMetrics.contentPadding)
     }
 
@@ -54,6 +55,7 @@ private struct CafeteriaSmallView: View {
             CafeteriaHeader(entry: entry, titleSize: 13, showsTime: false)
             CafeteriaBlock(
                 item: item,
+                status: CafeteriaPresentation.status(runningTime: item.runningTime, now: entry.date, isNextDay: entry.isNextDay),
                 style: .compact,
                 nameSize: 12,
                 menuSize: 11,

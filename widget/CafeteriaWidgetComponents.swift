@@ -11,6 +11,11 @@ struct CafeteriaStatusLabel: View {
     let status: CafeteriaRunningStatus
     let style: CafeteriaStatusStyle
 
+    private var isOpen: Bool {
+        if case .open = status { return true }
+        return false
+    }
+
     private var color: Color {
         switch status {
         case .open: HYUWidgetColor.open
@@ -24,8 +29,8 @@ struct CafeteriaStatusLabel: View {
             Circle().fill(color).frame(width: 6, height: 6)
             Text(verbatim: CafeteriaPresentation.label(for: status, style: style))
                 .font(.godo(size: 10, weight: .semibold)).lineLimit(1)
+                .foregroundStyle(isOpen ? HYUWidgetColor.ink2 : color)
         }
-        .foregroundStyle(color)
         .fixedSize()
     }
 }

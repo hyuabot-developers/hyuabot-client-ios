@@ -53,12 +53,12 @@ struct TransitGrid: View {
         Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: rowSpacing) {
             if let title {
                 GridRow {
-                    Text(title).font(.godo(size: 11, weight: .bold)).foregroundStyle(HYUWidgetColor.brand).frame(
-                        width: badgeWidth,
-                        alignment: .leading
-                    )
+                    Text(title).font(.godo(size: 11, weight: .bold)).foregroundStyle(HYUWidgetColor.brand)
+                        .frame(width: badgeWidth, alignment: .leading).padding(.bottom, 4)
                     Text(leftHeader ?? "").font(.godo(size: 10, weight: .regular)).foregroundStyle(HYUWidgetColor.muted)
+                        .padding(.bottom, 4)
                     Text(rightHeader ?? "").font(.godo(size: 10, weight: .regular)).foregroundStyle(HYUWidgetColor.muted)
+                        .padding(.bottom, 4)
                 }
             }
             ForEach(rows) { row in

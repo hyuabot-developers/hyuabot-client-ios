@@ -272,7 +272,7 @@ struct ShuttleProvider: TimelineProvider {
     }
 }
 
-// MARK: - Views
+// MARK: - Widget
 
 struct ShuttleWidget: Widget {
     let kind = "ShuttleWidget"

@@ -240,8 +240,6 @@ struct CafeteriaProvider: TimelineProvider {
     }
 }
 
-// MARK: - Views
-
 // MARK: - Widget
 
 struct CafeteriaWidget: Widget {

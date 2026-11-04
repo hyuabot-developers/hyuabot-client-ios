@@ -157,7 +157,7 @@ private struct TransferLargeTransit: View {
                     leftHeader: "transit.direction.up",
                     rightHeader: "transit.direction.down",
                     rows: subwayRows(subway),
-                    badgeWidth: 34,
+                    badgeWidth: HYUWidgetMetrics.badgeWidth,
                     minuteSize: 15,
                     labelSize: 11,
                     rowSpacing: 7
@@ -168,13 +168,14 @@ private struct TransferLargeTransit: View {
                 if bus.isEmpty {
                     Text("transit.header.bus").font(.godo(size: 11, weight: .bold)).foregroundStyle(HYUWidgetColor.brand)
                     Text("transit.no.arrivals").font(.godo(size: 11, weight: .regular)).foregroundStyle(HYUWidgetColor.muted)
+                        .padding(.top, 7)
                 } else {
                     TransitGrid(
                         title: "transit.header.bus",
                         leftHeader: "transit.bus.current",
                         rightHeader: "transit.bus.next",
                         rows: busRows(bus),
-                        badgeWidth: 34,
+                        badgeWidth: HYUWidgetMetrics.badgeWidth,
                         minuteSize: 15,
                         labelSize: 11,
                         rowSpacing: 7
@@ -289,7 +290,7 @@ private struct TransferMediumTransit: View {
                 leftHeader: nil,
                 rightHeader: nil,
                 rows: subwayRows(subway) + busRows(bus),
-                badgeWidth: 38,
+                badgeWidth: HYUWidgetMetrics.badgeWidth,
                 minuteSize: 14,
                 labelSize: 10,
                 rowSpacing: 9

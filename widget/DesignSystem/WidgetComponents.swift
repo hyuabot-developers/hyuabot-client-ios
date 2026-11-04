@@ -25,12 +25,7 @@ struct RouteBadge: View {
             .font(.godo(size: 11, weight: .bold))
             .foregroundStyle(.white)
             .lineLimit(1)
-            .padding(.horizontal, 6)
-            .frame(
-                minWidth: HYUWidgetMetrics.badgeMinWidth,
-                minHeight: HYUWidgetMetrics.badgeHeight,
-                maxHeight: HYUWidgetMetrics.badgeHeight
-            )
+            .frame(width: HYUWidgetMetrics.badgeWidth, height: HYUWidgetMetrics.badgeHeight)
             .background(Capsule().fill(HYUWidgetColor.route(forColorKey: colorKey)))
             .fixedSize()
     }

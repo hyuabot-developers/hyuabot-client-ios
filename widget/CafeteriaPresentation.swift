@@ -67,7 +67,7 @@ enum CafeteriaLayoutMetrics {
     static let statusGap: CGFloat = 4
     static let blockGap: CGFloat = 17
     static let footerHeight: CGFloat = 18
-    static let compactMenuLimit = 5
+    static let compactMenuLimit = 1
     static let xlMaxColumns = 5
 }
 
