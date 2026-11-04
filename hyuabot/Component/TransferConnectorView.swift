@@ -48,6 +48,9 @@ final class TransferConnectorView: UIStackView {
             make.width.height.equalTo(11)
         }
         updateAppearance()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _: UITraitCollection) in
+            view.updateAppearance()
+        }
     }
 
     @available(*, unavailable)
@@ -57,12 +60,6 @@ final class TransferConnectorView: UIStackView {
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        updateAppearance()
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
         updateAppearance()
     }
 

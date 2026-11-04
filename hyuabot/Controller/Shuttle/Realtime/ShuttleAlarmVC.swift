@@ -87,13 +87,10 @@ class ShuttleAlarmVC: UIViewController {
         super.viewDidLoad()
         setupUI()
         reloadAlarmState()
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else { return }
-        boardingCard.backgroundColor = cardBackgroundColor
-        alightingCard.backgroundColor = cardBackgroundColor
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (vc: Self, _: UITraitCollection) in
+            vc.boardingCard.backgroundColor = vc.cardBackgroundColor
+            vc.alightingCard.backgroundColor = vc.cardBackgroundColor
+        }
     }
 
     private func setupUI() {

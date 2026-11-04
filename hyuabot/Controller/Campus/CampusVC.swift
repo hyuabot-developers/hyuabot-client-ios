@@ -286,6 +286,9 @@ private final class CampusToolControl: UIControl {
 
     init(title: String, subtitle: String, symbol: String) {
         super.init(frame: .zero)
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _: UITraitCollection) in
+            view.layer.borderColor = UIColor.separator.cgColor
+        }
         isAccessibilityElement = true
         accessibilityTraits = .button
         accessibilityLabel = title
@@ -359,12 +362,6 @@ private final class CampusToolControl: UIControl {
         }
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            layer.borderColor = UIColor.separator.cgColor
-        }
-    }
 }
 
 private final class CampusSupportControl: UIControl {
