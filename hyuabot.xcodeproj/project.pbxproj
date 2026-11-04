@@ -204,8 +204,8 @@
 		C72A95E22DAA961500979B22 /* watch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */,
 				C7E4689A2DAE2B6600E89761 /* Exceptions for "watch" folder in "hyuabotTests" target */,
+				C7E468922DAE2B6600E8975E /* Exceptions for "watch" folder in "watch" target */,
 				C7E4689C2DAE2B6600E89763 /* Exceptions for "watch" folder in "watchWidget" target */,
 			);
 			path = watch;
@@ -1313,7 +1313,7 @@
 			repositoryURL = "https://github.com/realm/realm-swift.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 20.0.5;
+				minimumVersion = 20.0.6;
 			};
 		};
 		C7BAB0332D2802F400BBE940 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
@@ -1321,7 +1321,7 @@
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 12.19.2;
+				minimumVersion = 13.1.1;
 			};
 		};
 		C7BAB03C2D294AE400BBE940 /* XCRemoteSwiftPackageReference "apollo-ios" */ = {
@@ -1329,7 +1329,7 @@
 			repositoryURL = "https://github.com/apollographql/apollo-ios.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
+				minimumVersion = 2.5.0;
 			};
 		};
 		C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
@@ -1353,7 +1353,7 @@
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.19.6;
+				minimumVersion = 1.19.7;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
