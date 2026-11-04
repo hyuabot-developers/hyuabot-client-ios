@@ -11,6 +11,9 @@ struct ShuttleDestinationGroup: Identifiable {
     let times: [String]
     let destinationKey: String
     let serviceDate: Foundation.Date
+    /// Route identity (tag + name) for each entry of `times`, so the same bus listed under several groups can be told
+    /// apart from different buses leaving at the same minute. Empty when unknown.
+    var busIDs: [String] = []
 }
 
 struct ShuttleDeparture: Identifiable {
@@ -20,6 +23,7 @@ struct ShuttleDeparture: Identifiable {
     let time: String
     let departure: Foundation.Date
     let minutes: Int
+    var busID: String = ""
 }
 
 enum ShuttleSampleData {
@@ -47,7 +51,7 @@ enum ShuttleDepartureMath {
     }
 
     static func upcoming(in group: ShuttleDestinationGroup, now: Date) -> [ShuttleDeparture] {
-        group.times.compactMap { time in
+        group.times.enumerated().compactMap { index, time in
             guard let departure = departureDate(for: time, serviceDate: group.serviceDate),
                   let minutes = minutesUntil(departure, now: now)
             else { return nil }
@@ -56,7 +60,8 @@ enum ShuttleDepartureMath {
                 destinationKey: group.destinationKey,
                 time: time,
                 departure: departure,
-                minutes: minutes
+                minutes: minutes,
+                busID: group.busIDs.indices.contains(index) ? group.busIDs[index] : ""
             )
         }
     }
@@ -70,10 +75,15 @@ enum ShuttleDepartureMath {
 
     static func upcoming(in groups: [ShuttleDestinationGroup], now: Date) -> [ShuttleDeparture] {
         // The same bus can be listed under several destinations (e.g. circular, or a Jungang run that
-        // also stops at 한대앞), so keep one row per departure time, labeled by the first group.
-        var seen = Set<Date>()
+        // also stops at 한대앞), so keep one row per bus and departure time, labeled by the first group.
+        // Different buses leaving at the same minute (e.g. 한대앞행 and 예술인행) stay separate.
+        struct BusKey: Hashable {
+            let departure: Date
+            let busID: String
+        }
+        var seen = Set<BusKey>()
         return upcomingByGroup(in: groups, now: now).flatMap { $0 }
-            .filter { seen.insert($0.departure).inserted }
+            .filter { seen.insert(BusKey(departure: $0.departure, busID: $0.busID)).inserted }
             .sorted { ($0.departure, $0.destination) < ($1.departure, $1.destination) }
     }
 
@@ -146,21 +156,24 @@ extension ShuttleDepartureMath {
         limit: Int,
         serviceDate: Date
     ) -> [ShuttleDestinationGroup] {
-        var timesByKey: [String: Set<String>] = [:]
+        var busByTimeByKey: [String: [String: String]] = [:]
         for bucket in destinations {
             for entry in bucket.entries {
                 guard let key = groupKey(stopName: stopName, bucket: bucket.key, tag: entry.tag, routeName: entry.name) else { continue }
-                timesByKey[key, default: []].insert(entry.time)
+                busByTimeByKey[key, default: [:]][entry.time] = busByTimeByKey[key]?[entry.time] ?? "\(entry.tag)|\(entry.name)"
             }
         }
         return (groupOrder[stopName] ?? []).compactMap { key in
-            let formatted = (timesByKey[key] ?? []).sorted().prefix(limit).map(formatTime)
+            let busByTime = busByTimeByKey[key] ?? [:]
+            let sortedTimes = busByTime.keys.sorted().prefix(limit)
+            let formatted = sortedTimes.map(formatTime)
             guard !formatted.isEmpty else { return nil }
             return ShuttleDestinationGroup(
                 destination: destinationDisplayName(for: key),
                 times: Array(formatted),
                 destinationKey: key,
-                serviceDate: serviceDate
+                serviceDate: serviceDate,
+                busIDs: sortedTimes.map { busByTime[$0] ?? "" }
             )
         }
     }
