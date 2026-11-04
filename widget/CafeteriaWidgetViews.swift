@@ -120,7 +120,7 @@ struct CafeteriaLargeView: View {
     private var ended: some View {
         Text("cafeteria.ended.today").font(.godo(size: 11, weight: .regular)).foregroundStyle(HYUWidgetColor.muted).padding(
             .bottom,
-            2
+            8
         )
     }
 

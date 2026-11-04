@@ -41,7 +41,15 @@ struct CafeteriaMenuLine: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(row.food).font(.godo(size: size, weight: .regular))
+            let parsed = Self.splitPromoTag(row.food)
+            if parsed.isThousandWon {
+                Text("천원").font(.godo(size: max(size - 3, 8), weight: .semibold))
+                    .foregroundStyle(HYUWidgetColor.price)
+                    .padding(.horizontal, 4).padding(.vertical, 1)
+                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(HYUWidgetColor.price, lineWidth: 0.8))
+                    .fixedSize()
+            }
+            Text(parsed.name).font(.godo(size: size, weight: .regular))
                 .foregroundStyle(HYUWidgetColor.ink2).lineLimit(1)
             Spacer(minLength: 8)
             if !row.price.isEmpty {
@@ -51,6 +59,15 @@ struct CafeteriaMenuLine: View {
             }
         }
         .frame(height: CafeteriaLayoutMetrics.menuRowHeight)
+    }
+
+    /// Strips a leading "[천원의 아침밥]" tag so the dish name is not truncated away.
+    static func splitPromoTag(_ food: String) -> (name: String, isThousandWon: Bool) {
+        let tag = "[천원의 아침밥]"
+        let trimmed = food.trimmingCharacters(in: .whitespaces)
+        guard trimmed.hasPrefix(tag) else { return (food, false) }
+        let rest = trimmed.dropFirst(tag.count).trimmingCharacters(in: .whitespaces)
+        return (rest.isEmpty ? food : rest, !rest.isEmpty)
     }
 }
 
