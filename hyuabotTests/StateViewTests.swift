@@ -34,6 +34,23 @@ final class StateViewTests: XCTestCase {
         XCTAssertTrue(didTap)
     }
 
+    func testEmptyWithCustomTitleShowsTitleSymbolAndButton() {
+        let content = StateContent.empty(
+            title: "‘abc’ 연락처가 없어요",
+            message: "msg",
+            symbolName: "magnifyingglass",
+            action: StateAction(title: "Reset", handler: {})
+        )
+
+        let configuration = StateView.makeConfiguration(for: content, traits: traits)
+        let text = configuration.attributedText?.string ?? ""
+
+        XCTAssertTrue(text.contains("‘abc’ 연락처가 없어요"))
+        XCTAssertTrue(text.contains("msg"))
+        XCTAssertNotNil(configuration.image)
+        XCTAssertEqual(configuration.button.title, "Reset")
+    }
+
     func testErrorShowsWarningIconAndRetryButtonRunsCallback() throws {
         var retried = false
         let configuration = StateView.makeConfiguration(
