@@ -13,7 +13,8 @@ class RootVC: UITabBarController {
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         guard let navigationController = selectedViewController as? UINavigationController,
-              navigationController.topViewController is TodayHomeVC
+              let top = navigationController.topViewController,
+              top is TodayHomeVC || top is SettingsStyledScreen
         else {
             return .lightContent
         }

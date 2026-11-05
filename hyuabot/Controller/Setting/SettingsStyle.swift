@@ -1,0 +1,137 @@
+//
+//  SettingsStyle.swift
+//  hyuabot
+//
+
+import UIKit
+
+enum SettingsStyle {
+    enum Color {
+        static let background = adaptive(light: 0xF2F4F7, dark: 0x0B0F14)
+        static let card = adaptive(light: 0xFFFFFF, dark: 0x161B22)
+        static let text = adaptive(light: 0x111827, dark: 0xE8EDF3)
+        static let secondaryText = adaptive(light: 0x5B6472, dark: 0x9AA4B2)
+        static let separator = adaptive(light: 0xE5E8EC, dark: 0x262D36)
+        static let segmentBackground = adaptive(light: 0xE9EDF2, dark: 0x222A33)
+        static let accent = HYUColor.Brand.primary
+        static let accentFill = HYUColor.Brand.primaryFill
+        static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x0B0F14)
+        static let switchOff = adaptive(light: 0xD1D5DB, dark: 0x3A434E)
+        static let link = HYUColor.Brand.primary
+        static let body = adaptive(light: 0x374151, dark: 0xC9D1DC)
+        static let toastBackground = adaptive(light: 0x111827, dark: 0xE8EDF3)
+        static let toastText = adaptive(light: 0xFFFFFF, dark: 0x0B0F14)
+
+        private static func adaptive(light: UInt32, dark: UInt32) -> UIColor {
+            UIColor { traits in
+                hex(traits.userInterfaceStyle == .dark ? dark : light)
+            }
+        }
+
+        private static func hex(_ value: UInt32) -> UIColor {
+            UIColor(
+                red: CGFloat((value >> 16) & 0xFF) / 255,
+                green: CGFloat((value >> 8) & 0xFF) / 255,
+                blue: CGFloat(value & 0xFF) / 255,
+                alpha: 1
+            )
+        }
+    }
+
+    enum Tile {
+        static let blue = UIColor(red: 0x0E / 255, green: 0x4A / 255, blue: 0x84 / 255, alpha: 1)
+        static let indigo = UIColor(red: 0x4F / 255, green: 0x46 / 255, blue: 0xE5 / 255, alpha: 1)
+        static let teal = UIColor(red: 0x0F / 255, green: 0x76 / 255, blue: 0x6E / 255, alpha: 1)
+        static let slate = UIColor(red: 0x47 / 255, green: 0x55 / 255, blue: 0x69 / 255, alpha: 1)
+    }
+
+    enum Metric {
+        static let cardRadius: CGFloat = 16
+        static let cardInset: CGFloat = 16
+        static let sectionHeaderTop: CGFloat = 28
+        static let sectionHeaderInsetX: CGFloat = 8
+        static let rowMinHeight: CGFloat = 52
+        static let iconTileSize: CGFloat = 30
+        static let iconTileRadius: CGFloat = 8
+        static let separatorInset: CGFloat = 58
+    }
+
+    static func font(_ size: CGFloat, bold: Bool = false) -> UIFont {
+        UIFontMetrics(forTextStyle: .body).scaledFont(
+            for: UIFont.godo(size: size, weight: bold ? .bold : .regular)
+        )
+    }
+}
+
+protocol SettingsStyledScreen: UIViewController {}
+
+enum SettingsNavigationStyle {
+    static func apply(to viewController: UIViewController, largeTitle: Bool = false) {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = SettingsStyle.Color.background
+        appearance.shadowColor = .clear
+        appearance.titleTextAttributes = [
+            .font: UIFont.godo(size: 17, weight: .bold),
+            .foregroundColor: SettingsStyle.Color.text
+        ]
+        appearance.largeTitleTextAttributes = [
+            .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(
+                for: UIFont.godo(size: 32, weight: .bold)
+            ),
+            .foregroundColor: SettingsStyle.Color.text,
+            .kern: -0.5
+        ]
+        let button = UIBarButtonItemAppearance(style: .plain)
+        button.normal.titleTextAttributes = [
+            .font: UIFont.godo(size: 16, weight: .regular),
+            .foregroundColor: SettingsStyle.Color.link
+        ]
+        appearance.buttonAppearance = button
+        appearance.doneButtonAppearance = button
+        appearance.backButtonAppearance = button
+        viewController.navigationItem.standardAppearance = appearance.copy()
+        viewController.navigationItem.compactAppearance = appearance.copy()
+        let scrollEdgeAppearance = appearance.copy()
+        scrollEdgeAppearance.configureWithTransparentBackground()
+        scrollEdgeAppearance.titleTextAttributes = appearance.titleTextAttributes
+        scrollEdgeAppearance.largeTitleTextAttributes = appearance.largeTitleTextAttributes
+        scrollEdgeAppearance.buttonAppearance = button
+        scrollEdgeAppearance.doneButtonAppearance = button
+        scrollEdgeAppearance.backButtonAppearance = button
+        viewController.navigationItem.scrollEdgeAppearance = scrollEdgeAppearance
+        viewController.navigationItem.largeTitleDisplayMode = largeTitle ? .always : .never
+        if largeTitle, let bar = viewController.navigationController?.navigationBar {
+            bar.prefersLargeTitles = true
+            bar.setNeedsLayout()
+        }
+    }
+
+    static func screenWillAppear(_ viewController: UIViewController) {
+        guard let bar = viewController.navigationController?.navigationBar else { return }
+        bar.tintColor = SettingsStyle.Color.link
+        bar.prefersLargeTitles = true
+        bar.setNeedsLayout()
+        bar.layoutIfNeeded()
+        viewController.tabBarController?.setNeedsStatusBarAppearanceUpdate()
+    }
+
+    static func screenWillDisappear(_ viewController: UIViewController) {
+        guard let navigationController = viewController.navigationController else { return }
+        if let top = navigationController.topViewController,
+           top !== viewController, top is SettingsStyledScreen {
+            return
+        }
+        navigationController.navigationBar.tintColor = .white
+        navigationController.navigationBar.prefersLargeTitles = false
+        let tabBarController = viewController.tabBarController
+        if let coordinator = viewController.transitionCoordinator {
+            coordinator.animate(alongsideTransition: nil) { context in
+                if context.isCancelled { screenWillAppear(viewController) }
+                tabBarController?.setNeedsStatusBarAppearanceUpdate()
+            }
+        } else {
+            tabBarController?.setNeedsStatusBarAppearanceUpdate()
+        }
+    }
+}
