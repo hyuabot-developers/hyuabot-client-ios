@@ -77,7 +77,7 @@ final class SettingsToastView: UIView {
             container.addSubview(toast)
             toast.snp.makeConstraints { make in
                 make.leading.trailing.equalToSuperview().inset(16)
-                make.top.equalTo(container.safeAreaLayoutGuide.snp.top).offset(4)
+                make.bottom.equalTo(container.safeAreaLayoutGuide.snp.bottom).inset(16)
             }
         }
         UIAccessibility.post(notification: .announcement, argument: message)
