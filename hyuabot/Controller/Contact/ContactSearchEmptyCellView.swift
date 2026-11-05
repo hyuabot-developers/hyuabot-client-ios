@@ -19,6 +19,8 @@ class ContactSearchEmptyCellView: UITableViewCell {
     }
 
     private func setupUI() {
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
         contentView.addSubview(stateView)
         selectionStyle = .none
         stateView.snp.makeConstraints { make in

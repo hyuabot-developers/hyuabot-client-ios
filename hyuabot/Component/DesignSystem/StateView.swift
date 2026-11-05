@@ -25,8 +25,10 @@ struct StateContent {
     let kind: StateKind
     let message: String?
     let action: StateAction?
+    var customTitle: String?
+    var symbolName: String?
 
-    var title: String {
+    private var defaultTitle: String {
         switch kind {
         case .empty: String(localized: "state.empty.title")
         case .ended: String(localized: "state.ended.title")
@@ -36,9 +38,21 @@ struct StateContent {
         }
     }
 
+    var title: String { customTitle ?? defaultTitle }
+
     /// Shows a caller-supplied message. The button appears only when `action` is passed.
     static func empty(message: String, action: StateAction? = nil) -> StateContent {
         StateContent(kind: .empty, message: message, action: action)
+    }
+
+    static func empty(title: String, message: String, symbolName: String, action: StateAction?) -> StateContent {
+        StateContent(
+            kind: .empty,
+            message: message,
+            action: action,
+            customTitle: title,
+            symbolName: symbolName
+        )
     }
 
     static func ended(onShowTimetable: @escaping () -> Void) -> StateContent {
@@ -142,7 +156,14 @@ final class StateView: UIView {
 
     static func makeConfiguration(for content: StateContent, traits: UITraitCollection) -> UIContentUnavailableConfiguration {
         var configuration = UIContentUnavailableConfiguration.empty()
-        configuration.image = content.kind == .error ? UIImage(systemName: "exclamationmark.triangle.fill") : nil
+        if content.kind == .error {
+            configuration.image = UIImage(systemName: "exclamationmark.triangle.fill")
+        } else if let symbolName = content.symbolName {
+            configuration.image = UIImage(systemName: symbolName)
+            configuration.imageProperties.tintColor = HYUColor.Text.secondary
+        } else {
+            configuration.image = nil
+        }
 
         // One attributed string keeps title and body as a single accessibility element.
         let text = NSMutableAttributedString(string: content.title, attributes: [
