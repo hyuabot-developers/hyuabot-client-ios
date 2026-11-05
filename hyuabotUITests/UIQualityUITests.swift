@@ -368,9 +368,7 @@ final class UIQualityUITests: XCTestCase {
             issues.append(contentsOf: tapAndAudit(identifier: "calendar.previous_month", name: "calendar-previous-month", app: app))
             issues.append(contentsOf: tapAndAudit(identifier: "calendar.next_month", name: "calendar-next-month", app: app))
         case "setting":
-            issues.append(contentsOf: tapSegmentedControl(identifier: "setting.campus_control", name: "setting-campus-control", app: app))
-            issues.append(contentsOf: tapSegmentedControl(identifier: "setting.theme_control", name: "setting-theme-control", app: app))
-            issues.append(contentsOf: tapAndAudit(identifier: "setting.analytics_switch", name: "setting-analytics-switch", app: app))
+            issues.append(contentsOf: exerciseSettingInteractions(app))
         default:
             break
         }
@@ -411,7 +409,7 @@ final class UIQualityUITests: XCTestCase {
             return ["\(name): \(identifier) is missing or not hittable"]
         }
         let buttons = element.buttons.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }
-        if let target = identifier == "setting.theme_control" ? buttons.first : buttons.last {
+        if let target = buttons.last {
             target.tap()
         } else {
             element.tap()
@@ -499,6 +497,34 @@ final class UIQualityUITests: XCTestCase {
     private func safeName(_ value: String) -> String {
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
         return value.unicodeScalars.map { allowed.contains($0) ? String($0) : "-" }.joined()
+    }
+
+    private func exerciseSettingInteractions(_ app: XCUIApplication) -> [String] {
+        scrollSettingUntilHittable(identifier: "setting.campus_control", app: app)
+        var issues = tapSegmentedControl(identifier: "setting.campus_control", name: "setting-campus-control", app: app)
+        waitForSettingToastToDisappear(app)
+        scrollSettingUntilHittable(identifier: "setting.theme_option.system", app: app)
+        issues.append(contentsOf: tapAndAudit(identifier: "setting.theme_option.system", name: "setting-theme-option", app: app))
+        scrollSettingUntilHittable(identifier: "setting.analytics_switch", app: app)
+        issues.append(contentsOf: tapAndAudit(identifier: "setting.analytics_switch", name: "setting-analytics-switch", app: app))
+        return issues
+    }
+
+    private func scrollSettingUntilHittable(identifier: String, app: XCUIApplication) {
+        let scrollView = app.scrollViews["setting.scroll"]
+        let element = app.descendants(matching: .any)[identifier]
+        for _ in 0..<8 where !(element.exists && element.isHittable) {
+            scrollView.swipeUp(velocity: .slow)
+            waitForPageToSettle(app)
+        }
+    }
+
+    private func waitForSettingToastToDisappear(_ app: XCUIApplication) {
+        let toast = app.descendants(matching: .any)["setting.toast"]
+        let deadline = Date().addingTimeInterval(4)
+        while toast.exists && Date() < deadline {
+            usleep(100_000)
+        }
     }
 
     private func waitForPageToSettle(_ app: XCUIApplication) {
