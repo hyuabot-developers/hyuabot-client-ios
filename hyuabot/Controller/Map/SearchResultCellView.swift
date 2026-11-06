@@ -112,12 +112,13 @@ class SearchResultCellView: UITableViewCell {
     }
 
     private func setupChevron() {
-        let chevronConfiguration = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
-        chevronView.image = UIImage(systemName: "chevron.right", withConfiguration: chevronConfiguration)
-        chevronView.tintColor = SettingsStyle.Color.secondaryText
+        let chevronConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+        chevronView.image = UIImage(systemName: "location.circle.fill", withConfiguration: chevronConfiguration)
+        chevronView.tintColor = SettingsStyle.Color.link
+        chevronView.isAccessibilityElement = false
         cardView.addSubview(chevronView)
         chevronView.snp.makeConstraints {
-            $0.size.equalTo(20)
+            $0.size.equalTo(24)
             $0.centerY.equalToSuperview()
             $0.trailing.equalToSuperview().inset(16)
             $0.leading.equalTo(textStack.snp.trailing).offset(12)

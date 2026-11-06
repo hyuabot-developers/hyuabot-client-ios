@@ -115,7 +115,9 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
         invalidateSearch()
         resultsContainer.isHidden = true
         searchBarView.textField.resignFirstResponder()
-        searchBarView.text = item.number
+        let roomTitle = MapSearchLogic.cardTitle(number: item.number, name: item.name)
+        let building = item.building.trimmingCharacters(in: .whitespacesAndNewlines)
+        searchBarView.text = roomTitle.contains(building) ? roomTitle : "\(building) \(roomTitle)"
         searchBarView.setSearching(false)
         isReconcilingAnnotations = true
         mapView.removeAnnotations(mapView.annotations.filter { !($0 is MKUserLocation) })
@@ -131,7 +133,7 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
         recenterButton.isHidden = false
         let guideURL = resultGuideURL(item)
         showCard(.init(
-            title: MapSearchLogic.cardTitle(number: item.number, name: item.name),
+            title: roomTitle,
             caption: item.building,
             translatesCaption: true,
             hasGuide: guideURL != nil,
