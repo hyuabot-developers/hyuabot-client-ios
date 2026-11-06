@@ -34,6 +34,29 @@ enum SettingsStyle {
         static let levelBusyFill = adaptive(light: 0xFFEDD5, dark: 0x3B200E)
         static let levelFull = adaptive(light: 0xB91C1C, dark: 0xF87171)
         static let levelFullFill = adaptive(light: 0xFEE2E2, dark: 0x3D1618)
+        static let faint = adaptive(light: 0x7C8593, dark: 0x7F8896)
+        static let saturday = adaptive(light: 0x1D4ED8, dark: 0x93C5FD)
+
+        private static let calendarCategoryStrongColors: [UIColor] = [
+            adaptive(light: 0x1D4ED8, dark: 0x93C5FD),
+            adaptive(light: 0xC2410C, dark: 0xFDBA74),
+            adaptive(light: 0x15803D, dark: 0x86EFAC),
+            adaptive(light: 0x7E22CE, dark: 0xD8B4FE)
+        ]
+        private static let calendarCategoryFillColors: [UIColor] = [
+            adaptive(light: 0xDBEAFE, dark: 0x1E3A5F),
+            adaptive(light: 0xFFEDD5, dark: 0x43260F),
+            adaptive(light: 0xDCFCE7, dark: 0x123321),
+            adaptive(light: 0xF3E8FF, dark: 0x2E1A47)
+        ]
+
+        static func calendarCategoryStrong(_ categoryID: Int) -> UIColor {
+            calendarCategoryStrongColors[((categoryID - 1) % 4 + 4) % 4]
+        }
+
+        static func calendarCategoryFill(_ categoryID: Int) -> UIColor {
+            calendarCategoryFillColors[((categoryID - 1) % 4 + 4) % 4]
+        }
 
         private static func adaptive(light: UInt32, dark: UInt32) -> UIColor {
             UIColor { traits in

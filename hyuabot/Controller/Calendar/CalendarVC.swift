@@ -7,20 +7,7 @@ import SnapKit
 import UIKit
 
 // swiftlint:disable:next type_body_length
-class CalendarVC: UIViewController {
-    // MARK: - Private types
-
-    private struct EventSegment {
-        let event: Event
-        let row: Int
-        let startCol: Int
-        let endCol: Int
-        let roundLeft: Bool // event actually starts here (not continuing from prev row)
-        let roundRight: Bool // event actually ends here (not continuing to next row)
-        let slot: Int
-        let dimmed: Bool
-    }
-
+class CalendarVC: UIViewController, SettingsStyledScreen {
     // MARK: - State
 
     private let disposeBag = DisposeBag()
@@ -29,18 +16,37 @@ class CalendarVC: UIViewController {
     private var notificationToken: NotificationToken?
 
     private var currentMonth: Foundation.Date = {
-        let cal = Calendar.current
+        let cal = CalendarVC.seoulCalendar
         return cal.date(from: cal.dateComponents([.year, .month], from: Foundation.Date())) ?? Foundation.Date()
     }()
 
     private var calendarDates: [Foundation.Date] = []
-    private var eventSegments: [EventSegment] = []
+    private var weekLayouts: [CalendarWeekLayout] = []
+    private var hiddenCategoryIDs = Set<Int>()
+    private let categoryFilterView = CalendarCategoryFilterView()
+    private let calendarCardView = UIView()
+    private let panelHeaderView = CalendarPanelHeaderView()
+    private let eventListCard = UIView()
+    private let emptyStateView = CalendarEmptyStateView()
+    private let skeletonView = CalendarSkeletonListView()
+    private let hintLabel = CalendarHintLabel()
+    private let monthEmptyView = UIView()
+    private let monthEmptyLabel = UILabel()
+    private var filterHeightConstraint: Constraint?
+    private var cardTopConstraint: Constraint?
+    private var emptyHeightConstraint: Constraint?
+    private var emptyTopConstraint: Constraint?
+    private var overlayHeightConstraint: Constraint?
+    private static var seoulCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return calendar
+    }
     private var selectedDate: Foundation.Date?
-    private var currentCellHeight: CGFloat = 80
 
     private var calendarHeightConstraint: Constraint?
-    private var overlayHeightConstraint: Constraint?
     private var eventViewHeightConstraint: Constraint?
+    private var lastEventViewHeight: CGFloat = 0
     private var lastRenderedWidth: CGFloat = 0
 
     // MARK: - Formatters
@@ -58,7 +64,7 @@ class CalendarVC: UIViewController {
 
     private let selectedDateFormatter = DateFormatter().then {
         $0.locale = Locale.autoupdatingCurrent
-        $0.setLocalizedDateFormatFromTemplate("yMMMMdEEE")
+        $0.setLocalizedDateFormatFromTemplate("MMMMdEEEE")
         $0.timeZone = TimeZone(identifier: "Asia/Seoul")
     }
 
@@ -73,19 +79,24 @@ class CalendarVC: UIViewController {
 
     private let monthNavView = UIView()
     private let prevButton = UIButton(type: .system).then {
-        $0.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-        $0.tintColor = .label
+        $0.setImage(UIImage(systemName: "chevron.left", withConfiguration:
+            UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)), for: .normal)
+        $0.tintColor = SettingsStyle.Color.link
         $0.accessibilityIdentifier = "calendar.previous_month"
+        $0.accessibilityLabel = String(localized: "calendar.previous_month.accessibility")
     }
 
     private let nextButton = UIButton(type: .system).then {
-        $0.setImage(UIImage(systemName: "chevron.right"), for: .normal)
-        $0.tintColor = .label
+        $0.setImage(UIImage(systemName: "chevron.right", withConfiguration:
+            UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)), for: .normal)
+        $0.tintColor = SettingsStyle.Color.link
         $0.accessibilityIdentifier = "calendar.next_month"
+        $0.accessibilityLabel = String(localized: "calendar.next_month.accessibility")
     }
 
     private let monthLabel = UILabel().then {
-        $0.font = .godo(size: 17, weight: .bold)
+        $0.font = SettingsStyle.monospacedDigitFont(17, bold: true)
+        $0.textColor = SettingsStyle.Color.text
         $0.textAlignment = .center
     }
 
@@ -97,32 +108,14 @@ class CalendarVC: UIViewController {
     private lazy var calendarCollectionView: UICollectionView = {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: makeCompositionalLayout())
         cv.isScrollEnabled = false
-        cv.backgroundColor = .systemBackground
+        cv.backgroundColor = .clear
         cv.register(CalendarGridCell.self, forCellWithReuseIdentifier: CalendarGridCell.reuseIdentifier)
         cv.delegate = self
         cv.dataSource = self
         return cv
     }()
 
-    /// Overlay sits on top of collection view; bars are drawn here as frame-based views
-    private let eventOverlayView = UIView().then {
-        $0.backgroundColor = .clear
-        $0.isUserInteractionEnabled = false
-    }
-
-    private let panelDivider = UIView().then { $0.backgroundColor = .separator }
-    private let selectedDateLabel = UILabel().then {
-        $0.font = .godo(size: 15, weight: .bold)
-        $0.textColor = .label
-        $0.isHidden = true
-    }
-
-    private let noEventsLabel = UILabel().then {
-        $0.font = .godo(size: 14, weight: .regular)
-        $0.textColor = .secondaryLabel
-        $0.textAlignment = .center
-        $0.numberOfLines = 0
-    }
+    private let eventOverlayView = CalendarEventOverlayView()
 
     private lazy var selectedEventView = UITableView().then {
         $0.delegate = self
@@ -130,27 +123,10 @@ class CalendarVC: UIViewController {
         $0.rowHeight = UITableView.automaticDimension
         $0.estimatedRowHeight = 70
         $0.isScrollEnabled = false
+        $0.backgroundColor = .clear
+        $0.backgroundView = nil
         $0.separatorStyle = .none
         $0.register(CalendarEventCellView.self, forCellReuseIdentifier: CalendarEventCellView.reuseIdentifier)
-    }
-
-    private let loadingSpinner = UIActivityIndicatorView().then {
-        $0.style = .large; $0.color = .label
-    }
-
-    private let loadingLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular); $0.textColor = .label
-    }
-
-    private lazy var loadingStackView = UIStackView(arrangedSubviews: [loadingSpinner, loadingLabel]).then {
-        $0.axis = .vertical; $0.spacing = 10; $0.alignment = .center
-        $0.backgroundColor = .systemBackground
-    }
-
-    private lazy var loadingView = UIView().then {
-        $0.backgroundColor = .systemBackground
-        $0.addSubview(loadingStackView)
-        loadingStackView.snp.makeConstraints { $0.center.equalToSuperview() }
     }
 
     // MARK: - Lifecycle
@@ -159,10 +135,20 @@ class CalendarVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = SettingsStyle.Color.background
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
         setupUI()
         updateCalendarDates()
+        #if DEBUG
+        if let mode = CalendarDebugFixture.activeMode {
+            observeSubjects()
+            applyDebugFixture(mode)
+            return
+        }
+        #endif
         updateEventVersion()
         observeSubjects()
+        observeDatabase()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -174,21 +160,23 @@ class CalendarVC: UIViewController {
         }
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        SettingsNavigationStyle.screenWillAppear(self)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        SettingsNavigationStyle.screenWillDisappear(self)
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        let w = view.bounds.width
-        guard w > 0 else { return }
-        let newHeight = max(72, w / 7 * 1.25)
-        if abs(currentCellHeight - newHeight) > 0.5 {
-            currentCellHeight = newHeight
-            calendarCollectionView.setCollectionViewLayout(makeCompositionalLayout(), animated: false)
-            let rows = max(1, calendarDates.count / 7)
-            let totalH = CGFloat(rows) * currentCellHeight
-            calendarHeightConstraint?.update(offset: totalH)
-            overlayHeightConstraint?.update(offset: totalH)
-        }
-        if abs(w - lastRenderedWidth) > 0.5 {
-            lastRenderedWidth = w
+        syncEventViewHeight()
+        let width = calendarCollectionView.bounds.width
+        if width > 0, abs(width - lastRenderedWidth) > 0.5 {
+            lastRenderedWidth = width
             renderEventBars()
         }
     }
@@ -203,7 +191,7 @@ class CalendarVC: UIViewController {
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(currentCellHeight)
+                heightDimension: .absolute(CalendarGridCell.rowHeight)
             ),
             repeatingSubitem: item, count: 7
         )
@@ -215,100 +203,158 @@ class CalendarVC: UIViewController {
 
     // MARK: - Setup
 
-    // swiftlint:disable:next function_body_length
     private func setupUI() {
-        view.backgroundColor = .systemBackground
         navigationItem.title = String(localized: "tabbar.calendar")
-
-        let weekdayFormatter = DateFormatter()
-        weekdayFormatter.locale = .autoupdatingCurrent
-        let weekdays = weekdayFormatter.veryShortStandaloneWeekdaySymbols ?? ["S", "M", "T", "W", "T", "F", "S"]
-        let wdColors: [UIColor] = [.systemRed, .label, .label, .label, .label, .label, .systemBlue]
-        for (i, day) in weekdays.enumerated() {
-            weekdayHeaderView.addArrangedSubview(UILabel().then {
-                $0.text = day
-                $0.font = .godo(size: 12, weight: .regular)
-                $0.textColor = wdColors[i]
-                $0.textAlignment = .center
-            })
-        }
-
+        let pill = CalendarTodayPillView()
+        pill.addTarget(self, action: #selector(goToToday), for: .touchUpInside)
+        let item = UIBarButtonItem(customView: pill)
+        if #available(iOS 26.0, *) { item.hidesSharedBackground = true }
+        navigationItem.rightBarButtonItem = item
+        scrollView.backgroundColor = .clear
         view.addSubview(scrollView)
-        view.addSubview(loadingView)
         scrollView.addSubview(scrollContent)
-
-        scrollContent.addSubview(monthNavView)
-        monthNavView.addSubview(prevButton)
-        monthNavView.addSubview(monthLabel)
-        monthNavView.addSubview(nextButton)
-        scrollContent.addSubview(weekdayHeaderView)
-        scrollContent.addSubview(calendarCollectionView)
-        scrollContent.addSubview(eventOverlayView) // sibling of collection view, on top
-        scrollContent.addSubview(panelDivider)
-        scrollContent.addSubview(selectedDateLabel)
-        scrollContent.addSubview(noEventsLabel)
-        scrollContent.addSubview(selectedEventView)
-
+        [categoryFilterView, calendarCardView, panelHeaderView, eventListCard, emptyStateView, skeletonView, hintLabel]
+            .forEach { scrollContent.addSubview($0) }
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
-        loadingView.snp.makeConstraints { $0.edges.equalToSuperview() }
         scrollContent.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            make.width.equalToSuperview()
+            make.edges.equalTo(scrollView.contentLayoutGuide)
+            make.width.equalTo(scrollView.frameLayoutGuide)
         }
+        categoryFilterView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(8)
+            make.leading.trailing.equalToSuperview()
+            filterHeightConstraint = make.height.equalTo(44).constraint
+        }
+        calendarCardView.backgroundColor = SettingsStyle.Color.card
+        calendarCardView.layer.cornerRadius = 16
+        calendarCardView.layer.cornerCurve = .continuous
+        calendarCardView.snp.makeConstraints { make in
+            cardTopConstraint = make.top.equalTo(categoryFilterView.snp.bottom).offset(8).constraint
+            make.leading.trailing.equalToSuperview().inset(16)
+        }
+        setupCard()
+        setupPanel()
+        panelHeaderView.clearButton.addTarget(self, action: #selector(clearDateSelection), for: .touchUpInside)
+        categoryFilterView.onToggle = { [weak self] id in
+            guard let self else { return }
+            let items = CalendarLayoutLogic.categoryItems(events.map { ($0.categoryID, $0.categoryName) })
+            hiddenCategoryIDs = CalendarLayoutLogic.toggledHidden(hiddenCategoryIDs, toggling: id, allIDs: items.map(\.id))
+            updateCategories()
+            updateCalendarDates()
+        }
+        prevButton.addTarget(self, action: #selector(didTapPrev), for: .touchUpInside)
+        nextButton.addTarget(self, action: #selector(didTapNext), for: .touchUpInside)
+    }
+
+    private func setupWeekdays() {
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        let weekdays = formatter.veryShortStandaloneWeekdaySymbols ?? ["S", "M", "T", "W", "T", "F", "S"]
+        for (index, day) in weekdays.enumerated() {
+            let label = UILabel()
+            label.text = day
+            label.font = SettingsStyle.font(12, bold: true)
+            label.textColor = index == 0 ? SettingsStyle.Color.danger
+                : (index == 6 ? SettingsStyle.Color.saturday : SettingsStyle.Color.secondaryText)
+            label.textAlignment = .center
+            weekdayHeaderView.addArrangedSubview(label)
+        }
+    }
+
+    private func setupCard() {
+        setupWeekdays()
+        [monthNavView, weekdayHeaderView, calendarCollectionView, eventOverlayView, monthEmptyView]
+            .forEach { calendarCardView.addSubview($0) }
+        [prevButton, monthLabel, nextButton].forEach { monthNavView.addSubview($0) }
         monthNavView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
+            make.top.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(8)
+            make.height.equalTo(48)
         }
         prevButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(44)
+            make.leading.centerY.equalToSuperview()
+            make.size.equalTo(44)
         }
         nextButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(44)
+            make.trailing.centerY.equalToSuperview()
+            make.size.equalTo(44)
         }
         monthLabel.snp.makeConstraints { $0.center.equalToSuperview() }
         weekdayHeaderView.snp.makeConstraints { make in
             make.top.equalTo(monthNavView.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(28)
+            make.leading.trailing.equalToSuperview().inset(8)
+            make.height.equalTo(24)
         }
         calendarCollectionView.snp.makeConstraints { make in
             make.top.equalTo(weekdayHeaderView.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            calendarHeightConstraint = make.height.equalTo(480).constraint
+            make.leading.trailing.equalToSuperview().inset(8)
+            calendarHeightConstraint = make.height.equalTo(0).constraint
         }
-        // Overlay exactly covers the calendar grid
         eventOverlayView.snp.makeConstraints { make in
-            make.top.equalTo(weekdayHeaderView.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            overlayHeightConstraint = make.height.equalTo(480).constraint
+            make.top.leading.trailing.equalTo(calendarCollectionView)
+            overlayHeightConstraint = make.height.equalTo(0).constraint
         }
-        panelDivider.snp.makeConstraints { make in
-            make.top.equalTo(calendarCollectionView.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(0.5)
-        }
-        selectedDateLabel.snp.makeConstraints { make in
-            make.top.equalTo(panelDivider.snp.bottom).offset(12)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
-        noEventsLabel.snp.makeConstraints { make in
-            make.top.equalTo(selectedDateLabel.snp.bottom).offset(12)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
-        selectedEventView.snp.makeConstraints { make in
-            make.top.equalTo(selectedDateLabel.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            eventViewHeightConstraint = make.height.equalTo(0).constraint
-            make.bottom.equalToSuperview().inset(20)
-        }
+        setupMonthEmptyView()
+    }
 
-        prevButton.addTarget(self, action: #selector(didTapPrev), for: .touchUpInside)
-        nextButton.addTarget(self, action: #selector(didTapNext), for: .touchUpInside)
-        noEventsLabel.text = String(localized: "calendar.select.hint")
+    private func setupMonthEmptyView() {
+        monthEmptyView.backgroundColor = SettingsStyle.Color.segmentBackground
+        monthEmptyView.layer.cornerRadius = 10
+        monthEmptyView.clipsToBounds = true
+        monthEmptyView.addSubview(monthEmptyLabel)
+        monthEmptyLabel.text = String(localized: "calendar.no.events")
+        monthEmptyLabel.font = SettingsStyle.font(13)
+        monthEmptyLabel.textColor = SettingsStyle.Color.secondaryText
+        monthEmptyLabel.textAlignment = .center
+        monthEmptyLabel.numberOfLines = 0
+        monthEmptyLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(8)
+            make.centerY.equalToSuperview()
+        }
+        monthEmptyView.snp.makeConstraints { make in
+            emptyTopConstraint = make.top.equalTo(calendarCollectionView.snp.bottom).offset(4).constraint
+            make.leading.trailing.equalToSuperview().inset(8)
+            make.bottom.equalToSuperview().inset(8)
+            emptyHeightConstraint = make.height.equalTo(monthEmptyLabel.snp.height).offset(16).constraint
+        }
+    }
+
+    private func setupPanel() {
+        eventListCard.backgroundColor = SettingsStyle.Color.card
+        eventListCard.layer.cornerRadius = 16
+        eventListCard.layer.cornerCurve = .continuous
+        eventListCard.clipsToBounds = true
+        eventListCard.addSubview(selectedEventView)
+        selectedEventView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            eventViewHeightConstraint = make.height.equalTo(0).constraint
+        }
+        [panelHeaderView, eventListCard, emptyStateView, skeletonView].forEach { $0.isHidden = true }
+        hintLabel.text = String(localized: "calendar.swipe.hint")
+        panelHeaderView.snp.makeConstraints { make in
+            make.top.equalTo(calendarCardView.snp.bottom).offset(12)
+            make.leading.trailing.equalToSuperview().inset(16)
+        }
+        [eventListCard, emptyStateView, skeletonView].forEach { item in
+            item.snp.makeConstraints { make in
+                make.top.equalTo(panelHeaderView.snp.bottom).offset(6)
+                make.leading.trailing.equalToSuperview().inset(16)
+            }
+        }
+        hintLabel.snp.makeConstraints { make in
+            make.top.equalTo(eventListCard.snp.bottom).offset(6)
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.bottom.equalToSuperview().inset(12)
+        }
+        updatePanelLayout(visibleView: emptyStateView)
+    }
+
+    private func updatePanelLayout(visibleView: UIView) {
+        hintLabel.snp.remakeConstraints { make in
+            make.top.equalTo(visibleView.snp.bottom).offset(6)
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.bottom.equalToSuperview().inset(12)
+        }
     }
 
     // MARK: - Calendar grid data
@@ -317,7 +363,7 @@ class CalendarVC: UIViewController {
         calendarDates = makeCalendarDates(for: currentMonth)
         monthLabel.text = monthLabelFormatter.string(from: currentMonth)
         let rows = max(1, calendarDates.count / 7)
-        let totalH = CGFloat(rows) * currentCellHeight
+        let totalH = CGFloat(rows) * CalendarGridCell.rowHeight
         calendarHeightConstraint?.update(offset: totalH)
         overlayHeightConstraint?.update(offset: totalH)
         computeLayout()
@@ -327,7 +373,7 @@ class CalendarVC: UIViewController {
     }
 
     private func makeCalendarDates(for month: Foundation.Date) -> [Foundation.Date] {
-        let cal = Calendar.current
+        let cal = CalendarVC.seoulCalendar
         guard let first = cal.date(from: cal.dateComponents([.year, .month], from: month)) else { return [] }
         let weekday = cal.component(.weekday, from: first) - 1
 
@@ -348,197 +394,193 @@ class CalendarVC: UIViewController {
         return dates
     }
 
-    // MARK: - Event layout computation (per-row segments)
+    // MARK: - Event layout
 
-    private func computeLayout() {
-        guard let allEvents = try? eventSubject.value() else { return }
-        var segments: [EventSegment] = []
-        let numRows = calendarDates.count / 7
-        let normalizedEvents = allEvents.map { event in
-            (event: event, start: String(event.startDate.prefix(10)), end: String(event.endDate.prefix(10)))
-        }
-        let dayStrings = calendarDates.map(dateFormatter.string)
+    private var events: [Event] { (try? eventSubject.value()) ?? [] }
 
-        for row in 0 ..< numRows {
-            let startIdx = row * 7
-            let weekDates = Array(calendarDates[startIdx ..< min(startIdx + 7, calendarDates.count)])
-            guard !weekDates.isEmpty else { continue }
-
-            let weekStartStr = dateFormatter.string(from: weekDates.first!)
-            let weekEndStr = dateFormatter.string(from: weekDates.last!)
-
-            let rowEvents = normalizedEvents.filter {
-                $0.end >= weekStartStr && $0.start <= weekEndStr
-            }.sorted { lhs, rhs in
-                lhs.start != rhs.start
-                    ? lhs.start < rhs.start
-                    : lhs.end > rhs.end // longer events get lower slots
-            }
-
-            var slotOccupancy: [Int: Set<Int>] = [:]
-
-            for rowEvent in rowEvents {
-                let event = rowEvent.event
-                let evStart = rowEvent.start
-                let evEnd = rowEvent.end
-
-                var cols = Set<Int>()
-                for col in 0 ..< weekDates.count {
-                    let dayStr = dayStrings[startIdx + col]
-                    if evStart <= dayStr, evEnd >= dayStr { cols.insert(col) }
-                }
-                guard !cols.isEmpty else { continue }
-
-                var slot = 0
-                while let occ = slotOccupancy[slot], !occ.isDisjoint(with: cols) {
-                    slot += 1
-                }
-                slotOccupancy[slot] = (slotOccupancy[slot] ?? []).union(cols)
-
-                let sc = cols.min()!, ec = cols.max()!
-                let isCurrent = Calendar.current.isDate(
-                    weekDates[sc], equalTo: currentMonth, toGranularity: .month
-                )
-
-                segments.append(EventSegment(
-                    event: event,
-                    row: row,
-                    startCol: sc,
-                    endCol: ec,
-                    roundLeft: evStart == dateFormatter.string(from: weekDates[sc]),
-                    roundRight: evEnd == dateFormatter.string(from: weekDates[ec]),
-                    slot: slot,
-                    dimmed: !isCurrent
-                ))
-            }
-        }
-        eventSegments = segments
+    private var filteredEvents: [Event] {
+        events.filter { !hiddenCategoryIDs.contains($0.categoryID) }
     }
 
-    // MARK: - Overlay rendering
+    private var visibleSpans: [CalendarSpan] {
+        filteredEvents.map {
+            CalendarSpan(id: $0.id, start: String($0.startDate.prefix(10)),
+                         end: String($0.endDate.prefix(10)), categoryID: $0.categoryID)
+        }
+    }
 
-    private static let maxSlot: Int = 2
-    private static let barH: CGFloat = 14
-    private static let barSpacing: CGFloat = 1
-    private static let dateAreaH: CGFloat = 30 // top of cell to where bars start
+    private func updateCategories() {
+        let items = CalendarLayoutLogic.categoryItems(events.map { ($0.categoryID, $0.categoryName) })
+        categoryFilterView.configure(items: items, hidden: hiddenCategoryIDs)
+        categoryFilterView.isHidden = items.isEmpty
+        filterHeightConstraint?.update(offset: items.isEmpty ? 0 : 44)
+        cardTopConstraint?.update(offset: items.isEmpty ? 0 : 8)
+    }
+
+    private func computeLayout() {
+        let spans = visibleSpans
+        let monthKey = String(dateFormatter.string(from: currentMonth).prefix(7))
+        let days = calendarDates.map { dateFormatter.string(from: $0) }
+        weekLayouts = stride(from: 0, to: days.count, by: 7).map { start in
+            CalendarLayoutLogic.weekLayout(weekDays: Array(days[start..<start + 7]), monthKey: monthKey, spans: spans)
+        }
+        let empty = !CalendarLayoutLogic.monthHasEvents(monthKey: monthKey, spans: spans)
+        monthEmptyView.isHidden = !empty
+        emptyTopConstraint?.update(offset: empty ? 4 : 0)
+        emptyHeightConstraint?.deactivate()
+        monthEmptyView.snp.makeConstraints { make in
+            if empty {
+                emptyHeightConstraint = make.height.equalTo(monthEmptyLabel.snp.height).offset(16).constraint
+            } else {
+                emptyHeightConstraint = make.height.equalTo(0).constraint
+            }
+        }
+    }
 
     private func renderEventBars() {
-        eventOverlayView.subviews.forEach { $0.removeFromSuperview() }
-        guard view.bounds.width > 0 else { return }
-        let colW = view.bounds.width / 7
-
-        for seg in eventSegments where seg.slot < Self.maxSlot {
-            let leftInset: CGFloat = seg.roundLeft ? 3 : 0
-            let rightInset: CGFloat = seg.roundRight ? 3 : 0
-            let x = CGFloat(seg.startCol) * colW + leftInset
-            let y = CGFloat(seg.row) * currentCellHeight
-                + Self.dateAreaH
-                + CGFloat(seg.slot) * (Self.barH + Self.barSpacing)
-            let w = max(0, CGFloat(seg.endCol - seg.startCol + 1) * colW - leftInset - rightInset)
-
-            let bar = UIView()
-            bar.frame = CGRect(x: x, y: y, width: w, height: Self.barH)
-            bar.backgroundColor = seg.event.categoryColor.withAlphaComponent(seg.dimmed ? 0.4 : 1.0)
-            bar.clipsToBounds = true
-
-            var corners: CACornerMask = []
-            if seg.roundLeft { corners.formUnion([.layerMinXMinYCorner, .layerMinXMaxYCorner]) }
-            if seg.roundRight { corners.formUnion([.layerMaxXMinYCorner, .layerMaxXMaxYCorner]) }
-            bar.layer.cornerRadius = (seg.roundLeft || seg.roundRight) ? 3 : 0
-            bar.layer.maskedCorners = corners
-
-            let lbl = UILabel()
-            let textX: CGFloat = seg.roundLeft ? 3 : 1
-            lbl.frame = CGRect(x: textX, y: 1, width: max(0, w - textX - 3), height: Self.barH - 2)
-            lbl.text = seg.event.title
-            lbl.font = .godo(size: 9, weight: .regular)
-            lbl.textColor = .white
-            lbl.numberOfLines = 1
-            lbl.lineBreakMode = .byTruncatingTail
-            bar.addSubview(lbl)
-
-            eventOverlayView.addSubview(bar)
-        }
+        let titles = Dictionary(events.map { ($0.id, $0.title) }, uniquingKeysWith: { first, _ in first })
+        eventOverlayView.render(weeks: weekLayouts, titlesByID: titles, width: calendarCollectionView.bounds.width)
     }
 
     // MARK: - Selected date panel
 
-    private var selectedEvents: [Event] {
-        guard let date = selectedDate, let all = try? eventSubject.value() else { return [] }
-        let str = dateFormatter.string(from: date)
-        return all
-            .filter { String($0.startDate.prefix(10)) <= str && String($0.endDate.prefix(10)) >= str }
-            .sorted { $0.startDate < $1.startDate }
-    }
-
     private var visibleEvents: [Event] {
-        if selectedDate != nil { return selectedEvents }
-        guard let all = try? eventSubject.value() else { return [] }
         let today = dateFormatter.string(from: Foundation.Date())
-        return all
-            .filter { String($0.endDate.prefix(10)) >= today }
-            .sorted { $0.startDate < $1.startDate }
-            .prefix(5)
-            .map { $0 }
+        let ids = CalendarLayoutLogic.panelSpanIDs(spans: visibleSpans,
+                                                   selectedDay: selectedDate.map { dateFormatter.string(from: $0) },
+                                                   today: today)
+        let byID = Dictionary(filteredEvents.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return ids.compactMap { byID[$0] }
     }
 
     private func updateSelectedDatePanel() {
-        if let date = selectedDate {
-            selectedDateLabel.text = selectedDateFormatter.string(from: date)
-            selectedDateLabel.isHidden = false
-            let events = visibleEvents
-            noEventsLabel.text = String(localized: "calendar.no.events")
-            noEventsLabel.isHidden = !events.isEmpty
-            selectedEventView.reloadData()
-            updateEventViewHeight()
+        guard (try? isLoading.value()) != true else { return }
+        let items = visibleEvents
+        let title = selectedDate.map { selectedDateFormatter.string(from: $0) } ?? String(localized: "calendar.section.upcoming")
+        panelHeaderView.configure(title: title, count: items.isEmpty ? nil : items.count, showsClear: selectedDate != nil)
+        let isEmpty = items.isEmpty
+        eventListCard.isHidden = isEmpty
+        emptyStateView.isHidden = !isEmpty
+        if isEmpty {
+            let title = selectedDate == nil
+                ? String(localized: "calendar.upcoming.empty")
+                : String(localized: "calendar.empty.selected.title")
+            let caption: String
+            if selectedDate != nil {
+                caption = String(localized: "calendar.empty.selected.caption")
+            } else if hiddenCategoryIDs.isEmpty {
+                caption = String(localized: "calendar.empty.upcoming.caption")
+            } else {
+                caption = String(localized: "calendar.empty.hidden.caption")
+            }
+            emptyStateView.configure(title: title, caption: caption)
+            updatePanelLayout(visibleView: emptyStateView)
         } else {
-            selectedDateLabel.text = String(localized: "calendar.section.upcoming")
-            selectedDateLabel.isHidden = false
-            let events = visibleEvents
-            noEventsLabel.text = String(localized: "calendar.upcoming.empty")
-            noEventsLabel.isHidden = !events.isEmpty
             selectedEventView.reloadData()
             updateEventViewHeight()
+            updatePanelLayout(visibleView: eventListCard)
         }
+        panelHeaderView.isHidden = false
+    }
+
+    @objc
+    private func clearDateSelection() {
+        selectedDate = nil
+        calendarCollectionView.reloadData()
+        updateSelectedDatePanel()
     }
 
     private func updateEventViewHeight() {
         selectedEventView.layoutIfNeeded()
         eventViewHeightConstraint?.update(offset: selectedEventView.contentSize.height)
+        lastEventViewHeight = selectedEventView.contentSize.height
         scrollView.layoutIfNeeded()
+    }
+
+    /// Self-sizing rows can settle after the first pass; re-measure so no blank band stays below the list.
+    private func syncEventViewHeight() {
+        guard !eventListCard.isHidden else { return }
+        let height = selectedEventView.contentSize.height
+        guard abs(height - lastEventViewHeight) > 0.5 else { return }
+        lastEventViewHeight = height
+        eventViewHeightConstraint?.update(offset: height)
     }
 
     // MARK: - Month navigation
 
-    private func animateMonthTransition(forward: Bool) {
-        let t = CATransition()
-        t.type = .push
-        t.subtype = forward ? .fromRight : .fromLeft
-        t.duration = 0.28
-        t.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        calendarCollectionView.layer.add(t, forKey: nil)
-        eventOverlayView.layer.add(t, forKey: nil)
+    private func animateMonthTransition(direction: CGFloat) {
+        let views = [calendarCollectionView, eventOverlayView]
+        views.forEach {
+            $0.alpha = 0
+            $0.transform = CGAffineTransform(translationX: direction * 24, y: 0)
+        }
+        UIView.animate(withDuration: 0.22, delay: 0, options: .curveEaseOut) {
+            views.forEach {
+                $0.alpha = 1
+                $0.transform = .identity
+            }
+        }
+    }
+
+    @objc
+    private func goToToday() {
+        let calendar = CalendarVC.seoulCalendar
+        guard let month = calendar.date(from: calendar.dateComponents([.year, .month], from: Foundation.Date())) else { return }
+        currentMonth = month
+        selectedDate = nil
+        animateMonthTransition(direction: 0)
+        updateCalendarDates()
     }
 
     @objc private func didTapPrev() {
-        guard let prev = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) else { return }
+        guard let prev = CalendarVC.seoulCalendar.date(byAdding: .month, value: -1, to: currentMonth) else { return }
         currentMonth = prev
         selectedDate = nil
-        animateMonthTransition(forward: false)
+        animateMonthTransition(direction: -1)
         updateCalendarDates()
     }
 
     @objc private func didTapNext() {
-        guard let next = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) else { return }
+        guard let next = CalendarVC.seoulCalendar.date(byAdding: .month, value: 1, to: currentMonth) else { return }
         currentMonth = next
         selectedDate = nil
-        animateMonthTransition(forward: true)
+        animateMonthTransition(direction: 1)
         updateCalendarDates()
     }
 
     // MARK: - Data
 
     private func observeSubjects() {
+        eventSubject.subscribe(onNext: { [weak self] _ in
+            self?.updateCategories()
+            self?.computeLayout()
+            self?.calendarCollectionView.reloadData()
+            self?.renderEventBars()
+            self?.updateSelectedDatePanel()
+        }).disposed(by: disposeBag)
+        isLoading.subscribe(onNext: { [weak self] loading in
+            guard let self else { return }
+            if loading {
+                monthEmptyView.isHidden = true
+                panelHeaderView.configure(title: String(localized: "calendar.loading"), count: nil, showsClear: false)
+                panelHeaderView.isHidden = false
+                skeletonView.isHidden = false
+                skeletonView.startPulse()
+                eventListCard.isHidden = true
+                emptyStateView.isHidden = true
+                updatePanelLayout(visibleView: skeletonView)
+            } else {
+                skeletonView.stopPulse()
+                skeletonView.isHidden = true
+                monthEmptyView.isHidden = CalendarLayoutLogic.monthHasEvents(
+                    monthKey: String(dateFormatter.string(from: currentMonth).prefix(7)), spans: visibleSpans
+                )
+                updateSelectedDatePanel()
+            }
+        }).disposed(by: disposeBag)
+    }
+
+    private func observeDatabase() {
         notificationToken = Database.shared.database.objects(Event.self).observe { [weak self] changes in
             switch changes {
             case let .initial(results):
@@ -550,21 +592,16 @@ class CalendarVC: UIViewController {
             default: break
             }
         }
-        eventSubject.subscribe(onNext: { [weak self] _ in
-            self?.computeLayout()
-            self?.calendarCollectionView.reloadData()
-            self?.renderEventBars()
-            self?.updateSelectedDatePanel()
-        }).disposed(by: disposeBag)
-        isLoading.subscribe(onNext: { [weak self] loading in
-            guard let self else { return }
-            loadingView.isHidden = !loading
-            loading ? loadingSpinner.startAnimating() : loadingSpinner.stopAnimating()
-        }).disposed(by: disposeBag)
     }
 
+    #if DEBUG
+    private func applyDebugFixture(_ mode: CalendarDebugFixture.Mode) {
+        eventSubject.onNext(CalendarDebugFixture.events(mode: mode, today: Date()))
+        isLoading.onNext(mode == .loading)
+    }
+    #endif
+
     private func updateEventVersion() {
-        loadingLabel.text = String(localized: "event.version.loading")
         isLoading.onNext(true)
         Task {
             let response = try? await Network.shared.client.fetch(query: CalendarPageVersionQuery())
@@ -583,7 +620,6 @@ class CalendarVC: UIViewController {
     }
 
     private func updateEvent() {
-        loadingLabel.text = String(localized: "event.database.loading")
         Task {
             let response = try? await Network.shared.client.fetch(query: CalendarPageQuery())
             if let data = response?.data {
@@ -627,15 +663,29 @@ extension CalendarVC: UICollectionViewDataSource, UICollectionViewDelegate {
             withReuseIdentifier: CalendarGridCell.reuseIdentifier, for: indexPath
         ) as? CalendarGridCell else { return UICollectionViewCell() }
         let date = calendarDates[indexPath.item]
-        let isCurrent = Calendar.current.isDate(date, equalTo: currentMonth, toGranularity: .month)
-        let isSelected = selectedDate.map { Calendar.current.isDate(date, inSameDayAs: $0) } ?? false
-        cell.configure(date: date, isCurrentMonth: isCurrent, selected: isSelected)
+        let isCurrent = CalendarVC.seoulCalendar.isDate(date, equalTo: currentMonth, toGranularity: .month)
+        let isSelected = selectedDate.map { CalendarVC.seoulCalendar.isDate(date, inSameDayAs: $0) } ?? false
+        let today = dateFormatter.string(from: date) == dateFormatter.string(from: Foundation.Date())
+        cell.configure(CalendarDayConfiguration(
+            day: CalendarVC.seoulCalendar.component(.day, from: date), weekdayIndex: indexPath.item % 7,
+            isCurrentMonth: isCurrent, isToday: today, isSelected: isSelected,
+            showsTopBorder: indexPath.item >= 7, accessibilityText: dayAccessibilityText(at: indexPath.item, isToday: today)
+        ))
         return cell
+    }
+
+    private func dayAccessibilityText(at index: Int, isToday: Bool) -> String {
+        let total = weekLayouts.indices.contains(index / 7) ? weekLayouts[index / 7].totals[index % 7] : 0
+        let count = total > 0
+            ? String(format: String(localized: "calendar.day.events_count"), total)
+            : String(localized: "calendar.day.no_events")
+        let today = isToday ? ", " + String(localized: "calendar.today") : ""
+        return selectedDateFormatter.string(from: calendarDates[index]) + today + ", " + count
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let date = calendarDates[indexPath.item]
-        if let cur = selectedDate, Calendar.current.isDate(date, inSameDayAs: cur) {
+        if let cur = selectedDate, CalendarVC.seoulCalendar.isDate(date, inSameDayAs: cur) {
             selectedDate = nil
         } else {
             selectedDate = date
@@ -656,11 +706,8 @@ extension CalendarVC: UITableViewDataSource, UITableViewDelegate {
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: CalendarEventCellView.reuseIdentifier
         ) as? CalendarEventCellView else { return UITableViewCell() }
-        cell.setupUI(item: visibleEvents[indexPath.row])
+        cell.setupUI(item: visibleEvents[indexPath.row], showsSeparator: indexPath.row > 0)
         return cell
     }
 
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        updateEventViewHeight()
-    }
 }

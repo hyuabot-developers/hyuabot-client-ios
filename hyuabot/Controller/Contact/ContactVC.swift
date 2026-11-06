@@ -200,7 +200,8 @@ final class ContactVC: UIViewController, SettingsStyledScreen {
         Task {
             let response = try? await Network.shared.client.fetch(query: ContactPageVersionQuery())
             if let data = response?.data {
-                if data.phonebook.version != UserDefaults.standard.string(forKey: "contactVersion") {
+                let isEmpty = Database.shared.database.objects(Contact.self).isEmpty
+                if isEmpty || data.phonebook.version != UserDefaults.standard.string(forKey: "contactVersion") {
                     updateContact(version: data.phonebook.version)
                 } else {
                     setLoading(false, message: "")
