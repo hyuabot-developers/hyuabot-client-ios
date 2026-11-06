@@ -2495,6 +2495,238 @@
         }
       }
     },
+      "calendar.clear_selection" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "선택 해제"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Clear selection"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "選択解除"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "取消选择"
+            }
+          }
+        }
+      },
+      "calendar.count" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "%lld건"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "%lld"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "%lld件"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "%lld项"
+            }
+          }
+        }
+      },
+      "calendar.day.events_count" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "일정 %lld개"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "%lld events"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "日程%lld件"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "%lld个日程"
+            }
+          }
+        }
+      },
+      "calendar.day.no_events" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "일정 없음"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "No events"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "日程なし"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "无日程"
+            }
+          }
+        }
+      },
+      "calendar.empty.hidden.caption" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "숨긴 분류가 있어요. 필터를 확인해 보세요"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Some categories are hidden. Check the filter"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "非表示のカテゴリがあります。フィルターを確認してください"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "有已隐藏的分类，请检查筛选"
+            }
+          }
+        }
+      },
+      "calendar.empty.selected.caption" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "다른 날짜를 탭하거나 선택을 해제해 보세요"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Tap another date or clear the selection"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "別の日付をタップするか、選択を解除してください"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "点击其他日期或取消选择"
+            }
+          }
+        }
+      },
+      "calendar.empty.selected.title" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "이 날은 학사일정이 없어요"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "No events on this day"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "この日の学事日程はありません"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "这一天没有校历日程"
+            }
+          }
+        }
+      },
+      "calendar.empty.upcoming.caption" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "새 학사일정이 등록되면 여기에 표시돼요"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "New academic events will appear here"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "新しい学事日程が登録されるとここに表示されます"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "新的校历日程将显示在这里"
+            }
+          }
+        }
+      },
     "calendar.event.status.ongoing" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2524,6 +2756,93 @@
         }
       }
     },
+      "calendar.filter.accessibility" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "일정 분류 필터"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Event category filter"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "日程カテゴリフィルター"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "日程分类筛选"
+            }
+          }
+        }
+      },
+      "calendar.loading" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "학사일정을 불러오는 중…"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Loading academic calendar…"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "学事日程を読み込み中…"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "正在加载校历…"
+            }
+          }
+        }
+      },
+      "calendar.next_month.accessibility" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "다음 달"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Next month"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "次の月"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "下个月"
+            }
+          }
+        }
+      },
     "calendar.no.events" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2553,6 +2872,35 @@
         }
       }
     },
+      "calendar.previous_month.accessibility" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "이전 달"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Previous month"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "前の月"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "上个月"
+            }
+          }
+        }
+      },
     "calendar.section.upcoming" : {
       "localizations" : {
         "en" : {
@@ -2610,6 +2958,93 @@
         }
       }
     },
+      "calendar.swipe.hint" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "날짜를 탭해 그날 일정을 확인하세요."
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Tap a date to see its events."
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "日付をタップして日程を確認します。"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "点击日期查看当天日程。"
+            }
+          }
+        }
+      },
+      "calendar.today" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "오늘"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Today"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "今日"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "今天"
+            }
+          }
+        }
+      },
+      "calendar.today.accessibility" : {
+        "extractionState" : "manual",
+        "localizations" : {
+          "ko" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "오늘로 이동"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Go to today"
+            }
+          },
+          "ja" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "今日へ移動"
+            }
+          },
+          "zh-Hans" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "转到今天"
+            }
+          }
+        }
+      },
     "calendar.upcoming.empty" : {
       "localizations" : {
         "en" : {

@@ -1,77 +1,89 @@
 import SnapKit
 import UIKit
 
-class CalendarGridCell: UICollectionViewCell {
+struct CalendarDayConfiguration: Equatable {
+    let day: Int
+    let weekdayIndex: Int
+    let isCurrentMonth: Bool
+    let isToday: Bool
+    let isSelected: Bool
+    let showsTopBorder: Bool
+    let accessibilityText: String
+}
+
+final class CalendarGridCell: UICollectionViewCell {
     static let reuseIdentifier = "CalendarGridCell"
+    static let rowHeight: CGFloat = 71
 
-    private let selectedHighlight = UIView().then {
-        $0.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
-        $0.isHidden = true
-    }
-
-    private let topBorder = UIView().then { $0.backgroundColor = .separator }
-    private let todayCircle = UIView().then {
-        $0.backgroundColor = .hanyangBlue
-        $0.layer.cornerRadius = 12
-        $0.isHidden = true
-    }
-
-    private let dateLabel = UILabel().then {
-        $0.font = .godo(size: 13, weight: .regular)
-        $0.textAlignment = .center
-    }
+    private let topBorder = UIView()
+    private let selectionView = UIView()
+    private let numberCircle = UIView()
+    private let numberLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
+        contentView.backgroundColor = .clear
+        selectionView.backgroundColor = SettingsStyle.Color.accentFill
+        selectionView.layer.cornerRadius = 10
+        selectionView.layer.cornerCurve = .continuous
+        numberCircle.layer.cornerRadius = 13
+        numberLabel.textAlignment = .center
+        topBorder.backgroundColor = SettingsStyle.Color.separator
+        [selectionView, topBorder, numberCircle, numberLabel].forEach(contentView.addSubview)
+        selectionView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(3)
+            make.leading.trailing.equalToSuperview().inset(1)
+            make.height.equalTo(62)
+        }
+        topBorder.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(1)
+        }
+        numberCircle.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(4)
+            make.centerX.equalToSuperview()
+            make.width.height.equalTo(26)
+        }
+        numberLabel.snp.makeConstraints { make in
+            make.edges.equalTo(numberCircle)
+        }
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError()
-    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    private func setupUI() {
-        contentView.addSubview(selectedHighlight)
-        contentView.addSubview(topBorder)
-        contentView.addSubview(todayCircle)
-        contentView.addSubview(dateLabel)
-
-        selectedHighlight.snp.makeConstraints { $0.edges.equalToSuperview() }
-        topBorder.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(0.5)
-        }
-        todayCircle.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(4)
-            make.centerX.equalToSuperview()
-            make.width.height.equalTo(24)
-        }
-        dateLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(4)
-            make.centerX.equalToSuperview()
-            make.height.equalTo(24)
-        }
-    }
-
-    func configure(date: Foundation.Date, isCurrentMonth: Bool, selected: Bool) {
-        let cal = Calendar.current
-        let isToday = cal.isDateInToday(date)
-        let weekday = cal.component(.weekday, from: date)
-        let dimmed = !isCurrentMonth
-
-        dateLabel.text = "\(cal.component(.day, from: date))"
-        todayCircle.isHidden = !isToday
-        selectedHighlight.isHidden = !selected
-
-        if isToday {
-            dateLabel.textColor = .white
-        } else if weekday == 1 {
-            dateLabel.textColor = UIColor.systemRed.withAlphaComponent(dimmed ? 0.35 : 1.0)
-        } else if weekday == 7 {
-            dateLabel.textColor = UIColor.systemBlue.withAlphaComponent(dimmed ? 0.35 : 1.0)
+    func configure(_ configuration: CalendarDayConfiguration) {
+        numberLabel.text = "\(configuration.day)"
+        selectionView.isHidden = !configuration.isSelected
+        topBorder.isHidden = !configuration.showsTopBorder
+        numberLabel.font = SettingsStyle.monospacedDigitFont(14, bold: configuration.isToday || configuration.isSelected)
+        numberCircle.backgroundColor = configuration.isToday ? SettingsStyle.Color.accent : .clear
+        if configuration.isToday {
+            numberLabel.textColor = SettingsStyle.Color.onAccent
+        } else if configuration.weekdayIndex == 0 {
+            numberLabel.textColor = SettingsStyle.Color.danger
+        } else if configuration.weekdayIndex == 6 {
+            numberLabel.textColor = SettingsStyle.Color.saturday
         } else {
-            dateLabel.textColor = dimmed ? .tertiaryLabel : .label
+            numberLabel.textColor = configuration.isCurrentMonth ? SettingsStyle.Color.text : SettingsStyle.Color.faint
         }
+        numberLabel.alpha = !configuration.isCurrentMonth && (configuration.weekdayIndex == 0 || configuration.weekdayIndex == 6) ? 0.5 : 1
+        isAccessibilityElement = true
+        accessibilityLabel = configuration.accessibilityText
+        accessibilityTraits = configuration.isSelected ? [.button, .selected] : .button
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        numberLabel.text = nil
+        numberLabel.textColor = SettingsStyle.Color.text
+        numberLabel.alpha = 1
+        numberLabel.font = SettingsStyle.monospacedDigitFont(14)
+        numberCircle.backgroundColor = .clear
+        selectionView.isHidden = true
+        topBorder.isHidden = true
+        isAccessibilityElement = false
+        accessibilityLabel = nil
+        accessibilityTraits = []
     }
 }

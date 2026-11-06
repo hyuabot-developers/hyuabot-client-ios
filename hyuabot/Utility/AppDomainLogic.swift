@@ -301,3 +301,200 @@ enum MapRegionLogic {
             && north - south < 1 && east - west < 1
     }
 }
+
+// MARK: - Calendar
+
+struct CalendarSpan: Equatable {
+    let id: Int
+    let start: String
+    let end: String
+    let categoryID: Int
+}
+
+struct CalendarBarSegment: Equatable {
+    let spanID: Int
+    let categoryID: Int
+    let slot: Int
+    let startCol: Int
+    let endCol: Int
+    let roundLeft: Bool
+    let roundRight: Bool
+    let showsLabel: Bool
+    let dimmed: Bool
+}
+
+struct CalendarWeekLayout: Equatable {
+    let bars: [CalendarBarSegment]
+    let totals: [Int]
+    let overflow: [Int: Int]
+}
+struct CalendarCategoryItem: Equatable {
+    let id: Int
+    let name: String
+}
+enum CalendarLayoutLogic {
+    static let maxVisibleSlots = 2
+    static let upcomingLimit = 5
+    private struct Placement {
+        let span: CalendarSpan
+        let startCol: Int
+        let endCol: Int
+        let slot: Int
+    }
+    private static let parsingFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter
+    }()
+    static func weekLayout(weekDays: [String], monthKey: String, spans: [CalendarSpan]) -> CalendarWeekLayout {
+        guard weekDays.count == 7 else {
+            return CalendarWeekLayout(bars: [], totals: Array(repeating: 0, count: 7), overflow: [:])
+        }
+        let ws = weekDays[0]
+        let we = weekDays[6]
+        let placements = makePlacements(weekDays: weekDays, spans: spans, weekStart: ws, weekEnd: we)
+        let totals = placementTotals(placements)
+        let (over, overflow) = overflowColumns(totals)
+        let bars = visibleSegments(placements, weekDays: weekDays, monthKey: monthKey, over: over)
+        return CalendarWeekLayout(bars: bars, totals: totals, overflow: overflow)
+    }
+    private static func makePlacements(
+        weekDays: [String], spans: [CalendarSpan], weekStart: String, weekEnd: String
+    ) -> [Placement] {
+        let sortedSpans = spans
+            .filter { $0.start <= weekEnd && $0.end >= weekStart }
+            .sorted {
+                if $0.start != $1.start { return $0.start < $1.start }
+                if $0.end != $1.end { return $0.end > $1.end }
+                return $0.id < $1.id
+            }
+        var occupancy: [[Bool]] = []
+        var placements: [Placement] = []
+        for span in sortedSpans {
+            let clippedStart = max(span.start, weekStart)
+            let clippedEnd = min(span.end, weekEnd)
+            guard let startCol = weekDays.firstIndex(of: clippedStart),
+                  let endCol = weekDays.firstIndex(of: clippedEnd),
+                  startCol <= endCol else { continue }
+            var slot = 0
+            while slot < occupancy.count && (startCol...endCol).contains(where: { occupancy[slot][$0] }) {
+                slot += 1
+            }
+            if slot == occupancy.count { occupancy.append(Array(repeating: false, count: 7)) }
+            for column in startCol...endCol { occupancy[slot][column] = true }
+            placements.append(Placement(span: span, startCol: startCol, endCol: endCol, slot: slot))
+        }
+        return placements
+    }
+    private static func placementTotals(_ placements: [Placement]) -> [Int] {
+        var totals = Array(repeating: 0, count: 7)
+        for placement in placements {
+            for column in placement.startCol...placement.endCol { totals[column] += 1 }
+        }
+        return totals
+    }
+    private static func overflowColumns(_ totals: [Int]) -> ([Bool], [Int: Int]) {
+        var over: [Bool] = []
+        var overflow: [Int: Int] = [:]
+        for column in 0..<7 {
+            let isOver = totals[column] > maxVisibleSlots
+            over.append(isOver)
+            if isOver { overflow[column] = totals[column] - 1 }
+        }
+        return (over, overflow)
+    }
+    private static func visibleSegments(
+        _ placements: [Placement], weekDays: [String], monthKey: String, over: [Bool]
+    ) -> [CalendarBarSegment] {
+        var bars: [CalendarBarSegment] = []
+        for placement in placements {
+            if placement.slot == 0 {
+                bars.append(segment(placement, placement.startCol...placement.endCol, true,
+                                    weekDays: weekDays, monthKey: monthKey, over: over))
+            } else if placement.slot == 1 {
+                bars += secondarySegments(placement, weekDays: weekDays, monthKey: monthKey, over: over)
+            }
+        }
+        return bars
+    }
+    private static func secondarySegments(
+        _ placement: Placement, weekDays: [String], monthKey: String, over: [Bool]
+    ) -> [CalendarBarSegment] {
+        var segments: [CalendarBarSegment] = []
+        var column = placement.startCol
+        while column <= placement.endCol {
+            while column <= placement.endCol && over[column] { column += 1 }
+            guard column <= placement.endCol else { break }
+            let runStart = column
+            while column < placement.endCol && !over[column + 1] { column += 1 }
+            segments.append(segment(
+                placement, runStart...column, segments.isEmpty,
+                weekDays: weekDays, monthKey: monthKey, over: over
+            ))
+            column += 1
+        }
+        return segments
+    }
+    private static func segment(
+        _ placement: Placement, _ columns: ClosedRange<Int>, _ showsLabel: Bool,
+        weekDays: [String], monthKey: String, over: [Bool]
+    ) -> CalendarBarSegment {
+        let span = placement.span
+        let startCol = columns.lowerBound
+        let endCol = columns.upperBound
+        return CalendarBarSegment(
+            spanID: span.id,
+            categoryID: span.categoryID,
+            slot: placement.slot,
+            startCol: startCol,
+            endCol: endCol,
+            roundLeft: span.start == weekDays[startCol] || (startCol > 0 && over[startCol - 1]),
+            roundRight: span.end == weekDays[endCol] || (endCol < 6 && over[endCol + 1]),
+            showsLabel: showsLabel,
+            dimmed: !weekDays[startCol].hasPrefix(monthKey) && !weekDays[endCol].hasPrefix(monthKey)
+        )
+    }
+    static func monthHasEvents(monthKey: String, spans: [CalendarSpan]) -> Bool {
+        spans.contains { String($0.start.prefix(7)) <= monthKey && String($0.end.prefix(7)) >= monthKey }
+    }
+    static func panelSpanIDs(spans: [CalendarSpan], selectedDay: String?, today: String) -> [Int] {
+        if let day = selectedDay {
+            return spans.filter { $0.start <= day && $0.end >= day }
+                .sorted { $0.start == $1.start ? $0.id < $1.id : $0.start < $1.start }
+                .map(\.id)
+        }
+        return Array(spans.filter { $0.end >= today }
+            .sorted { $0.start == $1.start ? $0.id < $1.id : $0.start < $1.start }
+            .prefix(upcomingLimit).map(\.id))
+    }
+    static func categoryItems(_ pairs: [(id: Int, name: String)]) -> [CalendarCategoryItem] {
+        var names: [Int: String] = [:]
+        for pair in pairs where names[pair.id] == nil { names[pair.id] = pair.name }
+        return names.keys.sorted().compactMap { id in
+            names[id].map { CalendarCategoryItem(id: id, name: $0) }
+        }
+    }
+    static func toggledHidden(_ hidden: Set<Int>, toggling id: Int, allIDs: [Int]) -> Set<Int> {
+        if hidden.contains(id) {
+            var result = hidden
+            result.remove(id)
+            return result
+        }
+        guard allIDs.contains(where: { $0 != id && !hidden.contains($0) }) else { return hidden }
+        var result = hidden
+        result.insert(id)
+        return result
+    }
+    static func metaText(categoryName: String, start: String, end: String, locale: Locale) -> String {
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "M.dd (E)"
+        displayFormatter.locale = locale
+        displayFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        let startText = parsingFormatter.date(from: start).map(displayFormatter.string(from:)) ?? start
+        let endText = parsingFormatter.date(from: end).map(displayFormatter.string(from:)) ?? end
+        let dateText = start == end ? startText : "\(startText) – \(endText)"
+        return categoryName.isEmpty ? dateText : "\(categoryName) · \(dateText)"
+    }
+}
