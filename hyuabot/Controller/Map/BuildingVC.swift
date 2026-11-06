@@ -151,8 +151,17 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         view.addSubview(skeletonView)
         skeletonStack.snp.makeConstraints { make in make.top.leading.trailing.equalToSuperview().inset(16) }
         skeletonView.snp.makeConstraints { make in make.edges.equalTo(webView) }
-        skeletonView.isHidden = false
-        if !UIAccessibility.isReduceMotionEnabled {
+        setSkeletonVisible(true)
+    }
+
+    private func setSkeletonVisible(_ visible: Bool) {
+        skeletonView.isHidden = !visible
+        guard visible else {
+            skeletonView.layer.removeAnimation(forKey: "skeleton-pulse")
+            return
+        }
+        if !UIAccessibility.isReduceMotionEnabled,
+           skeletonView.layer.animation(forKey: "skeleton-pulse") == nil {
             let pulse = CABasicAnimation(keyPath: "opacity")
             pulse.fromValue = 1
             pulse.toValue = 0.4
@@ -221,7 +230,7 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
     private func setLoading(_ loading: Bool) {
         isLoading = loading
         progressTrack.isHidden = !loading
-        skeletonView.isHidden = !loading || didLoadOnce
+        setSkeletonVisible(loading && !didLoadOnce)
         if !loading {
             progressTrack.layer.removeAllAnimations()
             progressBar.layer.removeAllAnimations()
@@ -249,9 +258,10 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
     }
 
     private func handleFailure(_ error: Error) {
-        guard (error as NSError).code != NSURLErrorCancelled else { return }
+        if (error as NSError).code != NSURLErrorCancelled {
+            setError(true)
+        }
         setLoading(false)
-        setError(true)
     }
 
     @objc
@@ -274,7 +284,11 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         didLoadOnce = true
         setLoading(false)
-        skeletonView.isHidden = true
+    }
+
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        didLoadOnce = true
+        setSkeletonVisible(false)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
