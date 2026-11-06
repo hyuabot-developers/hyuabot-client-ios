@@ -24,6 +24,15 @@ enum SettingsStyle {
         static let sheet = adaptive(light: 0xFFFFFF, dark: 0x1C222B)
         static let highlight = adaptive(light: 0xFDE68A, dark: 0x5C4A12)
         static let highlightText = adaptive(light: 0x111827, dark: 0xFDE68A)
+        static let danger = adaptive(light: 0xB91C1C, dark: 0xF87171)
+        static let levelGood = adaptive(light: 0x15803D, dark: 0x4ADE80)
+        static let levelGoodFill = adaptive(light: 0xDCFCE7, dark: 0x123321)
+        static let levelMid = adaptive(light: 0xB45309, dark: 0xFBBF24)
+        static let levelMidFill = adaptive(light: 0xFEF3C7, dark: 0x3A2C0B)
+        static let levelBusy = adaptive(light: 0xC2410C, dark: 0xFB923C)
+        static let levelBusyFill = adaptive(light: 0xFFEDD5, dark: 0x3B200E)
+        static let levelFull = adaptive(light: 0xB91C1C, dark: 0xF87171)
+        static let levelFullFill = adaptive(light: 0xFEE2E2, dark: 0x3D1618)
 
         private static func adaptive(light: UInt32, dark: UInt32) -> UIColor {
             UIColor { traits in
@@ -72,6 +81,31 @@ enum SettingsStyle {
             .addingAttributes([.featureSettings: settings])
         return UIFontMetrics(forTextStyle: .body).scaledFont(
             for: UIFont(descriptor: descriptor, size: size)
+        )
+    }
+
+    static func attributedText(
+        _ text: String,
+        font: UIFont,
+        color: UIColor,
+        lineHeight: CGFloat,
+        alignment: NSTextAlignment = .natural,
+        lineBreakMode: NSLineBreakMode = .byWordWrapping
+    ) -> NSAttributedString {
+        let scaled = UIFontMetrics(forTextStyle: .body).scaledValue(for: lineHeight)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.minimumLineHeight = scaled
+        paragraphStyle.maximumLineHeight = scaled
+        paragraphStyle.alignment = alignment
+        paragraphStyle.lineBreakMode = lineBreakMode
+        return NSAttributedString(
+            string: text,
+            attributes: [
+                .font: font,
+                .foregroundColor: color,
+                .paragraphStyle: paragraphStyle,
+                .baselineOffset: (scaled - font.lineHeight) / 4
+            ]
         )
     }
 }
