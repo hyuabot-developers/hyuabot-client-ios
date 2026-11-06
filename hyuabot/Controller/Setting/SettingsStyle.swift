@@ -22,6 +22,7 @@ enum SettingsStyle {
         static let toastBackground = adaptive(light: 0x111827, dark: 0xE8EDF3)
         static let toastText = adaptive(light: 0xFFFFFF, dark: 0x0B0F14)
         static let sheet = adaptive(light: 0xFFFFFF, dark: 0x1C222B)
+        static let grabber = adaptive(light: 0xC9CED6, dark: 0x3A434E)
         static let highlight = adaptive(light: 0xFDE68A, dark: 0x5C4A12)
         static let highlightText = adaptive(light: 0x111827, dark: 0xFDE68A)
         static let danger = adaptive(light: 0xB91C1C, dark: 0xF87171)

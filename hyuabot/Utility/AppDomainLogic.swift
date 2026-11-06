@@ -232,11 +232,52 @@ enum SettingsLogic {
 }
 
 enum MapSearchLogic {
+    static let skeletonRowCount = 4
+
     static func isSearchResultVisible(keyword: String) -> Bool {
         !keyword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    static func searchLaunchKeyword(_ keyword: String?, isSearching: Bool) -> String? {
+        guard isSearching, let keyword, isSearchResultVisible(keyword: keyword) else { return nil }
+        return keyword
+    }
+
+    static func rowCount(for items: [RoomItem], isLoading: Bool) -> Int {
+        isLoading ? skeletonRowCount : rowCount(for: items)
+    }
+
     static func rowCount(for items: [some Any]) -> Int {
         max(1, items.count)
+    }
+
+    static func roomNumberText(_ number: String) -> String {
+        String(format: String(localized: "map.room.number_format"), number)
+    }
+
+    static func guideURL(forBuildingNamed name: String, in buildings: [(name: String, url: String?)]) -> URL? {
+        for building in buildings where building.name == name {
+            guard let rawURL = building.url?.trimmingCharacters(in: .whitespacesAndNewlines), !rawURL.isEmpty,
+                  let url = URL(string: rawURL) else { continue }
+            return url
+        }
+        return nil
+    }
+}
+
+struct MapRequestGate: Equatable {
+    private(set) var current: Int = 0
+
+    mutating func begin() -> Int {
+        current += 1
+        return current
+    }
+
+    mutating func invalidate() {
+        current += 1
+    }
+
+    func isCurrent(_ token: Int) -> Bool {
+        token == current
     }
 }
