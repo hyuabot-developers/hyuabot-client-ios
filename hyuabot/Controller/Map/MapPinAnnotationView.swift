@@ -44,6 +44,7 @@ final class MapPinAnnotationView: MKAnnotationView {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        applySelectedLook(false)
         updateTitle()
         isDimmed = false
     }
@@ -58,7 +59,8 @@ final class MapPinAnnotationView: MKAnnotationView {
 
     private func configureAnnotation() {
         bounds = CGRect(x: 0, y: 0, width: 100, height: 70)
-        centerOffset = CGPoint(x: 0, y: 11)
+        // The circle's bottom (y = 44) stays anchored to the map coordinate.
+        centerOffset = CGPoint(x: 0, y: -9)
         canShowCallout = false
         collisionMode = .circle
         displayPriority = .required
@@ -70,7 +72,6 @@ final class MapPinAnnotationView: MKAnnotationView {
         ringView.layer.cornerRadius = 24
         ringView.layer.cornerCurve = .continuous
         ringView.isHidden = true
-        ringView.snp.makeConstraints { $0.size.equalTo(48); $0.centerX.equalToSuperview(); $0.top.equalToSuperview() }
 
         addSubview(dotView)
         dotView.backgroundColor = SettingsStyle.Color.accent
@@ -82,9 +83,10 @@ final class MapPinAnnotationView: MKAnnotationView {
         dotView.layer.shadowOffset = CGSize(width: 0, height: 2)
         dotView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview().offset(24)
+            make.bottom.equalTo(snp.top).offset(44)
             dotSizeConstraint = make.size.equalTo(30).constraint
         }
+        ringView.snp.makeConstraints { $0.size.equalTo(48); $0.center.equalTo(dotView) }
 
         configureIcon()
         configureTitle()

@@ -7,6 +7,29 @@ import Api
 import MapKit
 import UIKit
 
+private struct MapBuildingIdentity: Hashable {
+    let name: String
+    let latitude: Double
+    let longitude: Double
+
+    init(_ building: MapPageQuery.Data.Building) {
+        name = building.name
+        latitude = building.latitude
+        longitude = building.longitude
+    }
+}
+
+private final class MapBuildingAnnotation: MKPointAnnotation {
+    let identity: MapBuildingIdentity
+
+    init(_ building: MapPageQuery.Data.Building) {
+        identity = MapBuildingIdentity(building)
+        super.init()
+        coordinate = CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude)
+        title = building.name
+    }
+}
+
 extension MapVC: MKMapViewDelegate {
     var cachedBuildings: [MapPageQuery.Data.Building] { (try? MapData.shared.buildingResult.value()) ?? [] }
 
@@ -38,29 +61,43 @@ extension MapVC: MKMapViewDelegate {
 
     func applyBuildings(_ buildings: [MapPageQuery.Data.Building]) {
         guard !isResultMode, !isSearchMode else { return }
-        let selectedName: String? = { if case .building(let building) = mode { return building.name }; return nil }()
+        let selectedBuilding: MapPageQuery.Data.Building? = {
+            if case .building(let building) = mode { return building }; return nil
+        }()
+        let selectedIdentity = selectedBuilding.map(MapBuildingIdentity.init)
+        var existing = mapView.annotations.compactMap { $0 as? MapBuildingAnnotation }
+            .reduce(into: [MapBuildingIdentity: MapBuildingAnnotation]()) { $0[$1.identity] = $1 }
+        var desired = Set(buildings.map(MapBuildingIdentity.init))
+        // Keep the selected pin even when a pan moves it outside the fetched region.
+        if let selectedIdentity { desired.insert(selectedIdentity) }
         isReconcilingAnnotations = true
-        mapView.removeAnnotations(mapView.annotations.filter { !($0 is MKUserLocation) })
-        let annotations = buildings.map { building -> MKPointAnnotation in
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude)
-            annotation.title = building.name
-            return annotation
-        }
-        mapView.addAnnotations(annotations)
-        isReconcilingAnnotations = false
-        statusPill.apply(.count(buildings.count))
-        if let selectedName {
-            if let index = buildings.firstIndex(where: { $0.name == selectedName }) {
-                let building = buildings[index]
+        defer { isReconcilingAnnotations = false }
+        mapView.removeAnnotations(mapView.annotations.filter { annotation in
+            guard !(annotation is MKUserLocation) else { return false }
+            guard let building = annotation as? MapBuildingAnnotation else { return true }
+            return !desired.contains(building.identity)
+        })
+        var additions: [MapBuildingAnnotation] = []
+        for building in buildings {
+            let identity = MapBuildingIdentity(building)
+            if existing[identity] == nil {
+                let annotation = MapBuildingAnnotation(building)
+                existing[identity] = annotation
+                additions.append(annotation)
+            }
+            if identity == selectedIdentity {
                 mode = .building(building)
-                mapView.selectAnnotation(annotations[index], animated: false)
-            } else {
-                mode = .browse
-                hideCard()
-                updateDimming(selected: nil)
             }
         }
+        if let selectedBuilding, let selectedIdentity, existing[selectedIdentity] == nil {
+            let annotation = MapBuildingAnnotation(selectedBuilding)
+            additions.append(annotation)
+        }
+        mapView.addAnnotations(additions)
+        if let recreatedSelection = additions.first(where: { $0.identity == selectedIdentity }) {
+            mapView.selectAnnotation(recreatedSelection, animated: false)
+        }
+        statusPill.apply(.count(buildings.count))
     }
 
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
@@ -94,10 +131,16 @@ extension MapVC: MKMapViewDelegate {
         ) as? MapPinAnnotationView
             ?? MapPinAnnotationView(annotation: annotation, reuseIdentifier: MapPinAnnotationView.reuseIdentifier)
         view.annotation = annotation
+        if case .building(let building) = mode, let pin = annotation as? MapBuildingAnnotation {
+            view.isDimmed = pin.identity != MapBuildingIdentity(building)
+        } else {
+            view.isDimmed = false
+        }
         return view
     }
 
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard !isReconcilingAnnotations else { return }
         guard let annotation = view.annotation else { return }
         if isSearchMode { return }
         if isResultMode { updateDimming(selected: annotation); return }
