@@ -183,6 +183,46 @@ final class DomainLogicTests: XCTestCase {
         XCTAssertTrue(String(describing: ReadingRoomDisplayLogic.localizationKey(for: 53)).contains("reading_room_53"))
     }
 
+    func testReadingRoomOccupancyLevel() {
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 0, active: 100), .full)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 3, active: 0), .full)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: -2, active: 100), .full)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 5, active: 100), .busy)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 9, active: 100), .busy)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 10, active: 100), .mid)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 29, active: 100), .mid)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 30, active: 100), .good)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 128, active: 312), .good)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 37, active: 220), .mid)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 6, active: 96), .busy)
+    }
+
+    func testReadingRoomUsedRatio() {
+        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 0, active: 0), 0)
+        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 100, active: 100), 0)
+        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 0, active: 100), 1)
+        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: -5, active: 100), 1)
+        XCTAssertEqual(
+            ReadingRoomDisplayLogic.usedRatio(available: 128, active: 312),
+            184.0 / 312.0,
+            accuracy: 0.0001
+        )
+    }
+
+    func testReadingRoomSplitDisplayName() {
+        let koreanName = ReadingRoomDisplayLogic.splitDisplayName("제1열람실[지하1층]")
+        XCTAssertEqual(koreanName.name, "제1열람실")
+        XCTAssertEqual(koreanName.floor, "지하1층")
+
+        let englishName = ReadingRoomDisplayLogic.splitDisplayName("1st reading room [B1]")
+        XCTAssertEqual(englishName.name, "1st reading room")
+        XCTAssertEqual(englishName.floor, "B1")
+
+        let nameWithoutFloor = ReadingRoomDisplayLogic.splitDisplayName("HOLMZ 열람석")
+        XCTAssertEqual(nameWithoutFloor.name, "HOLMZ 열람석")
+        XCTAssertNil(nameWithoutFloor.floor)
+    }
+
     func testSettingsLogic() {
         XCTAssertEqual(SettingsLogic.campusID(for: "campus.seoul"), 1)
         XCTAssertEqual(SettingsLogic.campusID(for: "campus.erica"), 2)

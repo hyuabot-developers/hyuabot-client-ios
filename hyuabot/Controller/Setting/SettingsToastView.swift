@@ -7,9 +7,16 @@ import SnapKit
 import UIKit
 
 final class SettingsToastView: UIView {
+    enum Icon: Equatable { case checkmark, bell }
     static let displayDuration: TimeInterval = 2.4
     private var dismissal: DispatchWorkItem?
     private let iconLayer = CAShapeLayer()
+    private let bellImageView = UIImageView(
+        image: UIImage(
+            systemName: "bell",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+        )
+    )
     private let messageLabel = UILabel()
     private var message: String {
         didSet {
@@ -17,6 +24,7 @@ final class SettingsToastView: UIView {
             accessibilityLabel = message
         }
     }
+    private var icon: Icon = .checkmark
 
     private init(message: String) {
         self.message = message
@@ -45,6 +53,11 @@ final class SettingsToastView: UIView {
         stack.addArrangedSubview(icon)
         icon.snp.makeConstraints { $0.size.equalTo(18) }
         icon.layer.addSublayer(iconLayer)
+        bellImageView.tintColor = SettingsStyle.Color.toastText
+        bellImageView.contentMode = .center
+        bellImageView.isHidden = true
+        icon.addSubview(bellImageView)
+        bellImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
         messageLabel.font = SettingsStyle.font(14)
         messageLabel.textColor = SettingsStyle.Color.toastText
         messageLabel.numberOfLines = 0
@@ -65,9 +78,12 @@ final class SettingsToastView: UIView {
         updateIconColor()
     }
 
-    static func show(message: String, in container: UIView) {
+    static func show(message: String, in container: UIView, icon: Icon = .checkmark) {
         let toast = container.subviews.compactMap { $0 as? SettingsToastView }.first ?? SettingsToastView(message: message)
         toast.message = message
+        toast.icon = icon
+        toast.iconLayer.isHidden = icon != .checkmark
+        toast.bellImageView.isHidden = icon != .bell
         toast.messageLabel.attributedText = NSAttributedString(string: message, attributes: [
             .font: toast.messageLabel.font as Any,
             .foregroundColor: SettingsStyle.Color.toastText,

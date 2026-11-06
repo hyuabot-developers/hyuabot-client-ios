@@ -123,7 +123,61 @@ enum CafeteriaStatusResolver {
     }
 }
 
+enum ReadingRoomOccupancyLevel: Equatable {
+    case good, mid, busy, full
+
+    var localizedTitle: String {
+        switch self {
+        case .good: String(localized: "reading_room.level.good")
+        case .mid: String(localized: "reading_room.level.mid")
+        case .busy: String(localized: "reading_room.level.busy")
+        case .full: String(localized: "reading_room.level.full")
+        }
+    }
+
+    var color: UIColor {
+        switch self {
+        case .good: SettingsStyle.Color.levelGood
+        case .mid: SettingsStyle.Color.levelMid
+        case .busy: SettingsStyle.Color.levelBusy
+        case .full: SettingsStyle.Color.levelFull
+        }
+    }
+
+    var fillColor: UIColor {
+        switch self {
+        case .good: SettingsStyle.Color.levelGoodFill
+        case .mid: SettingsStyle.Color.levelMidFill
+        case .busy: SettingsStyle.Color.levelBusyFill
+        case .full: SettingsStyle.Color.levelFullFill
+        }
+    }
+}
+
 enum ReadingRoomDisplayLogic {
+    static func occupancyLevel(available: Int, active: Int) -> ReadingRoomOccupancyLevel {
+        guard available > 0, active > 0 else { return .full }
+        let ratio = Double(available) / Double(active)
+        if ratio < 0.1 { return .busy }
+        if ratio < 0.3 { return .mid }
+        return .good
+    }
+
+    static func usedRatio(available: Int, active: Int) -> CGFloat {
+        guard active > 0 else { return 0 }
+        return CGFloat(min(max(Double(active - max(available, 0)) / Double(active), 0), 1))
+    }
+
+    static func splitDisplayName(_ localizedName: String) -> (name: String, floor: String?) {
+        let text = localizedName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.hasSuffix("]"), let bracket = text.lastIndex(of: "[") else { return (text, nil) }
+        let name = text[..<bracket].trimmingCharacters(in: .whitespacesAndNewlines)
+        let floorStart = text.index(after: bracket)
+        let floorEnd = text.index(before: text.endIndex)
+        let floor = text[floorStart..<floorEnd].trimmingCharacters(in: .whitespacesAndNewlines)
+        return (name, floor.isEmpty ? nil : floor)
+    }
+
     static func occupancyRatio(occupied: Int, active: Int) -> Float {
         guard active > 0 else { return 0 }
         return Float(occupied) / Float(active)
