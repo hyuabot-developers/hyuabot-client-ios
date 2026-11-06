@@ -131,7 +131,7 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
         recenterButton.isHidden = false
         let guideURL = resultGuideURL(item)
         showCard(.init(
-            title: "\(MapSearchLogic.roomNumberText(item.number)) \(item.name)",
+            title: MapSearchLogic.cardTitle(number: item.number, name: item.name),
             caption: item.building,
             translatesCaption: true,
             hasGuide: guideURL != nil,

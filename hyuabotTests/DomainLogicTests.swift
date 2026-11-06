@@ -235,6 +235,11 @@ final class DomainLogicTests: XCTestCase {
     }
 
     func testMapSearchLogic() {
+        XCTAssertEqual(MapSearchLogic.cardTitle(number: "304", name: "304"), "304호")
+        XCTAssertEqual(MapSearchLogic.cardTitle(number: "304", name: "304 강의실"), "304호")
+        XCTAssertEqual(MapSearchLogic.cardTitle(number: "304", name: "304호"), "304호")
+        XCTAssertEqual(MapSearchLogic.cardTitle(number: "304", name: "세미나실"), "304호 세미나실")
+        XCTAssertEqual(MapSearchLogic.cardTitle(number: "304", name: ""), "304호")
         XCTAssertFalse(MapSearchLogic.isSearchResultVisible(keyword: ""))
         XCTAssertFalse(MapSearchLogic.isSearchResultVisible(keyword: "   "))
         XCTAssertTrue(MapSearchLogic.isSearchResultVisible(keyword: "제1공학관"))

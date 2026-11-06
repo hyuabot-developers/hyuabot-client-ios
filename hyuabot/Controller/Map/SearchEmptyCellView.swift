@@ -15,7 +15,7 @@ class SearchEmptyCellView: UITableViewCell {
     private let iconView = UIImageView()
     private let titleLabel = UILabel()
     private let messageLabel = UILabel()
-    private var iconName = "xmark.magnifyingglass"
+    private var iconName = "magnifyingglass"
 
     func configure(_ content: StateContent) {
         stateView.isHidden = false
@@ -26,7 +26,7 @@ class SearchEmptyCellView: UITableViewCell {
     func configure(keyword: String) {
         let title = String(localized: "map.search.empty.title")
         let message = String(format: String(localized: "map.search.empty.message"), keyword)
-        configureMapEmpty(icon: "xmark.magnifyingglass", title: title, message: message)
+        configureMapEmpty(icon: "magnifyingglass", title: title, message: message)
         stateView.apply(.empty(title: title, message: message, symbolName: "magnifyingglass", action: nil))
     }
 
@@ -70,7 +70,7 @@ class SearchEmptyCellView: UITableViewCell {
         iconCircle.layer.cornerCurve = .continuous
         iconCircle.addSubview(iconView)
         iconView.contentMode = .scaleAspectFit
-        iconView.tintColor = SettingsStyle.Color.secondaryText
+        iconView.tintColor = SettingsStyle.Color.accent
         iconView.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(24) }
         iconCircle.snp.makeConstraints { $0.size.equalTo(56) }
         emptyStack.addArrangedSubview(iconCircle)
@@ -90,7 +90,7 @@ class SearchEmptyCellView: UITableViewCell {
 
     private func configureMapEmpty(icon: String, title: String, message: String) {
         iconName = icon
-        iconView.image = UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium))
+        iconView.image = UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 24, weight: .medium))
         titleLabel.attributedText = attributed(title, font: titleLabel.font, lineSpacing: 0)
         messageLabel.attributedText = attributed(message, font: messageLabel.font, lineSpacing: 3)
         mapEmptyView.isAccessibilityElement = true

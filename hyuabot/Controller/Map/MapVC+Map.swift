@@ -11,11 +11,17 @@ extension MapVC: MKMapViewDelegate {
     var cachedBuildings: [MapPageQuery.Data.Building] { (try? MapData.shared.buildingResult.value()) ?? [] }
 
     func reloadBuildings() {
+        let northWest = mapView.northWestCoordinate
+        let southEast = mapView.southEastCoordinate
+        guard MapRegionLogic.isUsable(
+            north: northWest.latitude,
+            south: southEast.latitude,
+            west: northWest.longitude,
+            east: southEast.longitude
+        ) else { return }
         let token = buildingGate.begin()
         isLoadingBuildings = true
         if !isResultMode { statusPill.apply(.loading) }
-        let northWest = mapView.northWestCoordinate
-        let southEast = mapView.southEastCoordinate
         Task {
             let response = try? await Network.shared.client.fetch(query: MapPageQuery(
                 north: northWest.latitude, south: southEast.latitude, west: northWest.longitude, east: southEast.longitude
@@ -58,7 +64,25 @@ extension MapVC: MKMapViewDelegate {
     }
 
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
-        guard (try? MapData.shared.searchMode.value()) == false, !isResultMode, !isSearchMode else { return }
+        refreshBuildingsForVisibleRegion()
+    }
+
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        refreshBuildingsForVisibleRegion()
+    }
+
+    func refreshBuildingsForVisibleRegion() {
+        guard !mapView.bounds.isEmpty,
+              (try? MapData.shared.searchMode.value()) == false,
+              !isResultMode, !isSearchMode else { return }
+        reloadBuildings()
+    }
+
+    func reloadBuildingsIfNeeded() {
+        guard !mapView.bounds.isEmpty,
+              (try? MapData.shared.searchMode.value()) == false,
+              !isResultMode, !isSearchMode,
+              cachedBuildings.isEmpty, !isLoadingBuildings else { return }
         reloadBuildings()
     }
 

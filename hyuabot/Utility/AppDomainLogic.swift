@@ -255,6 +255,17 @@ enum MapSearchLogic {
         String(format: String(localized: "map.room.number_format"), number)
     }
 
+    static func cardTitle(number: String, name: String) -> String {
+        let formattedNumber = roomNumberText(number)
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty,
+              !trimmedName.contains(formattedNumber),
+              !trimmedName.contains(number) else {
+            return formattedNumber
+        }
+        return "\(formattedNumber) \(trimmedName)"
+    }
+
     static func guideURL(forBuildingNamed name: String, in buildings: [(name: String, url: String?)]) -> URL? {
         for building in buildings where building.name == name {
             guard let rawURL = building.url?.trimmingCharacters(in: .whitespacesAndNewlines), !rawURL.isEmpty,
@@ -279,5 +290,14 @@ struct MapRequestGate: Equatable {
 
     func isCurrent(_ token: Int) -> Bool {
         token == current
+    }
+}
+
+enum MapRegionLogic {
+    static func isUsable(north: Double, south: Double, west: Double, east: Double) -> Bool {
+        (-90...90).contains(north) && (-90...90).contains(south)
+            && (-180...180).contains(west) && (-180...180).contains(east)
+            && north > south && east > west
+            && north - south < 1 && east - west < 1
     }
 }

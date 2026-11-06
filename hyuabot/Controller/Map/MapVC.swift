@@ -48,6 +48,7 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        mapView.delegate = self
         navigationItem.title = String(localized: "tabbar.map")
         setupUI()
         setupActions()
@@ -68,11 +69,19 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        reloadBuildingsIfNeeded()
         logScreenView(.map)
         savedPopGestureDelegate = navigationController?.interactivePopGestureRecognizer?.delegate
         navigationController?.interactivePopGestureRecognizer?.delegate = self
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
         showCoachMarksIfNeeded()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if !mapView.bounds.isEmpty {
+            reloadBuildingsIfNeeded()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
