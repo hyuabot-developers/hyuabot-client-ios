@@ -12,8 +12,9 @@ import XCTest
 final class SnapshotSmokeTests: XCTestCase {
     func testReadingRoomEmptyCellSnapshot() {
         let cell = ReadingRoomSkeletonCellView(style: .default, reuseIdentifier: ReadingRoomSkeletonCellView.reuseIdentifier)
-        cell.frame = CGRect(x: 0, y: 0, width: 390, height: 96)
-        cell.contentView.backgroundColor = .systemBackground
+        cell.configure(index: 0, isFirst: true, isLast: true)
+        cell.frame = CGRect(x: 0, y: 0, width: 390, height: 82)
+        cell.backgroundColor = SettingsStyle.Color.background
         cell.overrideUserInterfaceStyle = .dark
 
         assertSnapshot(of: cell, as: .image(size: cell.frame.size, traits: darkTraits), record: .missing, timeout: 5)
