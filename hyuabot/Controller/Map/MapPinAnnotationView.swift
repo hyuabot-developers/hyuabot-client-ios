@@ -17,6 +17,10 @@ final class MapPinAnnotationView: MKAnnotationView {
     private var dotSizeConstraint: Constraint?
     private var iconSizeConstraint: Constraint?
 
+    var clustersWithBuildings = false {
+        didSet { updateClustering() }
+    }
+
     var isDimmed = false {
         didSet { alpha = isDimmed ? 0.55 : 1 }
     }
@@ -44,6 +48,7 @@ final class MapPinAnnotationView: MKAnnotationView {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        clustersWithBuildings = false
         applySelectedLook(false)
         updateTitle()
         isDimmed = false
@@ -52,9 +57,15 @@ final class MapPinAnnotationView: MKAnnotationView {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         applySelectedLook(selected)
+        updateClustering()
         if animated {
             UIView.animate(withDuration: 0.2) { self.layoutIfNeeded() }
         }
+    }
+
+    private func updateClustering() {
+        clusteringIdentifier = clustersWithBuildings && !isSelected ? "map.buildings" : nil
+        displayPriority = isSelected || !clustersWithBuildings ? .required : .defaultHigh
     }
 
     private func configureAnnotation() {
@@ -148,5 +159,63 @@ final class MapPinAnnotationView: MKAnnotationView {
         dotView.layer.borderColor = SettingsStyle.Color.card.resolvedColor(with: traits).cgColor
         dotView.layer.shadowColor = UIColor.black.resolvedColor(with: traits).cgColor
         titleLabel.layer.shadowColor = SettingsStyle.Color.card.resolvedColor(with: traits).cgColor
+    }
+}
+
+final class MapClusterAnnotationView: MKAnnotationView {
+    static let reuseIdentifier = "MapClusterAnnotationView"
+
+    private let countLabel = UILabel()
+
+    override var annotation: (any MKAnnotation)? {
+        didSet { updateCount() }
+    }
+
+    override init(annotation: (any MKAnnotation)?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        bounds = CGRect(x: 0, y: 0, width: 36, height: 36)
+        backgroundColor = SettingsStyle.Color.accent
+        layer.cornerRadius = 18
+        layer.cornerCurve = .continuous
+        layer.borderWidth = 2
+        layer.shadowOpacity = 0.22
+        layer.shadowRadius = 3
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+        canShowCallout = false
+        collisionMode = .circle
+        displayPriority = .defaultHigh
+        countLabel.font = SettingsStyle.font(15, bold: true)
+        countLabel.textColor = SettingsStyle.Color.onAccent
+        countLabel.textAlignment = .center
+        countLabel.adjustsFontSizeToFitWidth = true
+        addSubview(countLabel)
+        countLabel.snp.makeConstraints { $0.edges.equalToSuperview().inset(4) }
+        updateCount()
+        updateLayerColors()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _: UITraitCollection) in
+            view.updateLayerColors()
+        }
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        updateCount()
+    }
+
+    private func updateCount() {
+        let count = (annotation as? MKClusterAnnotation)?.memberAnnotations.count
+        countLabel.text = count.map { String($0) }
+        accessibilityLabel = countLabel.text
+        accessibilityTraits = .button
+    }
+
+    private func updateLayerColors() {
+        layer.borderColor = SettingsStyle.Color.card.resolvedColor(with: traitCollection).cgColor
+        layer.shadowColor = UIColor.black.resolvedColor(with: traitCollection).cgColor
     }
 }

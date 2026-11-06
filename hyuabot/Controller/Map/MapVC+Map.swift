@@ -73,7 +73,7 @@ extension MapVC: MKMapViewDelegate {
         isReconcilingAnnotations = true
         defer { isReconcilingAnnotations = false }
         mapView.removeAnnotations(mapView.annotations.filter { annotation in
-            guard !(annotation is MKUserLocation) else { return false }
+            guard !(annotation is MKUserLocation), !(annotation is MKClusterAnnotation) else { return false }
             guard let building = annotation as? MapBuildingAnnotation else { return true }
             return !desired.contains(building.identity)
         })
@@ -125,15 +125,24 @@ extension MapVC: MKMapViewDelegate {
 
     func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
         guard !(annotation is MKUserLocation) else { return nil }
+        mapView.register(MapPinAnnotationView.self, forAnnotationViewWithReuseIdentifier: MapPinAnnotationView.reuseIdentifier)
+        mapView.register(MapClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: MapClusterAnnotationView.reuseIdentifier)
+        if annotation is MKClusterAnnotation {
+            return mapView.dequeueReusableAnnotationView(withIdentifier: MapClusterAnnotationView.reuseIdentifier, for: annotation)
+        }
         let view = mapView.dequeueReusableAnnotationView(
             withIdentifier: MapPinAnnotationView.reuseIdentifier,
             for: annotation
         ) as? MapPinAnnotationView
             ?? MapPinAnnotationView(annotation: annotation, reuseIdentifier: MapPinAnnotationView.reuseIdentifier)
         view.annotation = annotation
+        view.clustersWithBuildings = annotation is MapBuildingAnnotation
         if case .building(let building) = mode, let pin = annotation as? MapBuildingAnnotation {
-            view.isDimmed = pin.identity != MapBuildingIdentity(building)
+            let isSelected = pin.identity == MapBuildingIdentity(building)
+            view.setSelected(isSelected, animated: false)
+            view.isDimmed = !isSelected
         } else {
+            view.setSelected(mapView.selectedAnnotations.contains { $0 === annotation }, animated: false)
             view.isDimmed = false
         }
         return view
@@ -142,6 +151,11 @@ extension MapVC: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard !isReconcilingAnnotations else { return }
         guard let annotation = view.annotation else { return }
+        if let cluster = annotation as? MKClusterAnnotation {
+            mapView.deselectAnnotation(cluster, animated: false)
+            zoomToCluster(cluster)
+            return
+        }
         if isSearchMode { return }
         if isResultMode { updateDimming(selected: annotation); return }
         guard let building = cachedBuildings.first(where: {
@@ -164,11 +178,27 @@ extension MapVC: MKMapViewDelegate {
 
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
         guard !isReconcilingAnnotations else { return }
+        guard !(view.annotation is MKClusterAnnotation) else { return }
         if case .building = mode {
             mode = .browse
             hideCard()
             updateDimming(selected: nil)
         }
+    }
+
+    private func zoomToCluster(_ cluster: MKClusterAnnotation) {
+        guard !isSearchMode, !isResultMode else { return }
+        let rect = cluster.memberAnnotations.reduce(MKMapRect.null) { rect, annotation in
+            let point = MKMapPoint(annotation.coordinate)
+            return rect.union(MKMapRect(x: point.x, y: point.y, width: 1, height: 1))
+        }
+        guard !rect.isNull else { return }
+        mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(
+            top: view.safeAreaInsets.top + 96,
+            left: 48,
+            bottom: view.safeAreaInsets.bottom + max(96, buildingCard.isHidden ? 0 : buildingCard.bounds.height + 24),
+            right: 48
+        ), animated: true)
     }
 
     func updateDimming(selected: MKAnnotation?) {
