@@ -146,8 +146,6 @@ class SearchResultCellView: UITableViewCell {
         accessibilityLabel = "\(item.building) \(numberText) \(item.name), \(String(localized: "map.room.show_on_map"))"
     }
 
-    func setupUI(item: RoomItem) { configure(item: item, isFirst: true, isLast: true) }
-
     override func setHighlighted(_ highlighted: Bool, animated: Bool) {
         super.setHighlighted(highlighted, animated: animated)
         cardView.backgroundColor = highlighted ? SettingsStyle.Color.segmentBackground : SettingsStyle.Color.card

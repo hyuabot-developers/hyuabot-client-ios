@@ -245,6 +245,62 @@ final class DomainLogicTests: XCTestCase {
         ]), 2)
     }
 
+    func testMapSearchDesignHelpers() {
+        let items = [
+            RoomItem(name: "101", number: "101", building: "본관", latitude: 1, longitude: 2),
+            RoomItem(name: "102", number: "102", building: "본관", latitude: 1, longitude: 2)
+        ]
+        XCTAssertEqual(MapSearchLogic.rowCount(for: [RoomItem](), isLoading: true), 4)
+        XCTAssertEqual(MapSearchLogic.rowCount(for: [RoomItem](), isLoading: false), 1)
+        XCTAssertEqual(MapSearchLogic.rowCount(for: items, isLoading: false), 2)
+        XCTAssertEqual(
+            MapSearchLogic.guideURL(forBuildingNamed: "본관", in: [(name: "본관", url: "https://example.com/a")])?.absoluteString,
+            "https://example.com/a"
+        )
+        XCTAssertNil(MapSearchLogic.guideURL(forBuildingNamed: "별관", in: [(name: "본관", url: "https://example.com/a")]))
+        XCTAssertNil(MapSearchLogic.guideURL(forBuildingNamed: "본관", in: [(name: "본관", url: nil)]))
+        XCTAssertNil(MapSearchLogic.guideURL(forBuildingNamed: "본관", in: [(name: "본관", url: "  ")]))
+        XCTAssertTrue(MapSearchLogic.roomNumberText("304").contains("304"))
+    }
+
+    func testMapRequestGate() {
+        var gate = MapRequestGate()
+        let requestA = gate.begin()
+        let requestB = gate.begin()
+        XCTAssertFalse(gate.isCurrent(requestA))
+        XCTAssertTrue(gate.isCurrent(requestB))
+        gate.invalidate()
+        XCTAssertFalse(gate.isCurrent(requestB))
+        let requestC = gate.begin()
+        XCTAssertTrue(gate.isCurrent(requestC))
+    }
+
+    func testMapSearchTimingScenarios() {
+        var gate = MapRequestGate()
+        let requestA = gate.begin()
+        XCTAssertEqual(MapSearchLogic.searchLaunchKeyword("B", isSearching: true), "B")
+        let requestB = gate.begin()
+        XCTAssertFalse(gate.isCurrent(requestA))
+        XCTAssertTrue(gate.isCurrent(requestB))
+
+        var g2 = MapRequestGate()
+        let a2 = g2.begin()
+        XCTAssertNil(MapSearchLogic.searchLaunchKeyword("", isSearching: true))
+        XCTAssertNil(MapSearchLogic.searchLaunchKeyword("   ", isSearching: true))
+        XCTAssertNil(MapSearchLogic.searchLaunchKeyword(nil, isSearching: true))
+        g2.invalidate()
+        XCTAssertFalse(g2.isCurrent(a2))
+
+        var g3 = MapRequestGate()
+        let a3 = g3.begin()
+        g3.invalidate()
+        XCTAssertNil(MapSearchLogic.searchLaunchKeyword("301", isSearching: false))
+        g3.invalidate()
+        XCTAssertFalse(g3.isCurrent(a3))
+
+        XCTAssertEqual(MapSearchLogic.searchLaunchKeyword(" 301 ", isSearching: true), " 301 ")
+    }
+
     private func makeDate(hour: Int, minute: Int, calendar: Calendar) -> Date {
         var components = DateComponents()
         components.calendar = calendar
