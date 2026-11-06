@@ -1,57 +1,188 @@
 import Api
 import MapKit
 import RxSwift
+import SnapKit
 import UIKit
 
-class MapVC: UIViewController {
-    private let disposeBag = DisposeBag()
-    private lazy var searchController = UISearchController(searchResultsController: nil).then {
-        $0.searchBar.do {
-            $0.placeholder = String(localized: "map.building.search.placeholder")
-            $0.directionalLayoutMargins = .init(top: 20, leading: 0, bottom: 0, trailing: 20)
-            $0.searchTextField.do {
-                $0.backgroundColor = .systemBackground
-                $0.delegate = self
-                $0.accessibilityIdentifier = "map.search_text_field"
-            }
-        }
-        $0.searchResultsUpdater = self
-    }
+enum MapScreenMode {
+    case browse
+    case building(MapPageQuery.Data.Building)
+    case searching
+    case result(RoomItem)
+}
 
-    private lazy var mapView = MKMapView().then {
-        $0.camera = MKMapCamera(
-            lookingAtCenter: CLLocationCoordinate2D(latitude: 37.29650544998881, longitude: 126.83513202158153),
-            fromDistance: 4000,
-            pitch: 0,
-            heading: 0
-        )
+class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate {
+    let disposeBag = DisposeBag()
+    var mode: MapScreenMode = .browse
+    var isLoadingSearch = false
+    var searchFailed = false
+    var isLoadingBuildings = false
+    var searchGate = MapRequestGate()
+    var buildingGate = MapRequestGate()
+    var isReconcilingAnnotations = false
+    weak var savedPopGestureDelegate: UIGestureRecognizerDelegate?
+
+    static let campusCenter = CLLocationCoordinate2D(latitude: 37.29650544998881, longitude: 126.83513202158153)
+
+    let mapView = MKMapView().then {
+        $0.camera = MKMapCamera(lookingAtCenter: campusCenter, fromDistance: 4000, pitch: 0, heading: 0)
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
         $0.isPitchEnabled = true
-        $0.delegate = self
         $0.accessibilityIdentifier = "map.view"
+        $0.register(MapPinAnnotationView.self, forAnnotationViewWithReuseIdentifier: MapPinAnnotationView.reuseIdentifier)
+    }
+    let searchBarView = MapSearchBarView()
+    let statusPill = MapStatusPillView()
+    let recenterButton = MapRecenterButton()
+    let buildingCard = MapBuildingCardView()
+    let resultsContainer = UIView()
+    let resultsCountLabel = UILabel()
+    let searchResultView = UITableView(frame: .zero, style: .plain)
+    var recenterBottomConstraint: Constraint?
+    var recenterCardConstraint: Constraint?
+
+    var isSearchMode: Bool { if case .searching = mode { return true }; return false }
+    var isResultMode: Bool { if case .result = mode { return true }; return false }
+    var canReturnToCampus: Bool { (navigationController?.viewControllers.count ?? 0) > 1 }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        mapView.delegate = self
+        navigationItem.title = String(localized: "tabbar.map")
+        setupUI()
+        setupActions()
+        observeSubjects()
+        observeSearch()
+        searchBarView.onBeginEditing = { [weak self] in self?.enterSearch() }
+        searchBarView.onTextChange = { [weak self] in self?.onTextChange($0) }
+        searchBarView.onClear = { [weak self] in self?.onClear() }
+        searchBarView.onBack = { [weak self] in self?.exitSearch() }
     }
 
-    private lazy var searchResultView = UITableView().then {
-        $0.showsVerticalScrollIndicator = false
-        $0.isHidden = true
-        $0.delegate = self
-        $0.dataSource = self
-        $0.register(SearchEmptyCellView.self, forCellReuseIdentifier: SearchEmptyCellView.reuseIdentifier)
-        $0.register(SearchResultCellView.self, forCellReuseIdentifier: SearchResultCellView.reuseIdentifier)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        SettingsNavigationStyle.screenWillAppear(self)
+        updateAccessibilityActions()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        reloadBuildingsIfNeeded()
         logScreenView(.map)
+        savedPopGestureDelegate = navigationController?.interactivePopGestureRecognizer?.delegate
+        navigationController?.interactivePopGestureRecognizer?.delegate = self
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
         showCoachMarksIfNeeded()
     }
 
-    private func showCoachMarksIfNeeded() {
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if !mapView.bounds.isEmpty {
+            reloadBuildingsIfNeeded()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.interactivePopGestureRecognizer?.delegate = savedPopGestureDelegate
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        SettingsNavigationStyle.screenWillDisappear(self)
+    }
+
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        gestureRecognizer === navigationController?.interactivePopGestureRecognizer ? canReturnToCampus && !isSearchMode : true
+    }
+
+    override func accessibilityPerformEscape() -> Bool {
+        if isSearchMode { exitSearch(); return true }
+        if canReturnToCampus { navigationController?.popViewController(animated: true); return true }
+        return false
+    }
+
+    func setupUI() {
+        view.backgroundColor = SettingsStyle.Color.background
+        resultsContainer.backgroundColor = SettingsStyle.Color.background
+        resultsContainer.isHidden = true
+        buildingCard.isHidden = true
+        resultsCountLabel.font = SettingsStyle.monospacedDigitFont(13)
+        resultsCountLabel.textColor = SettingsStyle.Color.secondaryText
+        searchResultView.backgroundColor = .clear
+        searchResultView.separatorStyle = .none
+        searchResultView.rowHeight = UITableView.automaticDimension
+        searchResultView.estimatedRowHeight = 64
+        searchResultView.keyboardDismissMode = .onDrag
+        searchResultView.showsVerticalScrollIndicator = false
+        searchResultView.contentInset.bottom = 12
+        searchResultView.delegate = self
+        searchResultView.dataSource = self
+        searchResultView.register(SearchResultCellView.self, forCellReuseIdentifier: SearchResultCellView.reuseIdentifier)
+        searchResultView.register(SearchEmptyCellView.self, forCellReuseIdentifier: SearchEmptyCellView.reuseIdentifier)
+        searchResultView.register(MapSearchSkeletonCellView.self, forCellReuseIdentifier: MapSearchSkeletonCellView.reuseIdentifier)
+        resultsContainer.addSubview(resultsCountLabel)
+        resultsContainer.addSubview(searchResultView)
+
+        [mapView, resultsContainer, buildingCard, recenterButton, statusPill, searchBarView].forEach(view.addSubview)
+        mapView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        searchBarView.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            $0.leading.trailing.equalToSuperview().inset(16)
+            $0.height.equalTo(48)
+        }
+        statusPill.snp.makeConstraints {
+            $0.top.equalTo(searchBarView.snp.bottom).offset(8)
+            $0.leading.equalToSuperview().offset(16)
+            $0.trailing.lessThanOrEqualToSuperview().inset(16)
+        }
+        resultsContainer.snp.makeConstraints { $0.edges.equalToSuperview() }
+        resultsCountLabel.snp.makeConstraints {
+            $0.top.equalTo(searchBarView.snp.bottom).offset(12)
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.height.equalTo(18)
+        }
+        searchResultView.snp.makeConstraints {
+            $0.top.equalTo(resultsCountLabel.snp.bottom).offset(8)
+            $0.leading.trailing.equalToSuperview()
+            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+        }
+        buildingCard.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
+        recenterButton.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(16)
+            $0.size.equalTo(44)
+            recenterBottomConstraint = $0.bottom.equalTo(view.safeAreaLayoutGuide).offset(-12).constraint
+            recenterCardConstraint = $0.bottom.equalTo(buildingCard.snp.top).offset(-12).constraint
+            recenterCardConstraint?.deactivate()
+        }
+    }
+
+    func setupActions() {
+        recenterButton.addTarget(self, action: #selector(recenter), for: .touchUpInside)
+        buildingCard.onDeselect = { [weak self] in
+            guard let self else { return }
+            if self.isResultMode { self.showAllBuildings() } else {
+                self.mapView.selectedAnnotations.forEach { self.mapView.deselectAnnotation($0, animated: true) }
+            }
+        }
+        buildingCard.onShowAll = { [weak self] in self?.showAllBuildings() }
+        buildingCard.onOpenGuide = { [weak self] in self?.openGuide() }
+    }
+
+    func observeSubjects() {
+        MapData.shared.searchMode.subscribe(onNext: { [weak self] searching in
+            guard let self, !searching else { return }
+            self.reloadBuildings()
+        }).disposed(by: disposeBag)
+        MapData.shared.buildingResult.subscribe(onNext: { [weak self] in self?.applyBuildings($0) }).disposed(by: disposeBag)
+    }
+
+    func showCoachMarksIfNeeded() {
         presentCoachMarks(pageId: "map", items: [
             CoachMarkItem(
                 id: "map.search",
-                targetView: searchController.searchBar,
+                targetView: searchBarView,
                 title: String(localized: "coach.map.search.title"),
                 message: String(localized: "coach.map.search.message")
             ),
@@ -64,181 +195,73 @@ class MapVC: UIViewController {
         ])
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        observeSubjects()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: false)
-    }
-
-    private func setupUI() {
-        view.addSubview(mapView)
-        view.addSubview(searchResultView)
-        navigationItem.do {
-            $0.title = String(localized: "tabbar.map")
-            $0.searchController = self.searchController
-            $0.hidesSearchBarWhenScrolling = false
-        }
-        mapView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        searchResultView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+    func updateAccessibilityActions() {
+        if canReturnToCampus {
+            searchBarView.accessibilityCustomActions = [UIAccessibilityCustomAction(
+                name: String(localized: "map.back_to_campus")
+            ) { [weak self] _ in
+                self?.navigationController?.popViewController(animated: true)
+                return true
+            }]
+        } else {
+            searchBarView.accessibilityCustomActions = nil
         }
     }
 
-    private func observeSubjects() {
-        MapData.shared.searchKeyword.subscribe(onNext: { keyword in
-            guard let keyword else { return }
-            Task {
-                let response = try? await Network.shared.client.fetch(query: MapPageSearchQuery(keyword: keyword))
-                if let data = response?.data {
-                    MapData.shared.searchResult.onNext(data.building.map { building in
-                        building.rooms.map { room in
-                            RoomItem(
-                                name: room.name,
-                                number: room.name,
-                                building: building.name,
-                                latitude: building.latitude,
-                                longitude: building.longitude
-                            )
-                        }
-                    }.flatMap { $0 })
-                }
-            }
-        }).disposed(by: disposeBag)
-        MapData.shared.searchResult.subscribe(onNext: { _ in
-            self.searchResultView.reloadData()
-        }).disposed(by: disposeBag)
-        MapData.shared.searchMode.subscribe(onNext: { isSearching in
-            if !isSearching {
-                self.searchController.isActive = false
-                let nw = self.mapView.northWestCoordinate
-                let se = self.mapView.southEastCoordinate
-                Task {
-                    let response = try? await Network.shared.client.fetch(query: MapPageQuery(
-                        north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
-                    ))
-                    if let data = response?.data {
-                        MapData.shared.buildingResult.onNext(data.building)
-                    }
-                }
-            }
-        }).disposed(by: disposeBag)
-        MapData.shared.buildingResult.subscribe(onNext: { result in
-            self.mapView.removeAnnotations(self.mapView.annotations)
-            for building in result {
-                self.mapView.addAnnotation(MKPointAnnotation().with {
-                    $0.coordinate = CLLocationCoordinate2D(latitude: building.latitude, longitude: building.longitude)
-                    $0.title = building.name
-                })
-            }
-        }).disposed(by: disposeBag)
+    func enterSearch() {
+        if isResultMode {
+            searchBarView.text = ""
+            MapData.shared.searchKeyword.onNext(nil)
+        }
+        mapView.selectedAnnotations.forEach { mapView.deselectAnnotation($0, animated: false) }
+        mode = .searching
+        searchBarView.setSearching(true)
+        statusPill.isHidden = true
+        recenterButton.isHidden = true
+        buildingCard.isHidden = true
     }
-}
 
-extension MapVC: UITextFieldDelegate {
-    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+    func exitSearch() {
+        invalidateSearch()
+        searchBarView.text = ""
+        searchBarView.textField.resignFirstResponder()
+        resultsContainer.isHidden = true
         MapData.shared.searchKeyword.onNext(nil)
+        mode = .browse
+        searchBarView.setSearching(false)
+        statusPill.isHidden = false
+        recenterButton.isHidden = false
         MapData.shared.searchMode.onNext(false)
-        return true
-    }
-}
-
-extension MapVC: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let searchKeyword = searchController.searchBar.text else { return }
-        let isVisible = MapSearchLogic.isSearchResultVisible(keyword: searchKeyword)
-        searchResultView.isHidden = !isVisible
-        MapData.shared.searchKeyword.onNext(isVisible ? searchKeyword : nil)
-    }
-}
-
-extension MapVC: UITableViewDelegate, UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        1
     }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let items = try? MapData.shared.searchResult.value() else { return 0 }
-        return MapSearchLogic.rowCount(for: items)
+    func showCard(_ content: MapBuildingCardView.Content) {
+        buildingCard.apply(content)
+        buildingCard.isHidden = false
+        updateRecenterPosition(animated: true)
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let items = try? MapData.shared.searchResult.value() else { return SearchEmptyCellView() }
-        if items.isEmpty {
-            return tableView.dequeueReusableCell(withIdentifier: SearchEmptyCellView.reuseIdentifier, for: indexPath)
-        }
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: SearchResultCellView.reuseIdentifier,
-            for: indexPath
-        ) as! SearchResultCellView
-        cell.setupUI(item: items[indexPath.row])
-        return cell
+    func hideCard() {
+        buildingCard.isHidden = true
+        updateRecenterPosition(animated: true)
     }
 
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let item = try? MapData.shared.searchResult.value()[indexPath.row] else { return }
-        AnalyticsManager.logSelect(.mapSelectSearchResult, type: .listItem, name: item.name)
-        MapData.shared.searchMode.onNext(true)
-        mapView.do {
-            $0.removeAnnotations($0.annotations)
-            $0.addAnnotation(MKPointAnnotation().with {
-                $0.coordinate = CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude)
-                $0.title = "\(item.name) (\(item.number)호)"
-            })
-            $0.camera = MKMapCamera(
-                lookingAtCenter: CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude),
-                fromDistance: 2000,
-                pitch: 0,
-                heading: 0
-            )
-        }
-        searchResultView.isHidden = true
-        searchController.isActive = false
-    }
-}
-
-extension MapVC: MKMapViewDelegate {
-    func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
-        let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "marker")
-        annotationView.markerTintColor = .hanyangBlue
-        annotationView.glyphImage = UIImage(systemName: "building")
-        return annotationView
-    }
-
-    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
-        guard let searchMode = try? MapData.shared.searchMode.value() else { return }
-        if searchMode { return }
-        let nw = mapView.northWestCoordinate
-        let se = mapView.southEastCoordinate
-        Task {
-            let response = try? await Network.shared.client.fetch(query: MapPageQuery(
-                north: nw.latitude, south: se.latitude, west: nw.longitude, east: se.longitude
-            ))
-            if let data = response?.data {
-                MapData.shared.buildingResult.onNext(data.building)
+    func updateRecenterPosition(animated: Bool) {
+        let update = {
+            if self.buildingCard.isHidden {
+                self.recenterCardConstraint?.deactivate()
+                self.recenterBottomConstraint?.activate()
+            } else {
+                self.recenterBottomConstraint?.deactivate()
+                self.recenterCardConstraint?.activate()
             }
+            self.view.layoutIfNeeded()
         }
+        if animated { UIView.animate(withDuration: 0.22, animations: update) } else { update() }
     }
 
-    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        guard let annotation = view.annotation else { return }
-        guard let buildings = try? MapData.shared.buildingResult.value() else { return }
-        guard let building = buildings.first(where: {
-            $0.latitude == annotation.coordinate.latitude && $0.longitude == annotation.coordinate.longitude
-        }) else { return }
-        guard let urlString = building.url else { return }
-        guard let url = URL(string: urlString) else { return }
-        let vc = BuildingVC(buildingName: building.name, url: url)
-        if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(vc, animated: true, completion: nil)
+    func invalidateSearch() {
+        searchGate.invalidate()
+        isLoadingSearch = false
+        searchFailed = false
     }
 }
