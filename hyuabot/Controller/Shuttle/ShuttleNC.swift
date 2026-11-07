@@ -55,11 +55,11 @@ class ShuttleNC: UINavigationController {
     func updateTabBarItemForCurrentExperience() {
         if HomeExperienceManager.isEnabled {
             tabBarItem.title = String(localized: "tabbar.home")
-            tabBarItem.image = UIImage(systemName: "house.fill")
+            tabBarItem.image = UIImage(systemName: "house")
             tabBarItem.accessibilityIdentifier = "tab.home"
         } else {
             tabBarItem.title = String(localized: "tabbar.shuttle")
-            tabBarItem.image = UIImage(systemName: "bus.fill")
+            tabBarItem.image = UIImage(systemName: "bus")
             tabBarItem.accessibilityIdentifier = "tab.shuttle"
         }
         (tabBarController as? RootVC)?.refreshFloatingTabItem(for: self)

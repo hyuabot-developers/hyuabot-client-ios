@@ -200,8 +200,8 @@ extension RootVC: UITabBarControllerDelegate {
 
 }
 
-private extension RootVC {
-    func configureFloatingTabBar() {
+extension RootVC {
+    private func configureFloatingTabBar() {
         hideSystemTabBar()
         floatingTabBar.setItems((viewControllers ?? []).map(\.tabBarItem))
         floatingTabBar.onSelect = { [weak self] index in self?.selectTab(at: index) }
@@ -212,7 +212,7 @@ private extension RootVC {
         }
     }
 
-    func hideSystemTabBar() {
+    private func hideSystemTabBar() {
         if #available(iOS 18.0, *) {
             if !isTabBarHidden { setTabBarHidden(true, animated: false) }
         } else if !tabBar.isHidden {
@@ -220,7 +220,7 @@ private extension RootVC {
         }
     }
 
-    func installFloatingTabBar() {
+    private func installFloatingTabBar() {
         floatingTabBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(floatingTabBar)
         let guide = view.safeAreaLayoutGuide
@@ -240,7 +240,7 @@ private extension RootVC {
         ])
     }
 
-    func syncFloatingTabBar() {
+    private func syncFloatingTabBar() {
         floatingTabBar.selectedIndex = selectedIndex
         if let nav = selectedViewController as? UINavigationController, let top = nav.topViewController {
             updateFloatingTabBarVisibility(for: nav, showing: top, animated: false)
@@ -248,7 +248,7 @@ private extension RootVC {
         view.setNeedsLayout()
     }
 
-    func selectTab(at index: Int) {
+    private func selectTab(at index: Int) {
         guard let controllers = viewControllers, controllers.indices.contains(index) else { return }
         let target = controllers[index]
         guard tabBarController(self, shouldSelect: target) else { return }
@@ -256,7 +256,7 @@ private extension RootVC {
         tabBarController(self, didSelect: target)
     }
 
-    func updateChildBottomInset() {
+    private func updateChildBottomInset() {
         guard let child = selectedViewController else { return }
         let covered = floatingTabBar.isHidden ? 0 : max(0, view.bounds.maxY - floatingTabBar.frame.minY)
         let systemBottom = child.view.safeAreaInsets.bottom - child.additionalSafeAreaInsets.bottom
@@ -266,7 +266,7 @@ private extension RootVC {
         }
     }
 
-    func updateFloatingTabBarVisibility(for navigationController: UINavigationController, showing viewController: UIViewController, animated: Bool) {
+    private func updateFloatingTabBarVisibility(for navigationController: UINavigationController, showing viewController: UIViewController, animated: Bool) {
         guard navigationController === selectedViewController else { return }
         let stack = navigationController.viewControllers
         let shown = stack.firstIndex { $0 === viewController }.map { Array(stack[...$0]) } ?? [viewController]
