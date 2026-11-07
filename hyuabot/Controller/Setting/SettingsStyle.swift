@@ -35,6 +35,26 @@ enum SettingsStyle {
         static let levelFull = adaptive(light: 0xB91C1C, dark: 0xF87171)
         static let levelFullFill = adaptive(light: 0xFEE2E2, dark: 0x3D1618)
         static let faint = adaptive(light: 0x7C8593, dark: 0x7F8896)
+        static let chevron = adaptive(light: 0x8A93A0, dark: 0x6B7480)
+        static let tabUnselected = adaptive(light: 0x4B5563, dark: 0xAEB7C3)
+        static let supportIconGray = adaptive(light: 0x6B7280, dark: 0x4B5563)
+        static let supportIconBlue = adaptive(light: 0x1D6FD1, dark: 0x2F6FB8)
+        static let supportIconPink = adaptive(light: 0xD6336C, dark: 0xB4275A)
+        static let tabGlass = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 30 / 255, green: 37 / 255, blue: 46 / 255, alpha: 0.72)
+                : UIColor(white: 1, alpha: 0.78)
+        }
+        static let tabEdge = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(white: 1, alpha: 0.10)
+                : UIColor(white: 1, alpha: 0.90)
+        }
+        static let tabSelectionFill = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 127 / 255, green: 178 / 255, blue: 229 / 255, alpha: 0.18)
+                : UIColor(red: 14 / 255, green: 74 / 255, blue: 132 / 255, alpha: 0.12)
+        }
         static let saturday = adaptive(light: 0x1D4ED8, dark: 0x93C5FD)
 
         private static let calendarCategoryStrongColors: [UIColor] = [

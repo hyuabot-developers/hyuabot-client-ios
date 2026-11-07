@@ -247,10 +247,9 @@ final class UIQualityUITests: XCTestCase {
     }
 
     private func open(_ page: Page, in app: XCUIApplication) {
-        let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["tab.campus"].waitForExistence(timeout: 10))
 
-        let button = tabBar.buttons[page.tabIdentifier]
+        let button = app.buttons[page.tabIdentifier]
         XCTAssertTrue(button.waitForExistence(timeout: 5), "\(page.tabIdentifier) should exist")
         button.tap()
 
@@ -528,7 +527,7 @@ final class UIQualityUITests: XCTestCase {
     }
 
     private func waitForPageToSettle(_ app: XCUIApplication) {
-        _ = app.tabBars.firstMatch.waitForExistence(timeout: 5)
+        _ = app.buttons["tab.campus"].waitForExistence(timeout: 5)
         let settleTime = UInt32(ProcessInfo.processInfo.environment["UIQUALITY_SETTLE_USEC"] ?? "800000") ?? 800_000
         usleep(settleTime)
     }
