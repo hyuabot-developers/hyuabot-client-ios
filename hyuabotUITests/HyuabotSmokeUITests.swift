@@ -25,11 +25,10 @@ final class HyuabotSmokeUITests: XCTestCase {
 
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
 
-        let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue(app.buttons["tab.campus"].waitForExistence(timeout: 10), app.debugDescription)
 
         for tab in ["tab.shuttle", "tab.bus", "tab.subway", "tab.cafeteria", "tab.campus"] {
-            let button = tabBar.buttons[tab]
+            let button = app.buttons[tab]
             XCTAssertTrue(button.waitForExistence(timeout: 5), "\(tab) should exist")
             button.tap()
         }
@@ -40,9 +39,8 @@ final class HyuabotSmokeUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
-        let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 5))
-        tabBar.buttons["tab.campus"].tap()
+        XCTAssertTrue(app.buttons["tab.campus"].waitForExistence(timeout: 5))
+        app.buttons["tab.campus"].tap()
 
         let destinations = [
             (tool: "map", expected: "map.search_text_field"),
@@ -59,9 +57,16 @@ final class HyuabotSmokeUITests: XCTestCase {
             let expected = app.descendants(matching: .any)[destination.expected]
             XCTAssertTrue(expected.waitForExistence(timeout: 10), "\(destination.expected) should open")
 
-            let backButton = app.navigationBars.buttons.element(boundBy: 0)
-            XCTAssertTrue(backButton.waitForExistence(timeout: 5))
-            backButton.tap()
+            if destination.tool == "map" {
+                app.buttons["tab.campus"].tap()
+            } else {
+                let navigationBackButton = app.navigationBars.buttons.firstMatch
+                let backButton = navigationBackButton.waitForExistence(timeout: 2)
+                    ? navigationBackButton
+                    : app.buttons["BackButton"]
+                XCTAssertTrue(backButton.waitForExistence(timeout: 5), "Back button should exist")
+                backButton.tap()
+            }
             XCTAssertTrue(app.buttons["campus.tool.map"].waitForExistence(timeout: 5))
         }
     }

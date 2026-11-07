@@ -74,8 +74,7 @@ final class ScreenshotCaptureUITests: XCTestCase {
         captureShuttleTimetable(app: app, language: language, outputDir: outputDir)
 
         // Remaining tabs
-        let tabBar = app.tabBars.firstMatch
-        guard tabBar.waitForExistence(timeout: 10) else {
+        guard app.buttons["tab.campus"].waitForExistence(timeout: 10) else {
             XCTFail("Tab bar not found")
             return
         }
@@ -86,7 +85,7 @@ final class ScreenshotCaptureUITests: XCTestCase {
             ("tab.cafeteria", "cafeteria"),
             ("tab.campus", "campus")
         ] {
-            let button = tabBar.buttons[tabID]
+            let button = app.buttons[tabID]
             guard button.waitForExistence(timeout: 5) else {
                 XCTFail("\(tabID) not found")
                 continue
