@@ -3129,6 +3129,90 @@
         }
       }
     },
+    "campus.commuter.badge" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEW"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEW"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEW"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEW"
+          }
+        }
+      }
+    },
+    "campus.commuter.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route and stop timetables"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路線・停留所別の時刻表"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선·정류장별 시간표 안내"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "线路与站点时刻表"
+          }
+        }
+      }
+    },
+    "campus.commuter.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commuter Bus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通学バス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "통학버스"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通学巴士"
+          }
+        }
+      }
+    },
     "campus.contact.subtitle" : {
       "localizations" : {
         "en" : {
@@ -3181,6 +3265,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "校内联系方式"
+          }
+        }
+      }
+    },
+    "campus.donate.accessibility_label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donate, opens KakaoPay"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "寄付する、カカオペイに移動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기부하기, 카카오페이로 이동"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捐赠，前往 KakaoPay"
           }
         }
       }
@@ -3302,25 +3414,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check seats and vacancy alerts"
+            "value" : "Seats and vacancy alerts"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空席確認と空席通知"
+            "value" : "残り座席・空席通知"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "잔여 좌석 확인과 빈자리 알림"
+            "value" : "잔여 좌석·빈자리 알림"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看剩余座位并设置空位提醒"
+            "value" : "剩余座位·空位提醒"
           }
         }
       }
