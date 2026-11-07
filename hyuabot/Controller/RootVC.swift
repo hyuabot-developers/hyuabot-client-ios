@@ -10,6 +10,15 @@ class RootVC: UITabBarController {
     let campusNC = CampusNC()
     private var translationPreparationHost: UIViewController?
     private var isWaitingForShuttleCoachMarksAfterReset = false
+    let floatingTabBar = FloatingTabBar()
+
+    override var selectedIndex: Int {
+        didSet { syncFloatingTabBar() }
+    }
+
+    override var selectedViewController: UIViewController? {
+        didSet { syncFloatingTabBar() }
+    }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         guard let navigationController = selectedViewController as? UINavigationController,
@@ -70,10 +79,8 @@ class RootVC: UITabBarController {
     }
 
     private var campusButtonView: UIView? {
-        guard tabBar.bounds.width > 0 else { return nil }
-        let slotWidth = tabBar.bounds.width / 5
-        let point = CGPoint(x: slotWidth * 4.5, y: tabBar.bounds.midY)
-        return tabBar.hitTest(point, with: nil)
+        guard floatingTabBar.window != nil, !floatingTabBar.isHidden else { return nil }
+        return floatingTabBar.button(at: 4)
     }
 
     override func viewDidLoad() {
@@ -91,12 +98,12 @@ class RootVC: UITabBarController {
             object: nil
         )
         // TabBar
-        shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus.fill"), tag: 0)
+        shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus"), tag: 0)
         shuttleNC.tabBarItem.accessibilityIdentifier = "tab.shuttle"
         shuttleNC.updateTabBarItemForCurrentExperience()
-        busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker.fill"), tag: 1)
+        busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker"), tag: 1)
         busNC.tabBarItem.accessibilityIdentifier = "tab.bus"
-        subwayNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.subway"), image: UIImage(systemName: "tram.fill"), tag: 2)
+        subwayNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.subway"), image: UIImage(systemName: "tram"), tag: 2)
         subwayNC.tabBarItem.accessibilityIdentifier = "tab.subway"
         cafeteriaNC.tabBarItem = UITabBarItem(
             title: String(localized: "tabbar.cafeteria"),
@@ -106,7 +113,7 @@ class RootVC: UITabBarController {
         cafeteriaNC.tabBarItem.accessibilityIdentifier = "tab.cafeteria"
         campusNC.tabBarItem = UITabBarItem(
             title: String(localized: "tabbar.campus"),
-            image: UIImage(systemName: "square.grid.2x2.fill"),
+            image: UIImage(systemName: "square.grid.2x2"),
             tag: 4
         )
         campusNC.tabBarItem.accessibilityIdentifier = "tab.campus"
@@ -115,6 +122,8 @@ class RootVC: UITabBarController {
             [shuttleNC, busNC, subwayNC, cafeteriaNC, campusNC],
             animated: true
         )
+        tabBar.isHidden = true
+        configureFloatingTabBar()
     }
 
     private func installTranslationPreparationHostIfNeeded() {
@@ -152,6 +161,18 @@ class RootVC: UITabBarController {
         selectedViewController = campusNC
         campusNC.open(destination, animated: animated)
     }
+
+    func refreshFloatingTabItem(for viewController: UIViewController) {
+        guard let index = viewControllers?.firstIndex(where: { $0 === viewController }) else { return }
+        floatingTabBar.updateItem(viewController.tabBarItem, at: index)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        hideSystemTabBar()
+        view.bringSubviewToFront(floatingTabBar)
+        updateChildBottomInset()
+    }
 }
 
 extension RootVC: UITabBarControllerDelegate {
@@ -175,5 +196,103 @@ extension RootVC: UITabBarControllerDelegate {
         if viewController === shuttleNC {
             retryShuttleCoachMarksIfNeeded()
         }
+    }
+
+}
+
+private extension RootVC {
+    func configureFloatingTabBar() {
+        hideSystemTabBar()
+        floatingTabBar.setItems((viewControllers ?? []).map(\.tabBarItem))
+        floatingTabBar.onSelect = { [weak self] index in self?.selectTab(at: index) }
+        floatingTabBar.selectedIndex = selectedIndex
+        installFloatingTabBar()
+        for case let navigationController as UINavigationController in viewControllers ?? [] {
+            navigationController.delegate = self
+        }
+    }
+
+    func hideSystemTabBar() {
+        if #available(iOS 18.0, *) {
+            if !isTabBarHidden { setTabBarHidden(true, animated: false) }
+        } else if !tabBar.isHidden {
+            tabBar.isHidden = true
+        }
+    }
+
+    func installFloatingTabBar() {
+        floatingTabBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(floatingTabBar)
+        let guide = view.safeAreaLayoutGuide
+        let preferredLeading = floatingTabBar.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: FloatingTabBar.sideInset)
+        preferredLeading.priority = .defaultHigh
+        let preferredWidth = floatingTabBar.widthAnchor.constraint(equalTo: guide.widthAnchor, constant: -2 * FloatingTabBar.sideInset)
+        preferredWidth.priority = UILayoutPriority(999)
+        NSLayoutConstraint.activate([
+            floatingTabBar.heightAnchor.constraint(equalToConstant: FloatingTabBar.barHeight),
+            floatingTabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -FloatingTabBar.bottomInset),
+            floatingTabBar.centerXAnchor.constraint(equalTo: guide.centerXAnchor),
+            floatingTabBar.leadingAnchor.constraint(greaterThanOrEqualTo: guide.leadingAnchor, constant: FloatingTabBar.sideInset),
+            floatingTabBar.trailingAnchor.constraint(lessThanOrEqualTo: guide.trailingAnchor, constant: -FloatingTabBar.sideInset),
+            floatingTabBar.widthAnchor.constraint(lessThanOrEqualToConstant: FloatingTabBar.maxWidth),
+            preferredLeading,
+            preferredWidth
+        ])
+    }
+
+    func syncFloatingTabBar() {
+        floatingTabBar.selectedIndex = selectedIndex
+        if let nav = selectedViewController as? UINavigationController, let top = nav.topViewController {
+            updateFloatingTabBarVisibility(for: nav, showing: top, animated: false)
+        }
+        view.setNeedsLayout()
+    }
+
+    func selectTab(at index: Int) {
+        guard let controllers = viewControllers, controllers.indices.contains(index) else { return }
+        let target = controllers[index]
+        guard tabBarController(self, shouldSelect: target) else { return }
+        selectedViewController = target
+        tabBarController(self, didSelect: target)
+    }
+
+    func updateChildBottomInset() {
+        guard let child = selectedViewController else { return }
+        let covered = floatingTabBar.isHidden ? 0 : max(0, view.bounds.maxY - floatingTabBar.frame.minY)
+        let systemBottom = child.view.safeAreaInsets.bottom - child.additionalSafeAreaInsets.bottom
+        let wanted = max(0, covered - systemBottom)
+        if abs(child.additionalSafeAreaInsets.bottom - wanted) > 0.5 {
+            child.additionalSafeAreaInsets.bottom = wanted
+        }
+    }
+
+    func updateFloatingTabBarVisibility(for navigationController: UINavigationController, showing viewController: UIViewController, animated: Bool) {
+        guard navigationController === selectedViewController else { return }
+        let stack = navigationController.viewControllers
+        let shown = stack.firstIndex { $0 === viewController }.map { Array(stack[...$0]) } ?? [viewController]
+        let hidden = shown.contains { $0.hidesBottomBarWhenPushed }
+        if !hidden { floatingTabBar.isHidden = false }
+        let apply = { self.floatingTabBar.alpha = hidden ? 0 : 1 }
+        let finish = { [weak self] in
+            guard let self else { return }
+            self.floatingTabBar.isHidden = hidden
+            self.view.setNeedsLayout()
+        }
+        if animated, let coordinator = navigationController.transitionCoordinator {
+            coordinator.animate(alongsideTransition: { _ in apply() }, completion: { _ in finish() })
+        } else {
+            apply()
+            finish()
+        }
+    }
+}
+
+extension RootVC: UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        updateFloatingTabBarVisibility(for: navigationController, showing: viewController, animated: animated)
+    }
+
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+        updateFloatingTabBarVisibility(for: navigationController, showing: viewController, animated: false)
     }
 }

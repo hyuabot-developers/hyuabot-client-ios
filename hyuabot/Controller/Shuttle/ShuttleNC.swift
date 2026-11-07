@@ -62,6 +62,7 @@ class ShuttleNC: UINavigationController {
             tabBarItem.image = UIImage(systemName: "bus.fill")
             tabBarItem.accessibilityIdentifier = "tab.shuttle"
         }
+        (tabBarController as? RootVC)?.refreshFloatingTabItem(for: self)
     }
 
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {
