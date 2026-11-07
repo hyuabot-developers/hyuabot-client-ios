@@ -118,6 +118,8 @@ final class CampusFeatureCardControl: UIControl {
             tint: SettingsStyle.Color.onAccent
         )
         let titleLabel = campusLabel(title, size: 15, bold: true, color: SettingsStyle.Color.text, lineHeight: 20)
+        titleLabel.numberOfLines = 1
+        titleLabel.lineBreakMode = .byTruncatingTail
         titleLabel.setContentHuggingPriority(.required, for: .horizontal)
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         let badgeLabel = campusLabel(badge, size: 11, bold: true, color: SettingsStyle.Color.link, lineHeight: 18)
