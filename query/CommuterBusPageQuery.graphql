@@ -1,0 +1,31 @@
+query CommuterBusPageQuery($date: Date!) {
+    commute {
+        name
+        description {
+            korean
+            english
+        }
+        timetable {
+            name
+            order
+            time
+            stop {
+                name
+                latitude
+                longitude
+                description
+            }
+        }
+    }
+    shuttle(input: { date: $date }) {
+        period {
+            type
+            start
+            end
+        }
+        holiday {
+            type
+            date
+        }
+    }
+}
