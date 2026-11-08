@@ -1,0 +1,9 @@
+query CommuterBusPeriodQuery($date: Date!) {
+    shuttle(input: { date: $date }) {
+        period {
+            type
+            start
+            end
+        }
+    }
+}
