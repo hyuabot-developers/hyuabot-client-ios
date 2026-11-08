@@ -53,17 +53,23 @@ enum SettingsStyle {
                 ? UIColor(red: 30 / 255, green: 37 / 255, blue: 46 / 255, alpha: 0.72)
                 : UIColor(white: 1, alpha: 0.78)
         }
+
         static let tabEdge = UIColor { traits in
             traits.userInterfaceStyle == .dark
                 ? UIColor(white: 1, alpha: 0.10)
                 : UIColor(white: 1, alpha: 0.90)
         }
+
         static let tabSelectionFill = UIColor { traits in
             traits.userInterfaceStyle == .dark
                 ? UIColor(red: 127 / 255, green: 178 / 255, blue: 229 / 255, alpha: 0.18)
                 : UIColor(red: 14 / 255, green: 74 / 255, blue: 132 / 255, alpha: 0.12)
         }
+
         static let saturday = adaptive(light: 0x1D4ED8, dark: 0x93C5FD)
+        static let sunday = adaptive(light: 0xC62828, dark: 0xFF8A80)
+        static let weekSaturday = adaptive(light: 0x1D5FB8, dark: 0x8AB4F8)
+        static let cafeteriaGrabber = adaptive(light: 0xC9D0D8, dark: 0x3A4450)
 
         private static let calendarCategoryStrongColors: [UIColor] = [
             adaptive(light: 0x1D4ED8, dark: 0x93C5FD),
@@ -118,6 +124,12 @@ enum SettingsStyle {
         static let iconTileSize: CGFloat = 30
         static let iconTileRadius: CGFloat = 8
         static let separatorInset: CGFloat = 58
+        static let segmentRadius: CGFloat = 12
+        static let segmentInset: CGFloat = 4
+        static let segmentButtonHeight: CGFloat = 36
+        static let chipHeight: CGFloat = 20
+        static let chipRadius: CGFloat = 10
+        static let capsuleRadius: CGFloat = 16
     }
 
     static func font(_ size: CGFloat, bold: Bool = false) -> UIFont {
@@ -127,8 +139,10 @@ enum SettingsStyle {
     }
 
     static func monospacedDigitFont(_ size: CGFloat, bold: Bool = false) -> UIFont {
-        let settings = [[UIFontDescriptor.FeatureKey.featureIdentifier: kNumberSpacingType,
-                         UIFontDescriptor.FeatureKey.typeIdentifier: kMonospacedNumbersSelector]]
+        let settings = [[
+            UIFontDescriptor.FeatureKey.featureIdentifier: kNumberSpacingType,
+            UIFontDescriptor.FeatureKey.typeIdentifier: kMonospacedNumbersSelector
+        ]]
         let descriptor = UIFont.godo(size: size, weight: bold ? .bold : .regular).fontDescriptor
             .addingAttributes([.featureSettings: settings])
         return UIFontMetrics(forTextStyle: .body).scaledFont(
@@ -217,8 +231,7 @@ enum SettingsNavigationStyle {
 
     static func screenWillDisappear(_ viewController: UIViewController) {
         guard let navigationController = viewController.navigationController else { return }
-        if let top = navigationController.topViewController,
-           top !== viewController, top is SettingsStyledScreen {
+        if let top = navigationController.topViewController, top !== viewController, top is SettingsStyledScreen {
             return
         }
         navigationController.navigationBar.tintColor = .white
@@ -226,7 +239,9 @@ enum SettingsNavigationStyle {
         let tabBarController = viewController.tabBarController
         if let coordinator = viewController.transitionCoordinator {
             coordinator.animate(alongsideTransition: nil) { context in
-                if context.isCancelled { screenWillAppear(viewController) }
+                if context.isCancelled {
+                    screenWillAppear(viewController)
+                }
                 tabBarController?.setNeedsStatusBarAppearanceUpdate()
             }
         } else {

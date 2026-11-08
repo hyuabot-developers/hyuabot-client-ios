@@ -20,14 +20,23 @@ final class SnapshotSmokeTests: XCTestCase {
         assertSnapshot(of: cell, as: .image(size: cell.frame.size, traits: darkTraits), record: .missing, timeout: 5)
     }
 
-    func testCafeteriaHeaderSnapshot() {
-        let header = CafeteriaHeaderView(reuseIdentifier: CafeteriaHeaderView.reuseIdentifier)
-        header.frame = CGRect(x: 0, y: 0, width: 390, height: 72)
-        header.overrideUserInterfaceStyle = .dark
-        header.setupUI(id: 1, runningTime: "00:00 ~ 23:59", hasMenu: true, showCafeteriaInfoVC: {})
-        setHeaderSnapshotText(in: header)
+    func testCafeteriaMenuCardSnapshot() {
+        let card = CafeteriaMenuCardView()
+        card.configure(CafeteriaCardModel(
+            seq: 13,
+            name: "Dormitory Cafeteria",
+            timeText: "11:30–13:20",
+            status: .open,
+            rows: [
+                CafeteriaMenuRowModel(tag: "Breakfast", main: "Beef seaweed soup", sides: "Rice · Salad · Kimchi", price: "1,000"),
+                CafeteriaMenuRowModel(tag: nil, main: "Pork cutlet bowl", sides: "Udon broth · Pickles", price: "4,500")
+            ]
+        ))
+        let fittingSize = card.systemLayoutSizeFitting(CGSize(width: 358, height: UIView.layoutFittingCompressedSize.height))
+        card.frame = CGRect(origin: .zero, size: fittingSize)
+        card.overrideUserInterfaceStyle = .dark
 
-        assertSnapshot(of: header, as: .image(size: header.frame.size, traits: darkTraits), record: .missing, timeout: 5)
+        assertSnapshot(of: card, as: .image(size: card.frame.size, traits: darkTraits), record: .missing, timeout: 5)
     }
 
     private var darkTraits: UITraitCollection {
@@ -35,24 +44,5 @@ final class SnapshotSmokeTests: XCTestCase {
             traits.displayScale = 3
             traits.userInterfaceStyle = .dark
         })
-    }
-
-    private func setHeaderSnapshotText(in view: UIView) {
-        let labels = findLabels(in: view).sorted { first, second in
-            if first.frame.minY == second.frame.minY {
-                first.frame.minX < second.frame.minX
-            } else {
-                first.frame.minY < second.frame.minY
-            }
-        }
-        labels.first?.text = "Student Cafeteria"
-        labels.dropFirst().first?.text = "Running Time: 00:00 ~ 23:59 \u{00B7} Open now"
-    }
-
-    private func findLabels(in view: UIView) -> [UILabel] {
-        let current = (view as? UILabel).map { [$0] } ?? []
-        return view.subviews.reduce(current) { result, subview in
-            result + findLabels(in: subview)
-        }
     }
 }
