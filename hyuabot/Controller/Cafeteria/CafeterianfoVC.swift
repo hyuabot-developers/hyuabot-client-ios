@@ -206,6 +206,42 @@ class CafeteriaInfoVC: UIViewController {
         }
     }
 
+    private func applyRunningTime(_ breakfast: String?, _ lunch: String?, _ dinner: String?) {
+        breakfastTimeLabel.text = CafeteriaDisplayLogic.timeRangeText(breakfast) ?? String(localized: "cafeteria.info.closed")
+        lunchTimeLabel.text = CafeteriaDisplayLogic.timeRangeText(lunch) ?? String(localized: "cafeteria.info.closed")
+        dinnerTimeLabel.text = CafeteriaDisplayLogic.timeRangeText(dinner) ?? String(localized: "cafeteria.info.closed")
+        for (title, label) in [
+            (String(localized: "cafeteria.breakfast"), breakfastTimeLabel),
+            (String(localized: "cafeteria.lunch"), lunchTimeLabel),
+            (String(localized: "cafeteria.dinner"), dinnerTimeLabel)
+        ] {
+            label.accessibilityLabel = "\(title), \(label.text ?? "")"
+        }
+        for (time, label) in [(breakfast, breakfastTimeLabel), (lunch, lunchTimeLabel), (dinner, dinnerTimeLabel)] {
+            label.textColor = CafeteriaDisplayLogic.timeRangeText(time) == nil ? SettingsStyle.Color.commuterFaint : SettingsStyle.Color
+                .text
+        }
+        let now = Foundation.Date.now
+        openStatusChip.isHidden = true
+        for (index, pair) in [(breakfast, breakfastTimeLabel), (lunch, lunchTimeLabel), (dinner, dinnerTimeLabel)].enumerated() {
+            let (time, label) = pair
+            if CafeteriaDisplayLogic.isOpen(runningTime: time, now: now) {
+                openStatusChip.isHidden = false
+                openStatusChip.snp.remakeConstraints { make in
+                    make.centerY.equalTo(self.hourTitleLabels[index])
+                    make.trailing.equalToSuperview().offset(-12)
+                    make.width.greaterThanOrEqualTo(64)
+                    make.height.equalTo(20)
+                }
+                label.snp.remakeConstraints { make in
+                    make.centerY.equalTo(self.hourTitleLabels[index])
+                    make.trailing.lessThanOrEqualTo(self.openStatusChip.snp.leading).offset(-8)
+                }
+                break
+            }
+        }
+    }
+
     private func observeSubjects() {
         cafeteriaInfo.subscribe(onNext: { [weak self] cafeteria in
             guard let self, let cafeteria else { return }
@@ -217,42 +253,7 @@ class CafeteriaInfoVC: UIViewController {
             view.accessibilityLabel = String(format: String(localized: "cafeteria.info.a11y.title.format"), name)
             mapCardView.isHidden = false
 
-            let breakfast = cafeteria.runningTime.breakfast
-            let lunch = cafeteria.runningTime.lunch
-            let dinner = cafeteria.runningTime.dinner
-            breakfastTimeLabel.text = CafeteriaDisplayLogic.timeRangeText(breakfast) ?? String(localized: "cafeteria.info.closed")
-            lunchTimeLabel.text = CafeteriaDisplayLogic.timeRangeText(lunch) ?? String(localized: "cafeteria.info.closed")
-            dinnerTimeLabel.text = CafeteriaDisplayLogic.timeRangeText(dinner) ?? String(localized: "cafeteria.info.closed")
-            for (title, label) in [
-                (String(localized: "cafeteria.breakfast"), breakfastTimeLabel),
-                (String(localized: "cafeteria.lunch"), lunchTimeLabel),
-                (String(localized: "cafeteria.dinner"), dinnerTimeLabel)
-            ] {
-                label.accessibilityLabel = "\(title), \(label.text ?? "")"
-            }
-            for (time, label) in [(breakfast, breakfastTimeLabel), (lunch, lunchTimeLabel), (dinner, dinnerTimeLabel)] {
-                label.textColor = CafeteriaDisplayLogic.timeRangeText(time) == nil ? SettingsStyle.Color.commuterFaint : SettingsStyle.Color
-                    .text
-            }
-            let now = Foundation.Date.now
-            openStatusChip.isHidden = true
-            for (index, pair) in [(breakfast, breakfastTimeLabel), (lunch, lunchTimeLabel), (dinner, dinnerTimeLabel)].enumerated() {
-                let (time, label) = pair
-                if CafeteriaDisplayLogic.isOpen(runningTime: time, now: now) {
-                    openStatusChip.isHidden = false
-                    openStatusChip.snp.remakeConstraints { make in
-                        make.centerY.equalTo(self.hourTitleLabels[index])
-                        make.trailing.equalToSuperview().offset(-12)
-                        make.width.greaterThanOrEqualTo(64)
-                        make.height.equalTo(20)
-                    }
-                    label.snp.remakeConstraints { make in
-                        make.centerY.equalTo(self.hourTitleLabels[index])
-                        make.trailing.lessThanOrEqualTo(self.openStatusChip.snp.leading).offset(-8)
-                    }
-                    break
-                }
-            }
+            applyRunningTime(cafeteria.runningTime.breakfast, cafeteria.runningTime.lunch, cafeteria.runningTime.dinner)
 
             cafeteriaMapView.removeAnnotations(cafeteriaMapView.annotations)
             sheetPresentationController?.animateChanges {

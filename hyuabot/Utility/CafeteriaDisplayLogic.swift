@@ -224,7 +224,9 @@ enum CafeteriaDisplayLogic {
                 name: cafeteriaName(seq: source.seq),
                 timeText: time.flatMap(timeRangeText),
                 status: showsStatus ? cardStatus(runningTime: time, now: now, calendar: calendar) : nil,
-                rows: source.menus.filter { $0.type.contains(meal.typeKeyword) }.map { menuRow(food: $0.food, price: $0.price, korean: korean) }
+                rows: source.menus
+                    .filter { $0.type.contains(meal.typeKeyword) }
+                    .map { menuRow(food: $0.food, price: $0.price, korean: korean) }
             )
         }
     }
