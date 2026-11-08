@@ -70,6 +70,15 @@ enum SettingsStyle {
         static let sunday = adaptive(light: 0xC62828, dark: 0xFF8A80)
         static let weekSaturday = adaptive(light: 0x1D5FB8, dark: 0x8AB4F8)
         static let cafeteriaGrabber = adaptive(light: 0xC9D0D8, dark: 0x3A4450)
+        static let subwaySoon = adaptive(light: 0xC2410C, dark: 0xFDBA74)
+        static let subwayLastFill = adaptive(light: 0xFEE2E2, dark: 0x3A1616)
+        static let subwayLastText = adaptive(light: 0xB91C1C, dark: 0xFCA5A5)
+        static let subwayPast = adaptive(light: 0x8A93A1, dark: 0x6B7480)
+        static let subwayCompactBar = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 11 / 255, green: 15 / 255, blue: 20 / 255, alpha: 0.85)
+                : UIColor(red: 242 / 255, green: 244 / 255, blue: 247 / 255, alpha: 0.88)
+        }
 
         private static let calendarCategoryStrongColors: [UIColor] = [
             adaptive(light: 0x1D4ED8, dark: 0x93C5FD),
