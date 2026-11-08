@@ -68,7 +68,7 @@ final class CafeteriaSkeletonListView: UIView {
     private func makeCard(index: Int, rowCount: Int) -> SkeletonCard {
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = SettingsStyle.Metric.cardRadius
         card.clipsToBounds = true
         let bars = NSMutableArray()
         let header = UIStackView()
@@ -175,7 +175,7 @@ final class CafeteriaEmptyCardView: UIView {
         super.init(frame: .zero)
         accessibilityIdentifier = "cafeteria.empty"
         backgroundColor = SettingsStyle.Color.card
-        layer.cornerRadius = 16
+        layer.cornerRadius = SettingsStyle.Metric.cardRadius
         let content = UIStackView()
         content.axis = .vertical
         content.alignment = .center

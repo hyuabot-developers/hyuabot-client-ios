@@ -16,8 +16,8 @@ final class CafeteriaHeaderBarView: UIView {
 
     private let titleLabel = UILabel()
     private let campusLabel = UILabel()
-    private let subtitleRow = OverflowHitStackView()
-    private let leftColumn = OverflowHitStackView()
+    private let subtitleRow = HYUOverflowHitStackView()
+    private let leftColumn = HYUOverflowHitStackView()
     private let rightGroup = UIStackView()
     private let todayLabel = UILabel()
     private let todayCapsule = UIView()
@@ -69,7 +69,7 @@ final class CafeteriaHeaderBarView: UIView {
         todayLabel.adjustsFontForContentSizeCategory = true
         todayLabel.isUserInteractionEnabled = false
         todayCapsule.backgroundColor = SettingsStyle.Color.accentFill
-        todayCapsule.layer.cornerRadius = 16
+        todayCapsule.layer.cornerRadius = SettingsStyle.Metric.capsuleRadius
         todayCapsule.isUserInteractionEnabled = false
         todayCapsule.addSubview(todayLabel)
         todayButton.addSubview(todayCapsule)
@@ -114,7 +114,7 @@ final class CafeteriaHeaderBarView: UIView {
         todayLabel.setContentHuggingPriority(.required, for: .horizontal)
         todayLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         shareButton.snp.makeConstraints { $0.size.equalTo(44) }
-        shareCircle.layer.cornerRadius = 16
+        shareCircle.layer.cornerRadius = SettingsStyle.Metric.capsuleRadius
         shareCircle.isUserInteractionEnabled = false
         shareIcon.image = UIImage(
             systemName: "square.and.arrow.up",
@@ -180,25 +180,5 @@ final class CafeteriaHeaderBarView: UIView {
     @objc
     private func shareTapped() {
         onShareTap?()
-    }
-}
-
-extension NSAttributedString {
-    func withKern(_ kern: CGFloat) -> NSAttributedString {
-        let result = NSMutableAttributedString(attributedString: self)
-        result.addAttribute(.kern, value: kern, range: NSRange(location: 0, length: result.length))
-        return result
-    }
-}
-
-/// Stack view that also hit-tests subviews extending beyond its bounds (e.g. a 44pt button in a 20pt row).
-private final class OverflowHitStackView: UIStackView {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
-        for subview in subviews.reversed() {
-            let converted = subview.convert(point, from: self)
-            if let hit = subview.hitTest(converted, with: event) { return hit }
-        }
-        return super.hitTest(point, with: event)
     }
 }

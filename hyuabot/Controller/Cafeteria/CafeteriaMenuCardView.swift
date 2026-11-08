@@ -26,7 +26,7 @@ final class CafeteriaMenuCardView: UIView {
     init() {
         super.init(frame: .zero)
         clipsToBounds = true
-        layer.cornerRadius = 16
+        layer.cornerRadius = SettingsStyle.Metric.cardRadius
         backgroundColor = SettingsStyle.Color.card
         addSubview(header)
         addSubview(separator)
@@ -61,7 +61,7 @@ final class CafeteriaMenuCardView: UIView {
         statusLabel.font = SettingsStyle.font(12, bold: true)
         statusChip.addArrangedSubview(statusDot)
         statusChip.addArrangedSubview(statusLabel)
-        statusChip.snp.makeConstraints { $0.height.equalTo(20) }
+        statusChip.snp.makeConstraints { $0.height.equalTo(SettingsStyle.Metric.chipHeight) }
         statusChip.setContentHuggingPriority(.required, for: .horizontal)
         statusChip.setContentCompressionResistancePriority(.required, for: .horizontal)
         statusLabel.setContentHuggingPriority(.required, for: .horizontal)
@@ -153,7 +153,7 @@ final class CafeteriaMenuCardView: UIView {
             statusLabel.textColor = SettingsStyle.Color.link
             statusDot.backgroundColor = SettingsStyle.Color.accent
         }
-        statusChip.layer.cornerRadius = 10
+        statusChip.layer.cornerRadius = SettingsStyle.Metric.chipRadius
     }
 
     private func makeRow(_ row: CafeteriaMenuRowModel, translated: [String?]?, index: Int, total: Int) -> UIView {
@@ -201,15 +201,15 @@ final class CafeteriaMenuCardView: UIView {
     }
 
     private func makeTagChip(_ tag: String) -> UILabel {
-        let chip = PaddingLabel()
+        let chip = HYUPaddedLabel()
         chip.text = tag
         chip.font = SettingsStyle.font(12, bold: true)
         chip.textColor = SettingsStyle.Color.levelMidText
         chip.backgroundColor = SettingsStyle.Color.levelMidFill
-        chip.layer.cornerRadius = 10
+        chip.layer.cornerRadius = SettingsStyle.Metric.chipRadius
         chip.clipsToBounds = true
         chip.padding = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
-        chip.snp.makeConstraints { $0.height.equalTo(20) }
+        chip.snp.makeConstraints { $0.height.equalTo(SettingsStyle.Metric.chipHeight) }
         chip.setContentHuggingPriority(.required, for: .horizontal)
         chip.setContentCompressionResistancePriority(.required, for: .horizontal)
         return chip
@@ -258,26 +258,5 @@ final class CafeteriaMenuCardView: UIView {
         guard let model else { return }
         AnalyticsManager.logSelect(.cafeteriaInfoButton)
         onInfoTap?(model.seq)
-    }
-}
-
-private final class PaddingLabel: UILabel {
-    var padding = UIEdgeInsets.zero
-    override var intrinsicContentSize: CGSize {
-        let size = super.intrinsicContentSize
-        return CGSize(width: size.width + padding.left + padding.right, height: size.height + padding.top + padding.bottom)
-    }
-
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
-        let inner = CGSize(
-            width: max(0, size.width - padding.left - padding.right),
-            height: max(0, size.height - padding.top - padding.bottom)
-        )
-        let fitted = super.sizeThatFits(inner)
-        return CGSize(width: fitted.width + padding.left + padding.right, height: fitted.height + padding.top + padding.bottom)
-    }
-
-    override func drawText(in rect: CGRect) {
-        super.drawText(in: rect.inset(by: padding))
     }
 }

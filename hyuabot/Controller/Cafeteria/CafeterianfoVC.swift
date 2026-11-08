@@ -30,7 +30,7 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
+        $0.font = SettingsStyle.font(20, bold: true)
         $0.textColor = SettingsStyle.Color.text
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingTail
@@ -38,7 +38,7 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let captionLabel = UILabel().then {
-        $0.font = .godo(size: 13, weight: .regular)
+        $0.font = SettingsStyle.font(13)
         $0.textColor = SettingsStyle.Color.secondaryText
         $0.numberOfLines = 2
     }
@@ -74,7 +74,7 @@ class CafeteriaInfoVC: UIViewController {
 
     private let mapActionLabel = UILabel().then {
         $0.text = String(localized: "cafeteria.info.map.action")
-        $0.font = .godo(size: 15, weight: .bold)
+        $0.font = SettingsStyle.font(15, bold: true)
         $0.textColor = SettingsStyle.Color.link
         $0.numberOfLines = 1
     }
@@ -90,7 +90,7 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let runningTimeTitleLabel = UILabel().then {
-        $0.font = .godo(size: 13, weight: .bold)
+        $0.font = SettingsStyle.font(13, bold: true)
         $0.text = String(localized: "cafeteria.running.time")
         $0.textColor = SettingsStyle.Color.secondaryText
         $0.accessibilityTraits = .header
@@ -103,7 +103,6 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let breakfastTimeLabel = UILabel().then {
-        $0.font = .godo(size: 15, weight: .regular)
         $0.textColor = SettingsStyle.Color.commuterFaint
         $0.textAlignment = .right
         $0.font = SettingsStyle.monospacedDigitFont(15)
@@ -111,7 +110,6 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let lunchTimeLabel = UILabel().then {
-        $0.font = .godo(size: 15, weight: .regular)
         $0.textColor = SettingsStyle.Color.commuterFaint
         $0.textAlignment = .right
         $0.font = SettingsStyle.monospacedDigitFont(15)
@@ -119,7 +117,6 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let dinnerTimeLabel = UILabel().then {
-        $0.font = .godo(size: 15, weight: .regular)
         $0.textColor = SettingsStyle.Color.commuterFaint
         $0.textAlignment = .right
         $0.font = SettingsStyle.monospacedDigitFont(15)
@@ -127,7 +124,7 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let openStatusChip = UILabel().then {
-        $0.font = .godo(size: 12, weight: .medium)
+        $0.font = SettingsStyle.font(12)
         $0.text = String(localized: "cafeteria.status.open")
         $0.textColor = SettingsStyle.Color.link
         $0.backgroundColor = SettingsStyle.Color.accentFill
@@ -135,7 +132,7 @@ class CafeteriaInfoVC: UIViewController {
         $0.layer.cornerRadius = 10
         $0.layer.masksToBounds = true
         $0.isHidden = true
-        $0.font = .godo(size: 12, weight: .bold)
+        $0.font = SettingsStyle.font(12, bold: true)
     }
 
     init(cafeteriaID: Int) {
@@ -398,7 +395,7 @@ extension CafeteriaInfoVC {
 
     private func constrainHourRow(_ label: UILabel, title: String) {
         let titleLabel = UILabel().then {
-            $0.font = .godo(size: 15, weight: .bold)
+            $0.font = SettingsStyle.font(15, bold: true)
             $0.textColor = SettingsStyle.Color.text
             $0.text = title
         }

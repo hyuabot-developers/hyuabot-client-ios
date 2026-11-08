@@ -18,7 +18,7 @@ final class CafeteriaWeekStripView: UIView, UIGestureRecognizerDelegate {
         super.init(frame: frame)
         accessibilityIdentifier = "cafeteria.week_strip"
         backgroundColor = SettingsStyle.Color.card
-        layer.cornerRadius = 16
+        layer.cornerRadius = SettingsStyle.Metric.cardRadius
         clipsToBounds = true
         setupTrack()
         setupConstraints()
@@ -47,7 +47,7 @@ final class CafeteriaWeekStripView: UIView, UIGestureRecognizerDelegate {
             make.leading.trailing.equalToSuperview().inset(4)
             make.top.bottom.equalToSuperview().inset(6)
         }
-        snp.makeConstraints { $0.height.equalTo(68) }
+        snp.makeConstraints { $0.height.greaterThanOrEqualTo(68) }
     }
 
     func configure(days: [CafeteriaWeekDay], accessibilityLabel: String, slideDirection: Int) {
@@ -123,9 +123,9 @@ final class CafeteriaWeekStripView: UIView, UIGestureRecognizerDelegate {
         content.isUserInteractionEnabled = false
         cell.addSubview(content)
         content.snp.makeConstraints { $0.center.equalToSuperview() }
-        weekday.snp.makeConstraints { $0.height.equalTo(16) }
+        weekday.snp.makeConstraints { $0.height.greaterThanOrEqualTo(16) }
         number.snp.makeConstraints { $0.size.equalTo(34) }
-        cell.snp.makeConstraints { $0.height.equalTo(56) }
+        cell.snp.makeConstraints { $0.height.greaterThanOrEqualTo(56) }
         return cell
     }
 

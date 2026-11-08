@@ -124,6 +124,12 @@ enum SettingsStyle {
         static let iconTileSize: CGFloat = 30
         static let iconTileRadius: CGFloat = 8
         static let separatorInset: CGFloat = 58
+        static let segmentRadius: CGFloat = 12
+        static let segmentInset: CGFloat = 4
+        static let segmentButtonHeight: CGFloat = 36
+        static let chipHeight: CGFloat = 20
+        static let chipRadius: CGFloat = 10
+        static let capsuleRadius: CGFloat = 16
     }
 
     static func font(_ size: CGFloat, bold: Bool = false) -> UIFont {
