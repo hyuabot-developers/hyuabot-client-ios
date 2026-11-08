@@ -6,7 +6,6 @@ struct SubwayCombinedRealtimeData {
     let campusYellow: SubwayRealtimePageQuery.Data.Subway?
     let oidoBlue: SubwayRealtimePageQuery.Data.Subway?
     let oidoYellow: SubwayRealtimePageQuery.Data.Subway?
-    let chojiSeohae: SubwayRealtimePageQuery.Data.Subway?
 }
 
 @MainActor

@@ -384,8 +384,8 @@ extension DomainLogicTests {
 extension DomainLogicTests {
     func testSubwayPayloadIncludesTheDataNeededByEveryTab() {
         let keys = SubwayPayloadSelection.allKeys(weekday: "weekends")
-        XCTAssertEqual(keys.map(\.stationID), ["K449", "K251", "K258", "S26"])
-        XCTAssertEqual(keys.map(\.direction), [["up", "down"], ["up", "down"], ["down"], ["up"]])
+        XCTAssertEqual(keys.map(\.stationID), ["K449", "K251", "K258", "K456"])
+        XCTAssertEqual(keys.map(\.direction), [["up", "down"], ["up", "down"], ["up", "down"], ["up"]])
         XCTAssertTrue(keys.allSatisfy { $0.weekdays == ["weekends"] })
         XCTAssertEqual(keys[0].limit.unwrapped, 4)
         XCTAssertEqual(keys[1].limit.unwrapped, 4)

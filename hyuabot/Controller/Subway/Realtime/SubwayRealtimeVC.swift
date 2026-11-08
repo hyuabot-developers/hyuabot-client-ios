@@ -14,8 +14,8 @@ enum SubwayPayloadSelection {
         return [
             station("K449", ["up", "down"], 4),
             station("K251", ["up", "down"], 4),
-            station("K258", ["down"], nil),
-            station("S26", ["up"], nil)
+            station("K258", ["up", "down"], nil),
+            station("K456", ["up"], nil)
         ]
     }
 }
@@ -23,39 +23,10 @@ enum SubwayPayloadSelection {
 class SubwayRealtimeVC: UIViewController {
     private var requestGeneration = 0
     private var lastAppliedGeneration = 0
-    private static let chojiTravelMinutes = 8
-    private static let chojiTransferBufferMinutes = 8
     private let disposeBag = DisposeBag()
-    private lazy var line4VC = SubwayRealtimeTabVC(
-        tabType: .line4,
-        refreshMethod: self.fetchSubwayRealtimeData,
-        showEntireTimetable: self.showEntireTimetable
-    )
-    private lazy var lineSuinVC = SubwayRealtimeTabVC(
-        tabType: .lineSuin,
-        refreshMethod: self.fetchSubwayRealtimeData,
-        showEntireTimetable: self.showEntireTimetable
-    )
-    private lazy var transferVC = SubwayRealtimeTabVC(
-        tabType: .transfer,
-        refreshMethod: self.fetchSubwayRealtimeData,
-        showEntireTimetable: self.showEntireTimetable
-    )
+    private let contentView = SubwayRealtimeContentView()
+    private var selectedTab: SubwayTabType = .line4
     private var subscription: Disposable?
-    private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 52, spacing: 0))
-        viewPager.contentView.pages = [
-            self.line4VC.view,
-            self.lineSuinVC.view,
-            self.transferVC.view
-        ]
-        viewPager.tabView.tabs = [
-            TabItem(title: String(localized: "subway.tab.blue")),
-            TabItem(title: String(localized: "subway.tab.yellow")),
-            TabItem(title: String(localized: "subway.tab.transfer"))
-        ]
-        return viewPager
-    }()
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -67,13 +38,13 @@ class SubwayRealtimeVC: UIViewController {
         presentCoachMarks(pageId: "subway.realtime", items: [
             CoachMarkItem(
                 id: "subway.tabs",
-                targetView: viewPager.tabView,
+                targetView: contentView.segmentView,
                 title: String(localized: "coach.subway.tabs.title"),
                 message: String(localized: "coach.subway.tabs.message")
             ),
             CoachMarkItem(
                 id: "subway.transfer",
-                targetViewProvider: { [weak self] in self?.viewPager.tabView.tabCellView(at: 2) },
+                targetViewProvider: { [weak self] in self?.contentView.segmentView.button(at: 2) },
                 title: String(localized: "coach.subway.transfer.title"),
                 message: String(localized: "coach.subway.transfer.message")
             )
@@ -84,6 +55,15 @@ class SubwayRealtimeVC: UIViewController {
         super.viewDidLoad()
         setupUI()
         observeSubjects()
+        SubwayRealtimeData.shared.isLoading.distinctUntilChanged().observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.render() }).disposed(by: disposeBag)
+        SubwayRealtimeData.shared.transferUp.observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.render() }).disposed(by: disposeBag)
+        SubwayRealtimeData.shared.transferDown.observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.render() }).disposed(by: disposeBag)
+        #if DEBUG
+        if SubwayDebugFixture.activeMode != nil { render() }
+        #endif
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -112,11 +92,91 @@ class SubwayRealtimeVC: UIViewController {
     }
 
     private func setupUI() {
-        view.addSubview(viewPager)
-        viewPager.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        view.addSubview(contentView)
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
+        navigationItem.backButtonTitle = String(localized: "tabbar.subway")
+        contentView.onSelectTab = { [weak self] tab in
+            self?.selectedTab = tab
+            self?.render()
+        }
+        contentView.onTimetableTap = { [weak self] target in
+            AnalyticsManager.logSelect(.subwayShowEntireTimetable)
+            (self?.navigationController as? SubwayNC)?.moveToTimetableVC(line: target.line, heading: target.heading)
+        }
+        contentView.onRefresh = { [weak self] in
+            AnalyticsManager.logSelect(.subwayRefresh)
+            self?.fetchSubwayRealtimeData()
+        }
+    }
+
+    private func render() {
+        #if DEBUG
+        let fixtureMode = SubwayDebugFixture.activeMode
+        let isLoading = fixtureMode == .loading ? true : (fixtureMode != nil ? false : (
+            (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
+        ))
+        let now = fixtureMode != nil ? SubwayDebugFixture.now : Date.now
+        #else
+        let isLoading = (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
+        let now = Date.now
+        #endif
+        let sections: [SubwaySectionContent]
+        switch selectedTab {
+        case .line4:
+            sections = SubwayDisplayLogic.lineSections(
+                line: .line4,
+                up: arrivals(.line4, .up),
+                down: arrivals(.line4, .down)
+            )
+        case .lineSuin:
+            sections = SubwayDisplayLogic.lineSections(
+                line: .suin,
+                up: arrivals(.suin, .up),
+                down: arrivals(.suin, .down)
+            )
+        case .transfer:
+            let toIncheon: [SubwayTransferRouteInfo]
+            let toHanyang: [SubwayTransferRouteInfo]
+            #if DEBUG
+            if let fixtureMode {
+                toIncheon = SubwayDebugFixture.transferRoutes(toIncheon: true, mode: fixtureMode)
+                toHanyang = SubwayDebugFixture.transferRoutes(toIncheon: false, mode: fixtureMode)
+            } else {
+                toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
+                    SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
+                }
+                toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
+                    SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
+                }
+            }
+            #else
+            toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
+                SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
+            }
+            toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
+                SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
+            }
+            #endif
+            sections = SubwayDisplayLogic.transferSections(toIncheon: toIncheon, toHanyang: toHanyang, now: now)
+        }
+        contentView.render(tab: selectedTab, isLoading: isLoading, sections: sections)
+    }
+
+    private func arrivals(_ line: SubwayLine, _ heading: SubwayHeadingEnum) -> [SubwayArrivalInfo] {
+        #if DEBUG
+        if let mode = SubwayDebugFixture.activeMode {
+            return SubwayDebugFixture.arrivals(line: line, heading: heading, mode: mode)
+        }
+        #endif
+        let subway: SubwayRealtimePageQuery.Data.Subway?
+        switch line {
+        case .line4: subway = try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusBlue
+        case .suin: subway = try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusYellow
+        }
+        let direction = heading == .up ? "up" : "down"
+        return subway?.arrival.first(where: { $0.direction == direction })?.entries.map(SubwayArrivalInfo.init(entry:)) ?? []
     }
 
     private func observeSubjects() {
@@ -126,8 +186,7 @@ class SubwayRealtimeVC: UIViewController {
                 campusBlue: data.first(where: { $0.stationID == "K449" }),
                 campusYellow: data.first(where: { $0.stationID == "K251" }),
                 oidoBlue: data.first(where: { $0.stationID == "K456" }),
-                oidoYellow: data.first(where: { $0.stationID == "K258" }),
-                chojiSeohae: data.first(where: { $0.stationID == "S26" })
+                oidoYellow: data.first(where: { $0.stationID == "K258" })
             ))
         }).disposed(by: disposeBag)
         SubwayRealtimeData.shared.combinedRealtimeData.subscribe(onNext: { [weak self] data in
@@ -135,8 +194,7 @@ class SubwayRealtimeVC: UIViewController {
                 let data,
                 let campusBlue = data.campusBlue,
                 let campusYellow = data.campusYellow,
-                let oidoYellow = data.oidoYellow,
-                let chojiSeohae = data.chojiSeohae
+                let oidoYellow = data.oidoYellow
             else {
                 SubwayRealtimeData.shared.transferUp.onNext([])
                 SubwayRealtimeData.shared.transferDown.onNext([])
@@ -148,11 +206,7 @@ class SubwayRealtimeVC: UIViewController {
                 campusYellow: campusYellow,
                 oidoYellow: oidoYellow
             ))
-            SubwayRealtimeData.shared.transferDown.onNext(processChojiDirection(
-                campusBlue: campusBlue,
-                campusYellow: campusYellow,
-                chojiSeohae: chojiSeohae
-            ))
+            SubwayRealtimeData.shared.transferDown.onNext(processHanyangDirection(oidoBlue: data.oidoBlue, oidoYellow: oidoYellow))
         }).disposed(by: disposeBag)
     }
 
@@ -190,33 +244,20 @@ class SubwayRealtimeVC: UIViewController {
         return (downRealtimeWithoutTransfer + downRealtimeWithTransfer).sorted { $0.take.minutes < $1.take.minutes }
     }
 
-    private func processChojiDirection(
-        campusBlue: SubwayRealtimePageQuery.Data.Subway,
-        campusYellow: SubwayRealtimePageQuery.Data.Subway,
-        chojiSeohae: SubwayRealtimePageQuery.Data.Subway
+    private func processHanyangDirection(
+        oidoBlue: SubwayRealtimePageQuery.Data.Subway?,
+        oidoYellow: SubwayRealtimePageQuery.Data.Subway
     ) -> [SubwayTransferItem] {
-        let firstLegs = (
-            campusBlue.arrival.first(where: { $0.direction == "down" })?.entries.filter {
-                $0.terminal.stationID >= "K452" && $0.terminal.stationID.hasPrefix("K4")
-            } ?? []
-        ) + (
-            campusYellow.arrival.first(where: { $0.direction == "down" })?.entries.filter {
-                $0.terminal.stationID >= "K254" && $0.terminal.stationID.hasPrefix("K2")
-            } ?? []
-        )
-        let secondLegs = chojiSeohae.arrival.first(where: { $0.direction == "up" })?.entries.filter {
-            $0.terminal.stationID <= "S16" && $0.terminal.stationID.hasPrefix("S")
-        } ?? []
-
-        return firstLegs.sorted { $0.minutes < $1.minutes }.compactMap { firstLeg in
-            guard let transfer = secondLegs.first(where: {
-                $0.minutes > firstLeg.minutes + Self.chojiTravelMinutes + Self.chojiTransferBufferMinutes
-            }) else { return nil }
-            return SubwayTransferItem(
-                take: firstLeg,
-                transfer: transfer,
-                transferWaitMinutes: transfer.minutes - firstLeg.minutes - Self.chojiTravelMinutes
-            )
+        let first = oidoYellow.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+        let line4 = oidoBlue?.arrival.first(where: { $0.direction == "up" })?.entries ?? []
+        return SubwayHanyangTransfer.routes(
+            arrivingAtOido: first,
+            line4Departures: line4,
+            minutes: { $0.minutes },
+            terminalID: { $0.terminal.stationID },
+            isRealtime: { $0.isRealtime }
+        ).map {
+            SubwayTransferItem(take: $0.take, transfer: $0.transfer, transferWaitMinutes: $0.waitMinutes)
         }
     }
 
@@ -269,17 +310,20 @@ class SubwayRealtimeVC: UIViewController {
                     self.lastAppliedGeneration = generation
                     SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
                     SubwayRealtimeData.shared.isLoading.onNext(false)
-                    self.line4VC.reload()
-                    self.lineSuinVC.reload()
-                    self.transferVC.reload()
+                    self.render()
+                    self.contentView.endRefreshing()
                 } else {
                     SubwayRealtimeData.shared.isLoading.onNext(false)
+                    self.contentView.endRefreshing()
                 }
             }
         }
     }
 
     private func startPolling() {
+        #if DEBUG
+        guard SubwayDebugFixture.activeMode == nil else { return }
+        #endif
         fetchSubwayRealtimeData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
@@ -291,45 +335,39 @@ class SubwayRealtimeVC: UIViewController {
         subscription?.dispose()
     }
 
-    private func showEntireTimetable(title: String.LocalizationValue, heading: SubwayHeadingEnum) {
-        guard let nc = navigationController as? SubwayNC else { return }
-        nc.moveToTimetableVC(timetableTitle: title, heading: heading)
-    }
-
-    private func checkTimetableAfterRealtime(departureTime: String, maxValue: Double) -> Bool {
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss"
-        guard let departureTime = dateFormatter.date(from: departureTime) else { return false }
-        let hour = calendar.component(.hour, from: departureTime)
-        let minute = calendar.component(.minute, from: departureTime)
-        let second = calendar.component(.second, from: departureTime)
-        let remainingTime = (hour * 3600 + minute * 60 + second) - (calendar.component(.hour, from: Date.now) * 3600 + calendar.component(
-            .minute,
-            from: Date.now
-        ) * 60 + calendar.component(.second, from: Date.now)) // in seconds
-        return remainingTime > Int(maxValue * 60)
-    }
-
-    private func calculateRemainingTime(current: Foundation.Date, departureTime: String) -> Int {
-        let splitTime = departureTime.split(separator: ":")
-        guard splitTime.count >= 2,
-              var hour = Int(splitTime[0]),
-              let minute = Int(splitTime[1]) else { return Int.max }
-        if hour < 4 {
-            hour += 24
-        }
-        return 60 * (hour - Calendar.current.component(.hour, from: current)) + (minute - Calendar.current.component(
-            .minute,
-            from: current
-        ))
-    }
-
     @objc func appDidEnterBackground() {
         stopPolling()
     }
 
     @objc func appWillEnterForeground() {
         startPolling()
+    }
+}
+
+extension SubwayArrivalInfo {
+    init(entry: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) {
+        self.init(terminalName: entry.terminal.name, minutes: entry.minutes, isRealtime: entry.isRealtime,
+                  isLast: entry.isLast ?? false, status: entry.status, location: entry.location)
+    }
+}
+
+extension SubwayTransferRouteInfo {
+    init(item: SubwayTransferItem, transferStation: String, showsPosition: Bool) {
+        let first = SubwayTransferLegInfo(
+            line: .from(stationID: item.take.terminal.stationID), terminalName: item.take.terminal.name,
+            minutes: item.take.minutes, location: showsPosition ? item.take.location : nil,
+            status: showsPosition ? item.take.status : nil
+        )
+        if let transfer = item.transfer {
+            self.init(first: first, transferStation: transferStation,
+                      waitMinutes: item.transferWaitMinutes ?? (transfer.minutes - item.take.minutes),
+                      second: SubwayTransferLegInfo(
+                        line: .from(stationID: transfer.terminal.stationID),
+                        terminalName: transfer.terminal.name,
+                        minutes: transfer.minutes
+                      ))
+        } else {
+            self.init(first: first, transferStation: nil, waitMinutes: nil, second: nil)
+        }
     }
 }

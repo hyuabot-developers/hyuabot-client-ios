@@ -1,26 +1,40 @@
 import Api
 import RxSwift
+import SnapKit
 import UIKit
 
-class SubwayTimetableVC: UIViewController {
-    private let timetableTitle: String.LocalizationValue
+class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    private let line: SubwayLine
     private let heading: SubwayHeadingEnum
+    private let merged: Bool
     private let disposeBag = DisposeBag()
-    private lazy var weekdaysVC = SubwayTimetableTabVC(heading: self.heading, isWeekdays: true)
-    private lazy var weekendsVC = SubwayTimetableTabVC(heading: self.heading, isWeekdays: false)
-    private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0), navigationBarEnabled: true)
-        viewPager.tabView.tabs = [
-            TabItem(title: String(localized: "subway.timetable.weekdays")),
-            TabItem(title: String(localized: "subway.timetable.weekends"))
-        ]
-        viewPager.contentView.pages = [weekdaysVC.view, weekendsVC.view]
-        return viewPager
-    }()
+    private let now: Foundation.Date
+    private var today: SubwayDayType
+    private var day: SubwayDayType
+    private var expanded = false
+    private var isLoading = true
+    private var weekdays: [SubwayTimetableDeparture] = []
+    private var weekends: [SubwayTimetableDeparture] = []
+    private var layout = SubwayTimetableLayout(hiddenPastCount: 0, groups: [])
+    private var lastTableWidth: CGFloat = 0
+    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let header = SubwayTimetableHeaderView()
+    private let footer = SubwayTimetableCardFooterView()
+    private let compactBar = SubwayCompactBarView(maxTitleWidth: 200, titleCenterFromBottom: 22)
 
-    init(timetableTitle: String.LocalizationValue, heading: SubwayHeadingEnum) {
-        self.timetableTitle = timetableTitle
+    init(line: SubwayLine, heading: SubwayHeadingEnum) {
+        self.line = line
         self.heading = heading
+        merged = SubwayDisplayLogic.isMerged(line: line, heading: heading)
+        #if DEBUG
+            let fixtureActive = SubwayDebugFixture.activeMode != nil
+            now = fixtureActive ? SubwayDebugFixture.now : .now
+            today = fixtureActive ? SubwayDebugFixture.dayType : SubwayDayType.serviceDay(.now)
+        #else
+            now = .now
+            today = SubwayDayType.serviceDay(.now)
+        #endif
+        day = today
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -29,115 +43,241 @@ class SubwayTimetableVC: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        setupCallbacks()
+        fetchSubwayTimetable()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         logScreenView(.subwayTimetable)
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        observeSubjects()
-        fetchSubwayTimetable()
-    }
-
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        navigationController?.navigationBar.tintColor = SettingsStyle.Color.link
         configureNavigationBar()
     }
 
-    private func fetchSubwayTimetable() {
-        SubwayTimetableData.shared.isLoading.onNext(true)
-        SubwayTimetableData.shared.timetable.onNext([])
-        let isLine4 = timetableTitle == "subway.realtime.section.4.up"
-            || timetableTitle == "subway.realtime.section.4.down"
-        let station = isLine4 ? "K449" : "K251"
-        let direction = heading == .up ? "up" : "down"
-        Task {
-            let response = try? await Network.shared.client.fetch(
-                query: SubwayTimetablePageQuery(
-                    station: station,
-                    direction: [direction],
-                    language: LanguageManager.shared.apiLanguageTag
-                ),
-                cachePolicy: .networkOnly
-            )
-            await MainActor.run {
-                if let timetable = response?.data?.subway.first?.timetable {
-                    SubwayTimetableData.shared.timetable.onNext(timetable)
-                } else {
-                    SubwayTimetableData.shared.isLoading.onNext(false)
-                }
-            }
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if let navBar = navigationController?.navigationBar {
+            // Center the title on the back button: the button occupies the top 44pt of the navigation bar.
+            compactBar.setTitleCenterFromBottom(view.safeAreaInsets.top - (navBar.frame.minY + 22))
         }
+        guard tableView.bounds.width > 0, tableView.bounds.width != lastTableWidth else { return }
+        resizeTableSupplementaryViews()
     }
 
     private func setupUI() {
-        view.backgroundColor = .systemBackground
-        view.addSubview(viewPager)
-        navigationItem.title = String(localized: timetableTitle)
-        viewPager.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        view.backgroundColor = SettingsStyle.Color.background
+        navigationItem.title = nil
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.sectionHeaderTopPadding = 0
+        tableView.showsVerticalScrollIndicator = false
+        tableView.contentInsetAdjustmentBehavior = .automatic
+        tableView.estimatedRowHeight = 44
+        tableView.sectionFooterHeight = 0
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(SubwayTimetableRowCell.self, forCellReuseIdentifier: SubwayTimetableRowCell.reuseIdentifier)
+        tableView.register(SubwayTimetableHourHeaderView.self, forHeaderFooterViewReuseIdentifier: "SubwayTimetableHourHeaderView")
+        tableView.tableHeaderView = header
+        tableView.tableFooterView = footer
+        tableView.accessibilityLabel = String(
+            format: String(localized: "subway.timetable.a11y.section.%@.%@"),
+            merged ? String(localized: "subway.line.name.line4.suin") : SubwayDisplayLogic.routeLine(line).name,
+            SubwayDisplayLogic.title(line: line, heading: heading)
+        )
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        compactBar.setTitle(SubwayDisplayLogic.title(line: line, heading: heading))
+        view.addSubview(compactBar)
+        compactBar.snp.makeConstraints {
+            $0.leading.trailing.top.equalToSuperview()
+            // The safe-area top is the navigation bar bottom; its back button is 22pt above it.
+            $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.top)
         }
     }
 
     private func configureNavigationBar() {
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .hanyangBlue
-
-        let whiteAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.white
+        appearance.configureWithTransparentBackground()
+        appearance.shadowColor = .clear
+        appearance.backButtonAppearance.normal.titleTextAttributes = [
+            .font: SettingsStyle.font(17), .foregroundColor: SettingsStyle.Color.link
         ]
-        appearance.titleTextAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 17, weight: .bold)
-        ]) { _, new in new }
-        appearance.largeTitleTextAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 34, weight: .bold)
-        ]) { _, new in new }
-        let buttonAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 17, weight: .medium)
-        ]) { _, new in new }
-        appearance.buttonAppearance.normal.titleTextAttributes = buttonAttributes
-        appearance.doneButtonAppearance.normal.titleTextAttributes = buttonAttributes
-        appearance.backButtonAppearance.normal.titleTextAttributes = buttonAttributes
-
         navigationItem.standardAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
         navigationItem.compactAppearance = appearance
-        navigationController?.navigationBar.tintColor = .white
     }
 
-    private func observeSubjects() {
-        SubwayTimetableData.shared.timetable.subscribe(onNext: { [weak self] timetable in
+    private func setupCallbacks() {
+        header.onSelectDay = { [weak self] selectedDay in
             guard let self else { return }
-            let isLoading = (try? SubwayTimetableData.shared.isLoading.value()) ?? false
-            if isLoading, timetable.isEmpty {
+            day = selectedDay
+            expanded = false
+            render()
+        }
+        header.onExpand = { [weak self] in
+            self?.expanded = true
+            self?.render()
+        }
+    }
+
+    private func fetchSubwayTimetable() {
+        #if DEBUG
+            if let mode = SubwayDebugFixture.activeMode {
+                if mode != .loading {
+                    weekdays = fixtureDepartures(day: .weekdays)
+                    weekends = fixtureDepartures(day: .weekends)
+                    isLoading = false
+                }
+                render()
                 return
             }
-            SubwayTimetableData.shared.timetableWeekdays
-                .onNext(timetable.filter { $0.weekday == "weekdays" }
-                    .sorted(by: { self.sortableDepartureTime($0.time) < self.sortableDepartureTime($1.time) }))
-            SubwayTimetableData.shared.timetableWeekends
-                .onNext(timetable.filter { $0.weekday == "weekends" }
-                    .sorted(by: { self.sortableDepartureTime($0.time) < self.sortableDepartureTime($1.time) }))
-            SubwayTimetableData.shared.isLoading.onNext(false)
-            weekdaysVC.reload()
-            weekendsVC.reload()
-        }).disposed(by: disposeBag)
+        #endif
+        SubwayTimetableData.shared.isLoading.onNext(true)
+        SubwayTimetableData.shared.timetable.onNext([])
+        let station = line == .line4 ? "K449" : "K251"
+        let direction = heading == .up ? "up" : "down"
+        Task {
+            async let primary = fetchTimetable(station: station, direction: direction)
+            async let suin = merged ? fetchTimetable(station: "K251", direction: "down") : []
+            let (primaryRows, suinRows) = await (primary, suin)
+            await MainActor.run {
+                SubwayTimetableData.shared.timetable.onNext(primaryRows)
+                SubwayTimetableData.shared.isLoading.onNext(false)
+                weekdays = self.departures(primaryRows, suinRows: suinRows, day: .weekdays)
+                weekends = self.departures(primaryRows, suinRows: suinRows, day: .weekends)
+                isLoading = false
+                render()
+            }
+        }
     }
 
-    private func sortableDepartureTime(_ time: LocalTime) -> String {
-        guard let date = time.toLocalTimeOrNil() else { return "99:99" }
-        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
-        guard let hour = components.hour,
-              let minute = components.minute else { return "99:99" }
-        if hour < 4 {
-            return String(format: "%02d:%02d", hour + 24, minute)
+    private func fetchTimetable(
+        station: String,
+        direction: String
+    ) async -> [SubwayTimetablePageQuery.Data.Subway.Timetable] {
+        let response = try? await Network.shared.client.fetch(
+            query: SubwayTimetablePageQuery(
+                station: station,
+                direction: [direction],
+                language: LanguageManager.shared.apiLanguageTag
+            ),
+            cachePolicy: .networkOnly
+        )
+        return response?.data?.subway.first?.timetable ?? []
+    }
+
+    private func departures(
+        _ rows: [SubwayTimetablePageQuery.Data.Subway.Timetable],
+        suinRows: [SubwayTimetablePageQuery.Data.Subway.Timetable],
+        day: SubwayDayType
+    ) -> [SubwayTimetableDeparture] {
+        let line4 = SubwayDisplayLogic.departures(
+            rows.filter { $0.weekday == day.apiValue }.map { (time: $0.time, terminalName: $0.terminal.name) },
+            line: .line4
+        )
+        guard merged else { return line4 }
+        let suin = SubwayDisplayLogic.departures(
+            suinRows.filter { $0.weekday == day.apiValue }.map { (time: $0.time, terminalName: $0.terminal.name) },
+            line: .suin
+        )
+        return SubwayDisplayLogic.merged([line4, suin])
+    }
+
+    #if DEBUG
+        private func fixtureDepartures(day: SubwayDayType) -> [SubwayTimetableDeparture] {
+            let primary = SubwayDebugFixture.departures(line: line, heading: heading, day: day)
+            guard merged else { return primary }
+            let suin = SubwayDebugFixture.departures(line: .suin, heading: .down, day: day)
+            return SubwayDisplayLogic.merged([primary, suin])
         }
-        return String(format: "%02d:%02d", hour, minute)
+    #endif
+
+    private func render() {
+        let list = day == .weekdays ? weekdays : weekends
+        layout = SubwayDisplayLogic.timetableLayout(
+            list,
+            nowMinutes: day == today ? SubwayDisplayLogic.nowMinutes(now) : nil,
+            expanded: expanded,
+            merged: merged
+        )
+        header.configure(
+            line: line,
+            heading: heading,
+            day: day,
+            counts: (weekday: isLoading ? nil : weekdays.count, weekend: isLoading ? nil : weekends.count),
+            isLoading: isLoading,
+            layout: layout
+        )
+        footer.configure(showsCard: !isLoading && !layout.groups.isEmpty, showsFootnote: !isLoading)
+        resizeTableSupplementaryViews()
+        tableView.reloadData()
+    }
+
+    private func resizeTableSupplementaryViews() {
+        let width = tableView.bounds.width
+        guard width > 0 else { return }
+        lastTableWidth = width
+        header.frame = CGRect(x: 0, y: 0, width: width, height: header.fittingHeight(width: width))
+        footer.frame = CGRect(x: 0, y: 0, width: width, height: footer.fittingHeight(width: width))
+        tableView.tableHeaderView = header
+        tableView.tableFooterView = footer
+    }
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        isLoading ? 0 : layout.groups.count
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        layout.groups[section].rows.count
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: SubwayTimetableRowCell.reuseIdentifier,
+            for: indexPath
+        ) as? SubwayTimetableRowCell else { return UITableViewCell() }
+        cell.configure(layout.groups[indexPath.section].rows[indexPath.row], merged: merged)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard let headerView = tableView.dequeueReusableHeaderFooterView(
+            withIdentifier: "SubwayTimetableHourHeaderView"
+        ) as? SubwayTimetableHourHeaderView else { return nil }
+        headerView.configure(layout.groups[section], isFirst: section == 0, roundsTop: section == 0 && layout.hiddenPastCount == 0)
+        return headerView
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
+        26
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        0
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        compactBar.setRevealProgress(
+            SubwayCompactBarView.revealProgress(
+                contentOffsetY: tableView.contentOffset.y,
+                adjustedTopInset: tableView.adjustedContentInset.top
+            )
+        )
     }
 }
