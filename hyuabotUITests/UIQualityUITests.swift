@@ -340,8 +340,8 @@ final class UIQualityUITests: XCTestCase {
                 auditAfterTap: false
             ))
         case "cafeteria":
-            issues.append(contentsOf: tapAndAudit(identifier: "cafeteria.previous_date", name: "cafeteria-previous-date", app: app))
-            issues.append(contentsOf: tapAndAudit(identifier: "cafeteria.next_date", name: "cafeteria-next-date", app: app))
+            issues.append(contentsOf: tapAndAudit(identifier: "cafeteria.meal.0", name: "cafeteria-meal-breakfast", app: app))
+            issues.append(contentsOf: tapAndAudit(identifier: "cafeteria.meal.2", name: "cafeteria-meal-dinner", app: app))
             if app.buttons["cafeteria_share_button"].exists {
                 capture("cafeteria-share-button-visible", app: app)
                 issues.append(contentsOf: auditVisibleLayout(app: app, pageName: "cafeteria-share-button-visible"))
@@ -512,7 +512,7 @@ final class UIQualityUITests: XCTestCase {
     private func scrollSettingUntilHittable(identifier: String, app: XCUIApplication) {
         let scrollView = app.scrollViews["setting.scroll"]
         let element = app.descendants(matching: .any)[identifier]
-        for _ in 0..<8 where !(element.exists && element.isHittable) {
+        for _ in 0 ..< 8 where !(element.exists && element.isHittable) {
             scrollView.swipeUp(velocity: .slow)
             waitForPageToSettle(app)
         }
@@ -521,7 +521,7 @@ final class UIQualityUITests: XCTestCase {
     private func waitForSettingToastToDisappear(_ app: XCUIApplication) {
         let toast = app.descendants(matching: .any)["setting.toast"]
         let deadline = Date().addingTimeInterval(4)
-        while toast.exists && Date() < deadline {
+        while toast.exists, Date() < deadline {
             usleep(100_000)
         }
     }

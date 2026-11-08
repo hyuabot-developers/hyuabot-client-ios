@@ -1,112 +1,82 @@
+//
+//  CafeteriaVC.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
+import SnapKit
 import UIKit
 
-class CafeteriaVC: UIViewController {
-    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
-    private static let disabledActionButtonBackground = UIColor.tertiarySystemFill
-
+class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate {
     private let disposeBag = DisposeBag()
-    private var selectedMealIndex = 0
+    private var selectedMeal: CafeteriaMeal = .breakfast
+    private var sources: [CafeteriaSource] = []
+    private var isLoading = false
+    private var lastWeekShift = 0
     private var didApplyInitialMealSelection = false
     private var didReceiveExternalMealSelection = false
-    private var isShowingAutomaticTomorrow = false
-    private lazy var breakfastVC = CafeteriaTabVC(cafeteriaType: .breakfast, showCafeteriaInfoVC: openCafeteriaInfoVC)
-    private lazy var lunchVC = CafeteriaTabVC(cafeteriaType: .lunch, showCafeteriaInfoVC: openCafeteriaInfoVC)
-    private lazy var dinnerVC = CafeteriaTabVC(cafeteriaType: .dinner, showCafeteriaInfoVC: openCafeteriaInfoVC)
-    private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0))
-        // Add the content pages to the view pager
-        viewPager.contentView.pages = [
-            breakfastVC.view,
-            lunchVC.view,
-            dinnerVC.view
-        ]
-        // Set the titles for each page
-        viewPager.tabView.tabs = [
-            TabItem(title: String(localized: "cafeteria.tab.breakfast")),
-            TabItem(title: String(localized: "cafeteria.tab.lunch")),
-            TabItem(title: String(localized: "cafeteria.tab.dinner"))
-        ]
-        viewPager.onPageChanged = { [weak self] index in
-            self?.selectedMealIndex = index
-            self?.updateShareButtonVisibility()
+    private var today: Foundation.Date {
+        #if DEBUG
+            return Calendar.current.startOfDay(for: CafeteriaDebugFixture.activeMode == nil ? .now : CafeteriaDebugFixture.now)
+        #else
+            return Calendar.current.startOfDay(for: .now)
+        #endif
+    }
+
+    private var now: Foundation.Date {
+        #if DEBUG
+            return CafeteriaDebugFixture.activeMode == nil ? .now : CafeteriaDebugFixture.now
+        #else
+            return .now
+        #endif
+    }
+
+    private let scrollView = UIScrollView()
+    private let contentStack = UIStackView()
+    private let headerBar = CafeteriaHeaderBarView()
+    private let weekStrip = CafeteriaWeekStripView()
+    private let mealSegment = CafeteriaMealSegmentView()
+    private let skeletonList = CafeteriaSkeletonListView()
+    private let cardsStack = UIStackView()
+    private let emptyCard = CafeteriaEmptyCardView()
+    private let footnote = UILabel()
+    private let footnoteContainer = UIView()
+    private let bottomFade = CafeteriaBottomFadeView()
+    private let compactBar = UIView()
+    private let compactTitle = UILabel()
+    private let compactSeparator = UIView()
+    private var pendingInfoCoachMark = false
+    private var fetchTask: Task<Void, Never>?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        bindInteractions()
+        applyInitialMealSelectionIfNeeded()
+        #if DEBUG
+            if let mode = CafeteriaDebugFixture.activeMode {
+                CafeteriaData.shared.feedDate.onNext(CafeteriaDebugFixture.today)
+                isLoading = mode == .loading
+                sources = CafeteriaDebugFixture.sources(for: mode)
+                CafeteriaData.shared.isLoading.onNext(isLoading)
+                render()
+            }
+        #endif
+        observeSubjects()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        tabBarController?.setNeedsStatusBarAppearanceUpdate()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle {
+            tabBarController?.setNeedsStatusBarAppearanceUpdate()
         }
-        return viewPager
-    }()
-
-    private lazy var previousDateButton = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var icon = UIImage(systemName: "chevron.left")
-        icon?.withTintColor(.plainButtonText, renderingMode: .alwaysOriginal)
-        conf.image = icon
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-        $0.accessibilityIdentifier = "cafeteria.previous_date"
-        $0.addTarget(self, action: #selector(previousDateButtonTapped), for: .touchUpInside)
-    }
-
-    private lazy var feedDatePicker = UIDatePicker().then {
-        $0.datePickerMode = .date
-        $0.preferredDatePickerStyle = .compact
-        $0.locale = Locale(identifier: "ko_KR")
-        $0.accessibilityIdentifier = "cafeteria.date_picker"
-        $0.setContentHuggingPriority(.required, for: .horizontal)
-        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
-        $0.transform = CGAffineTransform(scaleX: 1.02, y: 1.06)
-        $0.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
-    }
-
-    private lazy var nextDateButton = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var icon = UIImage(systemName: "chevron.right")
-        icon?.withTintColor(.plainButtonText, renderingMode: .alwaysOriginal)
-        conf.image = icon
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-        $0.accessibilityIdentifier = "cafeteria.next_date"
-        $0.addTarget(self, action: #selector(nextDateButtonTapped), for: .touchUpInside)
-    }
-
-    private lazy var shareButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.plain()
-        configuration.background.backgroundColor = Self.actionButtonBackground
-        configuration.baseForegroundColor = .hanyangBlue
-        configuration.cornerStyle = .medium
-        configuration.image = UIImage(systemName: "square.and.arrow.up")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 16,
-            weight: .semibold
-        ))
-        configuration.attributedTitle = AttributedString(String(localized: "common.share"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 14, weight: .bold)
-        ]))
-        configuration.imagePadding = 6
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 14)
-        $0.configuration = configuration
-        $0.configurationUpdateHandler = { button in
-            var updatedConfiguration = button.configuration
-            let foregroundColor: UIColor = button.isEnabled ? .hanyangBlue : .secondaryLabel
-            updatedConfiguration?.background.backgroundColor = button.isEnabled
-                ? Self.actionButtonBackground
-                : Self.disabledActionButtonBackground
-            updatedConfiguration?.baseForegroundColor = foregroundColor
-            updatedConfiguration?.attributedTitle = AttributedString(String(localized: "common.share"), attributes: AttributeContainer([
-                .font: UIFont.godo(size: 14, weight: .bold),
-                .foregroundColor: foregroundColor
-            ]))
-            button.configuration = updatedConfiguration
-        }
-        $0.accessibilityLabel = String(localized: "cafeteria.share")
-        $0.accessibilityIdentifier = "cafeteria_share_button"
-        $0.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
-    }
-
-    private lazy var shareBar = UIView().then {
-        $0.backgroundColor = .systemBackground
-    }
-
-    private let shareBarBottomBorder = UIView().then {
-        $0.backgroundColor = .separator
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -115,201 +85,212 @@ class CafeteriaVC: UIViewController {
         showCoachMarksIfNeeded()
     }
 
-    private func showCoachMarksIfNeeded() {
-        guard CoachMarkManager.shared.shouldShowPage("cafeteria") else { return }
-        presentCoachMarks(pageId: "cafeteria", items: [
-            CoachMarkItem(
-                id: "cafeteria.date",
-                targetView: feedDatePicker,
-                title: String(localized: "coach.cafeteria.date.title"),
-                message: String(localized: "coach.cafeteria.date.message")
-            ),
-            CoachMarkItem(
-                id: "cafeteria.tabs",
-                targetView: viewPager.tabView,
-                title: String(localized: "coach.cafeteria.tabs.title"),
-                message: String(localized: "coach.cafeteria.tabs.message")
-            )
-        ], shouldMarkAsShown: false, onComplete: { [weak self] in
-            self?.showHeaderCoachMarkWhenReady()
-        })
-    }
-
-    private func showHeaderCoachMarkWhenReady() {
-        let isLoaded = (try? CafeteriaData.shared.lunchItems.value())?.isEmpty == false
-        if isLoaded {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.presentHeaderCoachMark()
-            }
-        } else {
-            CafeteriaData.shared.lunchItems
-                .filter { !$0.isEmpty }
-                .take(1)
-                .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        self?.presentHeaderCoachMark()
-                    }
-                })
-                .disposed(by: disposeBag)
-        }
-    }
-
-    private func presentHeaderCoachMark() {
-        presentCoachMarks(pageId: "cafeteria", items: [
-            CoachMarkItem(
-                id: "cafeteria.header.info",
-                targetViewProvider: { [weak self] in self?.breakfastVC.firstSectionHeaderInfoButton },
-                title: String(localized: "coach.cafeteria.header.info.title"),
-                message: String(localized: "coach.cafeteria.header.info.message")
-            )
-        ], shouldMarkAsShown: false, onComplete: {
-            CoachMarkManager.shared.markPageShown("cafeteria")
-        })
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        observeSubjects()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        applyInitialMealSelectionIfNeeded()
-    }
-
     private func setupUI() {
-        view.addSubview(viewPager)
-        view.addSubview(previousDateButton)
-        view.addSubview(feedDatePicker)
-        view.addSubview(nextDateButton)
-        view.addSubview(shareBar)
-        shareBar.addSubview(shareBarBottomBorder)
-        shareBar.addSubview(shareButton)
-        feedDatePicker.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-            make.height.equalTo(50)
+        view.backgroundColor = SettingsStyle.Color.background
+        view.accessibilityIdentifier = "cafeteria.root"
+        scrollView.accessibilityIdentifier = "cafeteria.scroll"
+        scrollView.alwaysBounceVertical = true
+        scrollView.delegate = self
+        scrollView.contentInsetAdjustmentBehavior = .automatic
+        scrollView.showsVerticalScrollIndicator = false
+        contentStack.axis = .vertical
+        contentStack.alignment = .fill
+        cardsStack.axis = .vertical
+        cardsStack.spacing = 12
+        skeletonList.isHidden = true
+        emptyCard.isHidden = true
+        footnote.numberOfLines = 0
+        footnote.attributedText = SettingsStyle.attributedText(
+            String(localized: "cafeteria.footnote"), font: SettingsStyle.font(12),
+            color: SettingsStyle.Color.commuterFaint, lineHeight: 16
+        )
+        footnoteContainer.addSubview(footnote)
+        footnote.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)) }
+        [headerBar, weekStrip, mealSegment, skeletonList, cardsStack, emptyCard, footnoteContainer].forEach(contentStack.addArrangedSubview)
+        contentStack.setCustomSpacing(16, after: headerBar)
+        contentStack.setCustomSpacing(12, after: weekStrip)
+        contentStack.setCustomSpacing(20, after: mealSegment)
+        contentStack.setCustomSpacing(12, after: skeletonList)
+        contentStack.setCustomSpacing(4, after: cardsStack)
+        contentStack.setCustomSpacing(12, after: emptyCard)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentStack)
+        view.addSubview(bottomFade)
+        setupCompactBar()
+        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        contentStack.snp.makeConstraints { make in
+            make.top.equalTo(scrollView.contentLayoutGuide).offset(45)
+            make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-24)
+            make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
-        previousDateButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
-            make.centerY.equalTo(feedDatePicker)
-            make.width.height.equalTo(44)
+        bottomFade.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalTo(120)
         }
-        nextDateButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalTo(feedDatePicker)
-            make.width.height.equalTo(44)
-        }
-        viewPager.snp.makeConstraints { make in
+    }
+
+    private func setupCompactBar() {
+        compactBar.backgroundColor = SettingsStyle.Color.background
+        compactBar.alpha = 0
+        compactBar.isUserInteractionEnabled = true
+        compactTitle.attributedText = SettingsStyle.attributedText(
+            String(localized: "tabbar.cafeteria"), font: SettingsStyle.font(17, bold: true),
+            color: SettingsStyle.Color.text, lineHeight: 22
+        )
+        compactTitle.accessibilityElementsHidden = true
+        compactSeparator.backgroundColor = SettingsStyle.Color.separator
+        view.addSubview(compactBar)
+        compactBar.addSubview(compactTitle)
+        compactBar.addSubview(compactSeparator)
+        compactBar.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(shareBar.snp.top)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.top).offset(44)
         }
-        shareBar.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(feedDatePicker.snp.top)
-            make.height.equalTo(54)
+        compactTitle.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(11)
         }
-        shareBarBottomBorder.snp.makeConstraints { make in
-            make.bottom.leading.trailing.equalToSuperview()
+        compactSeparator.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(1 / UIScreen.main.scale)
         }
-        shareButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.height.equalTo(40)
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        compactBar.alpha = min(max((offset - 36) / 16, 0), 1)
+    }
+
+    private func bindInteractions() {
+        headerBar.onMonthTap = { [weak self] in self?.presentDatePicker() }
+        headerBar.onTodayTap = { [weak self] in self?.selectToday() }
+        headerBar.onShareTap = { [weak self] in self?.share() }
+        weekStrip.onSelectDate = { [weak self] date in self?.selectDate(date) }
+        weekStrip.onShiftWeek = { [weak self] direction in self?.shiftWeek(direction) }
+        mealSegment.onSelect = { [weak self] meal in
+            self?.selectedMeal = meal
+            self?.render()
         }
     }
 
     private func observeSubjects() {
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
-        CafeteriaData.shared.feedDate.subscribe(onNext: { feedDate in
+        CafeteriaData.shared.feedDate.subscribe(onNext: { [weak self] feedDate in
+            guard let self else { return }
+            #if DEBUG
+                if CafeteriaDebugFixture.activeMode != nil {
+                    render(); return
+                }
+            #endif
             CafeteriaData.shared.isLoading.onNext(true)
-            self.updateShareButtonVisibility()
-            let dateForm = DateFormatter().then {
-                $0.dateFormat = "yyyy-MM-dd"
-            }
-            let date = dateForm.string(from: feedDate)
-            self.feedDatePicker.date = feedDate
-            Task {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            let date = formatter.string(from: feedDate)
+            fetchTask?.cancel()
+            fetchTask = Task {
                 let response = try? await Network.shared.client.fetch(query: CafeteriaPageQuery(date: date, campusID: Int32(campusID)))
+                guard !Task.isCancelled else { return }
                 await MainActor.run {
-                    if let data = response?.data {
-                        CafeteriaData.shared.breakfastItems
-                            .onNext(data.cafeteria.filter { $0.menus.contains(where: { $0.type.contains("조식") }) }
-                                .sorted(by: { $0.seq < $1.seq }))
-                        CafeteriaData.shared.lunchItems
-                            .onNext(data.cafeteria.filter { $0.menus.contains(where: { $0.type.contains("중식") }) }
-                                .sorted(by: { $0.seq < $1.seq }))
-                        CafeteriaData.shared.dinnerItems
-                            .onNext(data.cafeteria.filter { $0.menus.contains(where: { $0.type.contains("석식") }) }
-                                .sorted(by: { $0.seq < $1.seq }))
-                        self.breakfastVC.reload()
-                        self.lunchVC.reload()
-                        self.dinnerVC.reload()
-                    }
+                    self.sources = response?.data?.cafeteria.map(CafeteriaSource.init) ?? []
                     CafeteriaData.shared.isLoading.onNext(false)
-                    self.updateShareButtonVisibility()
+                    self.isLoading = false
+                    self.render()
                 }
             }
         }).disposed(by: disposeBag)
+        CafeteriaData.shared.isLoading.observe(on: MainScheduler.instance).subscribe(onNext: { [weak self] loading in
+            guard let self else { return }
+            isLoading = loading
+            render()
+        }).disposed(by: disposeBag)
     }
 
-    private var selectedMealVC: CafeteriaTabVC {
-        switch selectedMealIndex {
-        case 0:
-            breakfastVC
-        case 1:
-            lunchVC
-        case 2:
-            dinnerVC
-        default:
-            breakfastVC
+    private func render() {
+        let selectedDate = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        let isToday = Calendar.current.isDate(selectedDate, inSameDayAs: today)
+        let cards = CafeteriaDisplayLogic.cards(from: sources, meal: selectedMeal, showsStatus: isToday, now: now)
+        let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
+        headerBar.configure(
+            campusName: String(localized: campusID == 1 ? "campus.seoul" : "campus.erica"),
+            monthText: formatted(selectedDate, template: "yMMMM"),
+            monthAccessibilityLabel: String(
+                format: String(localized: "cafeteria.month.a11y.format"),
+                formatted(selectedDate, template: "MMMMdE")
+            ),
+            showsToday: !isToday,
+            shareEnabled: !isLoading && !cards.isEmpty,
+            shareAccessibilityLabel: String(
+                format: String(localized: "cafeteria.share.a11y.format"),
+                formatted(selectedDate, template: "MMMMdE"),
+                selectedMeal.title
+            )
+        )
+        let days = CafeteriaDisplayLogic.weekDays(selected: selectedDate, today: today)
+        if let first = days.first?.date, let last = days.last?.date {
+            weekStrip.configure(
+                days: days,
+                accessibilityLabel: String(
+                    format: String(localized: "cafeteria.week.a11y.format"),
+                    formatted(first, template: "MMMMd"),
+                    formatted(
+                        last,
+                        template: "MMMMd"
+                    )
+                ),
+                slideDirection: lastWeekShift
+            )
+        }
+        lastWeekShift = 0
+        mealSegment.configure(selected: selectedMeal)
+        skeletonList.isHidden = !isLoading
+        skeletonList.setAnimating(isLoading)
+        cardsStack.isHidden = isLoading || cards.isEmpty
+        emptyCard.isHidden = isLoading || !cards.isEmpty
+        footnoteContainer.isHidden = isLoading || cards.isEmpty
+        cardsStack.arrangedSubviews.forEach { cardsStack.removeArrangedSubview($0); $0.removeFromSuperview() }
+        if !isLoading, !cards.isEmpty {
+            for card in cards {
+                let view = CafeteriaMenuCardView()
+                view.configure(card)
+                view.onInfoTap = { [weak self] id in self?.openCafeteriaInfoVC(cafeteriaID: id) }
+                cardsStack.addArrangedSubview(view)
+            }
+        } else if !isLoading {
+            configureEmpty(date: selectedDate, isToday: isToday)
+        }
+        presentPendingInfoCoachMarkIfPossible()
+    }
+
+    private func configureEmpty(date: Foundation.Date, isToday: Bool) {
+        let counts = CafeteriaDisplayLogic.counts(from: sources)
+        let state = CafeteriaDisplayLogic.emptyState(selected: selectedMeal, counts: counts) ?? .noMenusForDay
+        switch state {
+        case .noMenusForDay:
+            emptyCard.configure(
+                title: String(localized: "cafeteria.empty.day.title"),
+                message: String(format: String(localized: "cafeteria.empty.day.message.format"), formatted(date, template: "MMMMdE")),
+                actionTitle: String(localized: "cafeteria.empty.day.action")
+            )
+            emptyCard.onAction = { [weak self] in
+                guard let next = Calendar.current.date(byAdding: .day, value: 1, to: date) else { return }
+                AnalyticsManager.logSelect(.cafeteriaNextDate, type: .dateControl)
+                CafeteriaData.shared.feedDate.onNext(next)
+            }
+        case let .noMenusForMeal(alternative):
+            emptyCard.configure(
+                title: String(format: String(localized: "cafeteria.empty.meal.title.format"), selectedMeal.title),
+                message: String(format: String(localized: "cafeteria.empty.meal.message.format"), selectedMeal.title),
+                actionTitle: String(format: String(localized: "cafeteria.empty.meal.action.format"), alternative.title)
+            )
+            emptyCard.onAction = { [weak self] in self?.selectedMeal = alternative; self?.render() }
         }
     }
 
-    private func updateShareButtonVisibility() {
-        let isLoading = (try? CafeteriaData.shared.isLoading.value()) ?? false
-        shareButton.isEnabled = !isLoading && selectedMealVC.shareText() != nil
-    }
-
-    @objc private func previousDateButtonTapped() {
-        AnalyticsManager.logSelect(.cafeteriaPreviousDate, type: .dateControl)
-        clearAutomaticTomorrowIfNeeded()
-        let date = Calendar.current.date(byAdding: .day, value: -1, to: feedDatePicker.date)
-        CafeteriaData.shared.feedDate.onNext(date!)
-    }
-
-    @objc private func datePickerValueChanged() {
-        AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
-        clearAutomaticTomorrowIfNeeded()
-        CafeteriaData.shared.feedDate.onNext(feedDatePicker.date)
-    }
-
-    @objc private func nextDateButtonTapped() {
-        AnalyticsManager.logSelect(.cafeteriaNextDate, type: .dateControl)
-        clearAutomaticTomorrowIfNeeded()
-        let date = Calendar.current.date(byAdding: .day, value: 1, to: feedDatePicker.date)
-        CafeteriaData.shared.feedDate.onNext(date!)
-    }
-
-    @objc private func shareButtonTapped() {
-        selectedMealVC.presentShareSheet(sourceView: shareButton)
-    }
-
-    @objc private func openCafeteriaInfoVC(cafeteriaID: Int) {
+    private func openCafeteriaInfoVC(cafeteriaID: Int) {
         let vc = CafeteriaInfoVC(cafeteriaID: cafeteriaID)
-        if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(vc, animated: true, completion: nil)
+        vc.onOpenMap = { [weak self] in (self?.tabBarController as? RootVC)?.openCampus(.map, animated: true) }
+        vc.configureSheetPresentation()
+        present(vc, animated: true)
     }
 
     #if DEBUG
@@ -317,62 +298,134 @@ class CafeteriaVC: UIViewController {
             openCafeteriaInfoVC(cafeteriaID: cafeteriaID)
         }
     #endif
-}
 
-extension CafeteriaVC {
     func scrollToMealTab(_ index: Int, animated: Bool = true) {
-        selectedMealIndex = index
-        viewPager.tabView.moveToTab(index: index, animated: animated)
-        viewPager.contentView.moveToPage(index: index, animated: animated)
-        updateShareButtonVisibility()
+        selectedMeal = CafeteriaMeal(rawValue: index) ?? .breakfast
+        render()
     }
 
     func showMeal(date: Foundation.Date, mealIndex: Int) {
         didReceiveExternalMealSelection = true
         didApplyInitialMealSelection = true
         loadViewIfNeeded()
-        scrollToMealTab(mealIndex)
-        applyMealTabTitles(showingTomorrow: Calendar.current.isDateInTomorrow(date))
+        selectedMeal = CafeteriaMeal(rawValue: mealIndex) ?? .breakfast
         CafeteriaData.shared.feedDate.onNext(date)
     }
 
-    /// 탭바 등으로 학식 화면에 처음 진입했을 때, 홈 화면과 동일하게 현재 시각 기준으로
-    /// 조식/중식/석식 탭을 자동 선택한다. 홈/딥링크에서 `showMeal(date:mealIndex:)`로
-    /// 시간대를 명시한 경우에는 그 선택을 유지한다.
     func applyInitialMealSelectionIfNeeded() {
-        guard !didApplyInitialMealSelection,
-              !didReceiveExternalMealSelection,
-              view.bounds.width > 0 else { return }
+        guard !didApplyInitialMealSelection, !didReceiveExternalMealSelection else { return }
         didApplyInitialMealSelection = true
-        let selection = CafeteriaData.automaticMealSelection()
-        scrollToMealTab(selection.mealIndex, animated: false)
-        applyMealTabTitles(showingTomorrow: Calendar.current.isDateInTomorrow(selection.date))
-        let currentFeedDate = (try? CafeteriaData.shared.feedDate.value()) ?? selection.date
-        if !Calendar.current.isDate(currentFeedDate, inSameDayAs: selection.date) {
+        let selection = CafeteriaData.automaticMealSelection(at: now)
+        selectedMeal = CafeteriaMeal(rawValue: selection.mealIndex) ?? .breakfast
+        let current = (try? CafeteriaData.shared.feedDate.value()) ?? selection.date
+        if !Calendar.current.isDate(current, inSameDayAs: selection.date) {
             CafeteriaData.shared.feedDate.onNext(selection.date)
+        } else {
+            render()
         }
     }
+}
 
-    /// 자동으로 내일 식단으로 넘어간 경우에만 탭 제목을 "내일 조식/중식/석식"으로 표시한다.
-    /// 접두어 포맷(`cafeteria.tab.tomorrow.format`)은 언어별로 정의되며, 탭이 길어지는
-    /// 영어는 접두어 없이("%@") 기본 제목을 그대로 사용한다.
-    func applyMealTabTitles(showingTomorrow: Bool) {
-        guard showingTomorrow != isShowingAutomaticTomorrow else { return }
-        isShowingAutomaticTomorrow = showingTomorrow
-        let base = [
-            String(localized: "cafeteria.tab.breakfast"),
-            String(localized: "cafeteria.tab.lunch"),
-            String(localized: "cafeteria.tab.dinner")
-        ]
-        let titles = showingTomorrow
-            ? base.map { String(format: String(localized: "cafeteria.tab.tomorrow.format"), $0) }
-            : base
-        viewPager.tabView.tabs = titles.map { TabItem(title: $0) }
+extension CafeteriaVC {
+    private func selectDate(_ date: Foundation.Date) {
+        AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
+        selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
+        CafeteriaData.shared.feedDate.onNext(date)
     }
 
-    /// 사용자가 날짜를 직접 변경하면 자동 "내일" 표시를 해제하고 기본 탭 제목으로 되돌린다.
-    func clearAutomaticTomorrowIfNeeded() {
-        guard isShowingAutomaticTomorrow else { return }
-        applyMealTabTitles(showingTomorrow: false)
+    private func shiftWeek(_ direction: Int) {
+        AnalyticsManager.logSelect(direction < 0 ? .cafeteriaPreviousDate : .cafeteriaNextDate, type: .dateControl)
+        let current = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        guard let date = Calendar.current.date(byAdding: .day, value: direction * 7, to: current) else { return }
+        lastWeekShift = direction
+        selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
+        CafeteriaData.shared.feedDate.onNext(date)
+    }
+
+    private func selectToday() {
+        AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
+        let current = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        if !Calendar.current.isDate(current, equalTo: today, toGranularity: .weekOfYear) {
+            lastWeekShift = current > today ? -1 : 1
+        }
+        selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
+        CafeteriaData.shared.feedDate.onNext(today)
+    }
+
+    private func presentDatePicker() {
+        let date = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        let picker = CafeteriaDatePickerVC(selectedDate: date) { [weak self] date in
+            guard let self else { return }
+            AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
+            selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
+            CafeteriaData.shared.feedDate.onNext(date)
+        }
+        present(picker, animated: true)
+    }
+
+    private func share() {
+        guard let date = try? CafeteriaData.shared.feedDate.value(), let text = CafeteriaDisplayLogic.shareText(
+            sources: sources,
+            meal: selectedMeal,
+            date: date
+        ) else { return }
+        AnalyticsManager.logSelect(.cafeteriaShareButton, type: .button)
+        let activity = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        activity.popoverPresentationController?.sourceView = headerBar.shareButton
+        present(activity, animated: true)
+    }
+
+    private func formatted(_ date: Foundation.Date, template: String) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: template, options: 0, locale: .current)
+        return formatter.string(from: date)
+    }
+
+    private func showCoachMarksIfNeeded() {
+        #if DEBUG
+            guard CafeteriaDebugFixture.activeMode == nil else { return }
+        #endif
+        guard CoachMarkManager.shared.shouldShowPage("cafeteria") else { return }
+        presentCoachMarks(pageId: "cafeteria", items: [
+            CoachMarkItem(
+                id: "cafeteria.date",
+                targetView: weekStrip,
+                title: String(localized: "coach.cafeteria.date.title"),
+                message: String(localized: "coach.cafeteria.date.message")
+            ),
+            CoachMarkItem(
+                id: "cafeteria.tabs",
+                targetView: mealSegment,
+                title: String(localized: "coach.cafeteria.tabs.title"),
+                message: String(localized: "coach.cafeteria.tabs.message")
+            )
+        ], shouldMarkAsShown: false) { [weak self] in self?.showInfoCoachMarkWhenReady() }
+    }
+
+    private func showInfoCoachMarkWhenReady() {
+        #if DEBUG
+            guard CafeteriaDebugFixture.activeMode == nil else { return }
+        #endif
+        pendingInfoCoachMark = true
+        presentPendingInfoCoachMarkIfPossible()
+    }
+
+    func presentPendingInfoCoachMarkIfPossible() {
+        guard pendingInfoCoachMark, view.window != nil, !cardsStack.isHidden,
+              let card = cardsStack.arrangedSubviews.first as? CafeteriaMenuCardView else { return }
+        pendingInfoCoachMark = false
+        presentCoachMarks(
+            pageId: "cafeteria",
+            items: [CoachMarkItem(
+                id: "cafeteria.header.info",
+                targetViewProvider: { card.infoButton },
+                title: String(localized: "coach.cafeteria.header.info.title"),
+                message: String(localized: "coach.cafeteria.header.info.message")
+            )],
+            shouldMarkAsShown: false
+        ) {
+            CoachMarkManager.shared.markPageShown("cafeteria")
+        }
     }
 }
