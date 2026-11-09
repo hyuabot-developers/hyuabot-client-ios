@@ -24,6 +24,7 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
     var isLoadingBuildings = false
     var searchGate = MapRequestGate()
     var buildingGate = MapRequestGate()
+    var searchFieldTextGate = MapRequestGate()
     var isReconcilingAnnotations = false
     weak var savedPopGestureDelegate: UIGestureRecognizerDelegate?
 
@@ -214,6 +215,7 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
     }
 
     func enterSearch() {
+        searchFieldTextGate.invalidate()
         if isResultMode {
             searchBarView.text = ""
             MapData.shared.searchKeyword.onNext(nil)
@@ -227,6 +229,7 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
     }
 
     func exitSearch() {
+        searchFieldTextGate.invalidate()
         invalidateSearch()
         searchBarView.text = ""
         searchBarView.textField.resignFirstResponder()

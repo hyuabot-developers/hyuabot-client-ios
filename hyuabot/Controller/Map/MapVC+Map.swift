@@ -208,6 +208,7 @@ extension MapVC: MKMapViewDelegate {
     }
 
     func showAllBuildings() {
+        searchFieldTextGate.invalidate()
         searchBarView.text = ""
         MapData.shared.searchKeyword.onNext(nil)
         mode = .browse
