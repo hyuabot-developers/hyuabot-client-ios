@@ -1,3 +1,8 @@
+//
+//  BusTimetableItem.swift
+//  hyuabot
+//
+
 import Api
 import Foundation
 
@@ -7,10 +12,12 @@ struct BusTimetableItem {
     let time: Foundation.Date
     var convertedTime: String? {
         let components = Calendar.current.dateComponents([.hour, .minute], from: time)
-        if components.hour! < 4 {
-            return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
+        let hour = components.hour ?? 0
+        let minute = components.minute ?? 0
+        if hour < 4 {
+            return String(format: "%02d:%02d", hour + 24, minute)
         }
-        return String(format: "%02d:%02d", components.hour!, components.minute!)
+        return String(format: "%02d:%02d", hour, minute)
     }
 }
 

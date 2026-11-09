@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeCellView.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit
@@ -313,53 +318,89 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
-        if stopID == .dormiotryOut || stopID == .shuttlecockOut {
-            if item.route.tag == "DH" {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_school_station")
-                shuttleTypeLabel.textColor = .busRed
-            } else if item.route.tag == "DY" {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_school_terminal")
-                shuttleTypeLabel.textColor = .hanyangOrange
-                shuttleAlertView.isHidden = stopID != .shuttlecockOut
-            } else if item.route.tag == "DJ" {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_school_jungang_station")
-                shuttleTypeLabel.textColor = .hanyangGreen
-            } else if item.route.tag == "C" {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_school_circular")
-            }
-        } else if stopID == .station {
-            if item.route.tag == "DH" {
-                if item.route.name.hasSuffix("S") {
-                    shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
-                    shuttleTypeLabel.textColor = .busRed
-                } else if item.route.name.hasSuffix("D") {
-                    shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
-                    shuttleTypeLabel.textColor = .hanyangBlue
-                }
-            } else if item.route.tag == "DJ" {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_jungang_station")
-                shuttleTypeLabel.textColor = .hanyangGreen
-            } else if item.route.tag == "C" {
-                if item.route.name.hasSuffix("S") {
-                    shuttleTypeLabel.text = String(localized: "shuttle_type_station_circular_shuttlecock")
-                } else if item.route.name.hasSuffix("D") {
-                    shuttleTypeLabel.text = String(localized: "shuttle_type_station_circular_dormitory")
-                }
-            }
-        } else if stopID == .terminal {
-            if item.route.name.hasSuffix("S") {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
-            } else if item.route.name.hasSuffix("D") {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
-            }
-        } else if stopID == .jungangStation {
+        switch stopID {
+        case .dormiotryOut, .shuttlecockOut:
+            setCampusDepartureTypeText(stopID: stopID, item: item)
+        case .station:
+            setStationDepartureTypeText(item: item)
+        case .terminal:
+            setTerminalTypeText(item: item)
+        case .jungangStation:
             shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
-        } else if stopID == .shuttlecockIn {
-            if item.route.name.hasSuffix("S") {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock_finishing")
-            } else if item.route.name.hasSuffix("D") {
-                shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
-            }
+        case .shuttlecockIn:
+            setShuttlecockArrivalTypeText(item: item)
+        default:
+            break
+        }
+    }
+
+    private func setCampusDepartureTypeText(
+        stopID: ShuttleStopEnum,
+        item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
+    ) {
+        switch item.route.tag {
+        case "DH":
+            shuttleTypeLabel.text = String(localized: "shuttle_type_school_station")
+            shuttleTypeLabel.textColor = .busRed
+        case "DY":
+            shuttleTypeLabel.text = String(localized: "shuttle_type_school_terminal")
+            shuttleTypeLabel.textColor = .hanyangOrange
+            shuttleAlertView.isHidden = stopID != .shuttlecockOut
+        case "DJ":
+            shuttleTypeLabel.text = String(localized: "shuttle_type_school_jungang_station")
+            shuttleTypeLabel.textColor = .hanyangGreen
+        case "C":
+            shuttleTypeLabel.text = String(localized: "shuttle_type_school_circular")
+        default:
+            break
+        }
+    }
+
+    private func setStationDepartureTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+        switch item.route.tag {
+        case "DH":
+            setStationDormitoryOrShuttlecockText(routeName: item.route.name)
+        case "DJ":
+            shuttleTypeLabel.text = String(localized: "shuttle_type_jungang_station")
+            shuttleTypeLabel.textColor = .hanyangGreen
+        case "C":
+            setStationCircularText(routeName: item.route.name)
+        default:
+            break
+        }
+    }
+
+    private func setStationDormitoryOrShuttlecockText(routeName: String) {
+        if routeName.hasSuffix("S") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
+            shuttleTypeLabel.textColor = .busRed
+        } else if routeName.hasSuffix("D") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
+            shuttleTypeLabel.textColor = .hanyangBlue
+        }
+    }
+
+    private func setStationCircularText(routeName: String) {
+        if routeName.hasSuffix("S") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_station_circular_shuttlecock")
+        } else if routeName.hasSuffix("D") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_station_circular_dormitory")
+        }
+    }
+
+    private func setTerminalTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+        if item.route.name.hasSuffix("S") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
+        } else if item.route.name.hasSuffix("D") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
+        }
+    }
+
+    private func setShuttlecockArrivalTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+        if item.route.name.hasSuffix("S") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock_finishing")
+        } else if item.route.name.hasSuffix("D") {
+            shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
         }
     }
 

@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  watch Watch App
+//  hyuabot
 //
 //  Created by 이정인 on 4/12/25.
 //
@@ -47,7 +47,7 @@ struct WatchShuttleStop: Hashable {
 enum WatchLocalization {
     static func text(_ key: String) -> String {
         let language = Locale.current.language.languageCode?.identifier ?? "ko"
-        let table = values[language] ?? values["ko"]!
+        let table = values[language] ?? values["ko"] ?? [:]
         return table[key] ?? values["ko"]?[key] ?? key
     }
 

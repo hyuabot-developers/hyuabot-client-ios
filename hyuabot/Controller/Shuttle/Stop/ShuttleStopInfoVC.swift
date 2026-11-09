@@ -1,3 +1,8 @@
+//
+//  ShuttleStopInfoVC.swift
+//  hyuabot
+//
+
 // swiftlint:disable file_length
 
 import Api
@@ -407,6 +412,11 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func observeSubjects() {
+        observeStopInfo()
+        observeTimetable()
+    }
+
+    private func observeStopInfo() {
         stopInfo.subscribe(onNext: { stop in
             guard let stop else { return }
             self.stopMapView.do {
@@ -423,111 +433,116 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
                 )
             }
         }).disposed(by: disposeBag)
-        timetable.subscribe(onNext: { timetableItems in
-            if self.stop == .dormiotryOut || self.stop == .shuttlecockOut {
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "STATION",
-                    isWeekday: true,
-                    firstLabel: self.stationWeekdaysFirstTimeLabel,
-                    lastLabel: self.stationWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "STATION",
-                    isWeekday: false,
-                    firstLabel: self.stationWeekendsFirstTimeLabel,
-                    lastLabel: self.stationWeekendsLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "TERMINAL",
-                    isWeekday: true,
-                    firstLabel: self.terminalWeekdaysFirstTimeLabel,
-                    lastLabel: self.terminalWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "TERMINAL",
-                    isWeekday: false,
-                    firstLabel: self.terminalWeekendsFirstTimeLabel,
-                    lastLabel: self.terminalWeekendsLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "JUNGANG",
-                    isWeekday: true,
-                    firstLabel: self.jungangStationWeekdaysFirstTimeLabel,
-                    lastLabel: self.jungangStationWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "JUNGANG",
-                    isWeekday: false,
-                    firstLabel: self.jungangStationWeekendsFirstTimeLabel,
-                    lastLabel: self.jungangStationWeekendsLastTimeLabel
-                )
-            } else if self.stop == .station {
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "CAMPUS",
-                    isWeekday: true,
-                    firstLabel: self.campusWeekdaysFirstTimeLabel,
-                    lastLabel: self.campusWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "CAMPUS",
-                    isWeekday: false,
-                    firstLabel: self.campusWeekendsFirstTimeLabel,
-                    lastLabel: self.campusWeekendsLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "TERMINAL",
-                    isWeekday: true,
-                    firstLabel: self.terminalWeekdaysFirstTimeLabel,
-                    lastLabel: self.terminalWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "TERMINAL",
-                    isWeekday: false,
-                    firstLabel: self.terminalWeekendsFirstTimeLabel,
-                    lastLabel: self.terminalWeekendsLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "JUNGANG",
-                    isWeekday: true,
-                    firstLabel: self.jungangStationWeekdaysFirstTimeLabel,
-                    lastLabel: self.jungangStationWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "JUNGANG",
-                    isWeekday: false,
-                    firstLabel: self.jungangStationWeekendsFirstTimeLabel,
-                    lastLabel: self.jungangStationWeekendsLastTimeLabel
-                )
-            } else {
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "CAMPUS",
-                    isWeekday: true,
-                    firstLabel: self.campusWeekdaysFirstTimeLabel,
-                    lastLabel: self.campusWeekdaysLastTimeLabel
-                )
-                self.updateFirstLastTime(
-                    timetableItems,
-                    destination: "CAMPUS",
-                    isWeekday: false,
-                    firstLabel: self.campusWeekendsFirstTimeLabel,
-                    lastLabel: self.campusWeekendsLastTimeLabel
-                )
-            }
+    }
 
+    private func observeTimetable() {
+        timetable.subscribe(onNext: { timetableItems in
+            self.updateTimetableLabels(timetableItems)
         }).disposed(by: disposeBag)
+    }
+
+    private func updateTimetableLabels(_ timetableItems: [StopTimetableDestination]) {
+        if stop == .dormiotryOut || stop == .shuttlecockOut {
+            updateOutboundTimes(timetableItems)
+        } else if stop == .station {
+            updateStationTimes(timetableItems)
+        } else {
+            updateCampusTimes(timetableItems)
+        }
+    }
+
+    private func updateOutboundTimes(_ timetableItems: [StopTimetableDestination]) {
+        updateFirstLastTime(
+            timetableItems,
+            destination: "STATION",
+            isWeekday: true,
+            firstLabel: stationWeekdaysFirstTimeLabel,
+            lastLabel: stationWeekdaysLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "STATION",
+            isWeekday: false,
+            firstLabel: stationWeekendsFirstTimeLabel,
+            lastLabel: stationWeekendsLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "TERMINAL",
+            isWeekday: true,
+            firstLabel: terminalWeekdaysFirstTimeLabel,
+            lastLabel: terminalWeekdaysLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "TERMINAL",
+            isWeekday: false,
+            firstLabel: terminalWeekendsFirstTimeLabel,
+            lastLabel: terminalWeekendsLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "JUNGANG",
+            isWeekday: true,
+            firstLabel: jungangStationWeekdaysFirstTimeLabel,
+            lastLabel: jungangStationWeekdaysLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "JUNGANG",
+            isWeekday: false,
+            firstLabel: jungangStationWeekendsFirstTimeLabel,
+            lastLabel: jungangStationWeekendsLastTimeLabel
+        )
+    }
+
+    private func updateStationTimes(_ timetableItems: [StopTimetableDestination]) {
+        updateCampusTimes(timetableItems)
+        updateFirstLastTime(
+            timetableItems,
+            destination: "TERMINAL",
+            isWeekday: true,
+            firstLabel: terminalWeekdaysFirstTimeLabel,
+            lastLabel: terminalWeekdaysLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "TERMINAL",
+            isWeekday: false,
+            firstLabel: terminalWeekendsFirstTimeLabel,
+            lastLabel: terminalWeekendsLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "JUNGANG",
+            isWeekday: true,
+            firstLabel: jungangStationWeekdaysFirstTimeLabel,
+            lastLabel: jungangStationWeekdaysLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "JUNGANG",
+            isWeekday: false,
+            firstLabel: jungangStationWeekendsFirstTimeLabel,
+            lastLabel: jungangStationWeekendsLastTimeLabel
+        )
+    }
+
+    private func updateCampusTimes(_ timetableItems: [StopTimetableDestination]) {
+        updateFirstLastTime(
+            timetableItems,
+            destination: "CAMPUS",
+            isWeekday: true,
+            firstLabel: campusWeekdaysFirstTimeLabel,
+            lastLabel: campusWeekdaysLastTimeLabel
+        )
+        updateFirstLastTime(
+            timetableItems,
+            destination: "CAMPUS",
+            isWeekday: false,
+            firstLabel: campusWeekendsFirstTimeLabel,
+            lastLabel: campusWeekendsLastTimeLabel
+        )
     }
 
     private func updateFirstLastTime(

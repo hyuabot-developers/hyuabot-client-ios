@@ -1,3 +1,8 @@
+//
+//  ShuttleTimetableEmptyCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleTimetableEmptyCellView: UITableViewCell {

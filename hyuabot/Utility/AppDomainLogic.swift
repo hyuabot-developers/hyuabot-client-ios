@@ -2,16 +2,13 @@
 //  AppDomainLogic.swift
 //  hyuabot
 //
-
 import Foundation
 import UIKit
-
 enum HomeWeatherPrecipitationKind: String, Equatable {
     case rain = "RAIN"
     case sleet = "SLEET"
     case snow = "SNOW"
 }
-
 enum HomeWeatherTitleStyle: Equatable {
     case clear
     case cloudy
@@ -20,7 +17,6 @@ enum HomeWeatherTitleStyle: Equatable {
     case precipitationNow(HomeWeatherPrecipitationKind)
     case precipitationLater(HomeWeatherPrecipitationKind)
     case precipitationToday(HomeWeatherPrecipitationKind)
-
     var localizationKey: String.LocalizationValue {
         switch self {
         case .clear: "home.weather.clear.title"
@@ -48,7 +44,6 @@ enum HomeWeatherTitleStyle: Equatable {
         }
     }
 }
-
 enum HomeWeatherDisplayLogic {
     static func titleStyle(
         condition: String,
@@ -81,13 +76,11 @@ enum HomeWeatherDisplayLogic {
         return condition == "CLEAR" ? .clear : .cloudy
     }
 }
-
 enum CafeteriaStatus: Equatable {
     case noMenu
     case soon
     case open
     case closed
-
     var localizationKey: String.LocalizationValue {
         switch self {
         case .noMenu: "cafeteria.status.no.menu"
@@ -97,7 +90,6 @@ enum CafeteriaStatus: Equatable {
         }
     }
 }
-
 enum CafeteriaStatusResolver {
     static func status(runningTime: String, hasMenu: Bool, now: Date = Date(), calendar: Calendar = .current) -> CafeteriaStatus? {
         if !hasMenu { return .noMenu }
@@ -111,7 +103,6 @@ enum CafeteriaStatusResolver {
         if nowMinutes > minutes[1] { return .closed }
         return .open
     }
-
     private static func minutesSinceStartOfDay(_ value: String) -> Int? {
         let parts = value.split(separator: ":")
         guard parts.count == 2,
@@ -122,10 +113,8 @@ enum CafeteriaStatusResolver {
         return hour * 60 + minute
     }
 }
-
 enum ReadingRoomOccupancyLevel: Equatable {
     case good, mid, busy, full
-
     var localizedTitle: String {
         switch self {
         case .good: String(localized: "reading_room.level.good")
@@ -273,6 +262,17 @@ enum MapSearchLogic {
             return url
         }
         return nil
+    }
+
+    static func searchFieldText(building: String, roomTitle: String) -> String {
+        let trimmed = building.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty || roomTitle.contains(trimmed) { return roomTitle }
+        return "\(trimmed) \(roomTitle)"
+    }
+
+    static func translatedSearchFieldText(token: Int, gate: MapRequestGate, building: String, roomTitle: String) -> String? {
+        guard gate.isCurrent(token) else { return nil }
+        return searchFieldText(building: building, roomTitle: roomTitle)
     }
 }
 

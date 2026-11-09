@@ -1,3 +1,8 @@
+//
+//  SubwayRealtimeData.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 

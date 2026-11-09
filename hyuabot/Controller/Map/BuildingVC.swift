@@ -1,3 +1,8 @@
+//
+//  BuildingVC.swift
+//  hyuabot
+//
+
 import SnapKit
 import UIKit
 import WebKit
@@ -24,7 +29,9 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -261,7 +268,7 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         if (error as NSError).code != NSURLErrorCancelled {
             setError(true)
         }
-        setLoading(false)
+        setLoading(webView.isLoading)
     }
 
     @objc

@@ -1,3 +1,8 @@
+//
+//  WidgetNetwork.swift
+//  hyuabot
+//
+
 import Apollo
 import ApolloAPI
 import Foundation
@@ -8,9 +13,9 @@ final class WidgetNetwork: @unchecked Sendable {
 
     private init() {}
 
-    func fetch<Query: GraphQLQuery>(query: Query) async throws -> GraphQLResponse<Query>
-        where Query.ResponseFormat == SingleResponseFormat
-    {
+    func fetch<Query: GraphQLQuery>(
+        query: Query
+    ) async throws -> GraphQLResponse<Query> where Query.ResponseFormat == SingleResponseFormat {
         try await client.fetch(query: query, cachePolicy: .networkOnly)
     }
 }

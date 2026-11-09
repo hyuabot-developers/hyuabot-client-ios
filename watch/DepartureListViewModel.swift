@@ -1,3 +1,8 @@
+//
+//  DepartureListViewModel.swift
+//  hyuabot
+//
+
 import Api
 import Combine
 import Foundation

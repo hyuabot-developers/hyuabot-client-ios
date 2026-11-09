@@ -1,3 +1,8 @@
+//
+//  ShuttleNC.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleNC: UINavigationController {
@@ -66,82 +71,42 @@ class ShuttleNC: UINavigationController {
     }
 
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {
-        let vc = if stop == .dormiotryOut {
-            if section == 0 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.dormitory.out",
-                    destination: "shuttle.destination.shorten.station"
-                )
-            } else if section == 1 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.dormitory.out",
-                    destination: "shuttle.destination.shorten.terminal"
-                )
-            } else if section == 2 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.dormitory.out",
-                    destination: "shuttle.destination.shorten.jungang_station"
-                )
-            } else {
-                fatalError("Invalid section")
-            }
-        } else if stop == .shuttlecockOut {
-            if section == 0 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.shuttlecock.out",
-                    destination: "shuttle.destination.shorten.station"
-                )
-            } else if section == 1 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.shuttlecock.out",
-                    destination: "shuttle.destination.shorten.terminal"
-                )
-            } else if section == 2 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.shuttlecock.out",
-                    destination: "shuttle.destination.shorten.jungang_station"
-                )
-            } else {
-                fatalError("Invalid section")
-            }
-        } else if stop == .station {
-            if section == 0 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.station",
-                    destination: "shuttle.destination.shorten.campus"
-                )
-            } else if section == 1 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.station",
-                    destination: "shuttle.destination.shorten.terminal"
-                )
-            } else if section == 2 {
-                ShuttleTimetableVC(
-                    stopID: "shuttle.stop.station",
-                    destination: "shuttle.destination.shorten.jungang_station"
-                )
-            } else {
-                fatalError("Invalid section")
-            }
-        } else if stop == .terminal {
-            ShuttleTimetableVC(
-                stopID: "shuttle.stop.terminal",
-                destination: "shuttle.destination.shorten.campus"
-            )
-        } else if stop == .jungangStation {
-            ShuttleTimetableVC(
-                stopID: "shuttle.stop.jungang.station",
-                destination: "shuttle.destination.shorten.campus"
-            )
-        } else if stop == .shuttlecockIn {
-            ShuttleTimetableVC(
-                stopID: "shuttle.stop.shuttlecock.in",
-                destination: "shuttle.destination.shorten.campus"
-            )
-        } else {
-            fatalError("Invalid stop")
+        pushViewController(timetableOptions(stop: stop, section: section), animated: true)
+    }
+
+    private func timetableOptions(stop: ShuttleStopEnum, section: Int) -> ShuttleTimetableVC {
+        switch stop {
+        case .dormiotryOut:
+            ShuttleTimetableVC(stopID: "shuttle.stop.dormitory.out", destination: outboundDestination(section))
+        case .shuttlecockOut:
+            ShuttleTimetableVC(stopID: "shuttle.stop.shuttlecock.out", destination: outboundDestination(section))
+        case .station:
+            ShuttleTimetableVC(stopID: "shuttle.stop.station", destination: stationDestination(section))
+        case .terminal:
+            ShuttleTimetableVC(stopID: "shuttle.stop.terminal", destination: "shuttle.destination.shorten.campus")
+        case .jungangStation:
+            ShuttleTimetableVC(stopID: "shuttle.stop.jungang.station", destination: "shuttle.destination.shorten.campus")
+        case .shuttlecockIn:
+            ShuttleTimetableVC(stopID: "shuttle.stop.shuttlecock.in", destination: "shuttle.destination.shorten.campus")
         }
-        pushViewController(vc, animated: true)
+    }
+
+    private func outboundDestination(_ section: Int) -> String.LocalizationValue {
+        switch section {
+        case 0: "shuttle.destination.shorten.station"
+        case 1: "shuttle.destination.shorten.terminal"
+        case 2: "shuttle.destination.shorten.jungang_station"
+        default: fatalError("Invalid section")
+        }
+    }
+
+    private func stationDestination(_ section: Int) -> String.LocalizationValue {
+        switch section {
+        case 0: "shuttle.destination.shorten.campus"
+        case 1: "shuttle.destination.shorten.terminal"
+        case 2: "shuttle.destination.shorten.jungang_station"
+        default: fatalError("Invalid section")
+        }
     }
 
     func openBirthdayDialog() {

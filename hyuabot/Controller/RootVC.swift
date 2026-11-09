@@ -1,3 +1,8 @@
+//
+//  RootVC.swift
+//  hyuabot
+//
+
 import SwiftUI
 import UIKit
 
@@ -39,14 +44,15 @@ class RootVC: UITabBarController {
         installTranslationPreparationHostIfNeeded()
         retryShuttleCoachMarksIfNeeded()
         // Shuttle marks already shown on a previous launch — show immediately
-        if !isWaitingForShuttleCoachMarksAfterReset,
-           !CoachMarkManager.shared.shouldShowPage("shuttle.realtime")
-        {
+        let shouldShowCampusCoachMark = !isWaitingForShuttleCoachMarksAfterReset && !CoachMarkManager.shared
+            .shouldShowPage("shuttle.realtime")
+        if shouldShowCampusCoachMark {
             showCampusCoachMarkIfNeeded()
         }
     }
 
-    @objc private func onCoachMarkPageShown(_ notification: Notification) {
+    @objc
+    private func onCoachMarkPageShown(_ notification: Notification) {
         guard let pageId = notification.userInfo?["pageId"] as? String,
               pageId == "shuttle.realtime" else { return }
         isWaitingForShuttleCoachMarksAfterReset = false
@@ -55,7 +61,8 @@ class RootVC: UITabBarController {
         }
     }
 
-    @objc private func onCoachMarkReset() {
+    @objc
+    private func onCoachMarkReset() {
         isWaitingForShuttleCoachMarksAfterReset = true
     }
 
@@ -197,7 +204,6 @@ extension RootVC: UITabBarControllerDelegate {
             retryShuttleCoachMarksIfNeeded()
         }
     }
-
 }
 
 extension RootVC {
@@ -214,7 +220,9 @@ extension RootVC {
 
     private func hideSystemTabBar() {
         if #available(iOS 18.0, *) {
-            if !isTabBarHidden { setTabBarHidden(true, animated: false) }
+            if !isTabBarHidden {
+                setTabBarHidden(true, animated: false)
+            }
         } else if !tabBar.isHidden {
             tabBar.isHidden = true
         }
@@ -266,17 +274,23 @@ extension RootVC {
         }
     }
 
-    private func updateFloatingTabBarVisibility(for navigationController: UINavigationController, showing viewController: UIViewController, animated: Bool) {
+    private func updateFloatingTabBarVisibility(
+        for navigationController: UINavigationController,
+        showing viewController: UIViewController,
+        animated: Bool
+    ) {
         guard navigationController === selectedViewController else { return }
         let stack = navigationController.viewControllers
         let shown = stack.firstIndex { $0 === viewController }.map { Array(stack[...$0]) } ?? [viewController]
         let hidden = shown.contains { $0.hidesBottomBarWhenPushed }
-        if !hidden { floatingTabBar.isHidden = false }
+        if !hidden {
+            floatingTabBar.isHidden = false
+        }
         let apply = { self.floatingTabBar.alpha = hidden ? 0 : 1 }
         let finish = { [weak self] in
             guard let self else { return }
-            self.floatingTabBar.isHidden = hidden
-            self.view.setNeedsLayout()
+            floatingTabBar.isHidden = hidden
+            view.setNeedsLayout()
         }
         if animated, let coordinator = navigationController.transitionCoordinator {
             coordinator.animate(alongsideTransition: { _ in apply() }, completion: { _ in finish() })

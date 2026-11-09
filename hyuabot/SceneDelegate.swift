@@ -39,12 +39,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         showLanguageSuggestionIfNeeded()
 
+        let webURL = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb })?.webpageURL
         if let urlContext = connectionOptions.urlContexts.first {
             handleIncomingURL(urlContext.url)
-        } else if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
-                  let url = userActivity.webpageURL
-        {
-            handleIncomingURL(url)
+        } else if let webURL {
+            handleIncomingURL(webURL)
         } else if let shortcutItem = connectionOptions.shortcutItem {
             handleShortcut(shortcutItem)
         }
@@ -72,7 +71,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func handleIncomingURL(_ url: URL) {
         #if DEBUG
-            if handleDebugDeepLink(url) { return }
+            if handleDebugDeepLink(url) {
+                return
+            }
         #endif
         handleDeepLink(url)
     }
@@ -83,7 +84,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                   let route = url.pathComponents.dropFirst().first else { return false }
 
             let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
-            if handleDebugPageRoute(route, params: params) { return true }
+            if handleDebugPageRoute(route, params: params) {
+                return true
+            }
 
             guard let rootVC = window?.rootViewController as? RootVC else { return true }
             return handleDebugOverlayRoute(route, rootVC: rootVC, params: params)
@@ -259,7 +262,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let index = arguments.firstIndex(of: "-UITestInitialRoute"),
               arguments.indices.contains(index + 1) else { return }
         let route = arguments[index + 1]
-        let url = URL(string: "hyuabot://\(route)")!
+        guard let url = URL(string: "hyuabot://\(route)") else { return }
         DispatchQueue.main.async {
             self.handleDeepLink(url)
         }
@@ -302,7 +305,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         alert.applyGodoTypography(title: title, message: message)
         alert.addAction(UIAlertAction(title: String(localized: "language.open.settings"), style: .default) { _ in
-            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
         })
         alert.addAction(UIAlertAction(title: String(localized: "language.keep.current"), style: .cancel))
         rootVC.present(alert, animated: true)

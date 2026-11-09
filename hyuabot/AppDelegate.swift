@@ -7,8 +7,11 @@
 
 import Firebase
 import FirebaseMessaging
+import OSLog
 import UIKit
 import UserNotifications
+
+private let appDelegateLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "net.jaram.hyuabot", category: "AppDelegate")
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -90,13 +93,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
-        print("Failed to register for remote notifications with error: \(error)")
+        appDelegateLogger.error("Failed to register for remote notifications with error: \(String(describing: error), privacy: .public)")
     }
 }
 
 extension AppDelegate: @preconcurrency MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        print("Firebase registration token: \(fcmToken ?? "")")
+        appDelegateLogger.info("Firebase registration token: \(String(describing: fcmToken ?? ""), privacy: .public)")
         guard let fcmToken, !fcmToken.isEmpty else { return }
         Task { await InquiryService.shared.registerPushToken(fcmToken) }
     }
@@ -136,7 +139,7 @@ extension AppDelegate: @preconcurrency MessagingDelegate {
         let notificationRequest = UNNotificationRequest(identifier: "reading_room_\(itemKey)", content: notificationContent, trigger: nil)
         UNUserNotificationCenter.current().add(notificationRequest) { error in
             if let error {
-                print("Error adding notification request: \(error)")
+                appDelegateLogger.error("Error adding notification request: \(String(describing: error), privacy: .public)")
             }
         }
         // Unsubscribe from topic
@@ -144,7 +147,7 @@ extension AppDelegate: @preconcurrency MessagingDelegate {
         if notifiedRooms.contains(itemKey) {
             UserDefaults.standard.set(notifiedRooms.filter { $0 != itemKey }, forKey: "readingRoomNotificationArray")
             Messaging.messaging().unsubscribe(fromTopic: itemKey) { _ in
-                print("Unsubscribed to \(itemKey) topic")
+                appDelegateLogger.info("Unsubscribed to \(String(describing: itemKey), privacy: .public) topic")
             }
         }
         completionHandler(UIBackgroundFetchResult.noData)
@@ -175,9 +178,7 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
             if !InquiryPush.isChatVisible, let url = URL(string: InquiryPush.chatDeepLink) {
                 UIApplication.shared.open(url)
             }
-        } else if let urlString = userInfo["url"] as? String,
-                  let url = URL(string: urlString)
-        {
+        } else if let urlString = userInfo["url"] as? String, let url = URL(string: urlString) {
             UIApplication.shared.open(url)
         }
         completionHandler()

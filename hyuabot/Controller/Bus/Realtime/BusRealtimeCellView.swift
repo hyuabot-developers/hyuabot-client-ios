@@ -1,3 +1,8 @@
+//
+//  BusRealtimeCellView.swift
+//  hyuabot
+//
+
 import Api
 import Foundation
 import RxSwift
@@ -91,36 +96,41 @@ class BusRealtimeCellView: UITableViewCell {
             ""
         }
         let scheduledSource: Api.LocalTime? = item.scheduledTime ?? (item.item.isRealtime ? nil : item.item.arrivalTime)
+        let realtimeItem = item.item
+        let isRealtime = realtimeItem.isRealtime
+        let seats = realtimeItem.seats
+        let stops = realtimeItem.stops
+        let minutes = realtimeItem.minutes
         if let scheduledSource {
             let remainingMinutes = (scheduledSource.toLocalTime().busServiceSeconds - Foundation.Date().busServiceSeconds) / 60
             busTimeLabel.text = String(format: String(localized: "bus.realtime.estimated.%lld"), remainingMinutes) + secondarySuffix
             busTimeLabel.textColor = .secondaryLabel
-        } else if item.item.isRealtime {
-            if item.item.seats! < 0 {
-                if item.item.stops! <= 1 {
+        } else if isRealtime, let seats, let stops, let minutes {
+            if seats < 0 {
+                if stops <= 1 {
                     setRealtimeAttributedText(
-                        String(format: String(localized: "bus.realtime.arriving.%lld"), item.item.stops!) + secondarySuffix
+                        String(format: String(localized: "bus.realtime.arriving.%lld"), stops) + secondarySuffix
                     )
                 } else {
                     setRealtimeAttributedText(String(
                         format: String(localized: "bus.realtime.no.seat.%lld.%lld"),
-                        Int(item.item.minutes!),
-                        item.item.stops!
+                        Int(minutes),
+                        stops
                     ) + secondarySuffix)
                 }
             } else {
-                if item.item.stops! <= 1 {
+                if stops <= 1 {
                     setRealtimeAttributedText(String(
                         format: String(localized: "bus.realtime.arriving.%lld.%lld"),
-                        item.item.stops!,
-                        item.item.seats!
+                        stops,
+                        seats
                     ) + secondarySuffix)
                 } else {
                     setRealtimeAttributedText(String(
                         format: String(localized: "bus.realtime.seat.%lld.%lld.%lld"),
-                        Int(item.item.minutes!),
-                        item.item.stops!,
-                        item.item.seats!
+                        Int(minutes),
+                        stops,
+                        seats
                     ) + secondarySuffix)
                 }
             }
@@ -130,13 +140,16 @@ class BusRealtimeCellView: UITableViewCell {
     private func setRealtimeAttributedText(_ text: String) {
         let attributeString = NSMutableAttributedString(string: text)
         attributeString.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: attributeString.length))
-        attributeString.addAttribute(
-            .foregroundColor,
-            value: UIColor.red, range: NSRange(
-                location: 0,
-                length: text.distance(from: text.startIndex, to: text.firstIndex(of: "(")!) - 1
+        if let openingParenthesis = text.firstIndex(of: "(") {
+            attributeString.addAttribute(
+                .foregroundColor,
+                value: UIColor.red,
+                range: NSRange(
+                    location: 0,
+                    length: text.distance(from: text.startIndex, to: openingParenthesis) - 1
+                )
             )
-        )
+        }
         busTimeLabel.attributedText = attributeString
     }
 }

@@ -1,3 +1,8 @@
+//
+//  ShuttleAlarmVC.swift
+//  hyuabot
+//
+
 // swiftlint:disable file_length
 
 import CoreLocation
@@ -108,7 +113,9 @@ class ShuttleAlarmVC: UIViewController {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
-        boardingDescriptionLabel.text = "\(context.boardingStop.name) · \(String(format: String(localized: "shuttle.alarm.boarding.initial"), context.minutesUntilDeparture))"
+        let boardingMessage = String(localized: "shuttle.alarm.boarding.initial")
+        let departureMinutes = String(format: boardingMessage, context.minutesUntilDeparture)
+        boardingDescriptionLabel.text = "\(context.boardingStop.name) · \(departureMinutes)"
         boardingButton.addTarget(self, action: #selector(boardingButtonTapped), for: .touchUpInside)
         let boardingStack = makeCardStack([boardingTitleLabel, boardingDescriptionLabel, boardingButton])
         boardingCard.addSubview(boardingStack)
@@ -148,7 +155,8 @@ class ShuttleAlarmVC: UIViewController {
         destinationButton.configuration?.title = context.destinationStops[selectedDestinationIndex].name
     }
 
-    @objc private func destinationButtonTapped() {
+    @objc
+    private func destinationButtonTapped() {
         let vc = ShuttleDestinationSelectionVC(
             stops: context.destinationStops,
             selectedIndex: selectedDestinationIndex
@@ -163,7 +171,8 @@ class ShuttleAlarmVC: UIViewController {
         present(vc, animated: true)
     }
 
-    @objc private func boardingButtonTapped() {
+    @objc
+    private func boardingButtonTapped() {
         if isBoardingAlarmActive {
             ShuttleAlarmNotificationService.shared.cancelBoardingAlarm(for: context.key)
             dismiss(animated: true)
@@ -181,7 +190,8 @@ class ShuttleAlarmVC: UIViewController {
         }
     }
 
-    @objc private func alightingButtonTapped() {
+    @objc
+    private func alightingButtonTapped() {
         if isAlightingAlarmActive {
             ShuttleAlarmNotificationService.shared.cancelAlightingAlarm(for: context.key)
             dismiss(animated: true)
@@ -200,7 +210,8 @@ class ShuttleAlarmVC: UIViewController {
         }
     }
 
-    @objc private func shareButtonTapped() {
+    @objc
+    private func shareButtonTapped() {
         guard context.destinationStops.indices.contains(selectedDestinationIndex) else { return }
         shareButton.isHidden = true
         let destination = context.destinationStops[selectedDestinationIndex]
@@ -573,8 +584,7 @@ final class ShuttleAlarmNotificationService: @unchecked Sendable {
                     departureTime: departureTime
                 )
             }
-            .sorted { $0.departureTime < $1.departureTime }
-            .first
+            .min { $0.departureTime < $1.departureTime }
             DispatchQueue.main.async {
                 completion(alarm)
             }
@@ -714,7 +724,7 @@ final class ShuttleAlarmNotificationService: @unchecked Sendable {
 
     private func formatDistance(_ distance: Int) -> String {
         if distance >= 1000 {
-            if distance % 1000 == 0 {
+            if distance.isMultiple(of: 1000) {
                 return "\(distance / 1000)km"
             }
             return String(format: "%.1fkm", locale: Locale(identifier: "en_US_POSIX"), Double(distance) / 1000)

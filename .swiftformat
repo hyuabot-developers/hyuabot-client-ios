@@ -6,6 +6,7 @@
 --wrapparameters before-first
 --wrapcollections before-first
 --self remove
+--extensionacl on-declarations
 --commas inline
 --stripunusedargs closure-only
 --trimwhitespace always

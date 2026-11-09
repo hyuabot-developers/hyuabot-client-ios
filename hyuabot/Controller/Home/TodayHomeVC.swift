@@ -1,3 +1,8 @@
+//
+//  TodayHomeVC.swift
+//  hyuabot
+//
+
 import Api
 import ApolloAPI
 import CoreLocation
@@ -102,8 +107,8 @@ private enum HomeDeparture: CaseIterable {
 }
 
 #if DEBUG
-    private extension HomeDeparture {
-        init?(debugValue: String) {
+    extension HomeDeparture {
+        fileprivate init?(debugValue: String) {
             switch debugValue {
             case "dormitory":
                 self = .dormitory
@@ -157,8 +162,8 @@ private enum HomeDestination: CaseIterable {
 }
 
 #if DEBUG
-    private extension HomeDestination {
-        init?(debugValue: String) {
+    extension HomeDestination {
+        fileprivate init?(debugValue: String) {
             switch debugValue {
             case "station":
                 self = .station
@@ -246,8 +251,8 @@ private struct HomeShuttleCandidate {
     let stops: [Stop]
 }
 
-private extension HomeShuttleCandidate {
-    init(entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
+extension HomeShuttleCandidate {
+    fileprivate init(entry: HomePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
         seq = entry.seq
         routeTag = entry.route.tag
         routeName = entry.route.name
@@ -362,11 +367,11 @@ private enum HomeBusGroup: Equatable {
     }
 }
 
-private extension UIColor {
-    static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
-    static let homeSubwaySeohae = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1.00)
-    static let homeActionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
-    static let homeSelectorIconTint = UIColor { traitCollection in
+extension UIColor {
+    fileprivate static let homeSubwayYellow = UIColor(red: 0.72, green: 0.48, blue: 0.00, alpha: 1.00)
+    fileprivate static let homeSubwaySeohae = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1.00)
+    fileprivate static let homeActionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
+    fileprivate static let homeSelectorIconTint = UIColor { traitCollection in
         traitCollection.userInterfaceStyle == .dark ? .white : .hanyangBlue
     }
 }
@@ -492,8 +497,8 @@ enum SubwayTransferDestination: String, CaseIterable {
 }
 
 #if DEBUG
-    private extension SubwayTransferDestination {
-        init?(debugValue: String) {
+    extension SubwayTransferDestination {
+        fileprivate init?(debugValue: String) {
             switch debugValue {
             case "seoul":
                 self = .seoul
@@ -852,7 +857,8 @@ private final class HomeQuickSettingsVC: UIViewController {
         return button
     }
 
-    @objc private func onChangeShowBus50Transfer() {
+    @objc
+    private func onChangeShowBus50Transfer() {
         updateShowBus50Transfer?(showBus50TransferSwitch.isOn)
     }
 
@@ -861,12 +867,14 @@ private final class HomeQuickSettingsVC: UIViewController {
         updateShowPresenceStatus?(showPresenceStatusSwitch.isOn)
     }
 
-    @objc private func onChangeShowSubwayTransfer() {
+    @objc
+    private func onChangeShowSubwayTransfer() {
         subwayDestinationControl.isEnabled = showSubwayTransferSwitch.isOn
         updateShowSubwayTransfer?(showSubwayTransferSwitch.isOn)
     }
 
-    @objc private func onChangeSubwayTransferDestination() {
+    @objc
+    private func onChangeSubwayTransferDestination() {
         guard SubwayTransferDestination.allCases.indices.contains(subwayDestinationControl.selectedSegmentIndex) else { return }
         updateSubwayTransferDestination?(SubwayTransferDestination.allCases[subwayDestinationControl.selectedSegmentIndex])
     }
@@ -883,7 +891,8 @@ private final class HomeQuickSettingsVC: UIViewController {
         updateSeoulBusStop?(BusSeoulTargetStop.allCases[seoulBusStopControl.selectedSegmentIndex])
     }
 
-    @objc private func onTapLegacy() {
+    @objc
+    private func onTapLegacy() {
         dismiss(animated: true) { [weak self] in
             self?.openLegacyShuttle?()
         }
@@ -2752,34 +2761,52 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 tintColor: green
             ) { $0.terminal.stationID <= "S16" && $0.terminal.stationID.hasPrefix("S") }
         case .choji:
-            let line4Down = subwayArrivalOptions(
-                subway: line4,
-                direction: "down",
-                badge: String(localized: "subway.line4"),
-                tintColor: blue
-            ) { $0.terminal.stationID >= "K452" && $0.terminal.stationID.hasPrefix("K4") }
-            let suinDown = subwayArrivalOptions(
-                subway: suin,
-                direction: "down",
-                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
-                tintColor: yellow
-            ) { $0.terminal.stationID >= "K254" && $0.terminal.stationID.hasPrefix("K2") }
-            return line4Down + suinDown
+            return chojiSubwayArrivalOptions(line4: line4, suin: suin, blue: blue, yellow: yellow)
         case .oido:
-            let line4Down = subwayArrivalOptions(
-                subway: line4,
-                direction: "down",
-                badge: String(localized: "subway.line4"),
-                tintColor: blue
-            ) { $0.terminal.stationID == "K456" }
-            let suinDown = subwayArrivalOptions(
-                subway: suin,
-                direction: "down",
-                badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
-                tintColor: yellow
-            ) { $0.terminal.stationID >= "K258" && $0.terminal.stationID.hasPrefix("K2") }
-            return line4Down + suinDown
+            return oidoSubwayArrivalOptions(line4: line4, suin: suin, blue: blue, yellow: yellow)
         }
+    }
+
+    private func chojiSubwayArrivalOptions(
+        line4: HomePageQuery.Data.Subway?,
+        suin: HomePageQuery.Data.Subway?,
+        blue: UIColor,
+        yellow: UIColor
+    ) -> [HomeSubwayArrival] {
+        let line4Down = subwayArrivalOptions(
+            subway: line4,
+            direction: "down",
+            badge: String(localized: "subway.line4"),
+            tintColor: blue
+        ) { $0.terminal.stationID >= "K452" && $0.terminal.stationID.hasPrefix("K4") }
+        let suinDown = subwayArrivalOptions(
+            subway: suin,
+            direction: "down",
+            badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+            tintColor: yellow
+        ) { $0.terminal.stationID >= "K254" && $0.terminal.stationID.hasPrefix("K2") }
+        return line4Down + suinDown
+    }
+
+    private func oidoSubwayArrivalOptions(
+        line4: HomePageQuery.Data.Subway?,
+        suin: HomePageQuery.Data.Subway?,
+        blue: UIColor,
+        yellow: UIColor
+    ) -> [HomeSubwayArrival] {
+        let line4Down = subwayArrivalOptions(
+            subway: line4,
+            direction: "down",
+            badge: String(localized: "subway.line4"),
+            tintColor: blue
+        ) { $0.terminal.stationID == "K456" }
+        let suinDown = subwayArrivalOptions(
+            subway: suin,
+            direction: "down",
+            badge: String(localized: "home.transfer.subway.suin_bundang.badge"),
+            tintColor: yellow
+        ) { $0.terminal.stationID >= "K258" && $0.terminal.stationID.hasPrefix("K2") }
+        return line4Down + suinDown
     }
 
     private func subwayArrivalOptions(
@@ -2859,9 +2886,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let destinationStopID = shuttleStopID(for: destination)
         if let startIndex = stopIDs.firstIndex(of: stopName) {
             let remainingStopIDs = Array(stopIDs[startIndex...])
-            if let destinationStopID,
-               let destinationIndex = remainingStopIDs.firstIndex(of: destinationStopID)
-            {
+            if let destinationStopID, let destinationIndex = remainingStopIDs.firstIndex(of: destinationStopID) {
                 return Array(remainingStopIDs[...destinationIndex])
             }
             return remainingStopIDs
@@ -2937,14 +2962,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
             }
         case ("dormitory_o", "TERMINAL"), ("shuttlecock_o", "TERMINAL"):
-            if routeTag == "DY" {
-                return (String(localized: "shuttle.type.direct"), .busRed)
-            }
-            if routeTag == "DJ" {
-                return (String(localized: "shuttle.type.jungang_station"), .hanyangGreen)
-            }
-            if routeTag == "C" {
-                return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
+            if let display = terminalShuttleRouteDisplay(routeTag: routeTag) {
+                return display
             }
         case ("dormitory_o", "JUNGANG"), ("shuttlecock_o", "JUNGANG"), ("station", "JUNGANG"):
             return (String(localized: "shuttle.type.jungang_station"), .hanyangGreen)
@@ -2973,34 +2992,47 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         return (String(localized: "home.badge.free"), .hanyangBlue)
     }
 
+    private func terminalShuttleRouteDisplay(routeTag: String) -> (badge: String, tintColor: UIColor)? {
+        if routeTag == "DY" {
+            return (String(localized: "shuttle.type.direct"), .busRed)
+        }
+        if routeTag == "DJ" {
+            return (String(localized: "shuttle.type.jungang_station"), .hanyangGreen)
+        }
+        if routeTag == "C" {
+            return (String(localized: "shuttle.type.circular"), UIColor(named: "busBlue") ?? .systemBlue)
+        }
+        return nil
+    }
+
+    private func busAlternativeItem(_ busList: [HomePageQuery.Data.Bus], routeSeq: Int, stopSeq: Int) -> HomePageQuery.Data.Bus? {
+        busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
+    }
+
+    private func busAlternativeOption(
+        _ bus: HomePageQuery.Data.Bus?,
+        route: String,
+        stopName: String,
+        direction: String,
+        color: UIColor
+    ) -> HomeTransitOption? {
+        guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
+        let subtitle = String(format: String(localized: "home.alt.bus_direction"), direction)
+        return HomeTransitOption(
+            kind: .alternative,
+            title: stopName,
+            subtitle: subtitle,
+            minutes: minutes,
+            badge: route,
+            tintColor: color
+        )
+    }
+
+    private func bestBusAlternative(_ options: [HomeTransitOption?]) -> HomeTransitOption? {
+        options.compactMap { $0 }.min { ($0.minutes ?? Int.max) < ($1.minutes ?? Int.max) }
+    }
+
     private func buildBusAlternatives(_ busList: [HomePageQuery.Data.Bus]) -> [String: [HomeTransitOption]] {
-        func item(routeSeq: Int, stopSeq: Int) -> HomePageQuery.Data.Bus? {
-            busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
-        }
-
-        func option(
-            _ bus: HomePageQuery.Data.Bus?,
-            route: String,
-            stopName: String,
-            direction: String,
-            color: UIColor
-        ) -> HomeTransitOption? {
-            guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
-            let subtitle = String(format: String(localized: "home.alt.bus_direction"), direction)
-            return HomeTransitOption(
-                kind: .alternative,
-                title: stopName,
-                subtitle: subtitle,
-                minutes: minutes,
-                badge: route,
-                tintColor: color
-            )
-        }
-
-        func best(_ options: [HomeTransitOption?]) -> HomeTransitOption? {
-            options.compactMap { $0 }.min { ($0.minutes ?? Int.max) < ($1.minutes ?? Int.max) }
-        }
-
         let green = UIColor(named: "busGreen") ?? .systemGreen
         let blue = UIColor(named: "busBlue") ?? .systemBlue
         let terminal = String(localized: "home.alt.direction.intercity_terminal")
@@ -3010,132 +3042,227 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         let shuttlecock = String(localized: "shuttle.stop.shuttlecock.out")
         let sangnoksu = String(localized: "home.alt.direction.sangnoksu")
         let shuttlecockDormitory = String(localized: "home.alt.direction.shuttlecock_dormitory")
-        let route80A = best([
-            option(
-                item(routeSeq: 216_000_081, stopSeq: 216_000_028),
+        let route80A = busAlternativeRoute80A(busList: busList, blue: blue, terminal: terminal)
+        let terminal80B = busAlternativeTerminal80B(busList: busList, blue: blue, terminalStop: terminalStop, dormitory: dormitory)
+        let jungang80B = busAlternativeJungang80B(busList: busList, blue: blue, dormitory: dormitory)
+
+        return [
+            "dormitory_station": busAlternativesDormitoryStation(busList: busList, green: green, sangnoksu: sangnoksu),
+            "dormitory_terminal": busAlternativesDormitoryTerminal(route80A: route80A),
+            "dormitory_jungang": busAlternativesDormitoryJungang(busList: busList, blue: blue, jungang: jungang),
+            "shuttlecock_terminal": busAlternativesShuttlecockTerminal(busList: busList, green: green, terminal: terminal),
+            "shuttlecock_jungang": busAlternativesShuttlecockJungang(busList: busList, green: green, jungang: jungang),
+            "station_dormitory": busAlternativesStationDormitory(
+                busList: busList,
+                green: green,
+                shuttlecockDormitory: shuttlecockDormitory
+            ),
+            "terminal_dormitory": busAlternativesTerminalDormitory(
+                busList: busList,
+                green: green,
+                terminalStop: terminalStop,
+                shuttlecock: shuttlecock,
+                terminal80B: terminal80B
+            ),
+            "jungang_dormitory": busAlternativesJungangDormitory(
+                busList: busList,
+                green: green,
+                shuttlecock: shuttlecock,
+                jungang80B: jungang80B
+            )
+        ]
+    }
+
+    private func busAlternativeRoute80A(busList: [HomePageQuery.Data.Bus], blue: UIColor, terminal: String) -> HomeTransitOption? {
+        bestBusAlternative([
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_081, stopSeq: 216_000_028),
                 route: "80A",
                 stopName: String(localized: "home.alt.gyeonggi_technopark"),
                 direction: terminal,
                 color: blue
             ),
-            option(
-                item(routeSeq: 216_000_101, stopSeq: 216_000_028),
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_101, stopSeq: 216_000_028),
                 route: "N80A",
                 stopName: String(localized: "home.alt.gyeonggi_technopark"),
                 direction: terminal,
                 color: blue
             )
         ])
-        let terminal80B = best([
-            option(
-                item(routeSeq: 216_000_082, stopSeq: 216_000_077),
-                route: "80B",
-                stopName: terminalStop,
-                direction: dormitory,
-                color: blue
-            ),
-            option(
-                item(routeSeq: 216_000_102, stopSeq: 216_000_077),
-                route: "N80B",
-                stopName: terminalStop,
-                direction: dormitory,
-                color: blue
-            )
-        ])
-        let jungang80B = best([
-            option(
-                item(routeSeq: 216_000_082, stopSeq: 217_000_140),
-                route: "80B",
-                stopName: String(localized: "home.destination.jungang"),
-                direction: dormitory,
-                color: blue
-            ),
-            option(
-                item(routeSeq: 216_000_102, stopSeq: 217_000_140),
-                route: "N80B",
-                stopName: String(localized: "home.destination.jungang"),
-                direction: dormitory,
-                color: blue
-            )
-        ])
+    }
 
-        return [
-            "dormitory_station": [
-                option(
-                    item(routeSeq: 216_000_068, stopSeq: 216_000_383),
-                    route: "10-1",
-                    stopName: String(localized: "home.alt.dormitory_nearby"),
-                    direction: sangnoksu,
-                    color: green
-                )
-            ].compactMap { $0 },
-            "dormitory_terminal": [route80A].compactMap { $0 },
-            "dormitory_jungang": [
-                best([
-                    option(
-                        item(routeSeq: 216_000_081, stopSeq: 216_000_028),
-                        route: "80A",
-                        stopName: String(localized: "home.alt.gyeonggi_technopark"),
-                        direction: jungang,
-                        color: blue
-                    ),
-                    option(
-                        item(routeSeq: 216_000_101, stopSeq: 216_000_028),
-                        route: "N80A",
-                        stopName: String(localized: "home.alt.gyeonggi_technopark"),
-                        direction: jungang,
-                        color: blue
-                    )
-                ])
-            ].compactMap { $0 },
-            "shuttlecock_terminal": [
-                option(
-                    item(routeSeq: 216_000_016, stopSeq: 216_000_152),
-                    route: "62",
-                    stopName: String(localized: "home.alt.seongan_entrance"),
-                    direction: terminal,
-                    color: green
-                )
-            ].compactMap { $0 },
-            "shuttlecock_jungang": [
-                option(
-                    item(routeSeq: 216_000_016, stopSeq: 216_000_152),
-                    route: "62",
-                    stopName: String(localized: "home.alt.seongan_entrance"),
+    private func busAlternativeTerminal80B(
+        busList: [HomePageQuery.Data.Bus],
+        blue: UIColor,
+        terminalStop: String,
+        dormitory: String
+    ) -> HomeTransitOption? {
+        bestBusAlternative([
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_082, stopSeq: 216_000_077),
+                route: "80B",
+                stopName: terminalStop,
+                direction: dormitory,
+                color: blue
+            ),
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_102, stopSeq: 216_000_077),
+                route: "N80B",
+                stopName: terminalStop,
+                direction: dormitory,
+                color: blue
+            )
+        ])
+    }
+
+    private func busAlternativeJungang80B(
+        busList: [HomePageQuery.Data.Bus],
+        blue: UIColor,
+        dormitory: String
+    ) -> HomeTransitOption? {
+        bestBusAlternative([
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_082, stopSeq: 217_000_140),
+                route: "80B",
+                stopName: String(localized: "home.destination.jungang"),
+                direction: dormitory,
+                color: blue
+            ),
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_102, stopSeq: 217_000_140),
+                route: "N80B",
+                stopName: String(localized: "home.destination.jungang"),
+                direction: dormitory,
+                color: blue
+            )
+        ])
+    }
+
+    private func busAlternativesJungangDormitory(
+        busList: [HomePageQuery.Data.Bus],
+        green: UIColor,
+        shuttlecock: String,
+        jungang80B: HomeTransitOption?
+    ) -> [HomeTransitOption] {
+        [
+            jungang80B,
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_016, stopSeq: 217_000_264),
+                route: "62",
+                stopName: String(localized: "home.destination.jungang"),
+                direction: shuttlecock,
+                color: green
+            )
+        ].compactMap { $0 }
+    }
+
+    private func busAlternativesTerminalDormitory(
+        busList: [HomePageQuery.Data.Bus],
+        green: UIColor,
+        terminalStop: String,
+        shuttlecock: String,
+        terminal80B: HomeTransitOption?
+    ) -> [HomeTransitOption] {
+        [
+            terminal80B,
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_016, stopSeq: 216_000_074),
+                route: "62",
+                stopName: terminalStop,
+                direction: shuttlecock,
+                color: green
+            )
+        ].compactMap { $0 }
+    }
+
+    private func busAlternativesStationDormitory(
+        busList: [HomePageQuery.Data.Bus],
+        green: UIColor,
+        shuttlecockDormitory: String
+    ) -> [HomeTransitOption] {
+        [
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_068, stopSeq: 216_000_138),
+                route: "10-1",
+                stopName: String(localized: "home.alt.sangnoksu"),
+                direction: shuttlecockDormitory,
+                color: green
+            )
+        ].compactMap { $0 }
+    }
+
+    private func busAlternativesShuttlecockJungang(
+        busList: [HomePageQuery.Data.Bus],
+        green: UIColor,
+        jungang: String
+    ) -> [HomeTransitOption] {
+        [
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_016, stopSeq: 216_000_152),
+                route: "62",
+                stopName: String(localized: "home.alt.seongan_entrance"),
+                direction: jungang,
+                color: green
+            )
+        ].compactMap { $0 }
+    }
+
+    private func busAlternativesShuttlecockTerminal(
+        busList: [HomePageQuery.Data.Bus],
+        green: UIColor,
+        terminal: String
+    ) -> [HomeTransitOption] {
+        [
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_016, stopSeq: 216_000_152),
+                route: "62",
+                stopName: String(localized: "home.alt.seongan_entrance"),
+                direction: terminal,
+                color: green
+            )
+        ].compactMap { $0 }
+    }
+
+    private func busAlternativesDormitoryJungang(busList: [HomePageQuery.Data.Bus], blue: UIColor, jungang: String) -> [HomeTransitOption] {
+        [
+            bestBusAlternative([
+                busAlternativeOption(
+                    busAlternativeItem(busList, routeSeq: 216_000_081, stopSeq: 216_000_028),
+                    route: "80A",
+                    stopName: String(localized: "home.alt.gyeonggi_technopark"),
                     direction: jungang,
-                    color: green
+                    color: blue
+                ),
+                busAlternativeOption(
+                    busAlternativeItem(busList, routeSeq: 216_000_101, stopSeq: 216_000_028),
+                    route: "N80A",
+                    stopName: String(localized: "home.alt.gyeonggi_technopark"),
+                    direction: jungang,
+                    color: blue
                 )
-            ].compactMap { $0 },
-            "station_dormitory": [
-                option(
-                    item(routeSeq: 216_000_068, stopSeq: 216_000_138),
-                    route: "10-1",
-                    stopName: String(localized: "home.alt.sangnoksu"),
-                    direction: shuttlecockDormitory,
-                    color: green
-                )
-            ].compactMap { $0 },
-            "terminal_dormitory": [
-                terminal80B,
-                option(
-                    item(routeSeq: 216_000_016, stopSeq: 216_000_074),
-                    route: "62",
-                    stopName: terminalStop,
-                    direction: shuttlecock,
-                    color: green
-                )
-            ].compactMap { $0 },
-            "jungang_dormitory": [
-                jungang80B,
-                option(
-                    item(routeSeq: 216_000_016, stopSeq: 217_000_264),
-                    route: "62",
-                    stopName: String(localized: "home.destination.jungang"),
-                    direction: shuttlecock,
-                    color: green
-                )
-            ].compactMap { $0 }
-        ]
+            ])
+        ].compactMap { $0 }
+    }
+
+    private func busAlternativesDormitoryTerminal(route80A: HomeTransitOption?) -> [HomeTransitOption] {
+        [route80A].compactMap { $0 }
+    }
+
+    private func busAlternativesDormitoryStation(
+        busList: [HomePageQuery.Data.Bus],
+        green: UIColor,
+        sangnoksu: String
+    ) -> [HomeTransitOption] {
+        [
+            busAlternativeOption(
+                busAlternativeItem(busList, routeSeq: 216_000_068, stopSeq: 216_000_383),
+                route: "10-1",
+                stopName: String(localized: "home.alt.dormitory_nearby"),
+                direction: sangnoksu,
+                color: green
+            )
+        ].compactMap { $0 }
     }
 
     // swiftlint:disable:next function_body_length
@@ -3290,21 +3417,17 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
     #if DEBUG
         private func applyDebugRouteOverride() {
             let arguments = ProcessInfo.processInfo.arguments
-            if let departureValue = argumentValue(named: "-homeDebugDeparture", in: arguments),
-               let departure = HomeDeparture(debugValue: departureValue)
-            {
+            let departureValue = argumentValue(named: "-homeDebugDeparture", in: arguments)
+            if let departureValue, let departure = HomeDeparture(debugValue: departureValue) {
                 selectedDeparture = departure
                 usesDebugDeparture = true
             }
-            if let destinationValue = argumentValue(named: "-homeDebugDestination", in: arguments),
-               let destination = HomeDestination(debugValue: destinationValue),
-               selectedDeparture.destinations.contains(destination)
-            {
+            let value = argumentValue(named: "-homeDebugDestination", in: arguments)
+            if let value, let destination = HomeDestination(debugValue: value), selectedDeparture.destinations.contains(destination) {
                 selectedDestination = destination
             }
-            if let subwayDestinationValue = argumentValue(named: "-homeDebugSubwayDestination", in: arguments),
-               let subwayDestination = SubwayTransferDestination(debugValue: subwayDestinationValue)
-            {
+            let subwayDestinationValue = argumentValue(named: "-homeDebugSubwayDestination", in: arguments)
+            if let subwayDestinationValue, let subwayDestination = SubwayTransferDestination(debugValue: subwayDestinationValue) {
                 HomeSettings.subwayTransferDestination = subwayDestination
                 HomeSettings.showSubwayTransfer = true
             }
@@ -3771,7 +3894,9 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         if case .seoul = group {
             let lhsPriority = lhs.route == "3102" ? 0 : 1
             let rhsPriority = rhs.route == "3102" ? 0 : 1
-            if lhsPriority != rhsPriority { return lhsPriority < rhsPriority }
+            if lhsPriority != rhsPriority {
+                return lhsPriority < rhsPriority
+            }
         }
         return lhs.sortDate < rhs.sortDate
     }
@@ -4007,9 +4132,7 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
                 return makeTransitRow(option, emphasized: true)
             }
             let nextConnection = options.indices.contains(index + 1) ? options[index + 1].connections.first : nil
-            if let nextConnection,
-               abs(nextConnection.arrivalDate.timeIntervalSince(firstConnection.arrivalDate)) < 60
-            {
+            if let nextConnection, abs(nextConnection.arrivalDate.timeIntervalSince(firstConnection.arrivalDate)) < 60 {
                 return makeTransitRow(option, emphasized: true)
             }
             return makeShuttleTransferPair(option)
@@ -4404,7 +4527,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         }
     }
 
-    @objc private func destinationChanged() {
+    @objc
+    private func destinationChanged() {
         guard availableDestinations.indices.contains(destinationControl.selectedSegmentIndex) else { return }
         let destination = availableDestinations[destinationControl.selectedSegmentIndex]
         selectedDestination = destination
@@ -4419,12 +4543,14 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         fetchHomeData(showsLoadingState: false)
     }
 
-    @objc private func refresh() {
+    @objc
+    private func refresh() {
         AnalyticsManager.logSelect(.homeRefresh)
         refreshHomeContext()
     }
 
-    @objc private func openQuickSettings() {
+    @objc
+    private func openQuickSettings() {
         let vc = HomeQuickSettingsVC(
             showPresenceStatus: ShuttlePresenceSettings.showsStatus,
             showBus50Transfer: HomeSettings.showBus50Transfer,
@@ -4484,7 +4610,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
     }
 
-    @objc private func openLegacyShuttle() {
+    @objc
+    private func openLegacyShuttle() {
         AnalyticsManager.logSelect(.homeOpenLegacyShuttle)
         (navigationController as? ShuttleNC)?.showLegacyShuttle()
     }
@@ -4498,7 +4625,8 @@ final class TodayHomeVC: UIViewController { // swiftlint:disable:this type_body_
         )
     }
 
-    @objc private func openCafeteria() {
+    @objc
+    private func openCafeteria() {
         AnalyticsManager.logSelect(.homeOpenCafeteria)
         if let root = tabBarController as? RootVC {
             let mealPeriod = activeMealPeriod()

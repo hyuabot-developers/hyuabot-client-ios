@@ -1,3 +1,8 @@
+//
+//  BusTimetableSkeletonCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 final class BusTimetableSkeletonCellView: UITableViewCell {

@@ -1,3 +1,8 @@
+//
+//  SubwayRealtimeEmptyCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class SubwayRealtimeEmptyCellView: UITableViewCell {

@@ -1,3 +1,8 @@
+//
+//  SubwayTimetableData.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 

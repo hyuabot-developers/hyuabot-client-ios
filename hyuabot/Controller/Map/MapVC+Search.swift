@@ -12,12 +12,14 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
     var searchItems: [RoomItem] { (try? MapData.shared.searchResult.value()) ?? [] }
 
     func onTextChange(_ keyword: String) {
+        searchFieldTextGate.invalidate()
         let isVisible = MapSearchLogic.isSearchResultVisible(keyword: keyword)
         resultsContainer.isHidden = !isVisible
         MapData.shared.searchKeyword.onNext(isVisible ? keyword : nil)
     }
 
     func onClear() {
+        searchFieldTextGate.invalidate()
         resultsContainer.isHidden = true
         MapData.shared.searchKeyword.onNext(nil)
         if isResultMode { showAllBuildings() }
@@ -116,8 +118,8 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
         resultsContainer.isHidden = true
         searchBarView.textField.resignFirstResponder()
         let roomTitle = MapSearchLogic.cardTitle(number: item.number, name: item.name)
-        let building = item.building.trimmingCharacters(in: .whitespacesAndNewlines)
-        searchBarView.text = roomTitle.contains(building) ? roomTitle : "\(building) \(roomTitle)"
+        searchBarView.text = MapSearchLogic.searchFieldText(building: item.building, roomTitle: roomTitle)
+        let fieldToken = searchFieldTextGate.begin()
         searchBarView.setSearching(false)
         isReconcilingAnnotations = true
         mapView.removeAnnotations(mapView.annotations.filter { !($0 is MKUserLocation) })
@@ -139,6 +141,17 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
             hasGuide: guideURL != nil,
             showsShowAll: true
         ))
+        Task { [weak self] in
+            let translated = await KoreanTextTranslator.shared.translate(item.building)
+            guard let self,
+                  let text = MapSearchLogic.translatedSearchFieldText(
+                      token: fieldToken,
+                      gate: searchFieldTextGate,
+                      building: translated,
+                      roomTitle: roomTitle
+                  ) else { return }
+            searchBarView.text = text
+        }
     }
 
     func resultGuideURL(_ item: RoomItem) -> URL? {

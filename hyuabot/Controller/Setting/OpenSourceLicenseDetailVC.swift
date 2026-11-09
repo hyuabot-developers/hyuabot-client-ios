@@ -11,6 +11,7 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
     private let license: OpenSourceLicenseEntry
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
+    private let licenseTextView = UITextView()
 
     init(license: OpenSourceLicenseEntry) {
         self.license = license
@@ -29,6 +30,9 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
         configureLayout()
         contentStack.addArrangedSubview(makeHeaderSection())
         contentStack.addArrangedSubview(makeLicenseSection())
+        registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) { (viewController: OpenSourceLicenseDetailVC, _) in
+            viewController.applyLicenseBody()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -156,33 +160,16 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
     }
 
     private func makeLicenseSection() -> UIView {
-        let textView = UITextView()
+        let textView = licenseTextView
         textView.isEditable = false
         textView.isScrollEnabled = false
         textView.isSelectable = true
         textView.backgroundColor = .clear
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
-        textView.text = license.licenseText
-            .components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .joined(separator: "\n")
-        let font = UIFontMetrics(forTextStyle: .footnote).scaledFont(
-            for: .monospacedSystemFont(ofSize: 12, weight: .regular)
-        )
-        textView.font = font
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.minimumLineHeight = 19
-        paragraph.lineHeightMultiple = 19 / 12
-        textView.typingAttributes = [.paragraphStyle: paragraph]
         textView.textColor = SettingsStyle.Color.body
         textView.adjustsFontForContentSizeCategory = true
-        let attributed = NSMutableAttributedString(string: textView.text, attributes: [
-            .font: font,
-            .foregroundColor: SettingsStyle.Color.body,
-            .paragraphStyle: paragraph
-        ])
-        textView.attributedText = attributed
+        applyLicenseBody()
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
         card.layer.cornerRadius = 16
@@ -194,6 +181,26 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
             content: card
         )
         return padded(section, horizontal: 0)
+    }
+
+    private func applyLicenseBody() {
+        let body = license.licenseText.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .joined(separator: "\n")
+        let font = UIFontMetrics(forTextStyle: .footnote).scaledFont(
+            for: .monospacedSystemFont(ofSize: 12, weight: .regular),
+            compatibleWith: traitCollection
+        )
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.minimumLineHeight = 19
+        paragraph.lineHeightMultiple = 19 / 12
+        licenseTextView.font = font
+        licenseTextView.typingAttributes = [.paragraphStyle: paragraph]
+        licenseTextView.attributedText = NSAttributedString(string: body, attributes: [
+            .font: font,
+            .foregroundColor: SettingsStyle.Color.body,
+            .paragraphStyle: paragraph
+        ])
     }
 
     private func padded(_ view: UIView, horizontal: CGFloat) -> UIView {

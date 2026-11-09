@@ -1,3 +1,8 @@
+//
+//  SubwayTransferItem.swift
+//  hyuabot
+//
+
 import Api
 
 struct SubwayTransferItem {

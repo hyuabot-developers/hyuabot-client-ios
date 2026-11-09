@@ -466,3 +466,29 @@ extension DomainLogicTests {
         }
     }
 }
+extension DomainLogicTests {
+    func testMapSearchFieldText() {
+        let cases = [("", "304호"), ("   ", "304호"), ("제1공학관", "제1공학관 304호"), (" 본관 ", "본관 304호"), ("Main Building", "Main Building 304호")]
+        for (building, expected) in cases {
+            XCTAssertEqual(MapSearchLogic.searchFieldText(building: building, roomTitle: "304호"), expected)
+        }
+    }
+
+    func testMapSearchFieldTranslationStaleness() {
+        var gate = MapRequestGate(); let tokenA = gate.begin(); gate.invalidate()
+        XCTAssertNil(MapSearchLogic.translatedSearchFieldText(token: tokenA, gate: gate, building: "Engineering Hall", roomTitle: "304호"))
+        var gate2 = MapRequestGate(); let tokenA2 = gate2.begin(); let tokenB = gate2.begin()
+        XCTAssertNil(MapSearchLogic.translatedSearchFieldText(
+            token: tokenA2, gate: gate2, building: "Engineering Hall", roomTitle: "304호"
+        ))
+        XCTAssertEqual(MapSearchLogic.translatedSearchFieldText(
+            token: tokenB, gate: gate2, building: "Science Hall", roomTitle: "304호"
+        ), "Science Hall 304호")
+        var gate3 = MapRequestGate(); let tokenC = gate3.begin(); gate3.invalidate()
+        XCTAssertNil(MapSearchLogic.translatedSearchFieldText(token: tokenC, gate: gate3, building: "Engineering Hall", roomTitle: "304호"))
+        var gate4 = MapRequestGate(); let token = gate4.begin()
+        XCTAssertEqual(MapSearchLogic.translatedSearchFieldText(
+            token: token, gate: gate4, building: "Engineering Hall", roomTitle: "304호"
+        ), "Engineering Hall 304호")
+    }
+}

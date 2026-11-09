@@ -1,3 +1,8 @@
+//
+//  widgetBundle.swift
+//  hyuabot
+//
+
 import SwiftUI
 import WidgetKit
 

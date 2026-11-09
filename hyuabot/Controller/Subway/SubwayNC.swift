@@ -1,3 +1,8 @@
+//
+//  SubwayNC.swift
+//  hyuabot
+//
+
 import UIKit
 
 class SubwayNC: UINavigationController {

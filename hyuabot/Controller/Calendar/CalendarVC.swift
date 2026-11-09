@@ -1,3 +1,8 @@
+//
+//  CalendarVC.swift
+//  hyuabot
+//
+
 // swiftlint:disable file_length
 
 import Api
@@ -330,7 +335,6 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
             eventViewHeightConstraint = make.height.equalTo(0).constraint
         }
         [panelHeaderView, eventListCard, emptyStateView, skeletonView].forEach { $0.isHidden = true }
-        hintLabel.text = String(localized: "calendar.swipe.hint")
         panelHeaderView.snp.makeConstraints { make in
             make.top.equalTo(calendarCardView.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(16)
@@ -378,12 +382,12 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         let weekday = cal.component(.weekday, from: first) - 1
 
         var dates: [Foundation.Date] = []
-        for i in stride(from: weekday - 1, through: 0, by: -1) {
-            if let d = cal.date(byAdding: .day, value: -(i + 1), to: first) { dates.append(d) }
+        for offset in stride(from: weekday - 1, through: 0, by: -1) {
+            if let date = cal.date(byAdding: .day, value: -(offset + 1), to: first) { dates.append(date) }
         }
         let count = cal.range(of: .day, in: .month, for: first)?.count ?? 0
-        for i in 0 ..< count {
-            if let d = cal.date(byAdding: .day, value: i, to: first) { dates.append(d) }
+        for dayOffset in 0 ..< count {
+            if let date = cal.date(byAdding: .day, value: dayOffset, to: first) { dates.append(date) }
         }
         let total = ((dates.count + 6) / 7) * 7
         var last = dates.last ?? first
@@ -425,11 +429,16 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
             CalendarLayoutLogic.weekLayout(weekDays: Array(days[start..<start + 7]), monthKey: monthKey, spans: spans)
         }
         let empty = !CalendarLayoutLogic.monthHasEvents(monthKey: monthKey, spans: spans)
-        monthEmptyView.isHidden = !empty
-        emptyTopConstraint?.update(offset: empty ? 4 : 0)
+        applyMonthEmptyVisibility(empty: empty, loading: (try? isLoading.value()) == true)
+    }
+
+    private func applyMonthEmptyVisibility(empty: Bool, loading: Bool) {
+        let visible = empty && !loading
+        monthEmptyView.isHidden = !visible
+        emptyTopConstraint?.update(offset: visible ? 4 : 0)
         emptyHeightConstraint?.deactivate()
         monthEmptyView.snp.makeConstraints { make in
-            if empty {
+            if visible {
                 emptyHeightConstraint = make.height.equalTo(monthEmptyLabel.snp.height).offset(16).constraint
             } else {
                 emptyHeightConstraint = make.height.equalTo(0).constraint
@@ -532,7 +541,8 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         updateCalendarDates()
     }
 
-    @objc private func didTapPrev() {
+    @objc
+    private func didTapPrev() {
         guard let prev = CalendarVC.seoulCalendar.date(byAdding: .month, value: -1, to: currentMonth) else { return }
         currentMonth = prev
         selectedDate = nil
@@ -540,7 +550,8 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         updateCalendarDates()
     }
 
-    @objc private func didTapNext() {
+    @objc
+    private func didTapNext() {
         guard let next = CalendarVC.seoulCalendar.date(byAdding: .month, value: 1, to: currentMonth) else { return }
         currentMonth = next
         selectedDate = nil
@@ -561,7 +572,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         isLoading.subscribe(onNext: { [weak self] loading in
             guard let self else { return }
             if loading {
-                monthEmptyView.isHidden = true
+                applyMonthEmptyVisibility(empty: false, loading: true)
                 panelHeaderView.configure(title: String(localized: "calendar.loading"), count: nil, showsClear: false)
                 panelHeaderView.isHidden = false
                 skeletonView.isHidden = false
@@ -572,9 +583,10 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
             } else {
                 skeletonView.stopPulse()
                 skeletonView.isHidden = true
-                monthEmptyView.isHidden = CalendarLayoutLogic.monthHasEvents(
+                let monthHasEvents = CalendarLayoutLogic.monthHasEvents(
                     monthKey: String(dateFormatter.string(from: currentMonth).prefix(7)), spans: visibleSpans
                 )
+                applyMonthEmptyVisibility(empty: !monthHasEvents, loading: false)
                 updateSelectedDatePanel()
             }
         }).disposed(by: disposeBag)
@@ -584,10 +596,10 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         notificationToken = Database.shared.database.objects(Event.self).observe { [weak self] changes in
             switch changes {
             case let .initial(results):
-                self?.eventSubject.onNext(results.map { $0 })
+                self?.eventSubject.onNext(Array(results))
             case let .update(_, deletions, insertions, modifications):
                 if !deletions.isEmpty || !insertions.isEmpty || !modifications.isEmpty {
-                    self?.eventSubject.onNext(Database.shared.database.objects(Event.self).map { $0 })
+                    self?.eventSubject.onNext(Array(Database.shared.database.objects(Event.self)))
                 }
             default: break
             }

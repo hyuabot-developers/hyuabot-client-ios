@@ -1,3 +1,8 @@
+//
+//  BusTimetableEmptyCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class BusTimetableEmptyCellView: UITableViewCell {

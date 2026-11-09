@@ -1,3 +1,8 @@
+//
+//  Calendar.swift
+//  hyuabot
+//
+
 import Api
 import Foundation
 import RealmSwift
@@ -12,7 +17,7 @@ final class Event: RealmSwift.Object {
     @objc dynamic var categoryID: Int = 0
     @objc dynamic var categoryName: String = ""
 
-    override class func primaryKey() -> String? {
+    override static func primaryKey() -> String? {
         "id"
     }
 }
@@ -111,10 +116,10 @@ extension Event {
     }
 
     private static let dateOnlyFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = TimeZone(identifier: "Asia/Seoul")
-        return f
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter
     }()
 
     private var startDateOnly: String {

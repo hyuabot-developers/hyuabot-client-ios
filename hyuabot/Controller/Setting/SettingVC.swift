@@ -1,3 +1,8 @@
+//
+//  SettingVC.swift
+//  hyuabot
+//
+
 import SafariServices
 import SnapKit
 import UIKit

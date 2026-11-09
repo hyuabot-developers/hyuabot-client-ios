@@ -1,3 +1,8 @@
+//
+//  ViewPager.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ViewPager: UIView {
@@ -39,65 +44,62 @@ class ViewPager: UIView {
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(self.sizeConfiguration.height + (self.navigationBarEnabled ? .zero : topPadding))
         }
-        if noticeView != nil {
-            let noticeContainer = UIView().then {
-                $0.backgroundColor = .hanyangBlue
-                $0.addSubview(self.noticeView!)
-            }
-            addSubview(noticeContainer)
-            if optionView != nil {
-                addSubview(optionView!)
-                noticeView!.snp.makeConstraints { make in
-                    make.top.equalToSuperview().inset(10)
-                    make.bottom.equalToSuperview().inset(5)
-                    make.leading.trailing.equalToSuperview().inset(10)
-                }
-                optionView!.snp.makeConstraints { make in
-                    make.top.equalTo(self.tabView.snp.bottom)
-                    make.leading.trailing.equalToSuperview()
-                }
-                noticeContainer.snp.makeConstraints { make in
-                    make.top.equalTo(self.optionView!.snp.bottom)
-                    make.leading.trailing.equalToSuperview()
-                    make.height.equalTo(40)
-                }
-                contentView.snp.makeConstraints { make in
-                    make.leading.trailing.bottom.equalToSuperview()
-                    make.top.equalTo(noticeContainer.snp.bottom)
-                }
-            } else {
-                noticeView!.snp.makeConstraints { make in
-                    make.top.equalToSuperview().inset(10)
-                    make.bottom.equalToSuperview().inset(5)
-                    make.leading.trailing.equalToSuperview().inset(10)
-                }
-                noticeContainer.snp.makeConstraints { make in
-                    make.top.equalTo(self.tabView.snp.bottom)
-                    make.leading.trailing.equalToSuperview()
-                    make.height.equalTo(40)
-                }
-                contentView.snp.makeConstraints { make in
-                    make.top.equalTo(noticeContainer.snp.bottom)
-                    make.leading.trailing.bottom.equalToSuperview()
-                }
-            }
+        if let noticeView {
+            setupNoticeView(noticeView)
+        } else if let optionView {
+            setupOptionView(optionView)
         } else {
-            if optionView != nil {
-                addSubview(optionView!)
-                optionView!.snp.makeConstraints { make in
-                    make.top.equalTo(self.tabView.snp.bottom)
-                    make.leading.trailing.equalToSuperview()
-                }
-                contentView.snp.makeConstraints { make in
-                    make.leading.trailing.bottom.equalToSuperview()
-                    make.top.equalTo(self.optionView!.snp.bottom)
-                }
-            } else {
-                contentView.snp.makeConstraints { make in
-                    make.top.equalTo(self.tabView.snp.bottom)
-                    make.leading.trailing.bottom.equalToSuperview()
-                }
+            setupContentView(topView: tabView)
+        }
+    }
+
+    private func setupNoticeView(_ noticeView: UIView) {
+        let noticeContainer = UIView().then {
+            $0.backgroundColor = .hanyangBlue
+            $0.addSubview(noticeView)
+        }
+        addSubview(noticeContainer)
+        noticeView.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(10)
+            make.bottom.equalToSuperview().inset(5)
+            make.leading.trailing.equalToSuperview().inset(10)
+        }
+
+        if let optionView {
+            addSubview(optionView)
+            optionView.snp.makeConstraints { make in
+                make.top.equalTo(tabView.snp.bottom)
+                make.leading.trailing.equalToSuperview()
             }
+            noticeContainer.snp.makeConstraints { make in
+                make.top.equalTo(optionView.snp.bottom)
+                make.leading.trailing.equalToSuperview()
+                make.height.equalTo(40)
+            }
+            setupContentView(topView: noticeContainer)
+        } else {
+            noticeContainer.snp.makeConstraints { make in
+                make.top.equalTo(tabView.snp.bottom)
+                make.leading.trailing.equalToSuperview()
+                make.height.equalTo(40)
+            }
+            setupContentView(topView: noticeContainer)
+        }
+    }
+
+    private func setupOptionView(_ optionView: UIView) {
+        addSubview(optionView)
+        optionView.snp.makeConstraints { make in
+            make.top.equalTo(tabView.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+        }
+        setupContentView(topView: optionView)
+    }
+
+    private func setupContentView(topView: UIView) {
+        contentView.snp.makeConstraints { make in
+            make.top.equalTo(topView.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
         }
     }
 }

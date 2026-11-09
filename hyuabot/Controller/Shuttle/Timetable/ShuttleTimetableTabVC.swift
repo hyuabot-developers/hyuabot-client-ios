@@ -1,3 +1,8 @@
+//
+//  ShuttleTimetableTabVC.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit
@@ -114,28 +119,35 @@ extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
         if isWeekdays {
             guard let items = try? ShuttleTimetableData.shared.weekdays.value() else { return UITableViewCell() }
             if items.isEmpty != true {
-                let cell = tableView.dequeueReusableCell(
+                guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: ShuttleTimetableCellView.reuseIdentifier,
                     for: indexPath
-                ) as! ShuttleTimetableCellView
+                ) as? ShuttleTimetableCellView else {
+                    fatalError("Unable to dequeue ShuttleTimetableCellView")
+                }
                 cell.setupUI(option: options, item: items[indexPath.row])
                 return cell
             }
-        } else if !isWeekdays {
+        } else {
             guard let items = try? ShuttleTimetableData.shared.weekends.value() else { return UITableViewCell() }
             if items.isEmpty != true {
-                let cell = tableView.dequeueReusableCell(
+                guard let cell = tableView.dequeueReusableCell(
                     withIdentifier: ShuttleTimetableCellView.reuseIdentifier,
                     for: indexPath
-                ) as! ShuttleTimetableCellView
+                ) as? ShuttleTimetableCellView else {
+                    fatalError("Unable to dequeue ShuttleTimetableCellView")
+                }
                 cell.setupUI(option: options, item: items[indexPath.row])
                 return cell
             }
         }
-        return tableView.dequeueReusableCell(
+        guard let cell = tableView.dequeueReusableCell(
             withIdentifier: ShuttleTimetableEmptyCellView.reuseIdentifier,
             for: indexPath
-        ) as! ShuttleTimetableEmptyCellView
+        ) as? ShuttleTimetableEmptyCellView else {
+            fatalError("Unable to dequeue ShuttleTimetableEmptyCellView")
+        }
+        return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

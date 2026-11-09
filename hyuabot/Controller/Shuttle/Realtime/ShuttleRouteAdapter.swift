@@ -1,3 +1,8 @@
+//
+//  ShuttleRouteAdapter.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleRouteAdapter: UIView {

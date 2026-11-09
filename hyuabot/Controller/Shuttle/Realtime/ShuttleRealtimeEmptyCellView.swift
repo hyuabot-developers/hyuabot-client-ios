@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeEmptyCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleRealtimeEmptyCellView: UITableViewCell {

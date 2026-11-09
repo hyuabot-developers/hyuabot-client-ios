@@ -1,3 +1,8 @@
+//
+//  ReadingRoomVC.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit
@@ -17,9 +22,17 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
     private let headerView = UIView()
     var isRefreshing = false
     var lastUpdatedAt: Foundation.Date?
-    var toastContainer: UIView { navigationController?.view ?? view }
-    var campusID: Int { UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID") }
-    var campusName: String { String(localized: campusID == 1 ? "campus.seoul" : "campus.erica") }
+    var toastContainer: UIView {
+        navigationController?.view ?? view
+    }
+
+    var campusID: Int {
+        UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
+    }
+
+    var campusName: String {
+        String(localized: campusID == 1 ? "campus.seoul" : "campus.erica")
+    }
 
     lazy var readingRoomView = UITableView().then {
         $0.showsVerticalScrollIndicator = false
@@ -49,7 +62,9 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
         navigationItem.title = String(localized: "tabbar.readingroom")
         campusPill.accessibilityIdentifier = "reading_room.campus_pill"
         let pillItem = UIBarButtonItem(customView: campusPill)
-        if #available(iOS 26.0, *) { pillItem.hidesSharedBackground = true }
+        if #available(iOS 26.0, *) {
+            pillItem.hidesSharedBackground = true
+        }
         navigationItem.rightBarButtonItem = pillItem
         campusPill.addTarget(self, action: #selector(openSettings), for: .touchUpInside)
         setupUI()
@@ -83,21 +98,25 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         stopPolling()
         SettingsToastView.dismiss(in: toastContainer)
         SettingsNavigationStyle.screenWillDisappear(self)
     }
 
-    @objc func appDidEnterBackground() {
+    @objc
+    func appDidEnterBackground() {
         stopPolling()
     }
 
-    @objc func appWillEnterForeground() {
+    @objc
+    func appWillEnterForeground() {
         startPolling()
     }
 
-    @objc private func refreshTableView(_ sender: UIRefreshControl) {
+    @objc
+    private func refreshTableView(_ sender: UIRefreshControl) {
         isRefreshing = true
         updateStatusRow()
         AnalyticsManager.logSelect(.readingRoomRefresh)

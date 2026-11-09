@@ -1,3 +1,8 @@
+//
+//  ShuttleStopEnum.swift
+//  hyuabot
+//
+
 enum ShuttleStopEnum {
     case dormiotryOut
     case shuttlecockOut

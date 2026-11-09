@@ -1,3 +1,8 @@
+//
+//  ContentView.swift
+//  hyuabot
+//
+
 import UIKit
 
 @MainActor
@@ -59,7 +64,9 @@ extension ContentView: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ContentViewCell", for: indexPath) as! ContentViewCell
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: "ContentViewCell", for: indexPath
+        ) as? ContentViewCell else { fatalError("Unable to dequeue ContentViewCell") }
         guard pages.indices.contains(indexPath.item) else { return cell }
         cell.content = pages[indexPath.item]
         return cell

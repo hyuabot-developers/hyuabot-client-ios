@@ -16,7 +16,7 @@ class SearchResultCellView: UITableViewCell {
     private let numberLabel = UILabel()
     private let nameLabel = UILabel()
     private let buildingLabel = UILabel()
-    private let chevronView = UIImageView()
+    private let trailingIconView = UIImageView()
     private let firstLine = UIStackView()
     private let textStack = UIStackView()
 
@@ -26,7 +26,9 @@ class SearchResultCellView: UITableViewCell {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     private func setupUI() {
         backgroundColor = .clear
@@ -112,18 +114,18 @@ class SearchResultCellView: UITableViewCell {
     }
 
     private func setupChevron() {
-        let chevronConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
-        chevronView.image = UIImage(systemName: "location.circle.fill", withConfiguration: chevronConfiguration)
-        chevronView.tintColor = SettingsStyle.Color.link
-        chevronView.isAccessibilityElement = false
-        cardView.addSubview(chevronView)
-        chevronView.snp.makeConstraints {
+        let trailingIconConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+        trailingIconView.image = UIImage(systemName: "location.circle.fill", withConfiguration: trailingIconConfiguration)
+        trailingIconView.tintColor = SettingsStyle.Color.link
+        trailingIconView.isAccessibilityElement = false
+        cardView.addSubview(trailingIconView)
+        trailingIconView.snp.makeConstraints {
             $0.size.equalTo(24)
             $0.centerY.equalToSuperview()
             $0.trailing.equalToSuperview().inset(16)
             $0.leading.equalTo(textStack.snp.trailing).offset(12)
         }
-        textStack.snp.makeConstraints { $0.trailing.lessThanOrEqualTo(chevronView.snp.leading).offset(-12) }
+        textStack.snp.makeConstraints { $0.trailing.lessThanOrEqualTo(trailingIconView.snp.leading).offset(-12) }
     }
 
     func configure(item: RoomItem, isFirst: Bool, isLast: Bool) {
@@ -133,7 +135,7 @@ class SearchResultCellView: UITableViewCell {
         buildingLabel.setKoreanTranslatedText(item.building)
         separator.isHidden = isFirst
         cardView.layer.cornerRadius = isFirst || isLast ? 16 : 0
-        if isFirst && isLast {
+        if isFirst, isLast {
             cardView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         } else if isFirst {
             cardView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]

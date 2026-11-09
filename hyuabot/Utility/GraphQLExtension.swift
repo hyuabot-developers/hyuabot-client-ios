@@ -1,3 +1,8 @@
+//
+//  GraphQLExtension.swift
+//  hyuabot
+//
+
 import Foundation
 
 private final class LockedFormatter<Resource: AnyObject>: @unchecked Sendable {

@@ -1,3 +1,8 @@
+//
+//  LanguageManager.swift
+//  hyuabot
+//
+
 import Foundation
 
 @MainActor

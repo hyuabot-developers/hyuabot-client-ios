@@ -1,3 +1,8 @@
+//
+//  ShuttleWidget.swift
+//  hyuabot
+//
+
 import Api
 import Apollo
 import AppIntents
@@ -228,9 +233,9 @@ struct ShuttleProvider: TimelineProvider {
                 return ShuttleEntry(date: fetchedAt, stopDisplayName: "", stopID: "", groups: [], errorState: .error)
             }
 
-            let nearestStop = stops.min { a, b in
-                CLLocation(latitude: a.latitude, longitude: a.longitude).distance(from: location)
-                    < CLLocation(latitude: b.latitude, longitude: b.longitude).distance(from: location)
+            let nearestStop = stops.min { lhs, rhs in
+                CLLocation(latitude: lhs.latitude, longitude: lhs.longitude).distance(from: location)
+                    < CLLocation(latitude: rhs.latitude, longitude: rhs.longitude).distance(from: location)
             }
 
             guard let stop = nearestStop else {

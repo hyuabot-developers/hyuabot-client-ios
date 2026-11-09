@@ -1,3 +1,8 @@
+//
+//  NoticeCell.swift
+//  hyuabot
+//
+
 import UIKit
 
 class NoticeCell: UICollectionViewCell {
@@ -41,7 +46,8 @@ class NoticeCell: UICollectionViewCell {
         contentView.isUserInteractionEnabled = notice.url != nil
     }
 
-    @objc private func didTap() {
+    @objc
+    private func didTap() {
         onTap?()
     }
 }

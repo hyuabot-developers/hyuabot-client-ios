@@ -1,3 +1,8 @@
+//
+//  SettingNC.swift
+//  hyuabot
+//
+
 import UIKit
 
 class SettingNC: UINavigationController {

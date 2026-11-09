@@ -1,3 +1,8 @@
+//
+//  ContactSearchEmptyCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ContactSearchEmptyCellView: UITableViewCell {

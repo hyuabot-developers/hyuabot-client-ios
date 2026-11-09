@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeFooterView.swift
+//  hyuabot
+//
+
 import SnapKit
 import Then
 import UIKit
@@ -117,11 +122,11 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
                 busStopLongitude: 0
             )]
             : busAlternatives
-        if self.stopID == stopID,
-           self.section == section,
-           self.alternatives == alternatives,
-           busAlternativeContainer.isHidden == alternatives.isEmpty
-        {
+        let isUnchanged = self.stopID == stopID
+            && self.section == section
+            && self.alternatives == alternatives
+            && busAlternativeContainer.isHidden == alternatives.isEmpty
+        if isUnchanged {
             return
         }
 
@@ -245,12 +250,14 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         return row
     }
 
-    @objc private func showAlternativeStop(_ sender: UIButton) {
+    @objc
+    private func showAlternativeStop(_ sender: UIButton) {
         guard alternatives.indices.contains(sender.tag) else { return }
         showBusAlternativeStop?(alternatives[sender.tag])
     }
 
-    @objc func showEntireTimeTable() {
+    @objc
+    func showEntireTimeTable() {
         AnalyticsManager.logSelect(.shuttleShowEntireTimetable)
         guard let stopID, let section else { return }
         showEntireTimetable?(stopID, section)

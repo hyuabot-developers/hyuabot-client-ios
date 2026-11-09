@@ -1,3 +1,8 @@
+//
+//  Network.swift
+//  hyuabot
+//
+
 import Apollo
 import Foundation
 

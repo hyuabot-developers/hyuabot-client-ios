@@ -1,3 +1,8 @@
+//
+//  RoomItem.swift
+//  hyuabot
+//
+
 struct RoomItem {
     let name: String
     let number: String

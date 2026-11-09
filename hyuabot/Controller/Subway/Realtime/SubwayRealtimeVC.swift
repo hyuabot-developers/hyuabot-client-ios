@@ -1,3 +1,8 @@
+//
+//  SubwayRealtimeVC.swift
+//  hyuabot
+//
+
 import Api
 import ApolloAPI
 import RxSwift
@@ -62,7 +67,9 @@ class SubwayRealtimeVC: UIViewController {
         SubwayRealtimeData.shared.transferDown.observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in self?.render() }).disposed(by: disposeBag)
         #if DEBUG
-        if SubwayDebugFixture.activeMode != nil { render() }
+            if SubwayDebugFixture.activeMode != nil {
+                render()
+            }
         #endif
     }
 
@@ -87,7 +94,8 @@ class SubwayRealtimeVC: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         stopPolling()
     }
 
@@ -113,14 +121,14 @@ class SubwayRealtimeVC: UIViewController {
 
     private func render() {
         #if DEBUG
-        let fixtureMode = SubwayDebugFixture.activeMode
-        let isLoading = fixtureMode == .loading ? true : (fixtureMode != nil ? false : (
-            (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
-        ))
-        let now = fixtureMode != nil ? SubwayDebugFixture.now : Date.now
+            let fixtureMode = SubwayDebugFixture.activeMode
+            let isLoading = fixtureMode == .loading ? true : (fixtureMode != nil ? false : (
+                (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
+            ))
+            let now = fixtureMode != nil ? SubwayDebugFixture.now : Date.now
         #else
-        let isLoading = (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
-        let now = Date.now
+            let isLoading = (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
+            let now = Date.now
         #endif
         let sections: [SubwaySectionContent]
         switch selectedTab {
@@ -140,24 +148,24 @@ class SubwayRealtimeVC: UIViewController {
             let toIncheon: [SubwayTransferRouteInfo]
             let toHanyang: [SubwayTransferRouteInfo]
             #if DEBUG
-            if let fixtureMode {
-                toIncheon = SubwayDebugFixture.transferRoutes(toIncheon: true, mode: fixtureMode)
-                toHanyang = SubwayDebugFixture.transferRoutes(toIncheon: false, mode: fixtureMode)
-            } else {
+                if let fixtureMode {
+                    toIncheon = SubwayDebugFixture.transferRoutes(toIncheon: true, mode: fixtureMode)
+                    toHanyang = SubwayDebugFixture.transferRoutes(toIncheon: false, mode: fixtureMode)
+                } else {
+                    toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
+                        SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
+                    }
+                    toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
+                        SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
+                    }
+                }
+            #else
                 toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
                     SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
                 }
                 toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
                     SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
                 }
-            }
-            #else
-            toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
-                SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
-            }
-            toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
-                SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
-            }
             #endif
             sections = SubwayDisplayLogic.transferSections(toIncheon: toIncheon, toHanyang: toHanyang, now: now)
         }
@@ -166,14 +174,13 @@ class SubwayRealtimeVC: UIViewController {
 
     private func arrivals(_ line: SubwayLine, _ heading: SubwayHeadingEnum) -> [SubwayArrivalInfo] {
         #if DEBUG
-        if let mode = SubwayDebugFixture.activeMode {
-            return SubwayDebugFixture.arrivals(line: line, heading: heading, mode: mode)
-        }
+            if let mode = SubwayDebugFixture.activeMode {
+                return SubwayDebugFixture.arrivals(line: line, heading: heading, mode: mode)
+            }
         #endif
-        let subway: SubwayRealtimePageQuery.Data.Subway?
-        switch line {
-        case .line4: subway = try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusBlue
-        case .suin: subway = try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusYellow
+        let subway: SubwayRealtimePageQuery.Data.Subway? = switch line {
+        case .line4: try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusBlue
+        case .suin: try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusYellow
         }
         let direction = heading == .up ? "up" : "down"
         return subway?.arrival.first(where: { $0.direction == direction })?.entries.map(SubwayArrivalInfo.init(entry:)) ?? []
@@ -216,31 +223,27 @@ class SubwayRealtimeVC: UIViewController {
         oidoYellow: SubwayRealtimePageQuery.Data.Subway
     ) -> [SubwayTransferItem] {
         let downRealtimeWithoutTransfer: [SubwayTransferItem] = campusYellow.arrival.first(where: { $0.direction == "down" })?.entries
-            .filter {
-                entry in entry.terminal.stationID > "K258" && entry.isRealtime && entry.terminal.stationID.hasPrefix("K2")
-            }.map {
-                entry in SubwayTransferItem(
-                    take: entry,
-                    transfer: nil,
-                    transferWaitMinutes: nil
-                )
-            } ?? []
-        let downTimetableToTransfer: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry] = oidoYellow.arrival
-            .first(where: { $0.direction == "down" })?.entries.filter {
-                entry in entry.origin?.stationID == "K258"
-            } ?? []
-        let downRealtimeWithTransfer: [SubwayTransferItem] = campusBlue.arrival.first(where: { $0.direction == "down" })?.entries.filter {
-            entry in entry.terminal.stationID == "K456"
-        }.map { entry in
-            let firstItemWithOutTransfer = findTakeTrain(compare: downRealtimeWithoutTransfer, target: entry)
-            return SubwayTransferItem(
+            .filter { entry in entry.terminal.stationID > "K258" && entry.isRealtime && entry.terminal.stationID.hasPrefix("K2")
+            }.map { entry in SubwayTransferItem(
                 take: entry,
-                transfer: findTransferTrain(compare: downTimetableToTransfer, entry: entry, target: firstItemWithOutTransfer),
+                transfer: nil,
                 transferWaitMinutes: nil
             )
-        }.filter {
-            entry in entry.transfer != nil
-        } ?? []
+            } ?? []
+        let downTimetableToTransfer: [SubwayRealtimePageQuery.Data.Subway.Arrival.Entry] = oidoYellow.arrival
+            .first(where: { $0.direction == "down" })?.entries.filter { entry in entry.origin?.stationID == "K258"
+            } ?? []
+        let downRealtimeWithTransfer: [SubwayTransferItem] = campusBlue.arrival.first(where: { $0.direction == "down" })?.entries
+            .filter { entry in entry.terminal.stationID == "K456" }
+            .map { entry in
+                let firstItemWithOutTransfer = findTakeTrain(compare: downRealtimeWithoutTransfer, target: entry)
+                return SubwayTransferItem(
+                    take: entry,
+                    transfer: findTransferTrain(compare: downTimetableToTransfer, entry: entry, target: firstItemWithOutTransfer),
+                    transferWaitMinutes: nil
+                )
+            }.filter { entry in entry.transfer != nil
+            } ?? []
         return (downRealtimeWithoutTransfer + downRealtimeWithTransfer).sorted { $0.take.minutes < $1.take.minutes }
     }
 
@@ -322,7 +325,7 @@ class SubwayRealtimeVC: UIViewController {
 
     private func startPolling() {
         #if DEBUG
-        guard SubwayDebugFixture.activeMode == nil else { return }
+            guard SubwayDebugFixture.activeMode == nil else { return }
         #endif
         fetchSubwayRealtimeData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
@@ -335,19 +338,27 @@ class SubwayRealtimeVC: UIViewController {
         subscription?.dispose()
     }
 
-    @objc func appDidEnterBackground() {
+    @objc
+    func appDidEnterBackground() {
         stopPolling()
     }
 
-    @objc func appWillEnterForeground() {
+    @objc
+    func appWillEnterForeground() {
         startPolling()
     }
 }
 
 extension SubwayArrivalInfo {
     init(entry: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) {
-        self.init(terminalName: entry.terminal.name, minutes: entry.minutes, isRealtime: entry.isRealtime,
-                  isLast: entry.isLast ?? false, status: entry.status, location: entry.location)
+        self.init(
+            terminalName: entry.terminal.name,
+            minutes: entry.minutes,
+            isRealtime: entry.isRealtime,
+            isLast: entry.isLast ?? false,
+            status: entry.status,
+            location: entry.location
+        )
     }
 }
 
@@ -359,13 +370,16 @@ extension SubwayTransferRouteInfo {
             status: showsPosition ? item.take.status : nil
         )
         if let transfer = item.transfer {
-            self.init(first: first, transferStation: transferStation,
-                      waitMinutes: item.transferWaitMinutes ?? (transfer.minutes - item.take.minutes),
-                      second: SubwayTransferLegInfo(
-                        line: .from(stationID: transfer.terminal.stationID),
-                        terminalName: transfer.terminal.name,
-                        minutes: transfer.minutes
-                      ))
+            self.init(
+                first: first,
+                transferStation: transferStation,
+                waitMinutes: item.transferWaitMinutes ?? (transfer.minutes - item.take.minutes),
+                second: SubwayTransferLegInfo(
+                    line: .from(stationID: transfer.terminal.stationID),
+                    terminalName: transfer.terminal.name,
+                    minutes: transfer.minutes
+                )
+            )
         } else {
             self.init(first: first, transferStation: nil, waitMinutes: nil, second: nil)
         }

@@ -1,3 +1,8 @@
+//
+//  widget.swift
+//  hyuabot
+//
+
 import Api
 import Apollo
 import AppIntents
@@ -72,13 +77,13 @@ private func nextMealTransition(after date: Foundation.Date) -> Foundation.Date 
     let hour = cal.component(.hour, from: date)
     switch hour {
     case ..<10:
-        return cal.date(bySettingHour: 10, minute: 0, second: 0, of: date)!
+        return cal.date(bySettingHour: 10, minute: 0, second: 0, of: date) ?? date
     case 10 ..< 15:
-        return cal.date(bySettingHour: 15, minute: 0, second: 0, of: date)!
+        return cal.date(bySettingHour: 15, minute: 0, second: 0, of: date) ?? date
     case 15 ..< 20:
-        return cal.date(bySettingHour: 20, minute: 0, second: 0, of: date)!
+        return cal.date(bySettingHour: 20, minute: 0, second: 0, of: date) ?? date
     default:
-        let tomorrow = cal.date(byAdding: .day, value: 1, to: date)!
+        let tomorrow = cal.date(byAdding: .day, value: 1, to: date) ?? date.addingTimeInterval(24 * 60 * 60)
         return cal.startOfDay(for: tomorrow)
     }
 }
@@ -196,13 +201,12 @@ struct CafeteriaProvider: TimelineProvider {
 
             let typeStr = mealType.typeString
             let isKorean = (Locale.current.language.languageCode?.identifier ?? "ko").hasPrefix("ko")
-            let hangulRegex = try! NSRegularExpression(pattern: "\\p{Hangul}")
             func localizedFood(_ food: String) -> String {
                 let cleaned = food.replacingOccurrences(of: "\"", with: "")
                 guard isKorean else { return cleaned }
                 let tokens = cleaned.components(separatedBy: .whitespaces)
                 let filtered = tokens.filter { token in
-                    hangulRegex.firstMatch(in: token, range: NSRange(token.startIndex..., in: token)) != nil
+                    token.range(of: "\\p{Hangul}", options: .regularExpression) != nil
                 }
                 let result = filtered.joined(separator: " ")
                 return result.isEmpty ? cleaned : result
@@ -213,10 +217,10 @@ struct CafeteriaProvider: TimelineProvider {
                 .compactMap { cafe in
                     let typed = cafe.menus.filter { $0.type.contains(typeStr) }
                     guard !typed.isEmpty else { return nil }
-                    let menus = typed.map { m in
+                    let menus = typed.map { menu in
                         CafeteriaMenuRow(
-                            food: localizedFood(m.food),
-                            price: m.price
+                            food: localizedFood(menu.food),
+                            price: menu.price
                                 .replacingOccurrences(of: "원", with: "")
                                 .trimmingCharacters(in: .whitespaces)
                         )

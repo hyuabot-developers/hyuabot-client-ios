@@ -1,3 +1,8 @@
+//
+//  BusArrivalItem.swift
+//  hyuabot
+//
+
 import Api
 import Foundation
 
@@ -9,16 +14,20 @@ struct BusArrivalItem {
     var convertedTime: String? {
         guard let time = scheduledTime ?? item.arrivalTime else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
-        if components.hour! < 4 {
-            return String(format: "%02d:%02d", components.hour! + 24, components.minute!)
+        let hour = components.hour ?? 0
+        let minute = components.minute ?? 0
+        if hour < 4 {
+            return String(format: "%02d:%02d", hour + 24, minute)
         }
-        return String(format: "%02d:%02d", components.hour!, components.minute!)
+        return String(format: "%02d:%02d", hour, minute)
     }
 
     var secondaryConvertedTime: String? {
         guard let time = secondaryArrivalTime else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: time.toLocalTime())
-        return String(format: "%02d:%02d", components.hour!, components.minute!)
+        let hour = components.hour ?? 0
+        let minute = components.minute ?? 0
+        return String(format: "%02d:%02d", hour, minute)
     }
 }
 

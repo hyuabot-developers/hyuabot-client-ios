@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeSkeletonCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleRealtimeSkeletonCellView: UITableViewCell {

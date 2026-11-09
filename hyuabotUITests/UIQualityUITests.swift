@@ -482,10 +482,9 @@ final class UIQualityUITests: XCTestCase {
                 return
             }
         }
-        if app.navigationBars.buttons.element(boundBy: 0).exists,
-           app.navigationBars.buttons.element(boundBy: 0).isHittable
-        {
-            app.navigationBars.buttons.element(boundBy: 0).tap()
+        let backButton = app.navigationBars.buttons.element(boundBy: 0)
+        if backButton.exists, backButton.isHittable {
+            backButton.tap()
             waitForPageToSettle(app)
             return
         }
@@ -640,26 +639,26 @@ private struct Page {
     let expectedElementIdentifier: String?
 }
 
-private extension CGRect {
-    var isFinite: Bool {
+extension CGRect {
+    fileprivate var isFinite: Bool {
         origin.x.isFinite && origin.y.isFinite && size.width.isFinite && size.height.isFinite
     }
 }
 
-private extension XCUIElement {
-    func tapIfExists() {
+extension XCUIElement {
+    fileprivate func tapIfExists() {
         if exists, isHittable {
             tap()
         }
     }
 
-    var debugLabel: String {
+    fileprivate var debugLabel: String {
         let id = identifier.isEmpty ? "-" : identifier
         let label = label.isEmpty ? "-" : label
         return "\(elementTypeDescription)(id: \(id), label: \(label))"
     }
 
-    var elementTypeDescription: String {
+    private var elementTypeDescription: String {
         switch elementType {
         case .button:
             "button"

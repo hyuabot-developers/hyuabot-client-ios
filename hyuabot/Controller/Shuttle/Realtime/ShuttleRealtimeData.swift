@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeData.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit

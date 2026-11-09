@@ -14,11 +14,11 @@ Design source: [Cafeteria artifact](https://claude.ai/artifact/NjFCFkDhaqLQYA594
 
 | Property | Design value (artboard + CSS selector/inline style) | Planned value | Implemented value (file:line) | Match (yes/no) |
 |---|---|---|---|---|
-| Title | Cafeteria inline style line 35: 32px/40px | 32pt title | `CafeteriaHeaderBarView.swift:34-40` (Godo title, 32pt) | yes |
-| Month control | Cafeteria inline style line 38: 44px hit area, 14px label | 44pt hit area, 14pt label | `CafeteriaHeaderBarView.swift:95-97,118-123` month control | yes |
-| Today pill | Cafeteria inline style line 46: 32px high, 12px horizontal padding, radius 16 | 32pt, radius 16 | `CafeteriaHeaderBarView.swift:23,69-73,108-116` (44pt button, 32pt capsule) | yes |
-| Share control | Cafeteria inline style line 388: 44px, radius 22 | 44pt, radius 22 | `CafeteriaHeaderBarView.swift:58-69,99-105` | yes |
-| Light/dark colors | Theme tokens `t.text`, `t.link`, `t.accentFill`, `t.seg` | SettingsStyle text/link/accent tokens | `CafeteriaHeaderBarView.swift` uses SettingsStyle tokens | yes |
+| Title | Cafeteria inline style line 35: 32px/40px | 32pt title | `CafeteriaHeaderBarView.swift:42-45` (Godo title, 32pt) | yes |
+| Month control | Cafeteria inline style line 38: 44px hit area, 14px label | 44pt hit area, 14pt label | `CafeteriaHeaderBarView.swift:55-57,99-103,142-155` month control | yes |
+| Today pill | Cafeteria inline style line 46: 32px high, 12px horizontal padding, radius 16 | 32pt, radius 16 | `CafeteriaHeaderBarView.swift:65-75,104-115` (44pt button, 32pt capsule) | yes |
+| Share control | Cafeteria inline style line 388: 44px, radius 22 | 44pt, radius 22 | `CafeteriaHeaderBarView.swift:116-127` | yes |
+| Light/dark colors | Theme tokens `t.text`, `t.link`, `t.accentFill`, `t.seg` | SettingsStyle text/link/accent tokens | `CafeteriaHeaderBarView.swift:42-45,65-72,138-145,164-166` uses SettingsStyle tokens | yes |
 
 ## Week strip
 
@@ -41,12 +41,12 @@ Design source: [Cafeteria artifact](https://claude.ai/artifact/NjFCFkDhaqLQYA594
 
 | Property | Design value (artboard + CSS selector/inline style) | Planned value | Implemented value (file:line) | Match (yes/no) |
 |---|---|---|---|---|
-| Header insets/separator | Cafeteria inline style lines 92-103: 14/16/8px, 1px separator, 44px info button with -12px trailing overlap | Same | `CafeteriaMenuCardView.swift:15-78` | yes |
-| Status chip | Cafeteria script line 349: 20px height, radius 10 | 20pt, radius 10 | `CafeteriaMenuCardView.swift` (header, rows, PaddingLabel) (status chip) | yes |
-| Row layout and price | Cafeteria inline styles lines 107-116, script lines 360-361: 16px inset, 8/10/12px vertical padding, 12px price gap, price min-width 64px and 24px tag offset | Same | `CafeteriaMenuCardView.swift` (header, rows, PaddingLabel) | yes |
-| Menu tag radius | Cafeteria inline style line 112: radius 10px | Radius 10 | `CafeteriaMenuCardView.swift (tag chip, radius 10)`: radius 10 (fixed by coordinator) | yes |
+| Header insets/separator | Cafeteria inline style lines 92-103: 14/16/8px, 1px separator, 44px info button with -12px trailing overlap | Same | `CafeteriaMenuCardView.swift:70-83` | yes |
+| Status chip | Cafeteria script line 349: 20px height, radius 10 | 20pt, radius 10 | `CafeteriaMenuCardView.swift:54-68,138-156` (status chip) | yes |
+| Row layout and price | Cafeteria inline styles lines 107-116, script lines 360-361: 16px inset, 8/10/12px vertical padding, 12px price gap, price min-width 64px and 24px tag offset | Same | `CafeteriaMenuCardView.swift:159-200,203-213,247-254` | yes |
+| Menu tag radius | Cafeteria inline style line 112: radius 10px | Radius 10 | `CafeteriaMenuCardView.swift:203-212`: radius 10 (fixed by coordinator) | yes |
 | Card spacing | Cafeteria inline style line 90: 12px | 12pt | `CafeteriaVC.swift:87,103` | yes |
-| Light/dark colors | `t.card`, `t.sep`, `t.tagFill`, `t.tagText`, `t.link`, `t.sub` | SettingsStyle semantic tokens | `CafeteriaMenuCardView.swift:26,72,138-148,167-201` | yes |
+| Light/dark colors | `t.card`, `t.sep`, `t.tagFill`, `t.tagText`, `t.link`, `t.sub` | SettingsStyle semantic tokens | `CafeteriaMenuCardView.swift:29-35,46-52,78-79,144-156,207-210,222-227,238-243,247-253` | yes |
 
 ## Skeleton bars
 

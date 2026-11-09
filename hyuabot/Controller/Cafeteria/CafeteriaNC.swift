@@ -1,3 +1,8 @@
+//
+//  CafeteriaNC.swift
+//  hyuabot
+//
+
 import UIKit
 
 class CafeteriaNC: UINavigationController {

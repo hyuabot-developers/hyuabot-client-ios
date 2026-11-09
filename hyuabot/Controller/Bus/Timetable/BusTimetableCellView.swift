@@ -1,3 +1,8 @@
+//
+//  BusTimetableCellView.swift
+//  hyuabot
+//
+
 import RxSwift
 import UIKit
 
@@ -42,8 +47,8 @@ class BusTimetableCellView: UITableViewCell {
         let components = Calendar.current.dateComponents([.hour, .minute], from: item.time)
         busTimeLabel.text = String(
             format: String(localized: "bus.timetable.time.%lld.%lld"),
-            components.hour!,
-            components.minute!
+            components.hour ?? 0,
+            components.minute ?? 0
         )
     }
 

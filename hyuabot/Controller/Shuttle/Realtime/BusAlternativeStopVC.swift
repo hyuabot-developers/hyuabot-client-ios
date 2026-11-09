@@ -1,3 +1,8 @@
+//
+//  BusAlternativeStopVC.swift
+//  hyuabot
+//
+
 import MapKit
 import SnapKit
 import Then
@@ -289,8 +294,8 @@ private final class BusAlternativeRouteCache {
     }
 }
 
-private extension MKPolyline {
-    var coordinates: [CLLocationCoordinate2D] {
+extension MKPolyline {
+    fileprivate var coordinates: [CLLocationCoordinate2D] {
         var coordinates = Array(repeating: CLLocationCoordinate2D(), count: pointCount)
         getCoordinates(&coordinates, range: NSRange(location: 0, length: pointCount))
         return coordinates
