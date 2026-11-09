@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeTableFooterView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleRealtimeTableFooterView: UIView {
@@ -34,7 +39,8 @@ class ShuttleRealtimeTableFooterView: UIView {
         }
     }
 
-    @objc func showStopModalButtonTapped() {
+    @objc
+    func showStopModalButtonTapped() {
         AnalyticsManager.logSelect(.shuttleShowStopModal)
         showStopModal(stopID)
     }

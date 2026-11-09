@@ -1,3 +1,8 @@
+//
+//  ShuttleRealtimeTableFooterView2.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ShuttleRealtimeTableFooterView2: UIView {
@@ -122,12 +127,14 @@ class ShuttleRealtimeTableFooterView2: UIView {
         }
     }
 
-    @objc func showStopModalButtonTapped() {
+    @objc
+    func showStopModalButtonTapped() {
         AnalyticsManager.logSelect(.shuttleShowStopModal)
         showStopModal(stopID)
     }
 
-    @objc func showEntireTimeTable(_ sender: UIButton) {
+    @objc
+    func showEntireTimeTable(_ sender: UIButton) {
         AnalyticsManager.logSelect(.shuttleShowEntireTimetable)
         guard let showEntireTimetable else { return }
         if stopID == .dormiotryOut || stopID == .shuttlecockOut {
