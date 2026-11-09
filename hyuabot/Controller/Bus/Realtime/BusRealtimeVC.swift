@@ -1,7 +1,18 @@
+//
+//  BusRealtimeVC.swift
+//  hyuabot
+//
+
 import Api
 import CoreLocation
 import RxSwift
 import UIKit
+
+private struct BusStopCoordinate {
+    let seq: Int32
+    let latitude: Double
+    let longitude: Double
+}
 
 // swiftlint:disable:next type_body_length
 class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate {
@@ -215,7 +226,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         locationManager.stopUpdatingLocation()
         stopPolling()
         noticeView.stopAutoScroll()
@@ -299,15 +311,15 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         }
 
         func nearest(_ candidates: [Int32]) -> Int32? {
-            let withCoords = candidates.compactMap { seq -> (Int32, Double, Double)? in
+            let withCoords = candidates.compactMap { seq -> BusStopCoordinate? in
                 guard let coord = coordinate(seq) else { return nil }
-                return (seq, coord.lat, coord.lng)
+                return BusStopCoordinate(seq: seq, latitude: coord.lat, longitude: coord.lng)
             }
             return withCoords.min {
-                let d1 = pow(location.coordinate.latitude - $0.1, 2) + pow(location.coordinate.longitude - $0.2, 2)
-                let d2 = pow(location.coordinate.latitude - $1.1, 2) + pow(location.coordinate.longitude - $1.2, 2)
+                let d1 = pow(location.coordinate.latitude - $0.latitude, 2) + pow(location.coordinate.longitude - $0.longitude, 2)
+                let d2 = pow(location.coordinate.latitude - $1.latitude, 2) + pow(location.coordinate.longitude - $1.longitude, 2)
                 return d1 < d2
-            }?.0
+            }?.seq
         }
 
         let campusStops: [Int32] = [216_000_379, 216_000_381, 216_000_383]
@@ -720,11 +732,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         present(vc, animated: true, completion: nil)
     }
 
-    @objc func appDidEnterBackground() {
+    @objc
+    func appDidEnterBackground() {
         stopPolling()
     }
 
-    @objc func appWillEnterForeground() {
+    @objc
+    func appWillEnterForeground() {
         startPolling()
     }
 

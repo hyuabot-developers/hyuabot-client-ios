@@ -1,3 +1,8 @@
+//
+//  BusLogVC.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit
@@ -191,7 +196,8 @@ class BusLogVC: UIViewController {
         }
     }
 
-    @objc private func observeSubjects() {
+    @objc
+    private func observeSubjects() {
         firstLogs.subscribe(onNext: { [weak self] _ in
             self?.firstLogTableView.reloadData()
         }).disposed(by: disposeBag)

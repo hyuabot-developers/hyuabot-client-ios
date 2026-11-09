@@ -1,3 +1,8 @@
+//
+//  BusLogCell.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit
@@ -29,7 +34,7 @@ class BusLogCell: UITableViewCell {
     func setupUI(index: Int, item: BusDepartureLogDialogQuery.Data.Bus.Log) {
         let departureTime = item.time.substring(from: 0, to: 4)
         busTimeLabel.text = departureTime
-        if index % 2 == 0 {
+        if index.isMultiple(of: 2) {
             backgroundColor = .secondarySystemBackground
             busTimeLabel.textColor = .label
         } else {
