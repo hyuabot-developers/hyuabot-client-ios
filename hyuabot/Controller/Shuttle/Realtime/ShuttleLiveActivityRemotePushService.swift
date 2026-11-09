@@ -1,4 +1,15 @@
+//
+//  ShuttleLiveActivityRemotePushService.swift
+//  hyuabot
+//
+
 import Foundation
+import OSLog
+
+private let shuttleLiveActivityRemotePushServiceLogger = Logger(
+    subsystem: Bundle.main.bundleIdentifier ?? "net.jaram.hyuabot",
+    category: "ShuttleLiveActivityRemotePushService"
+)
 
 #if canImport(ActivityKit)
     @preconcurrency import ActivityKit
@@ -46,13 +57,15 @@ import Foundation
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.httpBody = try encoder.encode(requestBody)
                 let (_, response) = try await URLSession.shared.data(for: request)
-                if let httpResponse = response as? HTTPURLResponse,
-                   !(200 ... 299).contains(httpResponse.statusCode)
-                {
-                    print("Failed to register shuttle Live Activity push token: \(httpResponse.statusCode)")
+                if let httpResponse = response as? HTTPURLResponse, !(200 ... 299).contains(httpResponse.statusCode) {
+                    shuttleLiveActivityRemotePushServiceLogger.error(
+                        "Failed to register shuttle Live Activity push token: \(httpResponse.statusCode, privacy: .public)"
+                    )
                 }
             } catch {
-                print("Failed to register shuttle Live Activity push token: \(error)")
+                shuttleLiveActivityRemotePushServiceLogger.error(
+                    "Failed to register shuttle Live Activity push token: \(error, privacy: .public)"
+                )
             }
         }
 

@@ -1,8 +1,19 @@
+//
+//  ShuttleBoardingLiveActivityManager.swift
+//  hyuabot
+//
+
 // swiftlint:disable file_length
 
 import CoreLocation
 import Foundation
+import OSLog
 import UIKit
+
+private let shuttleBoardingLiveActivityManagerLogger = Logger(
+    subsystem: Bundle.main.bundleIdentifier ?? "net.jaram.hyuabot",
+    category: "ShuttleBoardingLiveActivityManager"
+)
 
 #if canImport(ActivityKit)
     @preconcurrency import ActivityKit
@@ -77,7 +88,7 @@ import UIKit
                 )
                 scheduleUpdates(for: context, activity: activity)
             } catch {
-                print("Failed to start shuttle boarding live activity: \(error)")
+                shuttleBoardingLiveActivityManagerLogger.error("Failed to start shuttle boarding live activity: \(error, privacy: .public)")
             }
         }
 
@@ -122,7 +133,9 @@ import UIKit
                 )
                 scheduleAlightingUpdates(for: context, destination: destination, activity: activity)
             } catch {
-                print("Failed to start shuttle alighting live activity: \(error)")
+                shuttleBoardingLiveActivityManagerLogger.error(
+                    "Failed to start shuttle alighting live activity: \(error, privacy: .public)"
+                )
             }
         }
 
@@ -253,9 +266,7 @@ import UIKit
                         return
                     }
 
-                    if let distance = distanceFromCurrentLocation(to: destination),
-                       distance <= alightingAlertRadius
-                    {
+                    if let distance = distanceFromCurrentLocation(to: destination), distance <= alightingAlertRadius {
                         ShuttleAlarmNotificationService.shared.fireAlightingProximityAlert(
                             context: context,
                             destination: destination,
@@ -347,9 +358,10 @@ import UIKit
         }
 
         @available(iOS 16.1, *)
-        private func contentState(for context: ShuttleAlarmContext, destination: ShuttleAlarmStop) -> ShuttleBoardingActivityAttributes
-            .ContentState
-        {
+        private func contentState(
+            for context: ShuttleAlarmContext,
+            destination: ShuttleAlarmStop
+        ) -> ShuttleBoardingActivityAttributes.ContentState {
             let checkpointStops = alightingCheckpointStops(context: context, destination: destination)
             let checkpointTimes = checkpointStops.map(\.time)
             let arrival = arrivalText(destination.time)
@@ -484,7 +496,7 @@ import UIKit
 
         private func formatDistance(_ distance: Int) -> String {
             if distance >= 1000 {
-                if distance % 1000 == 0 {
+                if distance.isMultiple(of: 1000) {
                     return "\(distance / 1000)km"
                 }
                 return String(format: "%.1fkm", locale: Locale(identifier: "en_US_POSIX"), Double(distance) / 1000)
@@ -628,7 +640,8 @@ import UIKit
             startLocationUpdatesIfAvailable()
         }
 
-        @objc private func endExpiredActivities() {
+        @objc
+        private func endExpiredActivities() {
             guard #available(iOS 16.1, *) else { return }
             for activity in Activity<ShuttleBoardingActivityAttributes>.activities where activity.attributes.departureTime <= Date.now {
                 Task {
@@ -674,8 +687,8 @@ import UIKit
 
     // swiftlint:enable type_body_length
 
-    private extension Comparable {
-        func clamped(to limits: ClosedRange<Self>) -> Self {
+    extension Comparable {
+        fileprivate func clamped(to limits: ClosedRange<Self>) -> Self {
             min(max(self, limits.lowerBound), limits.upperBound)
         }
     }
