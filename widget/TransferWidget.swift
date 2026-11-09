@@ -1,3 +1,8 @@
+//
+//  TransferWidget.swift
+//  hyuabot
+//
+
 import Api
 import Apollo
 import AppIntents
@@ -299,12 +304,14 @@ struct TransferProvider: TimelineProvider {
     private func buildBus(_ buses: [ShuttleTransferWidgetQuery.Data.TransferBus], stopSeq: Int, label: String) -> [TransitArrival] {
         let matchingBuses = buses.filter { $0.stop.seq == stopSeq }
         let entries = matchingBuses.flatMap(\.arrival).prefix(2).compactMap { arrival -> TransitEntry? in
-            guard let m = arrival.minutes else { return nil }
-            let stopsStr = (arrival.stops ?? 0) > 0
-                ? String(format: String(localized: "transit.stops.format"), arrival.stops!)
-                .trimmingCharacters(in: CharacterSet(charactersIn: "()"))
-                : ""
-            return TransitEntry(terminal: stopsStr, minutes: m)
+            guard let minutes = arrival.minutes else { return nil }
+            let stopsStr = if let stops = arrival.stops, stops > 0 {
+                String(format: String(localized: "transit.stops.format"), stops)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "()"))
+            } else {
+                ""
+            }
+            return TransitEntry(terminal: stopsStr, minutes: minutes)
         }
         let fallbackEntries = matchingBuses.flatMap(\.log)
             .compactMap { minutesUntilLogTime($0.time) }
