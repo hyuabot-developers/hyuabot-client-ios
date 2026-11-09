@@ -1,7 +1,18 @@
+//
+//  ShuttleRealtimeVC.swift
+//  hyuabot
+//
+
 import Api
 import CoreLocation
 import RxSwift
 import UIKit
+
+private struct ShuttleStopPoint {
+    let name: String
+    let latitude: Double
+    let longitude: Double
+}
 
 private struct ShuttleBusRouteOption {
     let bus: ShuttleRealtimePageQuery.Data.AlternativeBus?
@@ -24,7 +35,7 @@ class ShuttleRealtimeVC: UIViewController {
     private let returnsToHome: Bool
     private let initialStopID: String?
     private let initialDestinationID: String?
-    private let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    private let appDelegate = UIApplication.shared.delegate as? AppDelegate
     private let disposeBag = DisposeBag()
     private lazy var locationManager = CLLocationManager().then {
         $0.delegate = self
@@ -494,8 +505,8 @@ class ShuttleRealtimeVC: UIViewController {
             )
         ])
         let validItems = items.filter { item in
-            guard let v = item.targetView else { return false }
-            return v.window != nil && !v.isHidden
+            guard let targetView = item.targetView else { return false }
+            return targetView.window != nil && !targetView.isHidden
         }
         guard !validItems.isEmpty,
               let window = view.window,
@@ -563,18 +574,23 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
         stopPolling()
         stopPresenceUpdates()
         noticeView.stopAutoScroll()
     }
 
-    @objc func appDidEnterBackground() {
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc
+    func appDidEnterBackground() {
         stopPolling()
         stopPresenceUpdates()
     }
 
-    @objc func appWillEnterForeground() {
+    @objc
+    func appWillEnterForeground() {
         startPolling()
         startPresenceUpdates()
     }
@@ -679,7 +695,8 @@ class ShuttleRealtimeVC: UIViewController {
         return stop.timetable.order.first(where: { $0.time > now })?.stops.map(\.stop)
     }
 
-    @objc private func coachMarksDidReset() {
+    @objc
+    private func coachMarksDidReset() {
         guard view.window != nil else { return }
         isShowingCoachMarks = false
         scheduleCoachMarksIfNeeded()
@@ -752,7 +769,7 @@ class ShuttleRealtimeVC: UIViewController {
             let shared = ShuttleRealtimeData.shared
             typealias Entry = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
             typealias Order = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
-            /// Publish every stop from the shared response and omit destination departures that have already passed.
+            // Publish every stop from the shared response and omit destination departures that have already passed.
             func publish(
                 _ stopName: String,
                 order: BehaviorSubject<[Order]>,
@@ -912,8 +929,7 @@ class ShuttleRealtimeVC: UIViewController {
 
     // swiftlint:disable:next function_body_length
     private static func buildBusAlternatives(_ busList: [ShuttleRealtimePageQuery.Data.AlternativeBus])
-        -> [String: [ShuttleBusAlternativeDisplayData]]
-    {
+        -> [String: [ShuttleBusAlternativeDisplayData]] {
         func item(routeSeq: Int, stopSeq: Int) -> ShuttleRealtimePageQuery.Data.AlternativeBus? {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
         }
@@ -1081,12 +1097,11 @@ class ShuttleRealtimeVC: UIViewController {
         present(vc, animated: true, completion: nil)
     }
 
-    private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> (name: String, latitude: Double, longitude: Double)? {
+    private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> ShuttleStopPoint? {
         let name = String(localized: String.LocalizationValue(shuttleStopLocalizationKey(stop)))
         if let stops = try? ShuttleRealtimeData.shared.arrival.value(),
-           let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) })
-        {
-            return (name, shuttleStop.latitude, shuttleStop.longitude)
+           let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
+            return ShuttleStopPoint(name: name, latitude: shuttleStop.latitude, longitude: shuttleStop.longitude)
         }
 
         guard let fallbackIndex = shuttleStopFallbackIndex(stop), stopLocation.indices.contains(fallbackIndex) else {
@@ -1193,7 +1208,8 @@ class ShuttleRealtimeVC: UIViewController {
         }
     }
 
-    @objc private func openHelpVC() {
+    @objc
+    private func openHelpVC() {
         AnalyticsManager.logSelect(.shuttleOpenHelp)
         let vc = ShuttleHelpVC()
         if let sheet = vc.sheetPresentationController {
@@ -1209,12 +1225,14 @@ class ShuttleRealtimeVC: UIViewController {
         nc.showHome()
     }
 
-    @objc private func returnToHome() {
+    @objc
+    private func returnToHome() {
         guard let nc = navigationController as? ShuttleNC else { return }
         nc.showHome()
     }
 
-    @objc private func openQuickSettings() {
+    @objc
+    private func openQuickSettings() {
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
         let showArrivalByTime = UserDefaults.standard.bool(forKey: "showArrivalByTime")
         let vc = ShuttleQuickSettingsVC(
@@ -1313,12 +1331,14 @@ class ShuttleRealtimeVC: UIViewController {
         }
     }
 
-    @objc private func onClickDepartureSwitch(sender: UISwitch) {
+    @objc
+    private func onClickDepartureSwitch(sender: UISwitch) {
         AnalyticsManager.logSelect(.shuttleDepartureSwitch, type: .toggle)
         applyShowDepartureTime(sender.isOn)
     }
 
-    @objc private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
+    @objc
+    private func onClickShowArrivalByTimeSwitch(sender: UISwitch) {
         AnalyticsManager.logSelect(.shuttleArrivalByTimeSwitch, type: .toggle)
         applyShowArrivalByTime(sender.isOn)
     }
