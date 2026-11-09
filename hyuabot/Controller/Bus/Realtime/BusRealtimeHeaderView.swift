@@ -1,3 +1,8 @@
+//
+//  BusRealtimeHeaderView.swift
+//  hyuabot
+//
+
 import UIKit
 
 private final class ExtendedHitAreaButton: UIButton {
@@ -50,7 +55,8 @@ class BusRealtimeHeaderView: UITableViewHeaderFooterView {
         }
     }
 
-    @objc private func stopButtonTapped() {
+    @objc
+    private func stopButtonTapped() {
         AnalyticsManager.logSelect(.busStopButton)
         showStopVC()
     }

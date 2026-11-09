@@ -1,3 +1,8 @@
+//
+//  BusRealtimeFooterView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class BusRealtimeFooterView: UITableViewHeaderFooterView {
@@ -91,13 +96,15 @@ class BusRealtimeFooterView: UITableViewHeaderFooterView {
         }
     }
 
-    @objc func entireTimetableButtonTapped() {
+    @objc
+    func entireTimetableButtonTapped() {
         AnalyticsManager.logSelect(.busShowEntireTimetable)
         guard let stopID, let title else { return }
         showEntireTimetable?(stopID, routes, title)
     }
 
-    @objc func departureLogButtonTapped() {
+    @objc
+    func departureLogButtonTapped() {
         AnalyticsManager.logSelect(.busShowDepartureLog)
         guard let stopID else { return }
         showDepartureLog?(stopID, routes)
