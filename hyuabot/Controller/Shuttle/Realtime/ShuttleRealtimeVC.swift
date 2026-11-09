@@ -577,15 +577,12 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        stopPolling()
-        stopPresenceUpdates()
-        noticeView.stopAutoScroll()
-    }
-
-    deinit {
         NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: .coachMarkReset, object: nil)
+        stopPolling()
+        stopPresenceUpdates()
+        noticeView.stopAutoScroll()
     }
 
     @objc
