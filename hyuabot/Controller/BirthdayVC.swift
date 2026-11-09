@@ -1,8 +1,16 @@
+//
+//  BirthdayVC.swift
+//  hyuabot
+//
+
 import RxSwift
 import UIKit
 
 class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    var appDelegate: AppDelegate? {
+        UIApplication.shared.delegate as? AppDelegate
+    }
+
     let disposeBag = DisposeBag()
     let currentYear = Calendar.current.component(.year, from: Date())
     var backgroundClicked: (() -> Void)?
@@ -131,15 +139,17 @@ class BirthdayVC: UIViewController, UIGestureRecognizerDelegate {
         ])
     }
 
-    @objc private func onBackgroundClicked() {
+    @objc
+    private func onBackgroundClicked() {
         AnalyticsManager.logSelect(.birthdayDismiss)
         dismiss(animated: true, completion: nil)
         if backgroundClicked != nil {
-            backgroundClicked!()
+            backgroundClicked?()
         }
     }
 
-    @objc private func onDoNotShowCheckboxTapped(_ sender: UIButton) {
+    @objc
+    private func onDoNotShowCheckboxTapped(_ sender: UIButton) {
         AnalyticsManager.logSelect(.birthdayDoNotShow)
         sender.isSelected.toggle()
         if sender.isSelected {
