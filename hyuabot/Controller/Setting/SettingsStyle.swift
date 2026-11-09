@@ -214,14 +214,7 @@ enum SettingsNavigationStyle {
         appearance.backButtonAppearance = button
         viewController.navigationItem.standardAppearance = appearance.copy()
         viewController.navigationItem.compactAppearance = appearance.copy()
-        let scrollEdgeAppearance = appearance.copy()
-        scrollEdgeAppearance.configureWithTransparentBackground()
-        scrollEdgeAppearance.titleTextAttributes = appearance.titleTextAttributes
-        scrollEdgeAppearance.largeTitleTextAttributes = appearance.largeTitleTextAttributes
-        scrollEdgeAppearance.buttonAppearance = button
-        scrollEdgeAppearance.doneButtonAppearance = button
-        scrollEdgeAppearance.backButtonAppearance = button
-        viewController.navigationItem.scrollEdgeAppearance = scrollEdgeAppearance
+        viewController.navigationItem.scrollEdgeAppearance = appearance.copy()
         viewController.navigationItem.largeTitleDisplayMode = largeTitle ? .always : .never
         if largeTitle, let bar = viewController.navigationController?.navigationBar {
             bar.prefersLargeTitles = true
