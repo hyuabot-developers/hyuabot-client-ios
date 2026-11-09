@@ -1,3 +1,8 @@
+//
+//  BusRealtimeEmptyCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class BusRealtimeEmptyCellView: UITableViewCell {

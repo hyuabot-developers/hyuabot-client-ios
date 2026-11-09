@@ -1,3 +1,8 @@
+//
+//  ShuttleBoardingActivityAttributes.swift
+//  hyuabot
+//
+
 import Foundation
 
 #if canImport(ActivityKit)

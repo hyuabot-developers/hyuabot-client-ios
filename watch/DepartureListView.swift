@@ -1,3 +1,8 @@
+//
+//  DepartureListView.swift
+//  hyuabot
+//
+
 import Api
 import SwiftUI
 

@@ -1,3 +1,8 @@
+//
+//  ShuttleTimetableSkeletonCellView.swift
+//  hyuabot
+//
+
 import UIKit
 
 final class ShuttleTimetableSkeletonCellView: UITableViewCell {

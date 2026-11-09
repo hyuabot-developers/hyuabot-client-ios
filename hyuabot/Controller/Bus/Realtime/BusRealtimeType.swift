@@ -1,3 +1,8 @@
+//
+//  BusRealtimeType.swift
+//  hyuabot
+//
+
 enum BusRealtimeType {
     case city
     case seoul

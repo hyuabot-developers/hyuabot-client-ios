@@ -1,3 +1,8 @@
+//
+//  CoachMarkItem.swift
+//  hyuabot
+//
+
 import UIKit
 
 struct CoachMarkItem {

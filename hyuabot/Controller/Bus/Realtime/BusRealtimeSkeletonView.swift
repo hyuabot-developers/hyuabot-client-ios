@@ -1,3 +1,8 @@
+//
+//  BusRealtimeSkeletonView.swift
+//  hyuabot
+//
+
 import UIKit
 
 final class BusRealtimeSkeletonHeaderView: UITableViewHeaderFooterView {

@@ -1,3 +1,8 @@
+//
+//  CafeteriaData.swift
+//  hyuabot
+//
+
 import Api
 import Foundation
 import RxSwift

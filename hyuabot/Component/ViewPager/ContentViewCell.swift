@@ -1,3 +1,8 @@
+//
+//  ContentViewCell.swift
+//  hyuabot
+//
+
 import UIKit
 
 class ContentViewCell: UICollectionViewCell {

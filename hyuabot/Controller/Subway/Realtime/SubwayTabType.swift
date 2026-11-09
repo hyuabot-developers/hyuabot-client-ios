@@ -1,3 +1,8 @@
+//
+//  SubwayTabType.swift
+//  hyuabot
+//
+
 enum SubwayTabType {
     case line4
     case lineSuin

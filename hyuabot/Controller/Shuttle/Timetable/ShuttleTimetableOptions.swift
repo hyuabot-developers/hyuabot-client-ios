@@ -1,3 +1,8 @@
+//
+//  ShuttleTimetableOptions.swift
+//  hyuabot
+//
+
 import Foundation
 
 struct ShuttleTimetableOptions {

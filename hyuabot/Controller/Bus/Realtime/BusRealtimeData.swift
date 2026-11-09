@@ -1,3 +1,8 @@
+//
+//  BusRealtimeData.swift
+//  hyuabot
+//
+
 import Api
 import CoreLocation
 import Foundation
