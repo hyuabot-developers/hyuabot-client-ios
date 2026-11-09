@@ -928,8 +928,9 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     // swiftlint:disable:next function_body_length
-    private static func buildBusAlternatives(_ busList: [ShuttleRealtimePageQuery.Data.AlternativeBus])
-        -> [String: [ShuttleBusAlternativeDisplayData]] {
+    private static func buildBusAlternatives(
+        _ busList: [ShuttleRealtimePageQuery.Data.AlternativeBus]
+    ) -> [String: [ShuttleBusAlternativeDisplayData]] {
         func item(routeSeq: Int, stopSeq: Int) -> ShuttleRealtimePageQuery.Data.AlternativeBus? {
             busList.first { $0.route.seq == routeSeq && $0.stop.seq == stopSeq }
         }
@@ -1099,8 +1100,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> ShuttleStopPoint? {
         let name = String(localized: String.LocalizationValue(shuttleStopLocalizationKey(stop)))
-        if let stops = try? ShuttleRealtimeData.shared.arrival.value(),
-           let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
+        let stops = try? ShuttleRealtimeData.shared.arrival.value()
+        if let stops, let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
             return ShuttleStopPoint(name: name, latitude: shuttleStop.latitude, longitude: shuttleStop.longitude)
         }
 
@@ -1108,7 +1109,7 @@ class ShuttleRealtimeVC: UIViewController {
             return nil
         }
         let fallback = stopLocation[fallbackIndex]
-        return (name, fallback.coordinate.latitude, fallback.coordinate.longitude)
+        return ShuttleStopPoint(name: name, latitude: fallback.coordinate.latitude, longitude: fallback.coordinate.longitude)
     }
 
     private func shuttleStopAPIName(_ stop: ShuttleStopEnum) -> String {
