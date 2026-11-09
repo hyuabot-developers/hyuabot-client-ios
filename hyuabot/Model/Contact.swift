@@ -1,3 +1,8 @@
+//
+//  Contact.swift
+//  hyuabot
+//
+
 import Api
 import Foundation
 import RealmSwift
@@ -8,7 +13,7 @@ final class Contact: RealmSwift.Object {
     @objc dynamic var name: String = ""
     @objc dynamic var phoneNumber: String = ""
 
-    override class func primaryKey() -> String? {
+    override static func primaryKey() -> String? {
         "id"
     }
 }
