@@ -1,3 +1,8 @@
+//
+//  ToastExtension.swift
+//  hyuabot
+//
+
 import UIKit
 
 extension UIViewController {
@@ -11,9 +16,10 @@ extension UIViewController {
             options: [.curveEaseIn, .beginFromCurrentState],
             animations: {
                 toastView.alpha = 0.0
+            },
+            completion: { _ in
+                toastView.removeFromSuperview()
             }
-        ) { _ in
-            toastView.removeFromSuperview()
-        }
+        )
     }
 }

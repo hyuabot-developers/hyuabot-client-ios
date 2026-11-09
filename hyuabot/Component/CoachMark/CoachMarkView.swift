@@ -1,3 +1,8 @@
+//
+//  CoachMarkView.swift
+//  hyuabot
+//
+
 import SnapKit
 import UIKit
 
@@ -88,7 +93,7 @@ private class CoachMarkTooltipView: UIView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
 
     func configure(title: String, message: String, buttonTitle: String, current: Int, total: Int) {
@@ -100,15 +105,18 @@ private class CoachMarkTooltipView: UIView {
         skipButton.isHidden = total <= 1 || current == total
     }
 
-    @objc private func nextTapped() {
+    @objc
+    private func nextTapped() {
         onNext?()
     }
 
-    @objc private func prevTapped() {
+    @objc
+    private func prevTapped() {
         onPrev?()
     }
 
-    @objc private func skipTapped() {
+    @objc
+    private func skipTapped() {
         onSkip?()
     }
 }
@@ -147,7 +155,7 @@ class CoachMarkView: UIView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func layoutSubviews() {
@@ -232,24 +240,24 @@ class CoachMarkView: UIView {
     private func advance() {
         UIView.animate(withDuration: 0.15, animations: {
             self.tooltip.alpha = 0
-        }) { _ in
+        }, completion: { _ in
             self.show(at: self.currentIndex + 1)
-        }
+        })
     }
 
     private func goBack() {
         guard currentIndex > 0 else { return }
         UIView.animate(withDuration: 0.15, animations: {
             self.tooltip.alpha = 0
-        }) { _ in
+        }, completion: { _ in
             self.show(at: self.currentIndex - 1)
-        }
+        })
     }
 
     private func dismiss() {
         UIView.animate(withDuration: 0.25, animations: {
             self.alpha = 0
-        }) { _ in
+        }, completion: { _ in
             self.removeFromSuperview()
             guard self.didShowItem else { return }
             if self.skippedByUser, let skipHandler = self.onSkip {
@@ -257,10 +265,11 @@ class CoachMarkView: UIView {
             } else {
                 self.onComplete?()
             }
-        }
+        })
     }
 
-    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+    @objc
+    private func handleTap(_ gesture: UITapGestureRecognizer) {
         guard !tooltip.frame.contains(gesture.location(in: self)) else { return }
         advance()
     }
