@@ -1,3 +1,8 @@
+//
+//  ShuttleTimetableFilterVC.swift
+//  hyuabot
+//
+
 import RxSwift
 import UIKit
 
@@ -174,13 +179,13 @@ class ShuttleTimetableFilterVC: UIViewController {
             self.selectedStartStop = options.start
             self.selectedEndStop = options.end
             // Set the title of the period button
-            if options.period != nil {
-                self.selectPeriod(options.period!)
+            if let period = options.period {
+                self.selectPeriod(period)
             } else {
                 self.selectPeriod("shuttle.period.custom")
             }
-            if options.date != nil {
-                self.datePicker.date = options.date!
+            if let date = options.date {
+                self.datePicker.date = date
             }
         }).disposed(by: disposeBag)
     }
@@ -278,7 +283,8 @@ class ShuttleTimetableFilterVC: UIViewController {
         }
     }
 
-    @objc private func okButtonTapped() {
+    @objc
+    private func okButtonTapped() {
         AnalyticsManager.logSelect(.shuttleFilterConfirm)
         guard let selectedStartStop else { return }
         guard let selectedEndStop else { return }
