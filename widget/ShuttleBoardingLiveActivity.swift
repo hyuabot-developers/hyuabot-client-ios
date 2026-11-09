@@ -1,3 +1,8 @@
+//
+//  ShuttleBoardingLiveActivity.swift
+//  hyuabot
+//
+
 import ActivityKit
 import SwiftUI
 import WidgetKit
@@ -116,11 +121,11 @@ private struct ShuttleCheckpointTimelineSchedule: TimelineSchedule {
     func entries(from startDate: Date, mode: TimelineScheduleMode) -> [Date] {
         let endDate = dates.last ?? startDate.addingTimeInterval(60 * 30)
         let interval: TimeInterval = mode == .lowFrequency ? 60 : 15
-        let periodicDates = stride(
+        let periodicDates = Array(stride(
             from: startDate,
             through: endDate.addingTimeInterval(60),
             by: interval
-        ).map { $0 }
+        ))
         let checkpointDates = dates
             .flatMap { [$0.addingTimeInterval(-60), $0, $0.addingTimeInterval(1)] }
             .filter { $0 >= startDate }
@@ -178,8 +183,8 @@ private struct ShuttleBoardingCountdownText: View {
     }
 }
 
-private extension Comparable {
-    func clamped(to limits: ClosedRange<Self>) -> Self {
+extension Comparable {
+    fileprivate func clamped(to limits: ClosedRange<Self>) -> Self {
         min(max(self, limits.lowerBound), limits.upperBound)
     }
 }
