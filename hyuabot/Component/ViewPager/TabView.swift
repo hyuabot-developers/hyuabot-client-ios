@@ -1,3 +1,8 @@
+//
+//  TabView.swift
+//  hyuabot
+//
+
 import SnapKit
 import UIKit
 
@@ -127,7 +132,9 @@ extension TabView: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TabCell", for: indexPath) as! TabCell
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: "TabCell", for: indexPath
+        ) as? TabCell else { fatalError("Unable to dequeue TabCell") }
         guard tabs.indices.contains(indexPath.item) else { return cell }
         cell.tabItem = tabs[indexPath.item]
         return cell

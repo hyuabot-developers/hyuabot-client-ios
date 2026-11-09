@@ -1,3 +1,8 @@
+//
+//  NoticeCarouselView.swift
+//  hyuabot
+//
+
 import UIKit
 
 class NoticeCarouselView: UIView {
@@ -131,13 +136,16 @@ extension NoticeCarouselView: UICollectionViewDataSource, UICollectionViewDelega
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NoticeCell", for: indexPath) as! NoticeCell
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: "NoticeCell", for: indexPath
+        ) as? NoticeCell else { fatalError("Unable to dequeue NoticeCell") }
         let notice = notices[indexPath.item]
         cell.titleColor = titleColor
         cell.setupUI(with: notice)
         cell.onTap = { [weak self] in
-            guard notice.url != nil, notice.url?.isEmpty == false else { return }
-            self?.onNoticeTapped?(notice.url!)
+            guard let url = notice.url else { return }
+            guard !url.isEmpty else { return }
+            self?.onNoticeTapped?(url)
         }
         return cell
     }
