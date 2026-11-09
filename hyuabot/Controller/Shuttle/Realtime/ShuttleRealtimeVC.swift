@@ -35,7 +35,10 @@ class ShuttleRealtimeVC: UIViewController {
     private let returnsToHome: Bool
     private let initialStopID: String?
     private let initialDestinationID: String?
-    private let appDelegate = UIApplication.shared.delegate as? AppDelegate
+    private var appDelegate: AppDelegate? {
+        UIApplication.shared.delegate as? AppDelegate
+    }
+
     private let disposeBag = DisposeBag()
     private lazy var locationManager = CLLocationManager().then {
         $0.delegate = self
@@ -580,7 +583,9 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .coachMarkReset, object: nil)
     }
 
     @objc
