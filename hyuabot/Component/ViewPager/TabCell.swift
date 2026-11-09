@@ -1,3 +1,8 @@
+//
+//  TabCell.swift
+//  hyuabot
+//
+
 import UIKit
 
 @MainActor
@@ -12,7 +17,7 @@ class TabCell: UICollectionViewCell {
     var rightConstraint = NSLayoutConstraint()
     var topConstraint = NSLayoutConstraint()
     var bottomConstraint = NSLayoutConstraint()
-    var contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) {
+    var contentInset = UIEdgeInsets.zero {
         didSet {
             leftConstraint.constant = contentInset.left
             rightConstraint.constant = contentInset.right
