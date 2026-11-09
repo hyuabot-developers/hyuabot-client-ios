@@ -1,14 +1,19 @@
+//
+//  ShuttleTransferInfoView.swift
+//  hyuabot
+//
+
 import Api
 import SnapKit
 import UIKit
 
 // swiftlint:disable file_length
 
-private extension UIColor {
-    static let line4Color = UIColor(red: 0, green: 160 / 255, blue: 233 / 255, alpha: 1)
-    static let suinColor = UIColor(red: 0.72, green: 0.48, blue: 0, alpha: 1)
-    static let seohaeColor = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1)
-    static let transferBusColor = UIColor(named: "busGreen") ?? .systemGreen
+extension UIColor {
+    fileprivate static let line4Color = UIColor(red: 0, green: 160 / 255, blue: 233 / 255, alpha: 1)
+    fileprivate static let suinColor = UIColor(red: 0.72, green: 0.48, blue: 0, alpha: 1)
+    fileprivate static let seohaeColor = UIColor(red: 0.56, green: 0.76, blue: 0.12, alpha: 1)
+    fileprivate static let transferBusColor = UIColor(named: "busGreen") ?? .systemGreen
 }
 
 enum TransferVehicleType {
@@ -120,6 +125,13 @@ struct TransferRow: Equatable {
     }
 }
 
+private struct TrackGeometry {
+    let targetX: CGFloat
+    let centerY: CGFloat
+    let left: CGFloat
+    let right: CGFloat
+}
+
 private struct TransferLine {
     let stationID: String
     let name: String
@@ -147,6 +159,20 @@ enum ShuttleTransferDestination {
 enum ShuttleTransferPresentation {
     case summary
     case inline
+}
+
+private struct TrackDrawing {
+    let step: CGFloat
+    let count: Int
+    let direction: Int
+    let color: UIColor
+    let clearance: CGFloat
+}
+
+private struct EntryDrawing {
+    let type: TransferVehicleType
+    let entries: [TransferTimelineEntry]
+    let track: TrackDrawing
 }
 
 // swiftlint:disable:next type_body_length
@@ -182,6 +208,7 @@ private final class TransferTimelineView: UIView {
         let right = bounds.maxX - 28
         let centerY = bounds.midY
         let targetX = row.vehicleType == .subway ? (left + right) / 2 : right
+        let geometry = TrackGeometry(targetX: targetX, centerY: centerY, left: left, right: right)
         let color = row.color
         let entriesByDirection = Dictionary(grouping: row.timeline.prefix(4), by: { $0.direction })
 
@@ -193,10 +220,7 @@ private final class TransferTimelineView: UIView {
             drawSubwayTrack(
                 context: context,
                 entriesByDirection: entriesByDirection,
-                targetX: targetX,
-                centerY: centerY,
-                left: left,
-                right: right,
+                geometry: geometry,
                 color: color
             )
         }
@@ -206,11 +230,8 @@ private final class TransferTimelineView: UIView {
                 context: context,
                 type: row.vehicleType,
                 entries: Array(entries.prefix(2)),
-                targetX: targetX,
-                centerY: centerY,
+                geometry: geometry,
                 direction: direction,
-                left: left,
-                right: right,
                 color: color
             )
         }
@@ -221,53 +242,39 @@ private final class TransferTimelineView: UIView {
     private func drawSubwayTrack(
         context: CGContext,
         entriesByDirection: [Int: [TransferTimelineEntry]],
-        targetX: CGFloat,
-        centerY: CGFloat,
-        left: CGFloat,
-        right: CGFloat,
+        geometry: TrackGeometry,
         color: UIColor
     ) {
         let targetClearance = targetHalfWidth() + targetTrackGap
-        let availableLength = min(targetX - left, right - targetX)
+        let availableLength = min(geometry.targetX - geometry.left, geometry.right - geometry.targetX)
         let step = trackStep(availableLength: availableLength, clearance: targetClearance, stopCount: sideStations)
         for direction in [-1, 1] {
             let directionEntries = entriesByDirection[direction] ?? []
             let allFar = !directionEntries.isEmpty && directionEntries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
             let edgeX = trackX(
-                targetX: targetX,
+                geometry: geometry,
                 direction: direction,
                 index: sideStations,
                 clearance: targetClearance,
-                step: step,
-                left: left,
-                right: right
+                step: step
             )
             if allFar {
                 let solidEndX = trackX(
-                    targetX: targetX,
+                    geometry: geometry,
                     direction: direction,
                     index: sideStations - 1,
                     clearance: targetClearance,
-                    step: step,
-                    left: left,
-                    right: right
+                    step: step
                 )
-                drawLine(context: context, from: targetX, to: solidEndX, y: centerY)
-                drawLine(context: context, from: solidEndX, to: edgeX, y: centerY, dashed: true)
+                drawLine(context: context, from: geometry.targetX, to: solidEndX, y: geometry.centerY)
+                drawLine(context: context, from: solidEndX, to: edgeX, y: geometry.centerY, dashed: true)
             } else {
-                drawLine(context: context, from: targetX, to: edgeX, y: centerY)
+                drawLine(context: context, from: geometry.targetX, to: edgeX, y: geometry.centerY)
             }
             drawDots(
                 context: context,
-                targetX: targetX,
-                step: step,
-                count: sideStations,
-                direction: direction,
-                centerY: centerY,
-                color: color,
-                left: left,
-                right: right,
-                clearance: targetClearance
+                geometry: geometry,
+                drawing: TrackDrawing(step: step, count: sideStations, direction: direction, color: color, clearance: targetClearance)
             )
         }
     }
@@ -276,90 +283,82 @@ private final class TransferTimelineView: UIView {
         context: CGContext,
         type: TransferVehicleType,
         entries: [TransferTimelineEntry],
-        targetX: CGFloat,
-        centerY: CGFloat,
+        geometry: TrackGeometry,
         direction: Int,
-        left: CGFloat,
-        right: CGFloat,
         color: UIColor
     ) {
         let targetClearance = targetHalfWidth() + targetTrackGap
-        let availableLength = type == .subway ? min(targetX - left, right - targetX) : targetX - left
+        let availableLength = type == .subway ? min(geometry.targetX - geometry.left, geometry.right - geometry.targetX) : geometry
+            .targetX - geometry.left
         let stopCount = type == .subway ? sideStations : visibleBusStops
         let step = trackStep(availableLength: availableLength, clearance: targetClearance, stopCount: stopCount)
 
         if type == .bus {
             let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
             let edgeX = trackX(
-                targetX: targetX,
+                geometry: geometry,
                 direction: direction,
                 index: visibleBusStops,
                 clearance: targetClearance,
-                step: step,
-                left: left,
-                right: right
+                step: step
             )
             if allFar {
                 let solidEndX = trackX(
-                    targetX: targetX,
+                    geometry: geometry,
                     direction: direction,
                     index: compressedNearBusStop,
                     clearance: targetClearance,
-                    step: step,
-                    left: left,
-                    right: right
+                    step: step
                 )
-                drawLine(context: context, from: targetX, to: solidEndX, y: centerY)
-                drawLine(context: context, from: solidEndX, to: edgeX, y: centerY, dashed: true)
+                drawLine(context: context, from: geometry.targetX, to: solidEndX, y: geometry.centerY)
+                drawLine(context: context, from: solidEndX, to: edgeX, y: geometry.centerY, dashed: true)
             } else {
-                drawLine(context: context, from: targetX, to: edgeX, y: centerY)
+                drawLine(context: context, from: geometry.targetX, to: edgeX, y: geometry.centerY)
             }
             drawDots(
                 context: context,
-                targetX: targetX,
-                step: step,
-                count: visibleBusStops,
-                direction: direction,
-                centerY: centerY,
-                color: color,
-                left: left,
-                right: right,
-                clearance: targetClearance
+                geometry: geometry,
+                drawing: TrackDrawing(step: step, count: visibleBusStops, direction: direction, color: color, clearance: targetClearance)
             )
         }
 
+        let drawing = EntryDrawing(
+            type: type,
+            entries: entries,
+            track: TrackDrawing(step: step, count: stopCount, direction: direction, color: color, clearance: targetClearance)
+        )
         for (index, entry) in entries.enumerated() {
-            let stops = max(entry.stops ?? 1, 1)
-            let vehicleX: CGFloat
-            if type == .subway {
-                let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
-                let visibleStops = allFar ? index + 2 : min(stops, sideStations)
-                vehicleX = trackX(
-                    targetX: targetX,
-                    direction: direction,
-                    index: visibleStops,
-                    clearance: targetClearance,
-                    step: step,
-                    left: left,
-                    right: right
-                )
-            } else {
-                let allFar = entries.count > 1 && entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
-                let visibleStops = allFar ? (index == 0 ? compressedNearBusStop : visibleBusStops) : min(stops, visibleBusStops)
-                vehicleX = trackX(
-                    targetX: targetX,
-                    direction: direction,
-                    index: visibleStops,
-                    clearance: targetClearance,
-                    step: step,
-                    left: left,
-                    right: right
-                )
-            }
-            let clampedX = clamp(vehicleX, left, right)
-            drawVehicle(context: context, type: type, x: clampedX, y: centerY, color: color)
-            drawBubble(entry: entry, type: type, x: clampedX, y: centerY, index: index, total: entries.count)
+            drawEntry(context: context, entry: entry, index: index, geometry: geometry, drawing: drawing)
         }
+    }
+
+    private func drawEntry(context: CGContext, entry: TransferTimelineEntry, index: Int, geometry: TrackGeometry, drawing: EntryDrawing) {
+        let stops = max(entry.stops ?? 1, 1)
+        let vehicleX: CGFloat
+        if drawing.type == .subway {
+            let allFar = drawing.entries.count > 1 && drawing.entries.allSatisfy { ($0.stops ?? sideStations + 1) > sideStations }
+            let visibleStops = allFar ? index + 2 : min(stops, sideStations)
+            vehicleX = trackX(
+                geometry: geometry,
+                direction: drawing.track.direction,
+                index: visibleStops,
+                clearance: drawing.track.clearance,
+                step: drawing.track.step
+            )
+        } else {
+            let allFar = drawing.entries.count > 1 && drawing.entries.allSatisfy { ($0.stops ?? visibleBusStops) >= 6 }
+            let visibleStops = allFar ? (index == 0 ? compressedNearBusStop : visibleBusStops) : min(stops, visibleBusStops)
+            vehicleX = trackX(
+                geometry: geometry,
+                direction: drawing.track.direction,
+                index: visibleStops,
+                clearance: drawing.track.clearance,
+                step: drawing.track.step
+            )
+        }
+        let clampedX = clamp(vehicleX, geometry.left, geometry.right)
+        drawVehicle(context: context, type: drawing.type, x: clampedX, y: geometry.centerY, color: drawing.track.color)
+        drawBubble(entry: entry, type: drawing.type, x: clampedX, y: geometry.centerY, index: index, total: drawing.entries.count)
     }
 
     private func drawLine(context: CGContext, from: CGFloat, to: CGFloat, y: CGFloat, dashed: Bool = false) {
@@ -371,25 +370,14 @@ private final class TransferTimelineView: UIView {
         context.restoreGState()
     }
 
-    private func drawDots(
-        context: CGContext,
-        targetX: CGFloat,
-        step: CGFloat,
-        count: Int,
-        direction: Int,
-        centerY: CGFloat,
-        color: UIColor,
-        left: CGFloat,
-        right: CGFloat,
-        clearance: CGFloat
-    ) {
-        for index in 1 ... count {
-            let x = trackX(targetX: targetX, direction: direction, index: index, clearance: clearance, step: step, left: left, right: right)
-            guard x >= left, x <= right else { continue }
-            context.setFillColor(color.cgColor)
-            context.fillEllipse(in: CGRect(x: x - 4, y: centerY - 4, width: 8, height: 8))
+    private func drawDots(context: CGContext, geometry: TrackGeometry, drawing: TrackDrawing) {
+        for index in 1 ... drawing.count {
+            let x = trackX(geometry: geometry, direction: drawing.direction, index: index, clearance: drawing.clearance, step: drawing.step)
+            guard x >= geometry.left, x <= geometry.right else { continue }
+            context.setFillColor(drawing.color.cgColor)
+            context.fillEllipse(in: CGRect(x: x - 4, y: geometry.centerY - 4, width: 8, height: 8))
             context.setFillColor(UIColor.systemBackground.cgColor)
-            context.fillEllipse(in: CGRect(x: x - 2, y: centerY - 2, width: 4, height: 4))
+            context.fillEllipse(in: CGRect(x: x - 2, y: geometry.centerY - 2, width: 4, height: 4))
         }
     }
 
@@ -534,16 +522,14 @@ private final class TransferTimelineView: UIView {
     }
 
     private func trackX(
-        targetX: CGFloat,
+        geometry: TrackGeometry,
         direction: Int,
         index: Int,
         clearance: CGFloat,
-        step: CGFloat,
-        left: CGFloat,
-        right: CGFloat
+        step: CGFloat
     ) -> CGFloat {
         let distance = clearance + CGFloat(max(index - 1, 0)) * step
-        return clamp(targetX + CGFloat(direction) * distance, left, right)
+        return clamp(geometry.targetX + CGFloat(direction) * distance, geometry.left, geometry.right)
     }
 }
 
