@@ -1,6 +1,6 @@
 //
 //  watchApp.swift
-//  watch Watch App
+//  hyuabot
 //
 //  Created by 이정인 on 4/12/25.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct watch_Watch_AppApp: App {
+struct WatchApp: App {
     @Environment(\.scenePhase)
     private var scenePhase
 
