@@ -1,3 +1,8 @@
+//
+//  ShuttleTimetableVC.swift
+//  hyuabot
+//
+
 import Api
 import RxSwift
 import UIKit
@@ -110,6 +115,7 @@ class ShuttleTimetableVC: UIViewController {
     }
 
     override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
         ShuttleTimetableData.shared.options.onNext(nil)
         ShuttleTimetableData.shared.timetable.onNext([])
         ShuttleTimetableData.shared.weekdays.onNext([])
@@ -181,46 +187,40 @@ class ShuttleTimetableVC: UIViewController {
     }
 
     private func resolveStopAndDestination(options: ShuttleTimetableOptions) -> (String, [String]) {
-        var stopID = ""
-        var destinations: [String] = []
-        if options.start == "shuttle.stop.dormitory.out" {
-            stopID = "dormitory_o"
-            if options.end == "shuttle.destination.shorten.station" {
-                destinations = ["STATION"]
-            } else if options.end == "shuttle.destination.shorten.jungang_station" {
-                destinations = ["JUNGANG"]
-            } else if options.end == "shuttle.destination.shorten.terminal" {
-                destinations = ["TERMINAL"]
-            }
-        } else if options.start == "shuttle.stop.shuttlecock.out" {
-            stopID = "shuttlecock_o"
-            if options.end == "shuttle.destination.shorten.station" {
-                destinations = ["STATION"]
-            } else if options.end == "shuttle.destination.shorten.jungang_station" {
-                destinations = ["JUNGANG"]
-            } else if options.end == "shuttle.destination.shorten.terminal" {
-                destinations = ["TERMINAL"]
-            }
-        } else if options.start == "shuttle.stop.station" {
-            stopID = "station"
-            if options.end == "shuttle.destination.shorten.campus" {
-                destinations = ["CAMPUS"]
-            } else if options.end == "shuttle.destination.shorten.jungang_station" {
-                destinations = ["JUNGANG"]
-            } else if options.end == "shuttle.destination.shorten.terminal" {
-                destinations = ["TERMINAL"]
-            }
-        } else if options.start == "shuttle.stop.terminal" {
-            stopID = "terminal"
-            destinations = ["CAMPUS"]
-        } else if options.start == "shuttle.stop.jungang.station" {
-            stopID = "jungang_stn"
-            destinations = ["CAMPUS"]
-        } else if options.start == "shuttle.stop.shuttlecock.in" {
-            stopID = "shuttlecock_i"
-            destinations = ["CAMPUS"]
+        switch options.start {
+        case "shuttle.stop.dormitory.out":
+            ("dormitory_o", outboundDestinations(options.end))
+        case "shuttle.stop.shuttlecock.out":
+            ("shuttlecock_o", outboundDestinations(options.end))
+        case "shuttle.stop.station":
+            ("station", stationDestinations(options.end))
+        case "shuttle.stop.terminal":
+            ("terminal", ["CAMPUS"])
+        case "shuttle.stop.jungang.station":
+            ("jungang_stn", ["CAMPUS"])
+        case "shuttle.stop.shuttlecock.in":
+            ("shuttlecock_i", ["CAMPUS"])
+        default:
+            ("", [])
         }
-        return (stopID, destinations)
+    }
+
+    private func outboundDestinations(_ destination: String.LocalizationValue) -> [String] {
+        switch destination {
+        case "shuttle.destination.shorten.station": ["STATION"]
+        case "shuttle.destination.shorten.jungang_station": ["JUNGANG"]
+        case "shuttle.destination.shorten.terminal": ["TERMINAL"]
+        default: []
+        }
+    }
+
+    private func stationDestinations(_ destination: String.LocalizationValue) -> [String] {
+        switch destination {
+        case "shuttle.destination.shorten.campus": ["CAMPUS"]
+        case "shuttle.destination.shorten.jungang_station": ["JUNGANG"]
+        case "shuttle.destination.shorten.terminal": ["TERMINAL"]
+        default: []
+        }
     }
 
     private func fetchTimetable(options: ShuttleTimetableOptions, stopID: String, destinations: [String]) {
@@ -294,7 +294,8 @@ class ShuttleTimetableVC: UIViewController {
         present(vc, animated: true, completion: nil)
     }
 
-    @objc private func openFilterVC() {
+    @objc
+    private func openFilterVC() {
         AnalyticsManager.logSelect(.shuttleOpenFilter)
         let vc = ShuttleTimetableFilterVC()
         if let sheet = vc.sheetPresentationController {
