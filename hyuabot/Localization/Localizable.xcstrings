@@ -11440,30 +11440,142 @@
         }
       }
     },
-    "inquiry.empty" : {
+    "inquiry.admin" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No messages yet. Leave us your question."
+            "value" : "Operator"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ会話がありません。ご質問をお寄せください。"
+            "value" : "運営者"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 대화가 없습니다. 궁금한 점을 남겨주세요."
+            "value" : "운영자"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "还没有对话。请留下您的问题。"
+            "value" : "运营人员"
+          }
+        }
+      }
+    },
+    "inquiry.bot.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴아봇"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot"
+          }
+        }
+      }
+    },
+    "inquiry.bot.quickReplyLabel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot · Quick answer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot · クイック回答"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴아봇 · 빠른 응답"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot · 快速回答"
+          }
+        }
+      }
+    },
+    "inquiry.date.today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
+      }
+    },
+    "inquiry.error.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your network connection and try again. Quick answers are available offline."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ネットワーク接続を確認して、もう一度お試しください。クイック回答はオフラインでも確認できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크 연결을 확인하고 다시 시도해 주세요. 빠른 응답은 연결 없이도 볼 수 있어요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请检查网络连接后重试。快速回答无需联网也可查看。"
           }
         }
       }
@@ -11501,25 +11613,249 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to load."
+            "value" : "Couldn't load the conversation"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "読み込めませんでした。"
+            "value" : "会話を読み込めませんでした"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "불러오지 못했습니다."
+            "value" : "대화를 불러오지 못했어요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加载失败。"
+            "value" : "无法加载对话"
+          }
+        }
+      }
+    },
+    "inquiry.phoneLabel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phone"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電話"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전화"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电话"
+          }
+        }
+      }
+    },
+    "inquiry.quick.header" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick answers"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイック回答"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 응답"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速回答"
+          }
+        }
+      }
+    },
+    "inquiry.quick.lostItem.chip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lost items"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忘れ物案内"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "분실물 안내"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失物指南"
+          }
+        }
+      }
+    },
+    "inquiry.quick.lostItem.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where lost items are kept and who to call"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忘れ物の保管場所と連絡先"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "분실물 보관 장소와 연락처"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失物保管地点和联系方式"
+          }
+        }
+      }
+    },
+    "inquiry.quick.lostItem.question" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I left something on the shuttle bus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルバスに忘れ物をしました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀버스에 물건을 두고 내렸어요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我把东西落在校车上了"
+          }
+        }
+      }
+    },
+    "inquiry.quick.timetable.chip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timetable info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時刻表案内"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간표 안내"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时刻表说明"
+          }
+        }
+      }
+    },
+    "inquiry.quick.timetable.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How HYUabot's timetable works"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabotの時刻表案内について"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴아봇 시간표 안내 기준"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot时刻表说明"
+          }
+        }
+      }
+    },
+    "inquiry.quick.timetable.question" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shuttle isn't running on schedule"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャトルが時刻表と違う運行をしています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀이 시간표와 다르게 운행돼요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "校车运行与时刻表不符"
           }
         }
       }
@@ -11548,6 +11884,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已读"
+          }
+        }
+      }
+    },
+    "inquiry.retry" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
           }
         }
       }
@@ -11608,58 +11972,86 @@
         }
       }
     },
-    "inquiry.shuttleLost.close" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dismiss notice"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "案内を閉じる"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "안내 닫기"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关闭提示"
-          }
-        }
-      }
-    },
     "inquiry.shuttleLost.detail" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Please visit the shuttle bus office on the first floor of the Education Building behind the dormitory, or call 031-400-4412."
+            "value" : "Visit the shuttle bus office on the 1st floor of the Education Building behind the dormitory, or give us a call."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "寮の裏にある教育棟1階のシャトルバス事務所へお越しいただくか、031-400-4412にお電話ください。"
+            "value" : "寮の裏にある教育棟1階のシャトルバス事務所へお越しいただくか、お電話でお問い合わせください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기숙사 뒤 교육동 1층 셔틀버스 사무실에 방문하시거나, 031-400-4412로 전화해 주세요."
+            "value" : "기숙사 뒤 교육동 1층 셔틀버스 사무실에 방문하시거나 전화로 문의해 주세요."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "请到宿舍后方教育楼1层的校车办公室询问，或拨打031-400-4412。"
+            "value" : "请前往宿舍后方教育楼1层的校车办公室，或致电咨询。"
+          }
+        }
+      }
+    },
+    "inquiry.shuttleLost.location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Education Bldg 1F (behind the dorm)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教育棟1階（寮の裏）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "교육동 1층 (기숙사 뒤)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教育楼1层（宿舍后方）"
+          }
+        }
+      }
+    },
+    "inquiry.shuttleLost.locationLabel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置"
           }
         }
       }
@@ -11725,25 +12117,193 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Did you leave something on the shuttle?"
+            "value" : "The shuttle bus office keeps lost items"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "シャトルバスに忘れ物をしましたか？"
+            "value" : "シャトルバス事務所で保管しています"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "셔틀버스에 물건을 두고 내리셨나요?"
+            "value" : "셔틀버스 사무실에서 보관해요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在校车上遗落东西了吗？"
+            "value" : "失物由校车办公室保管"
+          }
+        }
+      }
+    },
+    "inquiry.timetable.call" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Call the university"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大学に電話"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학교에 전화"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "致电学校"
+          }
+        }
+      }
+    },
+    "inquiry.timetable.callout.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the bus didn't run on schedule, please contact %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時刻表と異なる運行があった場合は、%@にお問い合わせください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간표와 다르게 운행됐다면 %@로 문의해 주세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果实际运行与时刻表不符，请联系%@。"
+          }
+        }
+      }
+    },
+    "inquiry.timetable.callout.emphasis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the university's administrative department"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大学の管理部署"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학교 관리 부서"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学校管理部门"
+          }
+        }
+      }
+    },
+    "inquiry.timetable.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We follow the timetable provided by the university and don't show live bus locations."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大学提供の時刻表に基づいて案内しており、リアルタイムの位置は反映していません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학교 제공 시간표 기준으로 안내하며, 실시간 위치는 반영하지 않아요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我们按学校提供的时刻表进行提示，不反映实时位置。"
+          }
+        }
+      }
+    },
+    "inquiry.timetable.open" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View timetable"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時刻表を見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간표 보기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看时刻表"
+          }
+        }
+      }
+    },
+    "inquiry.timetable.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot runs on timetables"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabotは時刻表に基づくサービスです"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴아봇은 시간표 기반 서비스예요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot是基于时刻表的服务"
           }
         }
       }
@@ -11772,6 +12332,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "咨询"
+          }
+        }
+      }
+    },
+    "inquiry.welcome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How can we help? Check common questions instantly with quick answers. For anything else, leave a message and an operator will reply."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どのようなご用件でしょうか？よくある質問はクイック回答ですぐに確認できます。その他のお問い合わせはメッセージを残していただければ、運営者がお答えします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무엇을 도와드릴까요? 자주 묻는 질문은 빠른 응답으로 바로 확인할 수 있어요. 그 밖의 문의는 메시지로 남겨 주시면 운영자가 답변드려요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有什么可以帮您？常见问题可通过快速回答立即查看。其他问题请留言，运营人员会为您解答。"
           }
         }
       }

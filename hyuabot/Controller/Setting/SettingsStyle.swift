@@ -80,6 +80,14 @@ enum SettingsStyle {
                 : UIColor(red: 242 / 255, green: 244 / 255, blue: 247 / 255, alpha: 0.88)
         }
 
+        static let inquiryMap = adaptive(light: 0xEEF1EC, dark: 0x1D242C)
+        static let inquiryRoad = adaptive(light: 0xFFFFFF, dark: 0x2C3540)
+        static let inquiryBlock = adaptive(light: 0xDDE3DA, dark: 0x262F38)
+        static let inquiryCallout = adaptive(light: 0xFFF4DC, dark: 0x33280F)
+        static let inquiryCalloutIcon = adaptive(light: 0x9A5B00, dark: 0xF2C46B)
+        static let inquiryPlaceholder = adaptive(light: 0x8A93A0, dark: 0x8A93A0)
+        static let inquiryPin = adaptive(light: 0xD9363E, dark: 0xD9363E)
+
         private static let calendarCategoryStrongColors: [UIColor] = [
             adaptive(light: 0x1D4ED8, dark: 0x93C5FD),
             adaptive(light: 0xC2410C, dark: 0xFDBA74),
