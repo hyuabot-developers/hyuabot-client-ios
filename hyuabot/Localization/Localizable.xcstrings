@@ -14414,30 +14414,31 @@
         }
       }
     },
-    "licenses.source" : {
+    "map.cluster.accessibility.%lld" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건물 %lld개"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Source"
+            "value" : "%lld buildings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ソース"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "소스"
+            "value" : "%lld件の建物"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "源代码"
+            "value" : "%lld 栋建筑"
           }
         }
       }

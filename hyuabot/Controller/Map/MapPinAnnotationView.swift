@@ -210,7 +210,7 @@ final class MapClusterAnnotationView: MKAnnotationView {
     private func updateCount() {
         let count = (annotation as? MKClusterAnnotation)?.memberAnnotations.count
         countLabel.text = count.map { String($0) }
-        accessibilityLabel = countLabel.text
+        accessibilityLabel = count.map { String(format: String(localized: "map.cluster.accessibility.%lld"), $0) }
         accessibilityTraits = .button
     }
 
