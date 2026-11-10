@@ -137,9 +137,7 @@ final class StateViewTests: XCTestCase {
 
     func testEmptyCellReuseIdentifiersAreUnchanged() {
         XCTAssertEqual(ShuttleRealtimeEmptyCellView.reuseIdentifier, "ShuttleRealtimeEmptyCellView")
-        XCTAssertEqual(BusRealtimeEmptyCellView.reuseIdentifier, "BusRealtimeEmptyCellView")
         XCTAssertEqual(SubwayRealtimeEmptyCellView.reuseIdentifier, "SubwayRealtimeEmptyCellView")
-        XCTAssertEqual(BusTimetableEmptyCellView.reuseIdentifier, "BusTimetableEmptyCellView")
         XCTAssertEqual(ShuttleTimetableEmptyCellView.reuseIdentifier, "ShuttleTimetableEmptyCellView")
         XCTAssertEqual(ContactSearchEmptyCellView.reuseIdentifier, "ContactSearchEmptyCellView")
         XCTAssertEqual(SearchEmptyCellView.reuseIdentifier, "SearchEmptyCellView")

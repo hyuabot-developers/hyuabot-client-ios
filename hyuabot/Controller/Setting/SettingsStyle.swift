@@ -109,6 +109,11 @@ enum SettingsStyle {
             calendarCategoryFillColors[((categoryID - 1) % 4 + 4) % 4]
         }
 
+        static let busLowFloorFill = adaptive(light: 0xDCFCE7, dark: 0x12301F)
+        static let busLowFloorText = adaptive(light: 0x15803D, dark: 0x86EFAC)
+        static let busChipLine = adaptive(light: 0xD5DBE2, dark: 0x3A4450)
+        static let busSheetBackground = adaptive(light: 0xF2F4F7, dark: 0x11161C)
+
         private static func adaptive(light: UInt32, dark: UInt32) -> UIColor {
             UIColor { traits in
                 hex(traits.userInterfaceStyle == .dark ? dark : light)

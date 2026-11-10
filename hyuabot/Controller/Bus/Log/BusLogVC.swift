@@ -4,129 +4,32 @@
 //
 
 import Api
-import RxSwift
 import UIKit
 
 class BusLogVC: UIViewController {
     let stopID: Int32
     let routes: [Int32]
-    private let disposeBag = DisposeBag()
-    private let firstLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
-    private let secondLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
-    private let thirdLogs: BehaviorSubject<[BusDepartureLogDialogQuery.Data.Bus.Log]> = .init(value: [])
-
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
-        $0.textColor = .white
-        $0.backgroundColor = .hanyangBlue
-        $0.textAlignment = .center
-        $0.text = String(localized: "bus.log.title")
+    private let routeNames: [String]
+    private let stopName: String
+    private var logs: [[String]] = [[], [], []]
+    private var expanded = false
+    private var layout = BusDepartureLogLayout(columns: [[], [], []], hiddenPastCount: 0)
+    private let foldLabel = UILabel()
+    private let expandButton = BusLogFoldButton(type: .system)
+    private let foldRow = BusLogFoldStackView()
+    private let badges = UIStackView()
+    private let columns = UIStackView()
+    private var tables: [UITableView] = []
+    private var loading = true
+    private let dates = [-7, -2, -1].map { offset in
+        BusDisplayLogic.serviceCalendar.date(byAdding: .day, value: offset, to: .now) ?? .now
     }
 
-    private lazy var firstLogTableView: UITableView = .init().then {
-        $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
-        $0.separatorStyle = .none
-        $0.dataSource = self
-        $0.delegate = self
-        $0.rowHeight = 40
-        $0.layer.do {
-            $0.borderColor = UIColor.gray.cgColor
-            $0.borderWidth = 1
-            $0.cornerRadius = 8
-        }
-    }
-
-    private let firstLogTitleLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
-        $0.textAlignment = .center
-    }
-
-    private lazy var firstLogView: UIStackView = {
-        let view = UIStackView()
-        view.axis = .vertical
-        view.spacing = 20
-        view.isLayoutMarginsRelativeArrangement = true
-        view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 5, bottom: 0, trailing: 5)
-        view.addArrangedSubview(firstLogTitleLabel)
-        view.addArrangedSubview(firstLogTableView)
-        return view
-    }()
-
-    private lazy var secondLogTableView: UITableView = .init().then {
-        $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
-        $0.separatorStyle = .none
-        $0.dataSource = self
-        $0.delegate = self
-        $0.rowHeight = 40
-        $0.layer.do {
-            $0.borderColor = UIColor.gray.cgColor
-            $0.borderWidth = 1
-            $0.cornerRadius = 8
-        }
-    }
-
-    private let secondLogTitleLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
-        $0.textAlignment = .center
-    }
-
-    private lazy var secondLogView: UIStackView = {
-        let view = UIStackView()
-        view.axis = .vertical
-        view.spacing = 20
-        view.isLayoutMarginsRelativeArrangement = true
-        view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 5, bottom: 0, trailing: 5)
-        view.addArrangedSubview(secondLogTitleLabel)
-        view.addArrangedSubview(secondLogTableView)
-        return view
-    }()
-
-    private lazy var thirdLogTableView: UITableView = .init().then {
-        $0.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
-        $0.separatorStyle = .none
-        $0.dataSource = self
-        $0.delegate = self
-        $0.rowHeight = 40
-        $0.layer.do {
-            $0.borderColor = UIColor.gray.cgColor
-            $0.borderWidth = 1
-            $0.cornerRadius = 8
-        }
-    }
-
-    private let thirdLogTitleLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
-        $0.textAlignment = .center
-    }
-
-    private lazy var thirdLogView: UIStackView = {
-        let view = UIStackView()
-        view.axis = .vertical
-        view.spacing = 20
-        view.isLayoutMarginsRelativeArrangement = true
-        view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 5, bottom: 0, trailing: 5)
-        view.addArrangedSubview(thirdLogTitleLabel)
-        view.addArrangedSubview(thirdLogTableView)
-        return view
-    }()
-
-    private lazy var logView: UIStackView = {
-        let view = UIStackView()
-        view.axis = .horizontal
-        view.distribution = .fillEqually
-        view.alignment = .fill
-        view.backgroundColor = .systemBackground
-        view.addArrangedSubview(firstLogView)
-        view.addArrangedSubview(secondLogView)
-        view.addArrangedSubview(thirdLogView)
-        view.isLayoutMarginsRelativeArrangement = true
-        view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
-        return view
-    }()
-
-    required init(stopID: Int32, routes: [Int32]) {
+    required init(stopID: Int32, routes: [Int32], routeNames: [String] = [], stopName: String = "") {
         self.stopID = stopID
         self.routes = routes
+        self.routeNames = routeNames
+        self.stopName = stopName
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -144,108 +47,188 @@ class BusLogVC: UIViewController {
         super.viewDidLoad()
         setupUI()
         fetchLog()
-        observeSubjects()
     }
 
     private func setupUI() {
-        view.backgroundColor = .hanyangBlue
-        view.addSubview(titleLabel)
-        view.addSubview(logView)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
+        view.backgroundColor = SettingsStyle.Color.busSheetBackground
+        let title = UILabel()
+        title.accessibilityIdentifier = "bus.log.title"
+        title.attributedText = SettingsStyle.attributedText(
+            String(localized: "bus.log.title"), font: SettingsStyle.font(20, bold: true),
+            color: SettingsStyle.Color.text, lineHeight: 26
+        )
+        let header = UIStackView(arrangedSubviews: [title])
+        header.alignment = .center
+        header.snp.makeConstraints { make in make.height.equalTo(52) }
+        badges.spacing = 6
+        badges.alignment = .center
+        for route in routeNames {
+            let badge = BusRouteBadgeView(size: .small)
+            badge.configure(route: route)
+            badges.addArrangedSubview(badge)
         }
-        logView.snp.makeConstraints { make in
-            make.top.equalTo(self.titleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+        let name = UILabel()
+        name.font = SettingsStyle.font(13)
+        name.textColor = SettingsStyle.Color.secondaryText
+        name.numberOfLines = 0
+        name.setKoreanTranslatedText(stopName)
+        badges.addArrangedSubview(name)
+        badges.isHidden = routeNames.isEmpty && stopName.isEmpty
+        configureFolding()
+        foldRow.addArrangedSubview(foldLabel)
+        foldRow.addArrangedSubview(expandButton)
+        foldRow.alignment = .center
+        foldRow.spacing = 8
+        foldRow.isLayoutMarginsRelativeArrangement = true
+        foldRow.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0)
+        let top = BusLogFoldStackView(arrangedSubviews: [header, badges, foldRow])
+        top.axis = .vertical
+        top.spacing = 0
+        top.setCustomSpacing(1, after: header)
+        view.addSubview(top)
+        view.addSubview(columns)
+        top.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(11)
+            make.horizontalEdges.equalToSuperview().inset(20)
         }
+        columns.axis = .horizontal
+        columns.distribution = .fillEqually
+        columns.spacing = 10
+        columns.snp.makeConstraints { make in
+            make.top.equalTo(top.snp.bottom).offset(4)
+            make.horizontalEdges.equalToSuperview().inset(20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
+        }
+        configureColumns()
+        updateLayout()
     }
 
-    private func fetchLog() {
-        let now = Date.now
-        let firstDate = now.addingTimeInterval(-60 * 60 * 24 * 7)
-        let secondDate = now.addingTimeInterval(-60 * 60 * 24 * 2)
-        let thirdDate = now.addingTimeInterval(-60 * 60 * 24)
-        // Set Labels
-        let dateFormatter = DateFormatter().then { $0.dateFormat = "MM/dd" }
-        firstLogTitleLabel.text = dateFormatter.string(from: firstDate)
-        secondLogTitleLabel.text = dateFormatter.string(from: secondDate)
-        thirdLogTitleLabel.text = dateFormatter.string(from: thirdDate)
-        // Fetch Logs
-        let queryDateFormatter = DateFormatter().then { $0.dateFormat = "yyyy-MM-dd" }
-        Task {
-            let response = try? await Network.shared.client.fetch(query: BusDepartureLogDialogQuery(
-                routeStops: routes.map { routeID in
-                    BusRouteStopInput(route: routeID, stop: stopID, dates: [
-                        queryDateFormatter.string(from: firstDate),
-                        queryDateFormatter.string(from: secondDate),
-                        queryDateFormatter.string(from: thirdDate)
-                    ])
-                }
-            ))
-            if let data = response?.data {
-                let logs = data.bus.flatMap(\.log)
-                self.firstLogs
-                    .onNext(logs.filter { $0.date == queryDateFormatter.string(from: firstDate) }.sorted(by: { $0.time < $1.time }))
-                self.secondLogs
-                    .onNext(logs.filter { $0.date == queryDateFormatter.string(from: secondDate) }.sorted(by: { $0.time < $1.time }))
-                self.thirdLogs
-                    .onNext(logs.filter { $0.date == queryDateFormatter.string(from: thirdDate) }.sorted(by: { $0.time < $1.time }))
-            }
+    private func configureFolding() {
+        foldLabel.font = SettingsStyle.font(12)
+        foldLabel.textColor = SettingsStyle.Color.secondaryText
+        foldLabel.numberOfLines = 0
+        foldLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        foldLabel.accessibilityIdentifier = "bus.log.fold_label"
+        expandButton.titleLabel?.font = SettingsStyle.font(12, bold: true)
+        expandButton.tintColor = SettingsStyle.Color.accent
+        expandButton.contentHorizontalAlignment = .trailing
+        expandButton.setContentHuggingPriority(.required, for: .horizontal)
+        expandButton.accessibilityIdentifier = "bus.log.expand"
+        expandButton.addTarget(self, action: #selector(toggleExpanded), for: .touchUpInside)
+        expandButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+    }
+
+    private func configureColumns() {
+        for (index, date) in dates.enumerated() {
+            let heading = UILabel()
+            heading.text = date.formatted(.dateTime.month(.twoDigits).day(.twoDigits))
+            heading.font = SettingsStyle.font(14, bold: true)
+            heading.textColor = SettingsStyle.Color.text
+            heading.textAlignment = .center
+            let day = UILabel()
+            day.text = date.formatted(.dateTime.weekday(.wide))
+            day.font = SettingsStyle.font(11)
+            day.textColor = SettingsStyle.Color.secondaryText
+            day.textAlignment = .center
+            let table = UITableView()
+            table.backgroundColor = .clear
+            table.separatorStyle = .none
+            table.rowHeight = 36
+            table.dataSource = self
+            table.register(BusLogCell.self, forCellReuseIdentifier: BusLogCell.reuseIdentifier)
+            table.accessibilityIdentifier = "bus.log.column.\(index)"
+            table.accessibilityLabel = String(format: String(localized: "bus.log.column.%@"),
+                                              date.formatted(.dateTime.month().day().weekday(.wide)))
+            tables.append(table)
+            let stack = UIStackView(arrangedSubviews: [heading, day, table])
+            stack.axis = .vertical
+            stack.spacing = 4
+            stack.isLayoutMarginsRelativeArrangement = true
+            stack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 14, leading: 4, bottom: 8, trailing: 4)
+            stack.backgroundColor = SettingsStyle.Color.card
+            stack.layer.cornerRadius = 16
+            columns.addArrangedSubview(stack)
         }
     }
 
     @objc
-    private func observeSubjects() {
-        firstLogs.subscribe(onNext: { [weak self] _ in
-            self?.firstLogTableView.reloadData()
-        }).disposed(by: disposeBag)
-        secondLogs.subscribe(onNext: { [weak self] _ in
-            self?.secondLogTableView.reloadData()
-        }).disposed(by: disposeBag)
-        thirdLogs.subscribe(onNext: { [weak self] _ in
-            self?.thirdLogTableView.reloadData()
-        }).disposed(by: disposeBag)
+    private func toggleExpanded() {
+        expanded.toggle()
+        updateLayout()
+    }
+
+    private func updateLayout() {
+        layout = BusDisplayLogic.departureLogs(columns: logs, nowMinutes: BusDisplayLogic.serviceMinutes(of: .now), expanded: expanded)
+        foldLabel.text = expanded ? String(localized: "bus.log.showing_all")
+            : String(format: String(localized: "bus.log.fold.%lld"), layout.hiddenPastCount)
+        expandButton.setTitle(String(localized: expanded ? "bus.log.collapse" : "bus.log.expand"), for: .normal)
+        expandButton.invalidateIntrinsicContentSize()
+        expandButton.isHidden = !expanded && layout.hiddenPastCount == 0
+        foldLabel.isHidden = expandButton.isHidden
+        foldRow.isHidden = expandButton.isHidden
+        view.layoutIfNeeded()
+        for (index, table) in tables.enumerated() {
+            let empty = UILabel()
+            empty.text = String(localized: loading ? "bus.log.loading" : "bus.log.empty")
+            empty.font = SettingsStyle.font(12)
+            empty.textColor = SettingsStyle.Color.secondaryText
+            empty.textAlignment = .center
+            empty.numberOfLines = 0
+            table.backgroundView = layout.columns[index].isEmpty ? empty : nil
+            table.reloadData()
+        }
+    }
+
+    private func fetchLog() {
+        let formatter = DateFormatter()
+        formatter.calendar = BusDisplayLogic.serviceCalendar
+        formatter.timeZone = BusDisplayLogic.serviceCalendar.timeZone
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateStrings = dates.map(formatter.string(from:))
+        Task {
+            let response = try? await Network.shared.client.fetch(query: BusDepartureLogDialogQuery(
+                routeStops: routes.map { BusRouteStopInput(route: $0, stop: stopID, dates: .some(dateStrings)) }
+            ))
+            if let data = response?.data {
+                let entries = data.bus.flatMap(\.log)
+                logs = dateStrings.map { date in entries.filter { $0.date == date }.map(\.time).sorted() }
+            }
+            loading = false
+            updateLayout()
+        }
     }
 }
 
-extension BusLogVC: UITableViewDataSource, UITableViewDelegate {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        1
-    }
-
+extension BusLogVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch tableView {
-        case firstLogTableView:
-            guard let logs = try? firstLogs.value() else { return 0 }
-            return logs.count
-        case secondLogTableView:
-            guard let logs = try? secondLogs.value() else { return 0 }
-            return logs.count
-        case thirdLogTableView:
-            guard let logs = try? thirdLogs.value() else { return 0 }
-            return logs.count
-        default:
-            return 0
-        }
+        guard let index = tables.firstIndex(of: tableView) else { return 0 }
+        return layout.columns[index].count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: BusLogCell.reuseIdentifier) as? BusLogCell ?? BusLogCell()
-        switch tableView {
-        case firstLogTableView:
-            guard let logs = try? firstLogs.value() else { return UITableViewCell() }
-            cell.setupUI(index: indexPath.row, item: logs[indexPath.row])
-        case secondLogTableView:
-            guard let logs = try? secondLogs.value() else { return UITableViewCell() }
-            cell.setupUI(index: indexPath.row, item: logs[indexPath.row])
-        case thirdLogTableView:
-            guard let logs = try? thirdLogs.value() else { return UITableViewCell() }
-            cell.setupUI(index: indexPath.row, item: logs[indexPath.row])
-        default:
-            break
-        }
+        guard let index = tables.firstIndex(of: tableView),
+              let cell = tableView.dequeueReusableCell(withIdentifier: BusLogCell.reuseIdentifier,
+                                                       for: indexPath) as? BusLogCell else { return UITableViewCell() }
+        cell.configure(layout.columns[index][indexPath.row])
         return cell
+    }
+}
+
+private final class BusLogFoldButton: UIButton {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let horizontalInset = max(0, (44 - bounds.width) / 2)
+        let verticalInset = max(0, (44 - bounds.height) / 2)
+        return bounds.insetBy(dx: -horizontalInset, dy: -verticalInset).contains(point)
+    }
+}
+
+private final class BusLogFoldStackView: UIStackView {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        // Forward the button's expanded target through both compact containing stacks.
+        super.point(inside: point, with: event) || arrangedSubviews.contains { subview in
+            !subview.isHidden && subview.isUserInteractionEnabled &&
+                subview.point(inside: convert(point, to: subview), with: event)
+        }
     }
 }

@@ -326,7 +326,7 @@ final class UIQualityUITests: XCTestCase {
             }
         case "bus":
             issues.append(contentsOf: tapAndAudit(
-                identifier: "bus.quick_settings",
+                identifier: "bus.settings",
                 name: "bus-quick-settings",
                 app: app,
                 auditAfterTap: false

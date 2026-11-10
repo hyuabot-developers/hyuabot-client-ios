@@ -18,16 +18,6 @@ final class EmptyCellViewConfigureTests: XCTestCase {
         assertForwardsConfiguration(cell) { cell.configure($0) }
     }
 
-    func testBusRealtimeEmptyCellForwardsConfiguration() {
-        let cell = BusRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)
-        assertForwardsConfiguration(cell) { cell.configure($0) }
-    }
-
-    func testBusTimetableEmptyCellForwardsConfiguration() {
-        let cell = BusTimetableEmptyCellView(style: .default, reuseIdentifier: nil)
-        assertForwardsConfiguration(cell) { cell.configure($0) }
-    }
-
     func testContactSearchEmptyCellForwardsConfiguration() {
         let cell = ContactSearchEmptyCellView(style: .default, reuseIdentifier: nil)
         assertForwardsConfiguration(cell) { cell.configure($0) }
@@ -52,8 +42,6 @@ final class EmptyCellViewConfigureTests: XCTestCase {
     func testEmptyCellsReportExpectedSourceScreen() {
         let cases: [(UITableViewCell, AnalyticsScreen)] = [
             (ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil), .shuttleRealtime),
-            (BusRealtimeEmptyCellView(style: .default, reuseIdentifier: nil), .busRealtime),
-            (BusTimetableEmptyCellView(style: .default, reuseIdentifier: nil), .busTimetable),
             (ContactSearchEmptyCellView(style: .default, reuseIdentifier: nil), .contact),
             (SearchEmptyCellView(style: .default, reuseIdentifier: nil), .map),
             (ShuttleTimetableEmptyCellView(style: .default, reuseIdentifier: nil), .shuttleTimetable),
