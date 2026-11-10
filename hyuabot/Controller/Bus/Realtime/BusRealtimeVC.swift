@@ -155,7 +155,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         }
         contentView.noticeBar.carousel.onNoticeTapped = { [weak self] url in
             guard let url = URL(string: url) else { return }
-            let vc = NoticeWebVC(url: url)
+            let vc = BusNoticeVC(url: url)
             if let sheet = vc.sheetPresentationController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true

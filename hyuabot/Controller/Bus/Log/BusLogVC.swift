@@ -84,11 +84,11 @@ class BusLogVC: UIViewController {
         let top = BusLogFoldStackView(arrangedSubviews: [header, badges, foldRow])
         top.axis = .vertical
         top.spacing = 0
-        top.setCustomSpacing(6, after: header)
+        top.setCustomSpacing(1, after: header)
         view.addSubview(top)
         view.addSubview(columns)
         top.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(6)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(11)
             make.horizontalEdges.equalToSuperview().inset(20)
         }
         columns.axis = .horizontal

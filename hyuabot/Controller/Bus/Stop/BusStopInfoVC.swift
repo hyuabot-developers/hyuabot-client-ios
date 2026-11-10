@@ -71,12 +71,12 @@ class BusStopInfoVC: UIViewController {
         view.addSubview(title)
         view.addSubview(firstLastTableView)
         title.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(6)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(11)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.height.equalTo(52)
         }
         firstLastTableView.snp.makeConstraints { make in
-            make.top.equalTo(title.snp.bottom).offset(8)
+            make.top.equalTo(title.snp.bottom).offset(3)
             make.horizontalEdges.equalToSuperview().inset(20)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
