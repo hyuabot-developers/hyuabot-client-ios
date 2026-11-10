@@ -8,16 +8,11 @@ import Then
 import UIKit
 
 final class BusQuickSettingsVC: UIViewController {
-    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
-    private static let menuForegroundColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? .systemBlue : .hanyangBlue
-    }
-
     var openHelp: (() -> Void)?
     var openInquiry: (() -> Void)?
     var updateShowSecondaryEta: ((Bool) -> Void)?
     var updateSeoulTarget: ((BusSeoulTargetStop) -> Void)?
-    let preferredSheetHeight: CGFloat = 380
+    let preferredSheetHeight: CGFloat = 284
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -45,7 +40,7 @@ final class BusQuickSettingsVC: UIViewController {
 
 extension BusQuickSettingsVC {
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = SettingsStyle.Color.busSheetBackground
 
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
@@ -56,70 +51,97 @@ extension BusQuickSettingsVC {
 
         contentStack.axis = .vertical
         contentStack.spacing = 12
-        contentStack.layoutMargins = UIEdgeInsets(top: 20, left: 20, bottom: 18, right: 20)
+        contentStack.layoutMargins = UIEdgeInsets(top: 6, left: 0, bottom: 34, right: 0)
         contentStack.isLayoutMarginsRelativeArrangement = true
+        contentStack.insetsLayoutMarginsFromSafeArea = false
         contentStack.snp.makeConstraints { make in
-            make.edges.equalTo(scrollView.contentLayoutGuide)
-            make.width.equalTo(scrollView.frameLayoutGuide)
+            make.top.bottom.equalTo(scrollView.contentLayoutGuide)
+            make.leading.trailing.equalTo(scrollView.contentLayoutGuide).inset(20)
+            make.width.equalTo(scrollView.frameLayoutGuide).offset(-40)
         }
 
         let title = UILabel()
         title.text = String(localized: "bus.quick_settings.title")
-        title.font = .godo(size: 20, weight: .bold)
-        title.textColor = .label
+        title.attributedText = SettingsStyle.attributedText(
+            String(localized: "bus.quick_settings.title"),
+            font: SettingsStyle.font(20, bold: true),
+            color: SettingsStyle.Color.text,
+            lineHeight: 26
+        )
+        title.adjustsFontForContentSizeCategory = true
+
+        let header = UIStackView(arrangedSubviews: [title, closeButton()])
+        header.axis = .horizontal
+        header.alignment = .center
+        header.distribution = .equalSpacing
+        header.isLayoutMarginsRelativeArrangement = true
+        header.layoutMargins = .zero
+        header.insetsLayoutMarginsFromSafeArea = false
+        header.snp.makeConstraints { make in make.height.equalTo(52) }
 
         configureControls()
-        contentStack.addArrangedSubview(title)
+        contentStack.addArrangedSubview(header)
         contentStack.addArrangedSubview(settingsGroup())
-        contentStack.addArrangedSubview(helpActionRow())
-        contentStack.addArrangedSubview(inquiryActionRow())
+        contentStack.addArrangedSubview(actionButtonsRow())
     }
 
-    private func helpActionRow() -> UIView {
+    private func closeButton() -> UIButton {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = Self.actionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "questionmark.circle")
-        config.attributedTitle = AttributedString(String(localized: "common.help"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 17, weight: .bold)
-        ]))
-        config.imagePadding = 8
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
+        config.background.backgroundColor = SettingsStyle.Color.segmentBackground
+        config.background.cornerRadius = 15
+        config.baseForegroundColor = SettingsStyle.Color.secondaryText
+        config.image = UIImage(systemName: "xmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .bold))
+        config.contentInsets = NSDirectionalEdgeInsets(top: 7, leading: 7, bottom: 7, trailing: 7)
         button.configuration = config
-        button.contentHorizontalAlignment = .leading
-        button.addTarget(self, action: #selector(onTapHelp), for: .touchUpInside)
-        button.accessibilityIdentifier = "bus.quick_settings.open_help"
-        button.snp.makeConstraints { make in
-            make.height.equalTo(48)
-        }
-        button.setContentHuggingPriority(.required, for: .vertical)
-        button.setContentCompressionResistancePriority(.required, for: .vertical)
+        button.accessibilityLabel = String(localized: "close")
+        button.accessibilityIdentifier = "bus.quick_settings.close"
+        button.addTarget(self, action: #selector(onTapClose), for: .touchUpInside)
+        button.snp.makeConstraints { make in make.size.equalTo(44) }
         return button
     }
 
-    private func inquiryActionRow() -> UIView {
+    @objc
+    private func onTapClose() {
+        dismiss(animated: true)
+    }
+
+    private func actionButtonsRow() -> UIStackView {
+        let helpButton = actionButton(
+            title: String(localized: "common.help"),
+            image: "questionmark.circle",
+            identifier: "bus.quick_settings.open_help",
+            action: #selector(onTapHelp)
+        )
+        let inquiryButton = actionButton(
+            title: String(localized: "inquiry.title"),
+            image: "message",
+            identifier: "bus.quick_settings.open_inquiry",
+            action: #selector(onTapInquiry)
+        )
+        let row = UIStackView(arrangedSubviews: [helpButton, inquiryButton])
+        row.axis = .horizontal
+        row.spacing = 8
+        row.distribution = .fillEqually
+        return row
+    }
+
+    private func actionButton(title: String, image: String, identifier: String, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = Self.actionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "message")
-        config.attributedTitle = AttributedString(String(localized: "inquiry.title"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 17, weight: .bold)
+        config.background.backgroundColor = SettingsStyle.Color.accentFill
+        config.background.cornerRadius = 12
+        config.baseForegroundColor = SettingsStyle.Color.link
+        config.image = UIImage(systemName: image)
+        config.attributedTitle = AttributedString(title, attributes: AttributeContainer([
+            .font: SettingsStyle.font(15, bold: true),
+            .foregroundColor: SettingsStyle.Color.link
         ]))
         config.imagePadding = 8
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
         button.configuration = config
-        button.contentHorizontalAlignment = .leading
-        button.addTarget(self, action: #selector(onTapInquiry), for: .touchUpInside)
-        button.accessibilityIdentifier = "bus.quick_settings.open_inquiry"
-        button.snp.makeConstraints { make in
-            make.height.equalTo(48)
-        }
-        button.setContentHuggingPriority(.required, for: .vertical)
-        button.setContentCompressionResistancePriority(.required, for: .vertical)
+        button.addTarget(self, action: action, for: .touchUpInside)
+        button.accessibilityIdentifier = identifier
+        button.snp.makeConstraints { make in make.height.equalTo(48) }
         return button
     }
 
@@ -140,17 +162,19 @@ extension BusQuickSettingsVC {
     private func settingsGroup() -> UIView {
         let card = UIStackView()
         card.axis = .vertical
-        card.backgroundColor = .secondarySystemBackground
-        card.layer.cornerRadius = 12
+        card.backgroundColor = SettingsStyle.Color.sheet
+        card.layer.cornerRadius = SettingsStyle.Metric.cardRadius
         card.clipsToBounds = true
         card.addArrangedSubview(switchSettingRow(
             title: String(localized: "bus.quick_settings.show_secondary_eta"),
+            detail: String(localized: "bus.quick_settings.show_secondary_eta.detail"),
             control: showSecondaryEtaSwitch,
             identifier: "bus.quick_settings.show_secondary_eta_row"
         ))
         card.addArrangedSubview(separator())
         card.addArrangedSubview(valueSettingRow(
             title: String(localized: "bus.quick_settings.seoul_target"),
+            detail: String(localized: "bus.quick_settings.seoul_target.detail"),
             control: seoulTargetButton,
             identifier: "bus.quick_settings.seoul_target_row"
         ))
@@ -158,14 +182,18 @@ extension BusQuickSettingsVC {
     }
 
     private func configureControls() {
+        showSecondaryEtaSwitch.onTintColor = SettingsStyle.Color.accent
         showSecondaryEtaSwitch.addTarget(self, action: #selector(onChangeShowSecondaryEta), for: .valueChanged)
         configureMenuButton(seoulTargetButton)
     }
 
     private func configureMenuButton(_ button: UIButton) {
         var config = UIButton.Configuration.plain()
-        config.baseForegroundColor = Self.menuForegroundColor
-        config.image = UIImage(systemName: "chevron.up.chevron.down")
+        config.baseForegroundColor = SettingsStyle.Color.chevron
+        config.image = UIImage(
+            systemName: "chevron.right",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+        )
         config.imagePlacement = .trailing
         config.imagePadding = 6
         config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8)
@@ -178,48 +206,63 @@ extension BusQuickSettingsVC {
 
     private func separator() -> UIView {
         UIView().then {
-            $0.backgroundColor = .separator
+            $0.backgroundColor = SettingsStyle.Color.separator
             $0.snp.makeConstraints { make in
                 make.height.equalTo(1 / UIScreen.main.scale)
             }
         }
     }
 
-    private func switchSettingRow(title: String, control: UISwitch, identifier: String) -> UIView {
-        let row = horizontalSettingRow(title: title, control: control, identifier: identifier)
+    private func switchSettingRow(title: String, detail: String, control: UISwitch, identifier: String) -> UIView {
+        let row = horizontalSettingRow(title: title, detail: detail, control: control, identifier: identifier)
         control.accessibilityLabel = title
         control.accessibilityIdentifier = "\(identifier).switch"
         return row
     }
 
-    private func valueSettingRow(title: String, control: UIButton, identifier: String) -> UIView {
-        let row = horizontalSettingRow(title: title, control: control, identifier: identifier)
+    private func valueSettingRow(title: String, detail: String, control: UIButton, identifier: String) -> UIView {
+        let row = horizontalSettingRow(title: title, detail: detail, control: control, identifier: identifier)
         control.accessibilityLabel = title
         control.accessibilityIdentifier = "\(identifier).menu"
         return row
     }
 
-    private func horizontalSettingRow(title: String, control: UIView, identifier: String) -> UIView {
+    private func horizontalSettingRow(title: String, detail: String, control: UIView, identifier: String) -> UIView {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .center
         row.spacing = 12
-        row.layoutMargins = UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 10)
+        row.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 12)
         row.isLayoutMarginsRelativeArrangement = true
         row.accessibilityIdentifier = identifier
         row.isAccessibilityElement = false
 
         let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .godo(size: 15, weight: .bold)
-        titleLabel.textColor = .label
+        titleLabel.attributedText = SettingsStyle.attributedText(
+            title,
+            font: SettingsStyle.font(15, bold: true),
+            color: SettingsStyle.Color.text,
+            lineHeight: 20
+        )
+        titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = 0.85
 
-        row.addArrangedSubview(titleLabel)
+        let detailLabel = UILabel()
+        detailLabel.attributedText = SettingsStyle.attributedText(
+            detail,
+            font: SettingsStyle.font(13),
+            color: SettingsStyle.Color.secondaryText,
+            lineHeight: 18
+        )
+        detailLabel.adjustsFontForContentSizeCategory = true
+        let labels = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
+        labels.axis = .vertical
+        labels.spacing = 2
+        row.addArrangedSubview(labels)
         row.addArrangedSubview(control)
         row.snp.makeConstraints { make in
-            make.height.equalTo(52)
+            make.height.greaterThanOrEqualTo(64)
         }
         row.setContentHuggingPriority(.required, for: .vertical)
         row.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -241,7 +284,8 @@ extension BusQuickSettingsVC {
     private func updateMenuButtonTitle(_ button: UIButton, title: String) {
         var config = button.configuration
         config?.attributedTitle = AttributedString(title, attributes: AttributeContainer([
-            .font: UIFont.godo(size: 14, weight: .bold)
+            .font: SettingsStyle.font(15, bold: true),
+            .foregroundColor: SettingsStyle.Color.link
         ]))
         button.configuration = config
         button.accessibilityValue = title

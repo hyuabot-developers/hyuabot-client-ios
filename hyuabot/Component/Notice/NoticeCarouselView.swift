@@ -17,6 +17,12 @@ class NoticeCarouselView: UIView {
     }
 
     var onNoticeTapped: ((String) -> Void)?
+    var onPageChanged: ((_ index: Int, _ count: Int) -> Void)?
+    var titleStyle: NoticeTitleStyle = .standard {
+        didSet {
+            collectionView.reloadData()
+        }
+    }
     private let skeletonBar = UIView().then {
         $0.backgroundColor = UIColor.white.withAlphaComponent(0.36)
         $0.layer.cornerRadius = 4
@@ -62,9 +68,11 @@ class NoticeCarouselView: UIView {
 
     func setupUI(with notices: [Notice]) {
         self.notices = notices
+        currentIndex = 0
         setLoading(false)
         collectionView.reloadData()
         startAutoScroll()
+        onPageChanged?(currentIndex, notices.count)
     }
 
     func setLoading(_ isLoading: Bool) {
@@ -114,6 +122,7 @@ class NoticeCarouselView: UIView {
     private func scrollToNext() {
         currentIndex = (currentIndex + 1) % notices.count
         collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: .centeredHorizontally, animated: false)
+        onPageChanged?(currentIndex, notices.count)
     }
 }
 
@@ -127,6 +136,7 @@ extension NoticeCarouselView: UIScrollViewDelegate {
         let pageWidth = collectionView.bounds.width
         guard pageWidth > 0 else { return }
         currentIndex = Int(round(collectionView.contentOffset.x / pageWidth))
+        onPageChanged?(currentIndex, notices.count)
     }
 }
 
@@ -141,6 +151,7 @@ extension NoticeCarouselView: UICollectionViewDataSource, UICollectionViewDelega
         ) as? NoticeCell else { fatalError("Unable to dequeue NoticeCell") }
         let notice = notices[indexPath.item]
         cell.titleColor = titleColor
+        cell.titleStyle = titleStyle
         cell.setupUI(with: notice)
         cell.onTap = { [weak self] in
             guard let url = notice.url else { return }

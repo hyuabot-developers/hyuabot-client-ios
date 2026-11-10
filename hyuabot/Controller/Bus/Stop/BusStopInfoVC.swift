@@ -82,22 +82,23 @@ class BusStopInfoVC: UIViewController {
         stopMapView.delegate = self
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(50)
         }
         stopMapView.snp.makeConstraints { make in
             make.height.equalTo(300)
             make.top.equalTo(self.titleLabel.snp.bottom)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
         }
         firstLastTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(self.stopMapView.snp.bottom)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(50)
         }
         firstLastView.snp.makeConstraints { make in
             make.top.equalTo(self.firstLastTitleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview()
         }
     }
 

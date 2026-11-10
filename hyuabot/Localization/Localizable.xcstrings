@@ -395,58 +395,58 @@
         }
       }
     },
-    "bus.quick_settings.action_bar.disabled" : {
+    "bus.quick_settings.show_secondary_eta.detail" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrival times hidden"
+            "value" : "Also show arrival times at your destination"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "到着時刻を非表示"
+            "value" : "目的地の到着時刻も表示します"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "도착 시간 숨김"
+            "value" : "목적지 도착 시각도 함께 보여 줘요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隐藏到达时间"
+            "value" : "同时显示目的地到达时间"
           }
         }
       }
     },
-    "bus.quick_settings.action_bar.enabled" : {
+    "bus.quick_settings.seoul_target.detail" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrival times · %@"
+            "value" : "Arrival time at Gangnam Station"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "到着時刻 · %@"
+            "value" : "江南駅タブの到着時刻"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "도착 시간 표시 · %@"
+            "value" : "강남역 탭 도착 시각 기준"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "显示到达时间 · %@"
+            "value" : "以江南站标签到达时间为准"
           }
         }
       }
@@ -484,25 +484,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show arrival time"
+            "value" : "Show arrival time too"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "到着時刻を表示"
+            "value" : "到着時刻も表示"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "도착 시간 표시"
+            "value" : "도착 시간 함께 보기"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "显示到达时间"
+            "value" : "同时显示到达时间"
           }
         }
       }
@@ -535,114 +535,172 @@
         }
       }
     },
-    "bus.realtime.arriving.%lld" : {
+    "bus.realtime.arriving_soon" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "곧 도착"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arriving Soon (%1$lld stop)"
+            "value" : "Arriving soon"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まもなく到着 (%1$lld停留所前)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "잠시후 도착 (%1$lld전)"
+            "value" : "まもなく到着"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "即将到达 (%1$lld站前)"
+            "value" : "即将到达"
           }
         }
       }
     },
-    "bus.realtime.arriving.%lld.%lld" : {
+    "bus.realtime.stop_info.%@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arriving Soon (%1$lld stop, %2$lld seats)"
+            "value" : "%@ stop information"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まもなく到着 (%1$lld停留所前, %2$lld席)"
+            "value" : "%@停留所の情報"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "잠시후 도착 (%1$lld전, %2$lld석)"
+            "value" : "%@ 정류장 정보"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "即将到达 (%1$lld站前, %2$lld座)"
+            "value" : "%@站点信息"
           }
         }
       }
     },
-    "bus.realtime.empty" : {
+    "bus.realtime.empty.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "There are no buses scheduled to arrive."
+            "value" : "No buses arriving soon"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "到着予定のバスはありません。"
+            "value" : "到着予定のバスはありません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "도착 예정인 버스가 없습니다."
+            "value" : "도착 예정인 버스가 없어요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暂无即将到达的公交。"
+            "value" : "暂无公交即将到达"
           }
         }
       }
     },
-    "bus.realtime.estimated.%lld" : {
+    "bus.realtime.empty.detail" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld mins (est.)"
+            "value" : "Check the timetable for the first bus"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld分 (予定)"
+            "value" : "始発時刻は時刻表をご確認ください"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld분 (예정)"
+            "value" : "첫차 시간은 시간표에서 확인하세요"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld分钟 (预计)"
+            "value" : "首班车时间请查看时刻表"
+          }
+        }
+      }
+    },
+    "bus.realtime.destination.sangnoksu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangnoksu Station"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常緑樹駅"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常绿树站"
+          }
+        }
+      }
+    },
+    "bus.realtime.eta.%@.%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ 도착"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ arrival %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@到着"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@到达"
           }
         }
       }
@@ -675,310 +733,176 @@
         }
       }
     },
-    "bus.realtime.no.seat.%lld.%lld" : {
+    "bus.realtime.minutes.%lld" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld분"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld mins (%2$lld stops)"
+            "value" : "%lld min"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld分 (%2$lld停留所)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld분 (%2$lld전)"
+            "value" : "%lld分"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld分钟 (%2$lld站)"
+            "value" : "%lld分钟"
           }
         }
       }
     },
-    "bus.realtime.seat.%lld.%lld.%lld" : {
+    "bus.realtime.no_seats" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좌석 없음"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld mins (%2$lld stops, %3$lld seats)"
+            "value" : "No seats"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld分 (%2$lld停留所, %3$lld席)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld분 (%2$lld전, %3$lld석)"
+            "value" : "空席なし"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld分钟 (%2$lld站, %3$lld座)"
+            "value" : "无座位"
           }
         }
       }
     },
-    "bus.realtime.secondary.%@" : {
+    "bus.realtime.route.%@" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@번"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " ▶ arrives %@"
+            "value" : "Route %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " ▶ %@到着"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " ▶ %@ 도착"
+            "value" : "%@番"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " ▶ %@到达"
+            "value" : "%@路"
           }
         }
       }
     },
-    "bus.realtime.section.10-1.campus" : {
+    "bus.realtime.seats_left.%lld" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잔여 %lld석"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "10-1 (Convention Center)"
+            "value" : "%lld seats left"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "10-1 (漢陽大ERICAコンベンションセンター)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "10-1 (한양대ERICA컨벤션센터)"
+            "value" : "残り%lld席"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "10-1 (汉阳大ERICA会议中心)"
+            "value" : "剩余%lld座"
           }
         }
       }
     },
-    "bus.realtime.section.10-1.station" : {
+    "bus.realtime.stops_before.%lld" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld정류장 전"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "10-1 (Sangnoksu Stn.)"
+            "value" : "%lld stops away"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "10-1 (常緑樹駅3番出口)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "10-1 (상록수역3번출구건너편)"
+            "value" : "あと%lld停留所"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "10-1 (常绿树站3号出口)"
+            "value" : "还有%lld站"
           }
         }
       }
     },
-    "bus.realtime.section.50.ansan" : {
+    "bus.realtime.waiting_at_origin" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출발지 대기"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "50 (Terminal)"
+            "value" : "Waiting at origin"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "50 (終点)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "50 (안산파크푸르지오)"
+            "value" : "始発地で待機中"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "50 (终点)"
-          }
-        }
-      }
-    },
-    "bus.realtime.section.50.station" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "50 (Gwangmyeong Stn.)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "50 (KTX光明駅)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "50 (KTX광명역1번출구)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "50 (KTX光明站)"
-          }
-        }
-      }
-    },
-    "bus.realtime.section.3102" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3102 (Convention Center)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3102 (漢陽大ERICAコンベンションセンター)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3102 (한양대ERICA컨벤션센터)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3102 (汉阳大ERICA会议中心)"
-          }
-        }
-      }
-    },
-    "bus.realtime.section.dynamic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ (%2$@)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ (%2$@)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ (%2$@)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ (%2$@)"
-          }
-        }
-      }
-    },
-    "bus.realtime.section.seoul.other" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3100/3101 (Main Gate)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3100/3101 (漢陽大正門)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3100/3101 (한양대정문)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3100/3101 (汉阳大正门)"
-          }
-        }
-      }
-    },
-    "bus.realtime.section.suwon.other" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "7070/9090 (Seongan High School)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "7070/9090 (漢陽大入口)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "7070/9090 (한양대입구)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "7070/9090 (汉阳大入口)"
+            "value" : "起点等待"
           }
         }
       }
@@ -1000,7 +924,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "도착 기록"
+            "value" : "출발 기록"
           }
         },
         "zh-Hans" : {
@@ -26263,7 +26187,595 @@
         }
       }
     }
-  }
+  },
+    "bus.stop.sangnoksu_exit3" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역3번출구건너편"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sangnoksu Stn."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常緑樹駅3番出口"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常绿树站3号出口"
+          }
+        }
+      }
+    },
+    "bus.stop.ansan_park_prugio" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안산파크푸르지오"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終点"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "终点"
+          }
+        }
+      }
+    },
+    "bus.stop.ktx_gwangmyeong_exit1" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KTX광명역1번출구"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gwangmyeong Stn."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KTX光明駅"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KTX光明站"
+          }
+        }
+      }
+    },
+    "bus.realtime.footnote" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회색 시간은 시간표 기준이에요 · 15초마다 갱신돼요"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gray times are based on the schedule · Updates every 15 seconds"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グレーの時刻は時刻表に基づいています · 15秒ごとに更新"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "灰色时间以时刻表为准 · 每15秒更新"
+          }
+        }
+      }
+    },
+    "bus.timetable.chip.soon" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "곧 출발"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Departing soon"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まもなく発車"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即将发车"
+          }
+        }
+      }
+    },
+    "bus.timetable.chip.minutes.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld분 후"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in %lld min"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld分後"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld分钟后"
+          }
+        }
+      }
+    },
+    "bus.timetable.chip.first" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始発"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "首班车"
+          }
+        }
+      }
+    },
+    "bus.timetable.chip.last" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終電"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "末班车"
+          }
+        }
+      }
+    },
+    "bus.timetable.a11y.past" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난 버스"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past bus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "過去のバス"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已过站公交"
+          }
+        }
+      }
+    },
+    "bus.timetable.weekends" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말·공휴일"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekends & holidays"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "土日・祝日"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "周末及节假日"
+          }
+        }
+      }
+    },
+    "bus.timetable.count.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld회"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld departures"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld便"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld班次"
+          }
+        }
+      }
+    },
+    "bus.timetable.count.none" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "없음"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        }
+      }
+    },
+    "bus.timetable.filter.all" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部"
+          }
+        }
+      }
+    },
+    "bus.timetable.fold.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난 버스 %lld회 보기"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show %lld earlier buses"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "過去のバス%lld便を表示"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示之前的%lld班次"
+          }
+        }
+      }
+    },
+    "bus.timetable.hour.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@시"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@時"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@点"
+          }
+        }
+      }
+    },
+    "bus.timetable.hour.after_midnight.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@시 · 자정 이후"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · after midnight"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@時・深夜"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@点・午夜后"
+          }
+        }
+      }
+    },
+    "bus.timetable.footnote" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선 시간표(기점 출발) 기준이에요. 정류장 도착은 교통 상황에 따라 달라질 수 있어요."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on route departure times from the origin. Stop arrival times may vary with traffic."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路線の起点出発時刻を基準としています。停留所への到着時刻は交通状況により異なります。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时间以线路起点发车为准。到站时间可能因交通状况而异。"
+          }
+        }
+      }
+    },
+    "bus.timetable.empty.title.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에는 운행하지 않아요"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No service on %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@は運行していません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@不运营"
+          }
+        }
+      }
+    },
+    "bus.timetable.empty.detail" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 요일 탭에서 확인하세요"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check another day"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別の曜日を確認してください"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请查看其他日期"
+          }
+        }
+      }
+    },
+    "bus.timetable.empty.nodata.title.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@은 시간표가 제공되지 않아요"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No timetable is available for %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@の時刻表はありません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无%@的时刻表"
+          }
+        }
+      }
+    },
+    "bus.timetable.empty.nodata.detail" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "실시간 도착 정보로 확인하세요"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check real-time arrivals"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リアルタイム到着情報をご確認ください"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请查看实时到站信息"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

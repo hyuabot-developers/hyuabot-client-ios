@@ -16,12 +16,9 @@ private struct BusStopCoordinate {
 
 // swiftlint:disable:next type_body_length
 class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate {
-    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
-
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
     private var lastLocation: CLLocation?
-    /// Location used for the last nearest-stop pass; small GPS jitter below `nearestStopReselectDistance` is ignored.
     private var lastNearestSelectionLocation: CLLocation?
     private let nearestStopReselectDistance: CLLocationDistance = 75
     private var lastAppliedRequestGeneration = 0
@@ -30,108 +27,10 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private var latestRequestGeneration = 0
     private var lastAppliedBusInput: [BusRouteStopInput]?
     private var lastAppliedNoticeLanguage: String?
-    private lazy var cityBusTabVC = BusRealtimeTabVC(
-        tabType: .city,
-        refreshMethod: fetchBusRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showDepartureLog: openDepartureLogSheet,
-        showStopVC: openBusStopVC
-    )
-    private lazy var seoulBusTabVC = BusRealtimeTabVC(
-        tabType: .seoul,
-        refreshMethod: fetchBusRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showDepartureLog: openDepartureLogSheet,
-        showStopVC: openBusStopVC
-    )
-    private lazy var suwonBusTabVC = BusRealtimeTabVC(
-        tabType: .suwon,
-        refreshMethod: fetchBusRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showDepartureLog: openDepartureLogSheet,
-        showStopVC: openBusStopVC
-    )
-    private lazy var otherBusTabVC = BusRealtimeTabVC(
-        tabType: .other,
-        refreshMethod: fetchBusRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showDepartureLog: openDepartureLogSheet,
-        showStopVC: openBusStopVC
-    )
+    private var selectedTab: BusRealtimeType = .city
+    private let contentView = BusRealtimeContentView()
     private var subscription: Disposable?
-    private lazy var quickSettingsButton = UIButton(type: .system).then {
-        var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = Self.actionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "slider.horizontal.3")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 16,
-            weight: .semibold
-        ))
-        config.attributedTitle = AttributedString(
-            String(localized: "shuttle.quick_settings.button"),
-            attributes: AttributeContainer([
-                .font: UIFont.godo(size: 14, weight: .bold)
-            ])
-        )
-        config.imagePadding = 6
-        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 12)
-        $0.configuration = config
-        $0.addTarget(self, action: #selector(openQuickSettings), for: .touchUpInside)
-        $0.accessibilityLabel = String(localized: "bus.quick_settings.title")
-        $0.accessibilityIdentifier = "bus.quick_settings"
-    }
-
-    private lazy var quickSettingsBar = UIView().then {
-        $0.backgroundColor = .clear
-    }
-
-    private let quickSettingsBarTopBorder = UIView().then {
-        $0.backgroundColor = .separator
-    }
-
-    private lazy var quickSettingsBarLabel = UILabel().then {
-        $0.textColor = .secondaryLabel
-        $0.font = .godo(size: 13, weight: .bold)
-    }
-
-    private lazy var noticeView = NoticeCarouselView().then {
-        $0.isHidden = true
-        $0.backgroundColor = .systemBackground
-        $0.layer.cornerRadius = 10
-        $0.onNoticeTapped = { [weak self] url in
-            guard let url = URL(string: url) else { return }
-            let vc = NoticeWebVC(url: url)
-            if let sheet = vc.sheetPresentationController {
-                sheet.detents = [.large()]
-                sheet.prefersGrabberVisible = true
-            }
-            self?.present(vc, animated: true, completion: nil)
-        }
-    }
-
-    private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(
-            sizeConfiguration: .fixed(width: 125, height: 52, spacing: 0),
-            optionView: nil,
-            noticeView: self.noticeView
-        )
-        // Add the content pages to the view pager
-        viewPager.contentView.pages = [
-            cityBusTabVC.view,
-            seoulBusTabVC.view,
-            suwonBusTabVC.view,
-            otherBusTabVC.view
-        ]
-        // Add the tab titles to the view pager
-        viewPager.tabView.tabs = [
-            TabItem(title: String(localized: "bus.tab.city")),
-            TabItem(title: String(localized: "bus.tab.seoul")),
-            TabItem(title: String(localized: "bus.tab.suwon")),
-            TabItem(title: String(localized: "bus.tab.other"))
-        ]
-        return viewPager
-    }()
+    private var noticeView: NoticeCarouselView { contentView.noticeBar.carousel }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -162,34 +61,34 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         var items: [CoachMarkItem] = [
             CoachMarkItem(
                 id: "bus.tabs",
-                targetView: viewPager.tabView,
+                targetView: contentView.segmentView,
                 title: String(localized: "coach.bus.tabs.title"),
                 message: String(localized: "coach.bus.tabs.message")
             )
         ]
-        if !noticeView.isHidden {
+        if !contentView.noticeBar.isHidden {
             items.append(CoachMarkItem(
                 id: "bus.notice",
-                targetView: noticeView,
+                targetView: contentView.noticeBar,
                 title: String(localized: "coach.bus.notice.title"),
                 message: String(localized: "coach.bus.notice.message")
             ))
         }
         items.append(CoachMarkItem(
             id: "bus.header.location",
-            targetViewProvider: { [weak self] in self?.cityBusTabVC.firstSectionHeaderLocationButton },
+            targetViewProvider: { [weak self] in self?.contentView.firstCard?.stopInfoButton },
             title: String(localized: "coach.bus.header.location.title"),
             message: String(localized: "coach.bus.header.location.message")
         ))
         items.append(CoachMarkItem(
             id: "bus.footer.timetable",
-            targetViewProvider: { [weak self] in self?.cityBusTabVC.firstSectionFooterTimetableButton },
+            targetViewProvider: { [weak self] in self?.contentView.firstCard?.timetableButton },
             title: String(localized: "coach.bus.footer.timetable.title"),
             message: String(localized: "coach.bus.footer.timetable.message")
         ))
         items.append(CoachMarkItem(
             id: "bus.footer.log",
-            targetViewProvider: { [weak self] in self?.cityBusTabVC.firstSectionFooterLogButton },
+            targetViewProvider: { [weak self] in self?.contentView.firstCard?.logButton },
             title: String(localized: "coach.bus.footer.log.title"),
             message: String(localized: "coach.bus.footer.log.message")
         ))
@@ -200,15 +99,19 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         super.viewDidLoad()
         setupUI()
         observeSubjects()
+        BusRealtimeData.shared.isLoading.distinctUntilChanged().observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.render() })
+            .disposed(by: disposeBag)
+        render()
+        navigationItem.backButtonTitle = String(localized: "tabbar.bus")
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         startPolling()
-        noticeView.resumeAutoScroll()
+
         selectNearestBusStop()
         navigationController?.setNavigationBarHidden(true, animated: false)
-        updateQuickSettingsBarLabel()
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -230,38 +133,51 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         locationManager.stopUpdatingLocation()
         stopPolling()
-        noticeView.stopAutoScroll()
+
     }
 
     private func setupUI() {
-        view.addSubview(viewPager)
-        view.addSubview(quickSettingsBar)
-        quickSettingsBar.addSubview(quickSettingsBarTopBorder)
-        quickSettingsBar.addSubview(quickSettingsBarLabel)
-        quickSettingsBar.addSubview(quickSettingsButton)
-        viewPager.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.quickSettingsBar.snp.top)
+        view.backgroundColor = SettingsStyle.Color.background
+        view.addSubview(contentView)
+        contentView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        contentView.onSelectTab = { [weak self] in self?.selectedTab = $0; self?.render() }
+        contentView.onRefresh = { [weak self] in
+            AnalyticsManager.logSelect(.busRefresh)
+            self?.fetchBusRealtimeData()
         }
-        quickSettingsBar.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
-            make.height.equalTo(54)
+        contentView.onSettingsTap = { [weak self] in self?.openQuickSettings() }
+        contentView.onStopInfoTap = { [weak self] in self?.openBusStopVC($0.stopID, $0.routes) }
+        contentView.onLogTap = { [weak self] in self?.openDepartureLogSheet($0.stopID, $0.routes) }
+        contentView.onTimetableTap = { [weak self] spec in
+            self?.moveToEntireTimetable(spec)
         }
-        quickSettingsBarTopBorder.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(1 / UIScreen.main.scale)
+        contentView.noticeBar.carousel.onNoticeTapped = { [weak self] url in
+            guard let url = URL(string: url) else { return }
+            let vc = NoticeWebVC(url: url)
+            if let sheet = vc.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+            }
+            self?.present(vc, animated: true)
         }
-        quickSettingsBarLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(quickSettingsButton.snp.leading).offset(-12)
+    }
+
+    private func render() {
+        let isLoading = (try? BusRealtimeData.shared.isLoading.value()) ?? false
+        let specs = BusRealtimeSections.specs(for: selectedTab)
+        let showSecondary = BusRealtimeDisplaySettings.showsSecondaryEta
+        let contents = specs.enumerated().map { index, spec in
+            BusSectionContent(
+                routeNames: spec.routeNames,
+                stopName: spec.stopName,
+                rows: isLoading ? [] : Array(((try? BusRealtimeSections.subject(for: selectedTab, index: index)?.value()) ?? [])
+                    .compactMap { $0.rowModel(showSecondary: showSecondary) }
+                    .prefix(BusRealtimeSections.rowLimit(for: selectedTab))),
+                isLoading: isLoading
+            )
         }
-        quickSettingsButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.height.equalTo(36)
-        }
+        contentView.render(tab: selectedTab, specs: specs, contents: contents)
+
     }
 
     private func selectNearestBusStop() {
@@ -415,24 +331,20 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             BusRealtimeData.shared.busRealtimeKTXFromStation.onNext(
                 ktxFromStation.map { arrivalItems(for: $0, destinationStop: 216_000_117, showSecondary: showSecondary) } ?? []
             )
-            // Reload the table view
-            cityBusTabVC.reload()
-            seoulBusTabVC.reload()
-            suwonBusTabVC.reload()
-            otherBusTabVC.reload()
+            render()
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.onNext(false)
+            render()
+            contentView.endRefreshing()
         }).disposed(by: disposeBag)
-        BusRealtimeData.shared.notices.subscribe(onNext: { notices in
-            if !self.hasLoadedInitialNotices, notices.isEmpty {
-                self.noticeView.isHidden = false
-                self.noticeView.setLoading(true)
-            } else if notices.isEmpty {
-                self.noticeView.isHidden = true
-                self.noticeView.stopAutoScroll()
+        BusRealtimeData.shared.notices.subscribe(onNext: { [weak self] notices in
+            guard let self else { return }
+            let isLoading = !self.hasLoadedInitialNotices && notices.isEmpty
+            self.contentView.noticeBar.isHidden = notices.isEmpty && !isLoading
+            if isLoading {
+                self.contentView.noticeBar.carousel.setLoading(true)
             } else {
-                self.noticeView.isHidden = false
-                self.noticeView.setupUI(with: notices.map { Notice(title: $0.title, url: $0.url) })
+                self.contentView.noticeBar.carousel.setupUI(with: notices.map { Notice(title: $0.title, url: $0.url) })
             }
         }).disposed(by: disposeBag)
     }
@@ -485,7 +397,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     arrival: arrival,
                     destinationStop: destinationStop,
                     showSecondary: showSecondary
-                )
+                ),
+                destinationStopID: destinationStop
             )
         }
         // Parse each log time once and reuse it for both dispatch-interval detection and
@@ -554,7 +467,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     destinationStop: destinationStop,
                     showSecondary: showSecondary
                 ),
-                scheduledTime: log.time
+                scheduledTime: log.time,
+                destinationStopID: destinationStop
             )
             lastDisplayedLogDate = serviceDate
             return (item, serviceDate)
@@ -686,6 +600,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     BusRealtimeData.shared.busRealtimeData.onNext(data.bus)
                     self.hasLoadedInitialNotices = true
                     BusRealtimeData.shared.notices.onNext(data.notices.flatMap(\.notices))
+                    self.render()
                     if data.bus.isEmpty {
                         BusRealtimeData.shared.isLoading.onNext(false)
                     }
@@ -709,9 +624,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         subscription?.dispose()
     }
 
-    private func moveToEntireTimetable(_ stopID: Int32, _ routes: [Int32], _ title: String.LocalizationValue) {
+    private func moveToEntireTimetable(_ spec: BusRealtimeSectionSpec) {
         guard let nc = navigationController as? BusNC else { return }
-        nc.moveToTimetableVC(stopID: stopID, routes: routes, title: title)
+        nc.moveToTimetableVC(
+            stopID: spec.stopID, routes: spec.routes, routeNames: spec.routeNames, stopName: spec.stopName
+        )
     }
 
     private func openDepartureLogSheet(_ stopID: Int32, _ routes: [Int32]) {
@@ -750,14 +667,15 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         )
         vc.updateShowSecondaryEta = { isOn in
             BusRealtimeDisplaySettings.showsSecondaryEta = isOn
-            self.updateQuickSettingsBarLabel()
+            self.render()
             BusRealtimeData.shared.showSecondaryEta.onNext(isOn)
             self.fetchBusRealtimeData()
+            self.render()
             BusRealtimeData.shared.busRealtimeData.onNext((try? BusRealtimeData.shared.busRealtimeData.value()) ?? [])
         }
         vc.updateSeoulTarget = { target in
             BusRealtimeDisplaySettings.seoulTargetStop = target
-            self.updateQuickSettingsBarLabel()
+            self.render()
             BusRealtimeData.shared.seoulTargetStop.onNext(target)
             self.fetchBusRealtimeData()
         }
@@ -770,17 +688,6 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true)
-    }
-
-    private func updateQuickSettingsBarLabel() {
-        if BusRealtimeDisplaySettings.showsSecondaryEta {
-            quickSettingsBarLabel.text = String(
-                format: String(localized: "bus.quick_settings.action_bar.enabled"),
-                BusRealtimeDisplaySettings.seoulTargetStop.title
-            )
-        } else {
-            quickSettingsBarLabel.text = String(localized: "bus.quick_settings.action_bar.disabled")
-        }
     }
 
     private func openHelpVC() {

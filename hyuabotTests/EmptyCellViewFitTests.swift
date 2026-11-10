@@ -19,16 +19,6 @@ final class EmptyCellViewFitTests: XCTestCase {
         assertFitsContent(cell) { cell.configure($0) }
     }
 
-    func testBusRealtimeEmptyCellFitsContent() {
-        let cell = BusRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)
-        assertFitsContent(cell) { cell.configure($0) }
-    }
-
-    func testBusTimetableEmptyCellFitsContent() {
-        let cell = BusTimetableEmptyCellView(style: .default, reuseIdentifier: nil)
-        assertFitsContent(cell) { cell.configure($0) }
-    }
-
     func testContactSearchEmptyCellFitsContent() {
         let cell = ContactSearchEmptyCellView(style: .default, reuseIdentifier: nil)
         assertFitsContent(cell) { cell.configure($0) }

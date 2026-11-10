@@ -17,7 +17,7 @@ class BusHelpVC: UIViewController {
         $0.font = .godo(size: 20, weight: .bold)
         $0.textColor = .white
         $0.backgroundColor = .hanyangBlue
-        $0.textAlignment = .center
+        $0.textAlignment = .left
         $0.text = String(localized: "bus.help")
         $0.accessibilityIdentifier = "bus.help.title"
     }
@@ -44,7 +44,7 @@ class BusHelpVC: UIViewController {
         view.addSubview(helpTableView)
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(50)
         }
         helpTableView.snp.makeConstraints { make in

@@ -120,7 +120,7 @@ class BusLogVC: UIViewController {
         view.addArrangedSubview(secondLogView)
         view.addArrangedSubview(thirdLogView)
         view.isLayoutMarginsRelativeArrangement = true
-        view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+        view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 15, bottom: 20, trailing: 15)
         return view
     }()
 
@@ -153,7 +153,7 @@ class BusLogVC: UIViewController {
         view.addSubview(logView)
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(50)
         }
         logView.snp.makeConstraints { make in

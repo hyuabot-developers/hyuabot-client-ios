@@ -5,11 +5,13 @@
 
 import Foundation
 
-/// Localized display names for the stops used as GPS-widened section anchors
-/// (Seoul tab sections 1 & 2, Suwon tab section 1).
+/// Localized display names for every bus section stop.
 enum BusStopName {
     static func title(for stopID: Int32) -> String {
         switch stopID {
+        case 216_000_138: String(localized: "bus.stop.sangnoksu_exit3")
+        case 216_000_759: String(localized: "bus.stop.ansan_park_prugio")
+        case 213_000_487: String(localized: "bus.stop.ktx_gwangmyeong_exit1")
         case 216_000_379: String(localized: "bus.stop.convention")
         case 216_000_381: String(localized: "bus.stop.cluster")
         case 216_000_383: String(localized: "bus.stop.dormitory")
