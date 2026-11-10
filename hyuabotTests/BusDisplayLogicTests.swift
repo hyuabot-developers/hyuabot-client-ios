@@ -13,28 +13,19 @@ final class BusDisplayLogicTests: XCTestCase {
         ], day: .weekdays, routeFilter: nil)
         XCTAssertEqual(entries.map(\.isFirst), [true, false, false, false])
         XCTAssertEqual(entries.map(\.isLast), [false, false, false, true])
-        XCTAssertTrue(entries.allSatisfy {
-            BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: entries, isMerged: true)
-        })
+        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(isMerged: true))
         let folded = BusDisplayLogic.layout(entries: entries, isToday: true, nowMinutes: 480, expanded: false)
         XCTAssertGreaterThan(folded.hiddenPastCount, 0)
-        XCTAssertTrue(folded.groups.flatMap(\.rows).allSatisfy {
-            BusDisplayLogic.showsTimetableRouteBadge(for: $0.entry, entries: entries, isMerged: true)
-        })
-        XCTAssertTrue(entries.allSatisfy {
-            !BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: entries, isMerged: false)
-        })
+        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(isMerged: true))
+        XCTAssertFalse(BusDisplayLogic.showsTimetableRouteBadge(isMerged: false))
     }
 
     func testMergedTimetableBadgeDependsOnlyOnMergedState() {
         let entries = ["A", "B", "C"].map {
             BusTimetableEntry(route: $0, minutes: 300, isFirst: false, isLast: false)
         }
-        XCTAssertTrue(entries.allSatisfy {
-            BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: entries, isMerged: true)
-        })
-        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(for: entries[0], entries: [], isMerged: true))
-        XCTAssertFalse(BusDisplayLogic.showsTimetableRouteBadge(for: entries[0], entries: entries, isMerged: false))
+        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(isMerged: true))
+        XCTAssertFalse(BusDisplayLogic.showsTimetableRouteBadge(isMerged: false))
     }
 
     func testDepartureLogFoldingKeepsRecentPastAndHighlightsNextInEachColumn() {
@@ -178,19 +169,13 @@ final class BusDisplayLogicTests: XCTestCase {
         let merged = BusDisplayLogic.entries(items: items, day: .saturday, routeFilter: nil)
         XCTAssertEqual(merged.map(\.isFirst), [true, false, false, false])
         XCTAssertEqual(merged.map(\.isLast), [false, false, false, true])
-        XCTAssertTrue(merged.allSatisfy {
-            BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: merged, isMerged: true)
-        })
+        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(isMerged: true))
         let folded = BusDisplayLogic.layout(entries: merged, isToday: true, nowMinutes: 1400, expanded: false)
-        XCTAssertTrue(folded.groups.flatMap(\.rows).allSatisfy {
-            BusDisplayLogic.showsTimetableRouteBadge(for: $0.entry, entries: merged, isMerged: true)
-        })
+        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(isMerged: true))
         let filtered = BusDisplayLogic.entries(items: items, day: .saturday, routeFilter: "A")
         XCTAssertEqual(filtered.map(\.isFirst), [true, false])
         XCTAssertEqual(filtered.map(\.isLast), [false, true])
-        XCTAssertTrue(filtered.allSatisfy {
-            !BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: filtered, isMerged: false)
-        })
+        XCTAssertFalse(BusDisplayLogic.showsTimetableRouteBadge(isMerged: false))
         let single = BusDisplayLogic.entries(items: items, day: .sunday, routeFilter: nil)
         XCTAssertTrue(try XCTUnwrap(single.first).isFirst)
         XCTAssertTrue(try XCTUnwrap(single.first).isLast)

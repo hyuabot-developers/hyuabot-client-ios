@@ -20,7 +20,6 @@ final class BusTimetableVC: UIViewController {
     private var expanded = false
     private var isLoading = true
     private var sections: [BusTimetableHourGroup] = []
-    private var timetableEntries: [BusTimetableEntry] = []
     private var hiddenPastCount = 0
     private var showsCard = false
     private let tableView = UITableView(frame: .zero, style: .grouped)
@@ -163,7 +162,6 @@ final class BusTimetableVC: UIViewController {
         let today = BusDisplayLogic.today(date: now, tabs: tabs, calendar: calendar)
         let selected = day.flatMap { tabs.contains($0) ? $0 : nil } ?? today
         let entries = BusDisplayLogic.entries(items: items, day: selected, routeFilter: filter, calendar: calendar)
-        timetableEntries = entries
         let layout = BusDisplayLogic.layout(
             entries: entries, isToday: selected == today,
             nowMinutes: BusDisplayLogic.serviceMinutes(of: now, calendar: calendar), expanded: expanded
@@ -243,9 +241,11 @@ extension BusTimetableVC: UITableViewDataSource, UITableViewDelegate {
         ) as? BusTimetableRowCell else { return UITableViewCell() }
         let row = sections[indexPath.section].rows[indexPath.row]
         let isMerged = routeNames.count > 1 && filter == nil
-        cell.configure(row, showsRouteBadge: BusDisplayLogic.showsTimetableRouteBadge(
-            for: row.entry, entries: timetableEntries, isMerged: isMerged
-        ), roundsBottom: indexPath.section == sections.count - 1 && indexPath.row == sections[indexPath.section].rows.count - 1)
+        let isLastRow = indexPath.section == sections.count - 1
+            && indexPath.row == sections[indexPath.section].rows.count - 1
+        cell.configure(
+            row, showsRouteBadge: BusDisplayLogic.showsTimetableRouteBadge(isMerged: isMerged), roundsBottom: isLastRow
+        )
         return cell
     }
 

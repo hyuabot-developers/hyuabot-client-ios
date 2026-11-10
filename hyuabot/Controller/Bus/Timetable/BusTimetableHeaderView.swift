@@ -180,6 +180,10 @@ final class BusTimetableHeaderView: UIView {
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
         config.baseForegroundColor = selected ? SettingsStyle.Color.onAccent : SettingsStyle.Color.text
+        config.background.backgroundColor = selected ? SettingsStyle.Color.accent : SettingsStyle.Color.card
+        config.background.cornerRadius = 16
+        config.background.strokeWidth = 1
+        config.background.strokeColor = selected ? SettingsStyle.Color.accent : SettingsStyle.Color.busChipLine
         let button = UIButton(configuration: config)
         button.setAttributedTitle(SettingsStyle.attributedText(
             title,
@@ -187,10 +191,6 @@ final class BusTimetableHeaderView: UIView {
             color: selected ? SettingsStyle.Color.onAccent : SettingsStyle.Color.text,
             lineHeight: 20
         ), for: .normal)
-        button.backgroundColor = selected ? SettingsStyle.Color.accent : SettingsStyle.Color.card
-        button.layer.cornerRadius = 16
-        button.layer.borderWidth = 1
-        button.layer.borderColor = (selected ? SettingsStyle.Color.accent : SettingsStyle.Color.busChipLine).cgColor
         button.snp.makeConstraints { $0.height.equalTo(32) }
         button.addAction(UIAction { [weak self] _ in self?.onSelectFilter?(route) }, for: .touchUpInside)
         return button

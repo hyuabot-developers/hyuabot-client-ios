@@ -202,8 +202,7 @@ enum BusDisplayLogic {
         }
     }
 
-    /// Uses the complete, sorted service-day timetable, including folded past departures.
-    static func showsTimetableRouteBadge(for entry: BusTimetableEntry, entries: [BusTimetableEntry], isMerged: Bool) -> Bool {
+    static func showsTimetableRouteBadge(isMerged: Bool) -> Bool {
         isMerged
     }
 

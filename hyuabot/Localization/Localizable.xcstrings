@@ -406,34 +406,6 @@
         }
       }
     },
-    "bus.first.last.%@.%@.%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(To %1$@) %2$@ ~ %3$@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(%1$@ 行き) %2$@ 〜 %3$@"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(%1$@ 행) %2$@ ~ %3$@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(开往%1$@) %2$@ ~ %3$@"
-          }
-        }
-      }
-    },
     "bus.help" : {
       "localizations" : {
         "en" : {
@@ -1394,34 +1366,6 @@
         }
       }
     },
-    "bus.stop.first.last" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First & Last Time"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路線別 始発 & 終発"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "노선별 첫차 & 막차"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "各路线首末班次"
-          }
-        }
-      }
-    },
     "bus.stop.gangnam" : {
       "localizations" : {
         "en" : {
@@ -1758,34 +1702,6 @@
         }
       }
     },
-    "bus.timetable.empty" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Timetable not provided"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時刻表が提供されていない路線です。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시간표가 제공되지 않는 노선입니다."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该路线不提供时刻表。"
-          }
-        }
-      }
-    },
     "bus.timetable.saturdays" : {
       "localizations" : {
         "en" : {
@@ -1838,34 +1754,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "周日"
-          }
-        }
-      }
-    },
-    "bus.timetable.time.%lld.%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%02lld:%02lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%02lld時%02lld分"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%02lld시 %02lld분 "
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%02lld:%02lld"
           }
         }
       }
