@@ -70,7 +70,7 @@ extension BusQuickSettingsVC {
         )
         title.adjustsFontForContentSizeCategory = true
 
-        let header = UIStackView(arrangedSubviews: [title, closeButton()])
+        let header = UIStackView(arrangedSubviews: [title])
         header.axis = .horizontal
         header.alignment = .center
         header.distribution = .equalSpacing
@@ -83,27 +83,6 @@ extension BusQuickSettingsVC {
         contentStack.addArrangedSubview(header)
         contentStack.addArrangedSubview(settingsGroup())
         contentStack.addArrangedSubview(actionButtonsRow())
-    }
-
-    private func closeButton() -> UIButton {
-        let button = UIButton(type: .system)
-        var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = SettingsStyle.Color.segmentBackground
-        config.background.cornerRadius = 15
-        config.baseForegroundColor = SettingsStyle.Color.secondaryText
-        config.image = UIImage(systemName: "xmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .bold))
-        config.contentInsets = NSDirectionalEdgeInsets(top: 7, leading: 7, bottom: 7, trailing: 7)
-        button.configuration = config
-        button.accessibilityLabel = String(localized: "close")
-        button.accessibilityIdentifier = "bus.quick_settings.close"
-        button.addTarget(self, action: #selector(onTapClose), for: .touchUpInside)
-        button.snp.makeConstraints { make in make.size.equalTo(44) }
-        return button
-    }
-
-    @objc
-    private func onTapClose() {
-        dismiss(animated: true)
     }
 
     private func actionButtonsRow() -> UIStackView {

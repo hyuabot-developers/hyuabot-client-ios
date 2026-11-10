@@ -4,30 +4,18 @@
 //
 
 import Api
-import RxSwift
 import UIKit
 
 class BusFirstLastCellView: UITableViewCell {
     static let reuseIdentifier = "BusFirstLastCellView"
-    private let busRouteLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
-    }
-
-    private let busUpTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-    }
-
-    private let busDownTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-    }
-
-    private lazy var busTimeStackView = UIStackView().then {
-        $0.addArrangedSubview(self.busUpTimeLabel)
-        $0.addArrangedSubview(self.busDownTimeLabel)
-        $0.axis = .vertical
-        $0.alignment = .trailing
-        $0.spacing = 10
-    }
+    private let card = UIView()
+    private let routeBadge = BusRouteBadgeView(size: .small)
+    private let upDestination = UILabel()
+    private let downDestination = UILabel()
+    private let upTime = UILabel()
+    private let downTime = UILabel()
+    private let noTimetableLabel = UILabel()
+    private let directions = UIStackView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -39,52 +27,74 @@ class BusFirstLastCellView: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setupUI() {
-        contentView.addSubview(busRouteLabel)
-        contentView.addSubview(busTimeStackView)
+    private func setupUI() {
+        backgroundColor = .clear
         selectionStyle = .none
-        busRouteLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
+        card.backgroundColor = SettingsStyle.Color.card
+        card.layer.cornerRadius = 16
+        contentView.addSubview(card)
+        card.snp.makeConstraints { make in
+            make.horizontalEdges.top.equalToSuperview()
+            make.bottom.equalToSuperview().inset(10)
         }
-        busTimeStackView.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
+        directions.axis = .vertical
+        directions.spacing = 6
+        directions.addArrangedSubview(directionRow(destination: upDestination, time: upTime))
+        directions.addArrangedSubview(directionRow(destination: downDestination, time: downTime))
+        noTimetableLabel.text = String(localized: "bus.stop.no_timetable")
+        noTimetableLabel.font = SettingsStyle.font(14)
+        noTimetableLabel.textColor = SettingsStyle.Color.secondaryText
+        noTimetableLabel.numberOfLines = 0
+        let details = UIStackView(arrangedSubviews: [directions, noTimetableLabel])
+        details.axis = .vertical
+        let stack = UIStackView(arrangedSubviews: [routeBadge, details])
+        stack.alignment = .top
+        stack.spacing = 8
+        card.addSubview(stack)
+        stack.snp.makeConstraints { make in
+            make.verticalEdges.equalToSuperview().inset(14)
+            make.horizontalEdges.equalToSuperview().inset(20)
+        }
+        accessibilityIdentifier = "bus.stop.route_timetable"
+    }
+
+    private func directionRow(destination: UILabel, time: UILabel) -> UIStackView {
+        destination.font = SettingsStyle.font(14)
+        destination.textColor = SettingsStyle.Color.secondaryText
+        destination.numberOfLines = 1
+        destination.lineBreakMode = .byTruncatingTail
+        destination.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        time.font = .monospacedDigitSystemFont(ofSize: 15, weight: .bold)
+        time.textColor = SettingsStyle.Color.text
+        time.setContentCompressionResistancePriority(.required, for: .horizontal)
+        time.textAlignment = .right
+        time.setContentHuggingPriority(.required, for: .horizontal)
+        let row = UIStackView(arrangedSubviews: [destination, time])
+        row.alignment = .center
+        row.spacing = 6
+        return row
+    }
+
+    private func setDestination(_ name: String, on label: UILabel) {
+        let format = String(localized: "bus.stop.destination_format")
+        let text = String(format: format, name)
+        label.text = text
+        Task { [weak label] in
+            let translated = await KoreanTextTranslator.shared.translate(name)
+            guard let label, label.text == text else { return }
+            label.text = String(format: format, translated)
         }
     }
 
     func setupUI(item: BusStopDialogQuery.Data.Bus) {
-        busRouteLabel.text = item.route.name
-        setRouteColor(routeName: item.route.name)
-        setUITimeLabel(item: item)
-    }
-
-    func setRouteColor(routeName: String) {
-        if routeName == "10-1" || routeName == "50" {
-            busRouteLabel.textColor = .busGreen
-        } else {
-            busRouteLabel.textColor = .busRed
-        }
-    }
-
-    func setUITimeLabel(item: BusStopDialogQuery.Data.Bus) {
-        let upFirst = item.route.runningTime.up.first.substring(from: 0, to: 4)
-        let upLast = item.route.runningTime.up.last.substring(from: 0, to: 4)
-        let downFirst = item.route.runningTime.down.first.substring(from: 0, to: 4)
-        let downLast = item.route.runningTime.down.last.substring(from: 0, to: 4)
-
-        busUpTimeLabel.setKoreanTranslatedText(String(
-            format: String(localized: "bus.first.last.%@.%@.%@"),
-            item.route.runningTime.up.terminal.name,
-            upFirst,
-            upLast
-        ))
-        busDownTimeLabel.setKoreanTranslatedText(String(
-            format: String(localized: "bus.first.last.%@.%@.%@"),
-            item.route.runningTime.down.terminal.name,
-            downFirst,
-            downLast
-        ))
+        routeBadge.configure(route: item.route.name)
+        setDestination(item.route.runningTime.up.terminal.name, on: upDestination)
+        setDestination(item.route.runningTime.down.terminal.name, on: downDestination)
+        let times = [item.route.runningTime.up.first, item.route.runningTime.up.last,
+                     item.route.runningTime.down.first, item.route.runningTime.down.last].map(BusDisplayLogic.clockText)
+        upTime.text = "\(times[0])–\(times[1])"
+        downTime.text = "\(times[2])–\(times[3])"
+        directions.isHidden = times.allSatisfy { $0 == "—" }
+        noTimetableLabel.isHidden = !directions.isHidden
     }
 }

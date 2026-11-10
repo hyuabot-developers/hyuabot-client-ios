@@ -19,8 +19,8 @@ final class BusSectionCardView: UIView {
     var onTimetableTap: (() -> Void)?
     var onLogTap: (() -> Void)?
     let stopInfoButton = UIButton(type: .system)
-    let timetableButton = UIButton(type: .system)
-    let logButton = UIButton(type: .system)
+    let timetableButton = BusSectionFooterButton()
+    let logButton = BusSectionFooterButton()
     private let header = UIView()
     private let badgeStack = UIStackView()
     private let stopLabel = UILabel()
@@ -42,7 +42,7 @@ final class BusSectionCardView: UIView {
         footer.snp.makeConstraints {
             $0.top.equalTo(bodyStack.snp.bottom)
             $0.leading.trailing.bottom.equalToSuperview()
-            $0.height.equalTo(44)
+            $0.height.greaterThanOrEqualTo(44)
         }
         setupHeader()
         configureButtonTargets()
@@ -80,7 +80,7 @@ final class BusSectionCardView: UIView {
         stopLabel.numberOfLines = 1
         stopLabel.lineBreakMode = .byTruncatingTail
         stopLabel.accessibilityTraits = .header
-        let symbol = UIImage.SymbolConfiguration(pointSize: 19, weight: .medium)
+        let symbol = UIImage.SymbolConfiguration(pointSize: 15, weight: .regular)
         stopInfoButton.setImage(UIImage(systemName: "info.circle", withConfiguration: symbol), for: .normal)
         stopInfoButton.tintColor = SettingsStyle.Color.secondaryText
         stopInfoButton.accessibilityIdentifier = "bus.section.stopInfo"
@@ -187,7 +187,6 @@ final class BusSectionCardView: UIView {
         let footer = UIView()
         let top = UIView().then { $0.backgroundColor = SettingsStyle.Color.separator }
         let vertical = UIView().then { $0.backgroundColor = SettingsStyle.Color.separator }
-        [timetableButton, logButton].forEach { $0.configuration = footerConfiguration() }
         timetableButton.accessibilityIdentifier = "bus.section.timetable"
         logButton.accessibilityIdentifier = "bus.section.log"
         setButton(timetableButton, title: String(localized: "bus.show.entire.timetable"), image: "clock")
@@ -213,23 +212,33 @@ final class BusSectionCardView: UIView {
         return footer
     }
 
-    private func footerConfiguration() -> UIButton.Configuration {
-        var config = UIButton.Configuration.plain(); config.imagePadding = 6
-        config.baseForegroundColor = SettingsStyle.Color.link
-        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-            var attributes = incoming
-            attributes.font = UIFontMetrics(forTextStyle: .subheadline).scaledFont(
-                for: .systemFont(ofSize: 14, weight: .semibold)
-            )
-            return attributes
-        }
-        return config
-    }
-
     private func setButton(_ button: UIButton, title: String, image: String) {
-        var config = button.configuration ?? .plain(); config.title = title
-        config.image = UIImage(systemName: image, withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .medium))
-        config.imagePlacement = .leading; config.imagePadding = 6; button.configuration = config
+        let symbol = UIImage.SymbolConfiguration(pointSize: 13, weight: .bold)
+        let icon = UIImageView(image: UIImage(systemName: image, withConfiguration: symbol))
+        icon.tintColor = SettingsStyle.Color.link
+        icon.contentMode = .center
+        let label = UILabel()
+        label.text = title
+        label.font = SettingsStyle.font(13, bold: true)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = SettingsStyle.Color.link
+        let stack = UIStackView(arrangedSubviews: [icon, label])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 6
+        stack.isUserInteractionEnabled = false
+        stack.isAccessibilityElement = false
+        button.accessibilityLabel = title
+        button.addSubview(stack)
+        stack.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.top.greaterThanOrEqualToSuperview().inset(8)
+            $0.bottom.lessThanOrEqualToSuperview().inset(8)
+            $0.top.equalToSuperview().inset(8).priority(.high)
+            $0.leading.greaterThanOrEqualToSuperview().inset(8)
+            $0.trailing.lessThanOrEqualToSuperview().inset(8)
+        }
+        (button as? BusSectionFooterButton)?.contentView = stack
     }
 
     private func configureButtonTargets() {
@@ -255,4 +264,13 @@ final class BusSectionCardView: UIView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+/// Footer action button whose overlaid icon/label stack dims while pressed.
+final class BusSectionFooterButton: UIButton {
+    weak var contentView: UIView?
+
+    override var isHighlighted: Bool {
+        didSet { contentView?.alpha = isHighlighted ? 0.4 : 1 }
+    }
 }

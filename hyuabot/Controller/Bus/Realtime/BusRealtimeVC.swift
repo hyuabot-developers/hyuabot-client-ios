@@ -104,6 +104,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             .disposed(by: disposeBag)
         render()
         navigationItem.backButtonTitle = String(localized: "tabbar.bus")
+        // Pushed screens (e.g. the timetable) show only the back chevron.
+        navigationItem.backButtonDisplayMode = .minimal
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -632,7 +634,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func openDepartureLogSheet(_ stopID: Int32, _ routes: [Int32]) {
-        let vc = BusLogVC(stopID: stopID, routes: routes)
+        let spec = BusRealtimeSections.specs(for: selectedTab).first { $0.stopID == stopID && $0.routes == routes }
+        let vc = BusLogVC(stopID: stopID, routes: routes, routeNames: spec?.routeNames ?? [], stopName: spec?.stopName ?? "")
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true

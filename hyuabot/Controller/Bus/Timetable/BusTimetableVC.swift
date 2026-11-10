@@ -20,12 +20,12 @@ final class BusTimetableVC: UIViewController {
     private var expanded = false
     private var isLoading = true
     private var sections: [BusTimetableHourGroup] = []
+    private var timetableEntries: [BusTimetableEntry] = []
     private var hiddenPastCount = 0
     private var showsCard = false
-    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let tableView = UITableView(frame: .zero, style: .grouped)
     private let headerView = BusTimetableHeaderView()
     private let footerView = BusTimetableCardFooterView()
-    private let compactBar = SubwayCompactBarView(maxTitleWidth: nil)
 
     init(stopID: Int32, routes: [Int32], routeNames: [String], stopName: String) {
         self.stopID = stopID
@@ -71,6 +71,8 @@ final class BusTimetableVC: UIViewController {
         tableView.backgroundColor = SettingsStyle.Color.background
         tableView.separatorStyle = .none
         tableView.sectionHeaderTopPadding = 0
+        tableView.sectionFooterHeight = 0
+        tableView.estimatedSectionFooterHeight = 0
         tableView.rowHeight = BusTimetableRowCell.rowHeight
         tableView.estimatedRowHeight = BusTimetableRowCell.rowHeight
         tableView.accessibilityIdentifier = "bus.timetable.table"
@@ -82,13 +84,6 @@ final class BusTimetableVC: UIViewController {
         tableView.snp.makeConstraints { $0.edges.equalToSuperview() }
         tableView.tableHeaderView = headerView
         tableView.tableFooterView = footerView
-        view.addSubview(compactBar)
-        compactBar.setTitle(stopName)
-        compactBar.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(44)
-        }
         headerView.onSelectDay = { [weak self] day in
             guard let self else { return }
             self.day = day
@@ -112,19 +107,19 @@ final class BusTimetableVC: UIViewController {
     }
 
     private func configureNavigationBar() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = .clear
-        appearance.shadowColor = .clear
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.clear]
-        appearance.backButtonAppearance.normal.titleTextAttributes = [
-            .foregroundColor: SettingsStyle.Color.link,
-            .font: SettingsStyle.font(16)
-        ]
-        navigationItem.title = ""
-        navigationItem.standardAppearance = appearance
-        navigationItem.scrollEdgeAppearance = appearance
-        navigationItem.compactAppearance = appearance
+        let scrolledAppearance = UINavigationBarAppearance()
+        scrolledAppearance.configureWithDefaultBackground()
+        scrolledAppearance.titleTextAttributes = [.foregroundColor: SettingsStyle.Color.text]
+        let edgeAppearance = UINavigationBarAppearance()
+        edgeAppearance.configureWithTransparentBackground()
+        edgeAppearance.backgroundColor = .clear
+        edgeAppearance.shadowColor = .clear
+        edgeAppearance.titleTextAttributes = [.foregroundColor: UIColor.clear]
+        navigationItem.title = stopName
+        navigationItem.standardAppearance = scrolledAppearance
+        navigationItem.compactAppearance = scrolledAppearance
+        navigationItem.scrollEdgeAppearance = edgeAppearance
+        navigationItem.compactScrollEdgeAppearance = edgeAppearance
         navigationController?.navigationBar.tintColor = SettingsStyle.Color.link
     }
 
@@ -168,6 +163,7 @@ final class BusTimetableVC: UIViewController {
         let today = BusDisplayLogic.today(date: now, tabs: tabs, calendar: calendar)
         let selected = day.flatMap { tabs.contains($0) ? $0 : nil } ?? today
         let entries = BusDisplayLogic.entries(items: items, day: selected, routeFilter: filter, calendar: calendar)
+        timetableEntries = entries
         let layout = BusDisplayLogic.layout(
             entries: entries, isToday: selected == today,
             nowMinutes: BusDisplayLogic.serviceMinutes(of: now, calendar: calendar), expanded: expanded
@@ -245,13 +241,21 @@ extension BusTimetableVC: UITableViewDataSource, UITableViewDelegate {
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: BusTimetableRowCell.reuseIdentifier, for: indexPath
         ) as? BusTimetableRowCell else { return UITableViewCell() }
-        cell.configure(sections[indexPath.section].rows[indexPath.row], showsRouteBadge: routeNames.count > 1)
+        let row = sections[indexPath.section].rows[indexPath.row]
+        let isMerged = routeNames.count > 1 && filter == nil
+        cell.configure(row, showsRouteBadge: BusDisplayLogic.showsTimetableRouteBadge(
+            for: row.entry, entries: timetableEntries, isMerged: isMerged
+        ), roundsBottom: indexPath.section == sections.count - 1 && indexPath.row == sections[indexPath.section].rows.count - 1)
         return cell
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         BusTimetableHourHeaderView.height(isFirst: section == 0)
     }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat { .leastNonzeroMagnitude }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? { UIView() }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let header = tableView.dequeueReusableHeaderFooterView(
@@ -262,11 +266,5 @@ extension BusTimetableVC: UITableViewDataSource, UITableViewDelegate {
             roundsTop: section == 0 && hiddenPastCount == 0
         )
         return header
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        compactBar.setRevealProgress(SubwayCompactBarView.revealProgress(
-            contentOffsetY: tableView.contentOffset.y, adjustedTopInset: tableView.adjustedContentInset.top
-        ))
     }
 }

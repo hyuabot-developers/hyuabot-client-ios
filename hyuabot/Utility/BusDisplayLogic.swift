@@ -57,12 +57,55 @@ struct BusTimetableLayout: Equatable {
     let hiddenPastCount: Int
 }
 
+struct BusDepartureLogRowModel: Equatable {
+    let time: String
+    let isPast: Bool
+    let isNext: Bool
+}
+
+struct BusDepartureLogLayout: Equatable {
+    let columns: [[BusDepartureLogRowModel]]
+    let hiddenPastCount: Int
+}
+
 enum BusDisplayLogic {
     static let serviceCalendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
         return calendar
     }()
+
+    static func clockText(_ value: String) -> String {
+        let parts = value.split(separator: ":")
+        guard parts.count >= 2, let hour = Int(parts[0]), let minute = Int(parts[1]),
+              (0...47).contains(hour), (0...59).contains(minute) else { return "—" }
+        return String(format: "%02d:%02d", hour, minute)
+    }
+
+    static func departureLogs(columns: [[String]], nowMinutes: Int, expanded: Bool) -> BusDepartureLogLayout {
+        var hiddenCount = 0
+        let rows = columns.map { times in
+            let minutes = times.compactMap { value -> Int? in
+                let text = clockText(value)
+                let parts = text.split(separator: ":")
+                guard parts.count == 2, let hour = Int(parts[0]), let minute = Int(parts[1]) else { return nil }
+                return hour * 60 + minute + (hour < 4 ? 1440 : 0)
+            }.sorted()
+            let next = minutes.firstIndex { $0 >= nowMinutes }
+            let hidden = expanded ? 0 : minutes.filter { $0 < nowMinutes - 60 }.count
+            hiddenCount += hidden
+            return minutes.enumerated().compactMap { index, minute -> BusDepartureLogRowModel? in
+                if !expanded && minute < nowMinutes - 60 {
+                    return nil
+                }
+                return BusDepartureLogRowModel(
+                    time: String(format: "%02d:%02d", (minute / 60) % 24, minute % 60),
+                    isPast: minute < nowMinutes, isNext: index == next
+                )
+            }
+        }
+        return BusDepartureLogLayout(columns: rows, hiddenPastCount: hiddenCount)
+    }
 
     static func routeColor(_ route: String) -> UIColor {
         ["10-1", "50"].contains(route) ? .busGreen : .busRed
@@ -142,16 +185,26 @@ enum BusDisplayLogic {
         case .sunday: source = "sunday"
         }
         let selected = items.filter { $0.weekdays == source && (routeFilter == nil || $0.route == routeFilter) }
-        let values = selected.map { ($0, serviceMinutes(of: $0.time, calendar: calendar)) }
-        return values.map { item, minute in
-            let routeValues = values.filter { $0.0.route == item.route }.map(\.1)
-            return BusTimetableEntry(
-                route: item.route,
-                minutes: minute,
-                isFirst: minute == routeValues.min(),
-                isLast: minute == routeValues.max()
+        let departures: [(route: String, minutes: Int)] = selected.map { item in
+            (route: item.route, minutes: serviceMinutes(of: item.time, calendar: calendar))
+        }
+        let sorted = departures.sorted { lhs, rhs in
+            lhs.minutes == rhs.minutes ? lhs.route < rhs.route : lhs.minutes < rhs.minutes
+        }
+        let lastIndex = sorted.count - 1
+        return sorted.enumerated().map { index, departure in
+            BusTimetableEntry(
+                route: departure.route,
+                minutes: departure.minutes,
+                isFirst: index == 0,
+                isLast: index == lastIndex
             )
-        }.sorted { $0.minutes == $1.minutes ? $0.route < $1.route : $0.minutes < $1.minutes }
+        }
+    }
+
+    /// Uses the complete, sorted service-day timetable, including folded past departures.
+    static func showsTimetableRouteBadge(for entry: BusTimetableEntry, entries: [BusTimetableEntry], isMerged: Bool) -> Bool {
+        isMerged
     }
 
     static func layout(entries: [BusTimetableEntry], isToday: Bool, nowMinutes: Int, expanded: Bool) -> BusTimetableLayout {

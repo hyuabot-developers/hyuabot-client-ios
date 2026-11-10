@@ -106,7 +106,10 @@ final class BusTimetableHeaderView: UIView {
         titleRow.layoutMargins = .zero
         titleRow.insetsLayoutMarginsFromSafeArea = false
         badgeStack.axis = .horizontal
+        badgeStack.alignment = .center
         badgeStack.spacing = 4
+        badgeStack.setContentHuggingPriority(.required, for: .horizontal)
+        badgeStack.setContentCompressionResistancePriority(.required, for: .horizontal)
         titleRow.addArrangedSubview(badgeStack)
         titleLabel.numberOfLines = 1
         titleLabel.lineBreakMode = .byTruncatingTail
@@ -372,23 +375,19 @@ final class BusTimetableHourHeaderView: UITableViewHeaderFooterView {
 }
 
 final class BusTimetableCardFooterView: UIView {
-    private let cardStrip = UIView()
     private let footnote = UILabel()
     private let stack = UIStackView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         stack.axis = .vertical
-        stack.alignment = .center
-        stack.spacing = 12
+        stack.alignment = .fill
+        stack.spacing = 0
+        stack.layoutMargins = UIEdgeInsets(top: 8, left: 0, bottom: 0, right: 0)
+        stack.isLayoutMarginsRelativeArrangement = true
         addSubview(stack)
         stack.snp.makeConstraints { $0.top.leading.trailing.equalToSuperview(); $0.bottom.equalToSuperview().inset(40) }
-        cardStrip.backgroundColor = SettingsStyle.Color.card
-        cardStrip.layer.cornerRadius = 16
-        cardStrip.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        stack.addArrangedSubview(cardStrip)
-        cardStrip.snp.makeConstraints { $0.height.equalTo(8); $0.leading.trailing.equalToSuperview().inset(20) }
-        footnote.numberOfLines = 0
+        footnote.numberOfLines = 1
         footnote.adjustsFontForContentSizeCategory = true
         footnote.attributedText = SettingsStyle.attributedText(
             String(localized: "bus.timetable.footnote"),
@@ -396,6 +395,7 @@ final class BusTimetableCardFooterView: UIView {
             color: SettingsStyle.Color.commuterFaint,
             lineHeight: 16
         )
+        footnote.lineBreakMode = .byTruncatingTail
         stack.addArrangedSubview(footnote)
         footnote.snp.makeConstraints { $0.leading.trailing.equalToSuperview().inset(20) }
     }
@@ -403,7 +403,7 @@ final class BusTimetableCardFooterView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(showsCard: Bool) { cardStrip.isHidden = !showsCard }
+    func configure(showsCard: Bool) { stack.layoutMargins.top = showsCard ? 8 : 0 }
 
     static func height(showsCard: Bool, width: CGFloat) -> CGFloat {
         let view = BusTimetableCardFooterView()

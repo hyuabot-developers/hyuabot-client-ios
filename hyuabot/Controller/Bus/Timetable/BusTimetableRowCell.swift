@@ -16,7 +16,7 @@ final class BusTimetableRowCell: UITableViewCell {
     private let timeLabel = UILabel()
     private let spacer = UIView()
     private let chipsStack = UIStackView()
-    private var routeBadge: BusRouteBadgeView?
+    private let routeBadge = BusRouteBadgeView(size: .timetable)
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -31,6 +31,9 @@ final class BusTimetableRowCell: UITableViewCell {
         }
         rowStack.axis = .horizontal
         rowStack.alignment = .center
+        routeBadge.setContentHuggingPriority(.required, for: .horizontal)
+        routeBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        rowStack.addArrangedSubview(routeBadge)
         rowStack.addArrangedSubview(timeLabel)
         rowStack.addArrangedSubview(spacer)
         rowStack.addArrangedSubview(chipsStack)
@@ -50,17 +53,12 @@ final class BusTimetableRowCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(_ row: BusTimetableRowModel, showsRouteBadge: Bool) {
-        routeBadge?.removeFromSuperview()
-        routeBadge = nil
-        if showsRouteBadge {
-            let badge = BusRouteBadgeView(size: .timetable)
-            badge.configure(route: row.entry.route)
-            rowStack.insertArrangedSubview(badge, at: 0)
-            rowStack.setCustomSpacing(6, after: badge)
-            routeBadge = badge
-        }
-        rowStack.spacing = showsRouteBadge ? 6 : 12
+    func configure(_ row: BusTimetableRowModel, showsRouteBadge: Bool, roundsBottom: Bool = false) {
+        container.layer.cornerRadius = roundsBottom ? 16 : 0
+        container.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        routeBadge.isHidden = !showsRouteBadge
+        routeBadge.configure(route: row.entry.route)
+        rowStack.spacing = 12
         let timeColor: UIColor
         switch row.state {
         case .past: timeColor = SettingsStyle.Color.subwayPast

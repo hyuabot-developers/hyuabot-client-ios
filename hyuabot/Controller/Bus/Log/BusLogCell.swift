@@ -3,19 +3,24 @@
 //  hyuabot
 //
 
-import Api
-import RxSwift
 import UIKit
 
 class BusLogCell: UITableViewCell {
     static let reuseIdentifier = "BusLogCell"
-    private let busTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-    }
+    private let busTimeLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupUI()
+        selectionStyle = .none
+        contentView.addSubview(busTimeLabel)
+        busTimeLabel.textAlignment = .center
+        busTimeLabel.layer.cornerRadius = 8
+        busTimeLabel.clipsToBounds = true
+        busTimeLabel.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(4)
+            make.verticalEdges.equalToSuperview().inset(2)
+        }
+        isAccessibilityElement = true
     }
 
     @available(*, unavailable)
@@ -23,23 +28,15 @@ class BusLogCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setupUI() {
-        contentView.addSubview(busTimeLabel)
-        selectionStyle = .none
-        busTimeLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-    }
-
-    func setupUI(index: Int, item: BusDepartureLogDialogQuery.Data.Bus.Log) {
-        let departureTime = item.time.substring(from: 0, to: 4)
-        busTimeLabel.text = departureTime
-        if index.isMultiple(of: 2) {
-            backgroundColor = .secondarySystemBackground
-            busTimeLabel.textColor = .label
-        } else {
-            backgroundColor = .systemBackground
-            busTimeLabel.textColor = .label
-        }
+    func configure(_ row: BusDepartureLogRowModel) {
+        backgroundColor = .clear
+        busTimeLabel.text = row.time
+        busTimeLabel.font = SettingsStyle.monospacedDigitFont(17, bold: !row.isPast)
+        busTimeLabel.textColor = row.isNext ? SettingsStyle.Color.accent
+            : row.isPast ? SettingsStyle.Color.secondaryText : SettingsStyle.Color.text
+        busTimeLabel.backgroundColor = row.isNext ? SettingsStyle.Color.accentFill : .clear
+        accessibilityLabel = row.isNext
+            ? String(format: String(localized: "bus.log.next.%@"), row.time) : row.time
+        accessibilityIdentifier = row.isNext ? "bus.log.next" : "bus.log.time"
     }
 }

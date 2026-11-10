@@ -6,6 +6,64 @@ import XCTest
 @testable import hyuabot
 
 final class BusDisplayLogicTests: XCTestCase {
+    func testMergedTimetableShowsRouteBadgeOnEveryRowAndChipsOnlyAtUnionEndpoints() throws {
+        let entries = BusDisplayLogic.entries(items: [
+            try item("A", "weekdays", 5, 0), try item("A", "weekdays", 8, 0),
+            try item("B", "weekdays", 6, 0), try item("B", "weekdays", 0, 30)
+        ], day: .weekdays, routeFilter: nil)
+        XCTAssertEqual(entries.map(\.isFirst), [true, false, false, false])
+        XCTAssertEqual(entries.map(\.isLast), [false, false, false, true])
+        XCTAssertTrue(entries.allSatisfy {
+            BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: entries, isMerged: true)
+        })
+        let folded = BusDisplayLogic.layout(entries: entries, isToday: true, nowMinutes: 480, expanded: false)
+        XCTAssertGreaterThan(folded.hiddenPastCount, 0)
+        XCTAssertTrue(folded.groups.flatMap(\.rows).allSatisfy {
+            BusDisplayLogic.showsTimetableRouteBadge(for: $0.entry, entries: entries, isMerged: true)
+        })
+        XCTAssertTrue(entries.allSatisfy {
+            !BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: entries, isMerged: false)
+        })
+    }
+
+    func testMergedTimetableBadgeDependsOnlyOnMergedState() {
+        let entries = ["A", "B", "C"].map {
+            BusTimetableEntry(route: $0, minutes: 300, isFirst: false, isLast: false)
+        }
+        XCTAssertTrue(entries.allSatisfy {
+            BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: entries, isMerged: true)
+        })
+        XCTAssertTrue(BusDisplayLogic.showsTimetableRouteBadge(for: entries[0], entries: [], isMerged: true))
+        XCTAssertFalse(BusDisplayLogic.showsTimetableRouteBadge(for: entries[0], entries: entries, isMerged: false))
+    }
+
+    func testDepartureLogFoldingKeepsRecentPastAndHighlightsNextInEachColumn() {
+        let columns = [["05:00:00", "13:59:00", "14:00:00", "14:59:00", "15:00:00", "15:30:00"],
+                       ["05:30:00", "14:30:00", "15:10:00"], []]
+        let layout = BusDisplayLogic.departureLogs(columns: columns, nowMinutes: 900, expanded: false)
+        XCTAssertEqual(layout.hiddenPastCount, 3)
+        XCTAssertEqual(layout.columns[0].map(\.time), ["14:00", "14:59", "15:00", "15:30"])
+        XCTAssertEqual(layout.columns[0].filter(\.isNext).map(\.time), ["15:00"])
+        XCTAssertEqual(layout.columns[1].filter(\.isNext).map(\.time), ["15:10"])
+        XCTAssertTrue(layout.columns[0][0].isPast)
+        XCTAssertFalse(layout.columns[0][2].isPast)
+        XCTAssertTrue(layout.columns[2].isEmpty)
+        let expanded = BusDisplayLogic.departureLogs(columns: columns, nowMinutes: 900, expanded: true)
+        XCTAssertEqual(expanded.hiddenPastCount, 0)
+        XCTAssertEqual(expanded.columns[0].count, 6)
+    }
+
+    func testDepartureLogsFollowServiceDayAcrossMidnightAndIgnoreInvalidTimes() {
+        let layout = BusDisplayLogic.departureLogs(
+            columns: [["00:30:00", "23:50:00", "invalid", "25:00:00"]], nowMinutes: 1440, expanded: true
+        )
+        XCTAssertEqual(layout.columns[0].map(\.time), ["23:50", "00:30", "01:00"])
+        XCTAssertEqual(layout.columns[0].filter(\.isNext).map(\.time), ["00:30"])
+        XCTAssertEqual(BusDisplayLogic.clockText("5:03:00"), "05:03")
+        XCTAssertEqual(BusDisplayLogic.clockText("12:90:00"), "—")
+        XCTAssertEqual(BusDisplayLogic.clockText(""), "—")
+    }
+
     private func date(_ day: Int, _ hour: Int, _ minute: Int) throws -> Date {
         let components = DateComponents(year: 2026, month: 11, day: day, hour: hour, minute: minute)
         return try XCTUnwrap(BusDisplayLogic.serviceCalendar.date(from: components))
@@ -109,6 +167,34 @@ final class BusDisplayLogicTests: XCTestCase {
         XCTAssertEqual(BusDisplayLogic.today(date: try date(9, 1, 0), tabs: mergedTabs), .weekends)
         XCTAssertEqual(BusDisplayLogic.today(date: try date(9, 4, 0), tabs: splitTabs), .weekdays)
         XCTAssertEqual(BusDisplayLogic.today(date: try date(9, 4, 0), tabs: mergedTabs), .weekdays)
+    }
+
+    func testMergedBoundariesAndFilteredRouteBadges() throws {
+        let items = try [
+            item("A", "saturday", 5, 0), item("A", "saturday", 22, 0),
+            item("B", "saturday", 6, 0), item("B", "saturday", 1, 30),
+            item("A", "sunday", 4, 0)
+        ]
+        let merged = BusDisplayLogic.entries(items: items, day: .saturday, routeFilter: nil)
+        XCTAssertEqual(merged.map(\.isFirst), [true, false, false, false])
+        XCTAssertEqual(merged.map(\.isLast), [false, false, false, true])
+        XCTAssertTrue(merged.allSatisfy {
+            BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: merged, isMerged: true)
+        })
+        let folded = BusDisplayLogic.layout(entries: merged, isToday: true, nowMinutes: 1400, expanded: false)
+        XCTAssertTrue(folded.groups.flatMap(\.rows).allSatisfy {
+            BusDisplayLogic.showsTimetableRouteBadge(for: $0.entry, entries: merged, isMerged: true)
+        })
+        let filtered = BusDisplayLogic.entries(items: items, day: .saturday, routeFilter: "A")
+        XCTAssertEqual(filtered.map(\.isFirst), [true, false])
+        XCTAssertEqual(filtered.map(\.isLast), [false, true])
+        XCTAssertTrue(filtered.allSatisfy {
+            !BusDisplayLogic.showsTimetableRouteBadge(for: $0, entries: filtered, isMerged: false)
+        })
+        let single = BusDisplayLogic.entries(items: items, day: .sunday, routeFilter: nil)
+        XCTAssertTrue(try XCTUnwrap(single.first).isFirst)
+        XCTAssertTrue(try XCTUnwrap(single.first).isLast)
+        XCTAssertTrue(BusDisplayLogic.entries(items: items, day: .weekdays, routeFilter: nil).isEmpty)
     }
 
     func testEntriesAndLayout() throws {

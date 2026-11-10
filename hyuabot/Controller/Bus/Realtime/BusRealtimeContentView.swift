@@ -98,11 +98,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         titleLabel.accessibilityIdentifier = "bus.title"
         titleLabel.adjustsFontForContentSizeCategory = true
         titleContainer.addSubview(titleLabel)
-        settingsButton.backgroundColor = SettingsStyle.Color.segmentBackground
-        settingsButton.layer.cornerRadius = 22
-        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18)
-        settingsButton.setImage(UIImage(systemName: "slider.horizontal.3", withConfiguration: symbolConfiguration), for: .normal)
-        settingsButton.tintColor = SettingsStyle.Color.link
+        setupSettingsPill()
         settingsButton.accessibilityLabel = String(localized: "bus.quick_settings.title")
         settingsButton.accessibilityIdentifier = "bus.settings"
         settingsButton.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
@@ -114,10 +110,43 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         }
         settingsButton.snp.makeConstraints {
             $0.trailing.top.bottom.equalToSuperview()
-            $0.size.equalTo(44)
+            $0.height.equalTo(44)
         }
         contentStack.addArrangedSubview(titleContainer)
         contentStack.setCustomSpacing(16, after: titleContainer)
+    }
+
+    private func setupSettingsPill() {
+        let capsule = UIView()
+        capsule.backgroundColor = SettingsStyle.Color.accentFill
+        capsule.layer.cornerRadius = 18
+        capsule.isUserInteractionEnabled = false
+        settingsButton.addSubview(capsule)
+        capsule.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.height.equalTo(36)
+            $0.leading.trailing.equalToSuperview()
+        }
+        let icon = UIImageView(image: UIImage(
+            systemName: "slider.horizontal.3",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        ))
+        icon.tintColor = SettingsStyle.Color.link
+        let label = UILabel()
+        label.text = String(localized: "bus.quick_settings.title")
+        label.font = SettingsStyle.font(14, bold: true)
+        label.textColor = SettingsStyle.Color.link
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let stack = UIStackView(arrangedSubviews: [icon, label])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 6
+        capsule.addSubview(stack)
+        stack.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(12)
+        }
+        icon.snp.makeConstraints { $0.size.equalTo(18) }
     }
 
     private func setupScrollView() {
@@ -147,7 +176,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         cardsStack.axis = .vertical
         cardsStack.spacing = 16
         contentStack.addArrangedSubview(cardsStack)
-        contentStack.setCustomSpacing(12, after: cardsStack)
+        contentStack.setCustomSpacing(8, after: cardsStack)
         footnoteLabel.attributedText = SettingsStyle.attributedText(
             String(localized: "bus.realtime.footnote"), font: SettingsStyle.font(12),
             color: SettingsStyle.Color.commuterFaint, lineHeight: 16,
