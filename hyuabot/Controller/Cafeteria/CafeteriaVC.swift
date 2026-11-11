@@ -157,17 +157,6 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         }
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        headerBar.accessory.update(layoutNow: false)
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
-        compactBar.alpha = min(max((offset - 36) / 16, 0), 1)
-        headerBar.accessory.update()
-    }
-
     private func bindInteractions() {
         headerBar.onMonthTap = { [weak self] in self?.presentDatePicker() }
         headerBar.onTodayTap = { [weak self] in self?.selectToday() }
@@ -334,6 +323,17 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
 }
 
 extension CafeteriaVC {
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        headerBar.accessory.update(layoutNow: false)
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        compactBar.alpha = min(max((offset - 36) / 16, 0), 1)
+        headerBar.accessory.update()
+    }
+
     private func selectDate(_ date: Foundation.Date) {
         AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
         selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast

@@ -379,8 +379,11 @@ final class SubwayTimetableCardFooterView: UIView {
         stack.alignment = .center
         stack.spacing = HYUMetrics.Layout.contentToFootnote
         addSubview(stack)
-        stack.snp
-            .makeConstraints { $0.top.equalToSuperview().offset(HYUMetrics.Layout.contentToFootnote); $0.leading.trailing.equalToSuperview(); $0.bottom.equalToSuperview().inset(40) }
+        stack.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(HYUMetrics.Layout.contentToFootnote)
+            $0.leading.trailing.equalToSuperview()
+            $0.bottom.equalToSuperview().inset(40)
+        }
         footnoteLabel.numberOfLines = 0
         footnoteLabel.attributedText = SettingsStyle.attributedText(
             String(localized: "subway.timetable.footnote"),

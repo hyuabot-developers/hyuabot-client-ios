@@ -58,8 +58,6 @@ class SubwayRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Pushed screens (e.g. the timetable) show only the back chevron.
-        navigationItem.backButtonDisplayMode = .minimal
         setupUI()
         observeSubjects()
         SubwayRealtimeData.shared.isLoading.distinctUntilChanged().observe(on: MainScheduler.instance)
@@ -348,6 +346,14 @@ class SubwayRealtimeVC: UIViewController {
     @objc
     func appWillEnterForeground() {
         startPolling()
+    }
+}
+
+extension SubwayRealtimeVC {
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        // Pushed screens (e.g. the timetable) show only the back chevron.
+        navigationItem.backButtonDisplayMode = .minimal
     }
 }
 
