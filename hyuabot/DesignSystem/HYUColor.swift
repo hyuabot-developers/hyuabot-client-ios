@@ -13,6 +13,24 @@ enum HYUColor {
         static let fillSubtle = UIColor.tertiarySystemFill
     }
 
+    enum Sheet {
+        static let background = UIColor { traits in
+            hex(traits.userInterfaceStyle == .dark ? 0x11161C : 0xF2F4F7)
+        }
+        static let grabber = UIColor { traits in
+            hex(traits.userInterfaceStyle == .dark ? 0x3A434E : 0xC9CED6)
+        }
+
+        private static func hex(_ value: UInt32) -> UIColor {
+            UIColor(
+                red: CGFloat((value >> 16) & 0xFF) / 255,
+                green: CGFloat((value >> 8) & 0xFF) / 255,
+                blue: CGFloat(value & 0xFF) / 255,
+                alpha: 1
+            )
+        }
+    }
+
     enum Border {
         static let hairline = UIColor.separator
     }

@@ -19,11 +19,24 @@ enum HYUMetrics {
     enum Radius {
         static let badge: CGFloat = 4
         static let row: CGFloat = 8
-        static let card: CGFloat = 12
+        static let card: CGFloat = 16
+        static let sheet: CGFloat = 24
 
         static func capsule(height: CGFloat) -> CGFloat {
             height / 2
         }
+    }
+
+    enum Layout {
+        static let titleToControl: CGFloat = 16
+        static let controlToContent: CGFloat = 16
+        static let contentToFootnote: CGFloat = 12
+        static let screenBottom: CGFloat = 24
+        static let tabBarContentGap: CGFloat = 12
+        static let headerButtonHeight: CGFloat = 36
+        static let headerButtonHitHeight: CGFloat = 44
+        static let sheetHorizontalInset: CGFloat = 20
+        static let sheetTitleTop: CGFloat = 11
     }
 
     static let cornerCurve: CALayerCornerCurve = .continuous
