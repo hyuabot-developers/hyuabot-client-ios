@@ -22,7 +22,7 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
     private var weekends: [SubwayTimetableDeparture] = []
     private var layout = SubwayTimetableLayout(hiddenPastCount: 0, groups: [])
     private var lastTableWidth: CGFloat = 0
-    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let tableView = UITableView(frame: .zero, style: .grouped)
     private let header = SubwayTimetableHeaderView()
     private let footer = SubwayTimetableCardFooterView()
     private let compactBar = SubwayCompactBarView(maxTitleWidth: 200, titleCenterFromBottom: 22)
@@ -222,7 +222,7 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
             isLoading: isLoading,
             layout: layout
         )
-        footer.configure(showsCard: !isLoading && !layout.groups.isEmpty, showsFootnote: !isLoading)
+        footer.configure(showsFootnote: !isLoading)
         resizeTableSupplementaryViews()
         tableView.reloadData()
     }
@@ -254,6 +254,9 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
             for: indexPath
         ) as? SubwayTimetableRowCell else { return UITableViewCell() }
         cell.configure(layout.groups[indexPath.section].rows[indexPath.row], merged: merged)
+        let isLastRow = indexPath.section == layout.groups.count - 1
+            && indexPath.row == layout.groups[indexPath.section].rows.count - 1
+        cell.setRoundsBottom(isLastRow)
         return cell
     }
 
@@ -270,12 +273,12 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
     }
 
     func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
-        26
+        28
     }
 
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        0
-    }
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat { .leastNonzeroMagnitude }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? { UIView() }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         compactBar.setRevealProgress(

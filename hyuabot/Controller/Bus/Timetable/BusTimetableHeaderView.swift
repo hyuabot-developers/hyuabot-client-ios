@@ -181,7 +181,7 @@ final class BusTimetableHeaderView: UIView {
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
         config.baseForegroundColor = selected ? SettingsStyle.Color.onAccent : SettingsStyle.Color.text
         config.background.backgroundColor = selected ? SettingsStyle.Color.accent : SettingsStyle.Color.card
-        config.background.cornerRadius = 16
+        config.background.cornerRadius = HYUMetrics.Radius.card
         config.background.strokeWidth = 1
         config.background.strokeColor = selected ? SettingsStyle.Color.accent : SettingsStyle.Color.busChipLine
         let button = UIButton(configuration: config)
@@ -211,7 +211,7 @@ final class BusTimetableHeaderView: UIView {
     private func makeSkeleton() {
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = HYUMetrics.Radius.card
         card.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         stateContainer.addSubview(card)
         card.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -254,7 +254,7 @@ final class BusTimetableHeaderView: UIView {
     private func makeEmpty(title: String, detail: String) {
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = HYUMetrics.Radius.card
         card.layoutMargins = UIEdgeInsets(top: 32, left: 24, bottom: 36, right: 24)
         stateContainer.addSubview(card)
         card.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -293,7 +293,7 @@ final class BusTimetableHeaderView: UIView {
     private func makeFoldButton(_ count: Int) {
         let button = UIButton(type: .system)
         button.backgroundColor = SettingsStyle.Color.card
-        button.layer.cornerRadius = 16
+        button.layer.cornerRadius = HYUMetrics.Radius.card
         button.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         var config = UIButton.Configuration.plain()
         config.image = UIImage(systemName: "chevron.up")?.applyingSymbolConfiguration(
@@ -403,7 +403,7 @@ final class BusTimetableCardFooterView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(showsCard: Bool) { stack.layoutMargins.top = showsCard ? 8 : 0 }
+    func configure(showsCard: Bool) { stack.layoutMargins.top = showsCard ? HYUMetrics.Layout.contentToFootnote : 0 }
 
     static func height(showsCard: Bool, width: CGFloat) -> CGFloat {
         let view = BusTimetableCardFooterView()

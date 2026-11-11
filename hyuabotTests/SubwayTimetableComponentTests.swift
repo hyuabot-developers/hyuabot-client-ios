@@ -24,8 +24,22 @@ final class SubwayTimetableComponentTests: XCTestCase {
         first.configure(group, isFirst: true, roundsTop: true)
         let following = SubwayTimetableHourHeaderView(reuseIdentifier: nil)
         following.configure(group, isFirst: false, roundsTop: false)
-        XCTAssertEqual(first.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height, 32)
-        XCTAssertEqual(following.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height, 26)
+        XCTAssertEqual(first.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height, 28)
+        XCTAssertEqual(following.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height, 28)
+    }
+
+    func testPinnedHourHeaderUsesCardRadiusAndCanvasBackground() throws {
+        let group = SubwayTimetableHourGroup(hour: 8, title: "08:00", accessibilityLabel: "08:00", rows: [])
+        let header = SubwayTimetableHourHeaderView(reuseIdentifier: nil)
+        header.configure(group, isFirst: false, roundsTop: false)
+        let strip = try XCTUnwrap(header.contentView.subviews.first)
+
+        header.setPinned(true)
+        XCTAssertEqual(strip.layer.cornerRadius, HYUMetrics.Radius.card)
+        XCTAssertNotEqual(header.contentView.backgroundColor, .clear)
+
+        header.setPinned(false)
+        XCTAssertEqual(strip.layer.cornerRadius, 0)
     }
 
     func testMergedDownHeaderHasLegend() {
@@ -37,10 +51,13 @@ final class SubwayTimetableComponentTests: XCTestCase {
         XCTAssertGreaterThan(downHeight, upHeight)
     }
 
-    func testFooterReservesSpaceForCardAndFootnote() {
+    func testFooterReservesSpaceForFootnote() {
         let footer = SubwayTimetableCardFooterView()
-        footer.configure(showsCard: true, showsFootnote: true)
-        XCTAssertGreaterThan(footer.fittingHeight(width: 390), 60)
+        footer.configure(showsFootnote: true)
+        let withFootnote = footer.fittingHeight(width: 390)
+        footer.configure(showsFootnote: false)
+        XCTAssertGreaterThan(withFootnote, footer.fittingHeight(width: 390))
+        XCTAssertGreaterThan(withFootnote, HYUMetrics.Layout.contentToFootnote + 40)
     }
 
     func testHiddenPastCountAddsHeaderHeight() {
