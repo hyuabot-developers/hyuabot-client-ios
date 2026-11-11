@@ -18,25 +18,24 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
     private let stopInfo: BehaviorSubject<ShuttleStopDialogQuery.Data.Shuttle.Stop?> = BehaviorSubject(value: nil)
     private let timetable: BehaviorSubject<[ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]> = BehaviorSubject(value: [])
     private let disposeBag = DisposeBag()
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
-        $0.textColor = .white
-        $0.backgroundColor = .hanyangBlue
-        $0.textAlignment = .center
-    }
+    private let titleLabel = HYUSheet.makeTitleLabel()
 
     private let stopMapView = MKMapView().then {
-        $0.isZoomEnabled = true
-        $0.isScrollEnabled = true
+        $0.isScrollEnabled = false
+        $0.isZoomEnabled = false
+        $0.isRotateEnabled = false
         $0.isPitchEnabled = false
+        $0.isUserInteractionEnabled = false
+        $0.layer.cornerRadius = HYUMetrics.Radius.card
+        $0.layer.cornerCurve = HYUMetrics.cornerCurve
+        $0.clipsToBounds = true
+        $0.accessibilityIdentifier = "shuttle.stop.map"
     }
 
     private let firstLastTitleLabel = UILabel().then {
-        $0.font = .godo(size: 18, weight: .bold)
+        $0.font = SettingsStyle.font(14, bold: true)
         $0.text = String(localized: "shuttle.stop.first.last")
-        $0.backgroundColor = .hanyangBlue
-        $0.textColor = .white
-        $0.textAlignment = .center
+        $0.textColor = SettingsStyle.Color.secondaryText
     }
 
     private lazy var firstLastTimeHeaderStackView: UIStackView = {
@@ -285,7 +284,10 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
 
     private lazy var firstLastTimeView = UIView().then {
         $0.addSubview(self.firstLastTimeStackView)
-        $0.backgroundColor = .systemBackground
+        $0.backgroundColor = SettingsStyle.Color.card
+        $0.layer.cornerRadius = HYUMetrics.Radius.card
+        $0.layer.cornerCurve = HYUMetrics.cornerCurve
+        $0.clipsToBounds = true
     }
 
     init(stop: ShuttleStopEnum) {
@@ -311,7 +313,7 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
     }
 
     private func setupUI() {
-        view.backgroundColor = .hanyangBlue
+        HYUSheet.applyBackground(to: view)
         view.addSubview(titleLabel)
         view.addSubview(stopMapView)
         view.addSubview(firstLastTitleLabel)
@@ -344,19 +346,20 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
         } else {
             titleLabel.text = String(localized: "shuttle.stop.dormitory.out")
         }
+        HYUSheet.setTitle(titleLabel.text ?? "", on: titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
+            make.top.equalToSuperview().offset(HYUMetrics.Layout.sheetTitleTop)
+            make.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+            make.height.greaterThanOrEqualTo(50)
         }
         stopMapView.snp.makeConstraints { make in
             make.height.equalTo(300)
             make.top.equalTo(self.titleLabel.snp.bottom)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
         }
         firstLastTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(self.stopMapView.snp.bottom)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
             make.height.equalTo(50)
         }
         firstLastTimeStackView.snp.makeConstraints { make in
@@ -367,7 +370,8 @@ class ShuttleStopInfoVC: UIViewController { // swiftlint:disable:this type_body_
         }
         firstLastTimeView.snp.makeConstraints { make in
             make.top.equalTo(self.firstLastTitleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+            make.bottom.equalToSuperview()
         }
     }
 

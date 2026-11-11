@@ -28,25 +28,24 @@ final class CommuterMapChooserVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = SettingsStyle.Color.sheet
+        HYUSheet.applyBackground(to: view)
         configureSheet()
         configureContent()
     }
 
     private func configureSheet() {
-        guard let sheet = sheetPresentationController else { return }
-        sheet.detents = [.custom(identifier: .init("commuterMapChooser")) { [weak self] context in
-            guard let self else { return context.maximumDetentValue }
-            let desiredHeight = 20 + 54 + 12 + CGFloat(self.choices.count * 56) + 16 + 48 + 34
-            return min(desiredHeight, context.maximumDetentValue)
-        }]
-        sheet.prefersGrabberVisible = true
-        sheet.preferredCornerRadius = 24
+        let detent = UISheetPresentationController.Detent.custom(
+            identifier: .init("commuterMapChooser")
+        ) { [weak self] _ in
+            guard let self else { return nil }
+            return 20 + 54 + 12 + CGFloat(choices.count) * 56 + 16 + 48 + 34
+        }
+        HYUSheet.configure(self, detents: [detent])
     }
 
     private func configureContent() {
-        let title = makeLabel(String(localized: "commuter.map.chooser.title"), size: 20, bold: true,
-                              color: SettingsStyle.Color.text)
+        let title = HYUSheet.makeTitleLabel()
+        HYUSheet.setTitle(String(localized: "commuter.map.chooser.title"), on: title)
         let subtitle = makeLabel(
             String(format: String(localized: "commuter.map.chooser.subtitle"), stopName),
             size: 14,
