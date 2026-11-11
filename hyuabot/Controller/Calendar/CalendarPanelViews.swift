@@ -71,7 +71,7 @@ final class CalendarEmptyStateView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = SettingsStyle.Color.card
-        layer.cornerRadius = 16
+        layer.cornerRadius = HYUMetrics.Radius.card
         layer.cornerCurve = .continuous
         let iconCircle = UIView()
         iconCircle.backgroundColor = SettingsStyle.Color.segmentBackground
@@ -169,7 +169,7 @@ final class CalendarSkeletonListView: UIView {
         animatedViews = animated
         super.init(frame: frame)
         backgroundColor = SettingsStyle.Color.card
-        layer.cornerRadius = 16
+        layer.cornerRadius = HYUMetrics.Radius.card
         layer.cornerCurve = .continuous
         clipsToBounds = true
         let stack = UIStackView(arrangedSubviews: rows)
@@ -216,8 +216,8 @@ final class CalendarHintLabel: UILabel {
         attributedText = NSAttributedString(
             string: String(localized: "calendar.swipe.hint"),
             attributes: [
-                .font: SettingsStyle.font(12.5),
-                .foregroundColor: SettingsStyle.Color.secondaryText,
+                .font: SettingsStyle.font(12),
+                .foregroundColor: SettingsStyle.Color.commuterFaint,
                 .paragraphStyle: paragraphStyle
             ]
         )

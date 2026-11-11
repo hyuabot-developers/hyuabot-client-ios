@@ -25,9 +25,10 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
         super.viewDidLoad()
         title = license.name
         navigationItem.backButtonTitle = String(localized: "licenses.back")
-        SettingsNavigationStyle.apply(to: self)
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
         view.backgroundColor = SettingsStyle.Color.background
         configureLayout()
+        setContentScrollView(scrollView, for: .top)
         contentStack.addArrangedSubview(makeHeaderSection())
         contentStack.addArrangedSubview(makeLicenseSection())
         registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) { (viewController: OpenSourceLicenseDetailVC, _) in
@@ -64,7 +65,7 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
     private func makeHeaderSection() -> UIView {
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = HYUMetrics.Radius.card
         card.layer.cornerCurve = .continuous
         let stack = UIStackView()
         stack.axis = .vertical
@@ -172,7 +173,7 @@ final class OpenSourceLicenseDetailVC: UIViewController, SettingsStyledScreen {
         applyLicenseBody()
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = HYUMetrics.Radius.card
         card.layer.cornerCurve = .continuous
         card.addSubview(textView)
         textView.snp.makeConstraints { $0.edges.equalToSuperview().inset(16) }

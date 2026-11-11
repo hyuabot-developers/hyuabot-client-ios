@@ -16,9 +16,14 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
 
     let segmentView = SubwaySegmentView(buttonIdentifierPrefix: "viewpager.tab")
     let noticeBar = BusNoticeBarView()
-    let settingsButton = UIButton(type: .system)
+    let settingsButton = HYUHeaderButton(
+        style: .capsule,
+        symbolName: "slider.horizontal.3",
+        title: String(localized: "bus.quick_settings.title")
+    )
 
     private let titleContainer = UIView()
+    private lazy var settingsAccessory = HYUPinnedAccessory(content: settingsButton)
     private let titleLabel = UILabel()
     private let compactBar = SubwayCompactBarView(maxTitleWidth: nil)
     private let scrollView = UIScrollView()
@@ -38,6 +43,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         setupContent()
         setupFade()
         setupCompactBar()
+        settingsAccessory.install(in: self)
         segmentView.onSelect = { [weak self] index in
             let tab: BusRealtimeType = [.city, .seoul, .suwon, .other][index]
             self?.onSelectTab?(tab)
@@ -76,7 +82,13 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         refreshControl.endRefreshing()
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        settingsAccessory.update(layoutNow: false)
+    }
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        settingsAccessory.update()
         compactBar.setRevealProgress(SubwayCompactBarView.revealProgress(
             contentOffsetY: scrollView.contentOffset.y,
             adjustedTopInset: scrollView.adjustedContentInset.top
@@ -98,55 +110,21 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         titleLabel.accessibilityIdentifier = "bus.title"
         titleLabel.adjustsFontForContentSizeCategory = true
         titleContainer.addSubview(titleLabel)
-        setupSettingsPill()
         settingsButton.accessibilityLabel = String(localized: "bus.quick_settings.title")
         settingsButton.accessibilityIdentifier = "bus.settings"
         settingsButton.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
-        titleContainer.addSubview(settingsButton)
+        titleContainer.addSubview(settingsAccessory.placeholder)
         titleLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(4)
-            $0.trailing.equalTo(settingsButton.snp.leading).offset(-12)
-            $0.centerY.equalTo(settingsButton)
+            $0.trailing.equalTo(settingsAccessory.placeholder.snp.leading).offset(-12)
+            $0.centerY.equalTo(settingsAccessory.placeholder)
         }
-        settingsButton.snp.makeConstraints {
+        settingsAccessory.placeholder.snp.makeConstraints {
             $0.trailing.top.bottom.equalToSuperview()
-            $0.height.equalTo(44)
         }
+        settingsButton.snp.makeConstraints { $0.height.equalTo(44) }
         contentStack.addArrangedSubview(titleContainer)
-        contentStack.setCustomSpacing(16, after: titleContainer)
-    }
-
-    private func setupSettingsPill() {
-        let capsule = UIView()
-        capsule.backgroundColor = SettingsStyle.Color.accentFill
-        capsule.layer.cornerRadius = 18
-        capsule.isUserInteractionEnabled = false
-        settingsButton.addSubview(capsule)
-        capsule.snp.makeConstraints {
-            $0.centerY.equalToSuperview()
-            $0.height.equalTo(36)
-            $0.leading.trailing.equalToSuperview()
-        }
-        let icon = UIImageView(image: UIImage(
-            systemName: "slider.horizontal.3",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
-        ))
-        icon.tintColor = SettingsStyle.Color.link
-        let label = UILabel()
-        label.text = String(localized: "bus.quick_settings.title")
-        label.font = SettingsStyle.font(14, bold: true)
-        label.textColor = SettingsStyle.Color.link
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
-        let stack = UIStackView(arrangedSubviews: [icon, label])
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 6
-        capsule.addSubview(stack)
-        stack.snp.makeConstraints {
-            $0.centerY.equalToSuperview()
-            $0.leading.trailing.equalToSuperview().inset(12)
-        }
-        icon.snp.makeConstraints { $0.size.equalTo(18) }
+        contentStack.setCustomSpacing(HYUMetrics.Layout.titleToControl, after: titleContainer)
     }
 
     private func setupScrollView() {
@@ -163,20 +141,20 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints {
             $0.top.equalTo(scrollView.contentLayoutGuide).offset(45)
-            $0.bottom.equalTo(scrollView.contentLayoutGuide).offset(-28)
+            $0.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
     }
 
     private func setupContent() {
         contentStack.addArrangedSubview(segmentView)
-        contentStack.setCustomSpacing(12, after: segmentView)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: segmentView)
         contentStack.addArrangedSubview(noticeBar)
         contentStack.setCustomSpacing(16, after: noticeBar)
         cardsStack.axis = .vertical
         cardsStack.spacing = 16
         contentStack.addArrangedSubview(cardsStack)
-        contentStack.setCustomSpacing(8, after: cardsStack)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: cardsStack)
         footnoteLabel.attributedText = SettingsStyle.attributedText(
             String(localized: "bus.realtime.footnote"), font: SettingsStyle.font(12),
             color: SettingsStyle.Color.commuterFaint, lineHeight: 16,

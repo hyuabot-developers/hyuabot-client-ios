@@ -211,8 +211,8 @@ final class ContactSummaryView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .clear
-        label.font = SettingsStyle.font(12.5)
-        label.textColor = SettingsStyle.Color.secondaryText
+        label.font = SettingsStyle.font(12)
+        label.textColor = SettingsStyle.Color.commuterFaint
         label.numberOfLines = 0
         label.adjustsFontForContentSizeCategory = true
         addSubview(label)
@@ -243,8 +243,8 @@ final class ContactListFooterView: UIView {
         label.textAlignment = .center
         addSubview(label)
         label.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(24)
-            make.bottom.equalToSuperview().inset(32)
+            make.top.equalToSuperview().offset(HYUMetrics.Layout.contentToFootnote)
+            make.bottom.equalToSuperview().inset(40)
             make.leading.trailing.equalToSuperview().inset(24)
         }
         setVersion(nil)
@@ -270,7 +270,11 @@ final class ContactListFooterView: UIView {
         paragraph.alignment = .center
         paragraph.minimumLineHeight = 18
         paragraph.maximumLineHeight = 18
-        return NSAttributedString(string: text, attributes: [.paragraphStyle: paragraph])
+        return NSAttributedString(string: text, attributes: [
+            .paragraphStyle: paragraph,
+            .font: SettingsStyle.font(12),
+            .foregroundColor: SettingsStyle.Color.commuterFaint
+        ])
     }
 }
 

@@ -46,7 +46,7 @@ final class InquiryQuickReplyListView: UIView {
 
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = HYUMetrics.Radius.card
         card.layer.cornerCurve = .continuous
         card.clipsToBounds = true
         let rowStack = UIStackView()
@@ -167,7 +167,7 @@ final class InquiryErrorCardView: UIView {
     init() {
         super.init(frame: .zero)
         backgroundColor = SettingsStyle.Color.card
-        layer.cornerRadius = 16
+        layer.cornerRadius = HYUMetrics.Radius.card
         layer.cornerCurve = .continuous
         let iconImage = UIImage(
             systemName: "arrow.triangle.2.circlepath",

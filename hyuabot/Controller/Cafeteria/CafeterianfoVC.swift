@@ -6,12 +6,12 @@
 import Api
 import MapKit
 import RxSwift
+import SnapKit
 import UIKit
 
 class CafeteriaInfoVC: UIViewController {
     private enum Layout {
         static let horizontalInset: CGFloat = 20
-        static let cardRadius: CGFloat = 16
         static let mapHeight: CGFloat = 148
         static let actionHeight: CGFloat = 48
     }
@@ -21,21 +21,11 @@ class CafeteriaInfoVC: UIViewController {
     private let disposeBag = DisposeBag()
     private var cafeteriaCoordinate: CLLocationCoordinate2D?
     private var hourTitleLabels: [UILabel] = []
+    private var runningTimeBelowMapConstraint: Constraint?
+    private var runningTimeBelowHeaderConstraint: Constraint?
     var onOpenMap: (() -> Void)?
 
-    private let grabberView = UIView().then {
-        $0.backgroundColor = SettingsStyle.Color.cafeteriaGrabber
-        $0.layer.cornerRadius = 2.5
-        $0.accessibilityElementsHidden = true
-    }
-
-    private let titleLabel = UILabel().then {
-        $0.font = SettingsStyle.font(20, bold: true)
-        $0.textColor = SettingsStyle.Color.text
-        $0.numberOfLines = 1
-        $0.lineBreakMode = .byTruncatingTail
-        $0.accessibilityTraits = .header
-    }
+    private let titleLabel = HYUSheet.makeTitleLabel()
 
     private let captionLabel = UILabel().then {
         $0.font = SettingsStyle.font(13)
@@ -43,22 +33,15 @@ class CafeteriaInfoVC: UIViewController {
         $0.numberOfLines = 2
     }
 
-    private let closeButton = UIButton(type: .system).then {
-        $0.setImage(UIImage(systemName: "xmark"), for: .normal)
-        $0.tintColor = SettingsStyle.Color.secondaryText
-        $0.backgroundColor = SettingsStyle.Color.segmentBackground
-        $0.layer.cornerRadius = 15
-        $0.accessibilityLabel = String(localized: "close")
-        $0.accessibilityIdentifier = "cafeteria.info.close"
-    }
+    private let closeButton = HYUSheetCloseButton()
 
-    private let mapCardView = UIView().then {
+    let mapCardView = UIView().then {
         $0.backgroundColor = SettingsStyle.Color.card
-        $0.layer.cornerRadius = Layout.cardRadius
+        $0.layer.cornerRadius = HYUMetrics.Radius.card
         $0.layer.masksToBounds = true
     }
 
-    private let cafeteriaMapView = MKMapView().then {
+    let cafeteriaMapView = MKMapView().then {
         $0.isZoomEnabled = false
         $0.isScrollEnabled = false
         $0.isPitchEnabled = false
@@ -89,16 +72,16 @@ class CafeteriaInfoVC: UIViewController {
         $0.accessibilityLabel = String(localized: "cafeteria.info.map.action")
     }
 
-    private let runningTimeTitleLabel = UILabel().then {
+    let runningTimeTitleLabel = UILabel().then {
         $0.font = SettingsStyle.font(13, bold: true)
         $0.text = String(localized: "cafeteria.running.time")
         $0.textColor = SettingsStyle.Color.secondaryText
         $0.accessibilityTraits = .header
     }
 
-    private let hoursCardView = UIView().then {
+    let hoursCardView = UIView().then {
         $0.backgroundColor = SettingsStyle.Color.card
-        $0.layer.cornerRadius = Layout.cardRadius
+        $0.layer.cornerRadius = HYUMetrics.Radius.card
         $0.layer.masksToBounds = true
     }
 
@@ -163,8 +146,8 @@ class CafeteriaInfoVC: UIViewController {
             let height = hoursCardView.frame.height > 0 ? laidOut : fittingSize.height
             return min(height, context.maximumDetentValue)
         }]
-        sheet.preferredCornerRadius = 24
-        sheet.prefersGrabberVisible = false
+        sheet.preferredCornerRadius = HYUMetrics.Radius.sheet
+        sheet.prefersGrabberVisible = true
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -176,7 +159,7 @@ class CafeteriaInfoVC: UIViewController {
         super.viewDidLoad()
         view.accessibilityIdentifier = "cafeteria.info.root"
         view.accessibilityViewIsModal = true
-        view.backgroundColor = SettingsStyle.Color.background
+        HYUSheet.applyBackground(to: view)
         configureSheetPresentation()
         setupUI()
         fetchCafeteriaInfo()
@@ -242,38 +225,56 @@ class CafeteriaInfoVC: UIViewController {
         }
     }
 
-    private func observeSubjects() {
-        cafeteriaInfo.subscribe(onNext: { [weak self] cafeteria in
-            guard let self, let cafeteria else { return }
-            let name = CafeteriaDisplayLogic.cafeteriaName(seq: cafeteriaID)
-            titleLabel.text = name
-            let currentCampusID = UserDefaults.standard.integer(forKey: "campusID")
-            let campusName = String(localized: currentCampusID == 1 ? "campus.seoul" : "campus.erica")
-            captionLabel.text = String(format: String(localized: "cafeteria.info.caption.format"), campusName)
-            view.accessibilityLabel = String(format: String(localized: "cafeteria.info.a11y.title.format"), name)
-            mapCardView.isHidden = false
+    static func mapCoordinate(latitude: Double, longitude: Double) -> CLLocationCoordinate2D? {
+        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        guard !(latitude == 0 && longitude == 0), CLLocationCoordinate2DIsValid(coordinate) else { return nil }
+        return coordinate
+    }
 
-            applyRunningTime(cafeteria.runningTime.breakfast, cafeteria.runningTime.lunch, cafeteria.runningTime.dinner)
-
-            cafeteriaMapView.removeAnnotations(cafeteriaMapView.annotations)
-            sheetPresentationController?.animateChanges {
-                self.sheetPresentationController?.invalidateDetents()
-            }
-            guard cafeteria.latitude != 0 || cafeteria.longitude != 0 else {
-                cafeteriaCoordinate = nil
-                return
-            }
-            let coordinate = CLLocationCoordinate2D(latitude: cafeteria.latitude, longitude: cafeteria.longitude)
-            cafeteriaCoordinate = coordinate
+    func updateMapCard(coordinate: CLLocationCoordinate2D?, title: String?) {
+        cafeteriaMapView.removeAnnotations(cafeteriaMapView.annotations)
+        cafeteriaCoordinate = coordinate
+        if let coordinate {
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
-            annotation.title = name
+            annotation.title = title
             cafeteriaMapView.addAnnotation(annotation)
             cafeteriaMapView.camera = MKMapCamera(
                 lookingAtCenter: coordinate,
                 fromDistance: 750,
                 pitch: 0,
                 heading: 0
+            )
+            mapCardView.isHidden = false
+            runningTimeBelowHeaderConstraint?.deactivate()
+            runningTimeBelowMapConstraint?.activate()
+        } else {
+            mapCardView.isHidden = true
+            runningTimeBelowMapConstraint?.deactivate()
+            runningTimeBelowHeaderConstraint?.activate()
+        }
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        sheetPresentationController?.animateChanges { self.sheetPresentationController?.invalidateDetents() }
+    }
+
+    private func observeSubjects() {
+        cafeteriaInfo.subscribe(onNext: { [weak self] cafeteria in
+            guard let self else { return }
+            guard let cafeteria else {
+                updateMapCard(coordinate: nil, title: nil)
+                return
+            }
+            let name = CafeteriaDisplayLogic.cafeteriaName(seq: cafeteriaID)
+            HYUSheet.setTitle(name, on: titleLabel)
+            let currentCampusID = UserDefaults.standard.integer(forKey: "campusID")
+            let campusName = String(localized: currentCampusID == 1 ? "campus.seoul" : "campus.erica")
+            captionLabel.text = String(format: String(localized: "cafeteria.info.caption.format"), campusName)
+            view.accessibilityLabel = String(format: String(localized: "cafeteria.info.a11y.title.format"), name)
+            applyRunningTime(cafeteria.runningTime.breakfast, cafeteria.runningTime.lunch, cafeteria.runningTime.dinner)
+            updateMapCard(
+                coordinate: Self.mapCoordinate(latitude: cafeteria.latitude, longitude: cafeteria.longitude),
+                title: name
             )
         }).disposed(by: disposeBag)
     }
@@ -288,7 +289,6 @@ extension CafeteriaInfoVC {
             $0.alignment = .leading
         }
 
-        view.addSubview(grabberView)
         view.addSubview(headerView)
         view.addSubview(mapCardView)
         view.addSubview(runningTimeTitleLabel)
@@ -310,26 +310,20 @@ extension CafeteriaInfoVC {
     }
 
     private func setupHeaderConstraints(headerView: UIView, titleStack: UIStackView) {
-        grabberView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(6)
-            make.centerX.equalToSuperview()
-            make.size.equalTo(CGSize(width: 36, height: 5))
-        }
         headerView.snp.makeConstraints { make in
-            make.top.equalTo(grabberView.snp.bottom).offset(4)
-            make.leading.equalToSuperview().offset(4)
-            make.trailing.equalToSuperview().offset(-4)
-            make.height.equalTo(44)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(HYUMetrics.Layout.sheetTitleTop)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(HYUMetrics.Layout.headerButtonHitHeight)
         }
         titleStack.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().offset(HYUMetrics.Layout.sheetHorizontalInset)
             make.centerY.equalToSuperview()
             make.trailing.lessThanOrEqualTo(closeButton.snp.leading).offset(-8)
         }
         closeButton.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
-            make.trailing.equalToSuperview().offset(-7)
-            make.size.equalTo(30)
+            make.trailing.equalToSuperview().offset(-HYUMetrics.Layout.sheetHorizontalInset)
+            make.size.equalTo(HYUMetrics.Layout.headerButtonHitHeight)
         }
         closeButton.addTarget(self, action: #selector(closeSheet), for: .touchUpInside)
         mapActionButton.addTarget(self, action: #selector(openMap), for: .touchUpInside)
@@ -374,10 +368,12 @@ extension CafeteriaInfoVC {
             make.size.equalTo(16)
         }
         runningTimeTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(mapCardView.snp.bottom).offset(12)
+            runningTimeBelowMapConstraint = make.top.equalTo(mapCardView.snp.bottom).offset(12).constraint
+            runningTimeBelowHeaderConstraint = make.top.equalTo(headerView.snp.bottom).offset(8).constraint
             make.leading.trailing.equalToSuperview().inset(Layout.horizontalInset)
             make.height.equalTo(16)
         }
+        runningTimeBelowMapConstraint?.deactivate()
         hoursCardView.snp.makeConstraints { make in
             make.top.equalTo(runningTimeTitleLabel.snp.bottom).offset(6)
             make.leading.trailing.equalToSuperview().inset(Layout.horizontalInset)

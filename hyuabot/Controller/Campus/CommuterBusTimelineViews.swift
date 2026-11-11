@@ -132,7 +132,7 @@ final class CommuterTimelineCardView: UIView {
 
   init() {
     super.init(frame: .zero)
-    layer.cornerRadius = 16
+    layer.cornerRadius = HYUMetrics.Radius.card
     clipsToBounds = true
     accessibilityIdentifier = "commuter.timeline"
     build()
@@ -483,7 +483,7 @@ extension CommuterTimelineCardView {
     let tile = UIView()
     tile.translatesAutoresizingMaskIntoConstraints = false
     tile.backgroundColor = SettingsStyle.Color.accentFill
-    tile.layer.cornerRadius = 16
+    tile.layer.cornerRadius = HYUMetrics.Radius.card
     tile.isUserInteractionEnabled = false
     button.addSubview(tile)
     NSLayoutConstraint.activate([

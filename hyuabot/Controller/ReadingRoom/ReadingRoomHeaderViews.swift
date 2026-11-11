@@ -147,7 +147,7 @@ final class ReadingRoomListFooterView: UIView {
         )
         addSubview(label)
         label.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(8)
+            make.top.equalToSuperview().offset(HYUMetrics.Layout.contentToFootnote)
             make.leading.trailing.equalToSuperview().inset(24)
             make.bottom.equalToSuperview()
         }

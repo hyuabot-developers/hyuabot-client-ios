@@ -215,7 +215,8 @@ final class SubwayTimetableHeaderView: UIView {
 
     private func makeSkeleton() {
         skeletonCard.backgroundColor = SettingsStyle.Color.card
-        skeletonCard.layer.cornerRadius = 16
+        skeletonCard.layer.cornerRadius = HYUMetrics.Radius.card
+        skeletonCard.layer.cornerCurve = HYUMetrics.cornerCurve
         skeletonCard.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         let rows = UIStackView()
         rows.axis = .vertical
@@ -271,7 +272,8 @@ final class SubwayTimetableHeaderView: UIView {
 
     private func makeFoldButton() {
         foldButton.backgroundColor = SettingsStyle.Color.card
-        foldButton.layer.cornerRadius = 16
+        foldButton.layer.cornerRadius = HYUMetrics.Radius.card
+        foldButton.layer.cornerCurve = HYUMetrics.cornerCurve
         foldButton.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         foldButton.contentHorizontalAlignment = .leading
         var configuration = UIButton.Configuration.plain()
@@ -309,6 +311,7 @@ final class SubwayTimetableHourHeaderView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "SubwayTimetableHourHeaderView"
     private let hourLabel = UILabel()
     private let strip = UIView()
+    private var roundsTop = false
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
@@ -319,7 +322,7 @@ final class SubwayTimetableHourHeaderView: UITableViewHeaderFooterView {
         strip.addSubview(hourLabel)
         hourLabel.snp
             .makeConstraints {
-                $0.leading.trailing.equalToSuperview().inset(16); $0.top.equalToSuperview().offset(6); $0.bottom.equalToSuperview()
+                $0.leading.trailing.equalToSuperview().inset(16); $0.top.equalToSuperview().offset(8); $0.bottom.equalToSuperview()
                     .inset(2); $0
                     .height.equalTo(18)
             }
@@ -347,36 +350,39 @@ final class SubwayTimetableHourHeaderView: UITableViewHeaderFooterView {
         hourLabel.accessibilityTraits = .header
         hourLabel.accessibilityLabel = group.accessibilityLabel
         strip.backgroundColor = SettingsStyle.Color.card
-        strip.layer.cornerRadius = roundsTop ? 16 : 0
-        strip.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        self.roundsTop = roundsTop
+        strip.layer.cornerCurve = HYUMetrics.cornerCurve
+        setPinned(false)
         hourLabel.snp
             .remakeConstraints {
-                $0.leading.trailing.equalToSuperview().inset(16); $0.top.equalToSuperview().offset(isFirst ? 12 : 6); $0.bottom
+                $0.leading.trailing.equalToSuperview().inset(16); $0.top.equalToSuperview().offset(8); $0.bottom
                     .equalToSuperview().inset(2); $0.height.equalTo(18)
             }
+    }
+
+    func setPinned(_ pinned: Bool) {
+        contentView.backgroundColor = pinned ? SettingsStyle.Color.background : .clear
+        strip.layer.cornerCurve = HYUMetrics.cornerCurve
+        strip.layer.cornerRadius = pinned || roundsTop ? HYUMetrics.Radius.card : 0
+        strip.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        strip.layer.masksToBounds = true
     }
 }
 
 final class SubwayTimetableCardFooterView: UIView {
     private let footnoteLabel = UILabel()
-    private let cardStrip = UIView()
     private let stack = UIStackView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         stack.axis = .vertical
         stack.alignment = .center
-        stack.spacing = 12
+        stack.spacing = HYUMetrics.Layout.contentToFootnote
         addSubview(stack)
-        stack.snp
-            .makeConstraints { $0.top.equalToSuperview(); $0.leading.trailing.equalToSuperview(); $0.bottom.equalToSuperview().inset(40) }
-        cardStrip.backgroundColor = SettingsStyle.Color.card
-        cardStrip.layer.cornerRadius = 16
-        cardStrip.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        stack.addArrangedSubview(cardStrip)
-        cardStrip.snp.makeConstraints {
-            $0.height.equalTo(8)
-            $0.leading.trailing.equalToSuperview().inset(16)
+        stack.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(HYUMetrics.Layout.contentToFootnote)
+            $0.leading.trailing.equalToSuperview()
+            $0.bottom.equalToSuperview().inset(40)
         }
         footnoteLabel.numberOfLines = 0
         footnoteLabel.attributedText = SettingsStyle.attributedText(
@@ -394,8 +400,7 @@ final class SubwayTimetableCardFooterView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(showsCard: Bool, showsFootnote: Bool) {
-        cardStrip.isHidden = !showsCard
+    func configure(showsFootnote: Bool) {
         footnoteLabel.isHidden = !showsFootnote
     }
 

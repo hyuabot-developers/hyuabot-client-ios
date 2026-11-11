@@ -8,8 +8,8 @@ import UIKit
 
 final class CafeteriaHeaderBarView: UIView {
     let monthButton = UIButton(configuration: .plain())
-    let todayButton = UIButton(type: .system)
-    let shareButton = UIButton(type: .system)
+    let todayButton = HYUHeaderButton(style: .capsule, symbolName: nil, title: String(localized: "cafeteria.today"))
+    let shareButton = HYUHeaderButton(style: .circle, symbolName: "square.and.arrow.up", title: nil)
     var onMonthTap: (() -> Void)?
     var onTodayTap: (() -> Void)?
     var onShareTap: (() -> Void)?
@@ -19,10 +19,7 @@ final class CafeteriaHeaderBarView: UIView {
     private let subtitleRow = HYUOverflowHitStackView()
     private let leftColumn = HYUOverflowHitStackView()
     private let rightGroup = UIStackView()
-    private let todayLabel = UILabel()
-    private let todayCapsule = UIView()
-    private let shareCircle = UIView()
-    private let shareIcon = UIImageView()
+    private(set) lazy var accessory = HYUPinnedAccessory(content: rightGroup)
     private var shareEnabled = false
 
     override init(frame: CGRect) {
@@ -62,17 +59,6 @@ final class CafeteriaHeaderBarView: UIView {
         leftColumn.addArrangedSubview(subtitleRow)
         addSubview(leftColumn)
 
-        todayLabel.attributedText = SettingsStyle.attributedText(
-            String(localized: "cafeteria.today"), font: SettingsStyle.font(13, bold: true),
-            color: SettingsStyle.Color.link, lineHeight: 16, alignment: .center
-        )
-        todayLabel.adjustsFontForContentSizeCategory = true
-        todayLabel.isUserInteractionEnabled = false
-        todayCapsule.backgroundColor = SettingsStyle.Color.accentFill
-        todayCapsule.layer.cornerRadius = SettingsStyle.Metric.capsuleRadius
-        todayCapsule.isUserInteractionEnabled = false
-        todayCapsule.addSubview(todayLabel)
-        todayButton.addSubview(todayCapsule)
         todayButton.accessibilityIdentifier = "cafeteria.today_button"
         todayButton.addTarget(self, action: #selector(todayTapped), for: .touchUpInside)
 
@@ -83,16 +69,16 @@ final class CafeteriaHeaderBarView: UIView {
         rightGroup.spacing = 4
         rightGroup.addArrangedSubview(todayButton)
         rightGroup.addArrangedSubview(shareButton)
-        addSubview(rightGroup)
+        addSubview(accessory.placeholder)
     }
 
     private func setupConstraints() {
         leftColumn.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(4)
             make.top.bottom.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(rightGroup.snp.leading).offset(-12)
+            make.trailing.lessThanOrEqualTo(accessory.placeholder.snp.leading).offset(-12)
         }
-        rightGroup.snp.makeConstraints { make in
+        accessory.placeholder.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-4)
             make.top.equalToSuperview().offset(-2)
         }
@@ -102,29 +88,7 @@ final class CafeteriaHeaderBarView: UIView {
             make.centerY.equalTo(subtitleRow.snp.centerY)
         }
         todayButton.snp.makeConstraints { $0.height.equalTo(44) }
-        todayCapsule.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.height.equalTo(32)
-            make.leading.trailing.equalToSuperview().inset(2)
-        }
-        todayLabel.snp.makeConstraints { make in
-            make.top.bottom.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(12)
-        }
-        todayLabel.setContentHuggingPriority(.required, for: .horizontal)
-        todayLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         shareButton.snp.makeConstraints { $0.size.equalTo(44) }
-        shareCircle.layer.cornerRadius = SettingsStyle.Metric.capsuleRadius
-        shareCircle.isUserInteractionEnabled = false
-        shareIcon.image = UIImage(
-            systemName: "square.and.arrow.up",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
-        )
-        shareIcon.contentMode = .center
-        shareCircle.addSubview(shareIcon)
-        shareIcon.snp.makeConstraints { $0.edges.equalToSuperview() }
-        shareButton.addSubview(shareCircle)
-        shareCircle.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(32) }
     }
 
     func configure(
@@ -162,8 +126,9 @@ final class CafeteriaHeaderBarView: UIView {
     }
 
     private func applyShareStyle() {
-        shareCircle.backgroundColor = shareEnabled ? SettingsStyle.Color.accentFill : SettingsStyle.Color.segmentBackground
-        shareIcon.tintColor = shareEnabled ? SettingsStyle.Color.link : SettingsStyle.Color.commuterFaint
+        shareButton.capsuleView.backgroundColor = shareEnabled
+            ? SettingsStyle.Color.accentFill
+            : SettingsStyle.Color.segmentBackground
         shareButton.isEnabled = shareEnabled
     }
 

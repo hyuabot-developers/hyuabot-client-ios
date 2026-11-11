@@ -18,7 +18,7 @@ class BusStopInfoVC: UIViewController {
         $0.isRotateEnabled = false
         $0.isPitchEnabled = false
         $0.isUserInteractionEnabled = false
-        $0.layer.cornerRadius = 16
+        $0.layer.cornerRadius = HYUMetrics.Radius.card
         $0.clipsToBounds = true
         $0.accessibilityIdentifier = "bus.stop.map"
     }
@@ -41,6 +41,7 @@ class BusStopInfoVC: UIViewController {
     init(input: [BusRouteStopInput]) {
         self.input = input
         super.init(nibName: nil, bundle: nil)
+        HYUSheet.configure(self, detents: [.large()])
     }
 
     @available(*, unavailable)
@@ -61,23 +62,20 @@ class BusStopInfoVC: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = SettingsStyle.Color.busSheetBackground
-        let title = UILabel()
+        HYUSheet.applyBackground(to: view)
+        let title = HYUSheet.makeTitleLabel()
+        HYUSheet.setTitle(String(localized: "bus.stop.title"), on: title)
         title.accessibilityIdentifier = "bus.stop.title"
-        title.attributedText = SettingsStyle.attributedText(
-            String(localized: "bus.stop.title"), font: SettingsStyle.font(20, bold: true),
-            color: SettingsStyle.Color.text, lineHeight: 26
-        )
         view.addSubview(title)
         view.addSubview(firstLastTableView)
         title.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(11)
-            make.horizontalEdges.equalToSuperview().inset(20)
+            make.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
             make.height.equalTo(52)
         }
         firstLastTableView.snp.makeConstraints { make in
             make.top.equalTo(title.snp.bottom).offset(3)
-            make.horizontalEdges.equalToSuperview().inset(20)
+            make.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         configureMapHeader()
