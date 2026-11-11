@@ -89,6 +89,7 @@ final class FloatingTabBarButton: UIControl {
 
 final class FloatingTabBar: UIView {
     static let barHeight: CGFloat = 64
+    static let contentGap: CGFloat = HYUMetrics.Layout.tabBarContentGap
     static let sideInset: CGFloat = 16
     static let bottomInset: CGFloat = 16
     static let maxWidth: CGFloat = 480

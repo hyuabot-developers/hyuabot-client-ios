@@ -6,51 +6,9 @@
 import SnapKit
 import UIKit
 
-final class CalendarTodayPillView: UIControl {
-    private let titleLabel = UILabel()
-
-    override var intrinsicContentSize: CGSize {
-        CGSize(width: 16 + 6 + titleLabel.intrinsicContentSize.width + 24, height: 44)
-    }
-
-    override var isHighlighted: Bool {
-        didSet { alpha = isHighlighted ? 0.6 : 1 }
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        let capsule = UIView()
-        capsule.backgroundColor = SettingsStyle.Color.accentFill
-        capsule.layer.cornerRadius = 18
-        capsule.layer.cornerCurve = .continuous
-        capsule.isUserInteractionEnabled = false
-        addSubview(capsule)
-        capsule.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.height.equalTo(36)
-            make.leading.trailing.equalToSuperview()
-        }
-
-        let image = UIImageView(image: UIImage(
-            systemName: "calendar",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
-        ))
-        image.tintColor = SettingsStyle.Color.link
-        let stack = UIStackView(arrangedSubviews: [image, titleLabel])
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 6
-        capsule.addSubview(stack)
-        stack.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(12)
-        }
-        image.snp.makeConstraints { $0.size.equalTo(16) }
-        titleLabel.text = String(localized: "calendar.today")
-        titleLabel.font = SettingsStyle.font(14, bold: true)
-        titleLabel.textColor = SettingsStyle.Color.link
-        isAccessibilityElement = true
-        accessibilityTraits = .button
+final class CalendarTodayPillView: HYUHeaderButton {
+    init() {
+        super.init(style: .capsule, symbolName: "calendar", title: String(localized: "calendar.today"))
         accessibilityIdentifier = "calendar.today_button"
         accessibilityLabel = String(localized: "calendar.today.accessibility")
     }

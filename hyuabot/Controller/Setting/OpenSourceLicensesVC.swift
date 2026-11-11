@@ -20,10 +20,11 @@ final class OpenSourceLicensesVC: UIViewController, SettingsStyledScreen {
         super.viewDidLoad()
         title = String(localized: "setting.open_source_licenses")
         navigationItem.backButtonTitle = String(localized: "licenses.back")
-        SettingsNavigationStyle.apply(to: self)
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
         view.backgroundColor = SettingsStyle.Color.background
         configureSearch()
         configureContent()
+        setContentScrollView(scrollView, for: .top)
         rebuildSections(query: "")
     }
 

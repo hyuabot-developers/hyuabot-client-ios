@@ -171,7 +171,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let name = query("name") ?? "Debug Building"
                 guard let url = URL(string: query("url") ?? "https://hyuabot.app") else { return true }
                 let vc = BuildingVC(buildingName: name, url: url)
-                vc.modalPresentationStyle = .pageSheet
                 top.present(vc, animated: false)
 
             case "web-sheet":

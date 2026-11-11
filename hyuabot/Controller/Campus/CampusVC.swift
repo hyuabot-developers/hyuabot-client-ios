@@ -33,30 +33,11 @@ final class CampusNC: UINavigationController {
     }
 
     private func configureNavigationBar() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .hanyangBlue
-
-        let whiteAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.white
-        ]
-        appearance.titleTextAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 17, weight: .bold)
-        ]) { _, new in new }
-        appearance.largeTitleTextAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 34, weight: .bold)
-        ]) { _, new in new }
-        let buttonAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 17, weight: .medium)
-        ]) { _, new in new }
-        appearance.buttonAppearance.normal.titleTextAttributes = buttonAttributes
-        appearance.doneButtonAppearance.normal.titleTextAttributes = buttonAttributes
-        appearance.backButtonAppearance.normal.titleTextAttributes = buttonAttributes
-
+        let appearance = SettingsNavigationStyle.makeAppearance()
         navigationBar.standardAppearance = appearance
-        navigationBar.scrollEdgeAppearance = appearance
         navigationBar.compactAppearance = appearance
-        navigationBar.tintColor = .white
+        navigationBar.scrollEdgeAppearance = SettingsNavigationStyle.makeScrollEdgeAppearance()
+        navigationBar.tintColor = SettingsStyle.Color.link
     }
 }
 
@@ -147,7 +128,10 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
             contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 2),
             contentStack.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),
             contentStack.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -16),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24)
+            contentStack.bottomAnchor.constraint(
+                equalTo: scrollView.contentLayoutGuide.bottomAnchor,
+                constant: -HYUMetrics.Layout.screenBottom
+            )
         ])
         buildContent()
     }
@@ -155,7 +139,7 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
     private func buildContent() {
         addContent(makeInsetLabel(
             String(localized: "campus.tools.subtitle"), font: SettingsStyle.font(14), lineHeight: 20
-        ), spacing: 20)
+        ), spacing: HYUMetrics.Layout.controlToContent)
         addContent(makeSectionHeader(String(localized: "campus.tools.title")), spacing: 8)
         addContent(makeFeatureCard(), spacing: 10)
         addContent(makeToolRow(.map, .readingRoom), spacing: 10)

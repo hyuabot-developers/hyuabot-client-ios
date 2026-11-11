@@ -231,7 +231,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
             filterHeightConstraint = make.height.equalTo(44).constraint
         }
         calendarCardView.backgroundColor = SettingsStyle.Color.card
-        calendarCardView.layer.cornerRadius = 16
+        calendarCardView.layer.cornerRadius = HYUMetrics.Radius.card
         calendarCardView.layer.cornerCurve = .continuous
         calendarCardView.snp.makeConstraints { make in
             cardTopConstraint = make.top.equalTo(categoryFilterView.snp.bottom).offset(8).constraint
@@ -326,7 +326,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
 
     private func setupPanel() {
         eventListCard.backgroundColor = SettingsStyle.Color.card
-        eventListCard.layer.cornerRadius = 16
+        eventListCard.layer.cornerRadius = HYUMetrics.Radius.card
         eventListCard.layer.cornerCurve = .continuous
         eventListCard.clipsToBounds = true
         eventListCard.addSubview(selectedEventView)
@@ -346,7 +346,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
             }
         }
         hintLabel.snp.makeConstraints { make in
-            make.top.equalTo(eventListCard.snp.bottom).offset(6)
+            make.top.equalTo(eventListCard.snp.bottom).offset(HYUMetrics.Layout.contentToFootnote)
             make.leading.trailing.equalToSuperview().inset(24)
             make.bottom.equalToSuperview().inset(12)
         }
@@ -355,7 +355,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
 
     private func updatePanelLayout(visibleView: UIView) {
         hintLabel.snp.remakeConstraints { make in
-            make.top.equalTo(visibleView.snp.bottom).offset(6)
+            make.top.equalTo(visibleView.snp.bottom).offset(HYUMetrics.Layout.contentToFootnote)
             make.leading.trailing.equalToSuperview().inset(24)
             make.bottom.equalToSuperview().inset(12)
         }

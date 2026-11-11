@@ -22,7 +22,7 @@ enum SettingsStyle {
         static let toastBackground = adaptive(light: 0x111827, dark: 0xE8EDF3)
         static let toastText = adaptive(light: 0xFFFFFF, dark: 0x0B0F14)
         static let sheet = adaptive(light: 0xFFFFFF, dark: 0x1C222B)
-        static let grabber = adaptive(light: 0xC9CED6, dark: 0x3A434E)
+        static let grabber = HYUColor.Sheet.grabber
         static let highlight = adaptive(light: 0xFDE68A, dark: 0x5C4A12)
         static let highlightText = adaptive(light: 0x111827, dark: 0xFDE68A)
         static let danger = adaptive(light: 0xB91C1C, dark: 0xF87171)
@@ -69,7 +69,7 @@ enum SettingsStyle {
         static let saturday = adaptive(light: 0x1D4ED8, dark: 0x93C5FD)
         static let sunday = adaptive(light: 0xC62828, dark: 0xFF8A80)
         static let weekSaturday = adaptive(light: 0x1D5FB8, dark: 0x8AB4F8)
-        static let cafeteriaGrabber = adaptive(light: 0xC9D0D8, dark: 0x3A4450)
+        static let cafeteriaGrabber = HYUColor.Sheet.grabber
         static let subwaySoon = adaptive(light: 0xC2410C, dark: 0xFDBA74)
         static let subwayLastFill = adaptive(light: 0xFEE2E2, dark: 0x3A1616)
         static let subwayLastText = adaptive(light: 0xB91C1C, dark: 0xFCA5A5)
@@ -112,7 +112,7 @@ enum SettingsStyle {
         static let busLowFloorFill = adaptive(light: 0xDCFCE7, dark: 0x12301F)
         static let busLowFloorText = adaptive(light: 0x15803D, dark: 0x86EFAC)
         static let busChipLine = adaptive(light: 0xD5DBE2, dark: 0x3A4450)
-        static let busSheetBackground = adaptive(light: 0xF2F4F7, dark: 0x11161C)
+        static let busSheetBackground = HYUColor.Sheet.background
 
         private static func adaptive(light: UInt32, dark: UInt32) -> UIColor {
             UIColor { traits in
@@ -138,7 +138,7 @@ enum SettingsStyle {
     }
 
     enum Metric {
-        static let cardRadius: CGFloat = 16
+        static let cardRadius: CGFloat = HYUMetrics.Radius.card
         static let cardInset: CGFloat = 16
         static let sectionHeaderTop: CGFloat = 28
         static let sectionHeaderInsetX: CGFloat = 8
@@ -201,7 +201,7 @@ enum SettingsStyle {
 protocol SettingsStyledScreen: UIViewController {}
 
 enum SettingsNavigationStyle {
-    static func apply(to viewController: UIViewController, largeTitle: Bool = false) {
+    static func makeAppearance() -> UINavigationBarAppearance {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = SettingsStyle.Color.background
@@ -225,9 +225,22 @@ enum SettingsNavigationStyle {
         appearance.buttonAppearance = button
         appearance.doneButtonAppearance = button
         appearance.backButtonAppearance = button
+        return appearance
+    }
+
+    static func makeScrollEdgeAppearance() -> UINavigationBarAppearance {
+        let appearance = makeAppearance()
+        appearance.backgroundColor = .clear
+        appearance.backgroundEffect = nil
+        appearance.shadowColor = .clear
+        return appearance
+    }
+
+    static func apply(to viewController: UIViewController, largeTitle: Bool = false) {
+        let appearance = makeAppearance()
         viewController.navigationItem.standardAppearance = appearance.copy()
         viewController.navigationItem.compactAppearance = appearance.copy()
-        viewController.navigationItem.scrollEdgeAppearance = appearance.copy()
+        viewController.navigationItem.scrollEdgeAppearance = makeScrollEdgeAppearance()
         viewController.navigationItem.largeTitleDisplayMode = largeTitle ? .always : .never
         if largeTitle, let bar = viewController.navigationController?.navigationBar {
             bar.prefersLargeTitles = true
@@ -238,9 +251,9 @@ enum SettingsNavigationStyle {
     static func screenWillAppear(_ viewController: UIViewController) {
         guard let bar = viewController.navigationController?.navigationBar else { return }
         bar.tintColor = SettingsStyle.Color.link
-        bar.prefersLargeTitles = true
-        bar.setNeedsLayout()
-        bar.layoutIfNeeded()
+        if !bar.prefersLargeTitles {
+            bar.prefersLargeTitles = true
+        }
         viewController.tabBarController?.setNeedsStatusBarAppearanceUpdate()
     }
 
@@ -249,8 +262,14 @@ enum SettingsNavigationStyle {
         if let top = navigationController.topViewController, top !== viewController, top is SettingsStyledScreen {
             return
         }
-        navigationController.navigationBar.tintColor = .white
-        navigationController.navigationBar.prefersLargeTitles = false
+        if navigationController is CampusNC {
+            navigationController.navigationBar.tintColor = SettingsStyle.Color.link
+        } else {
+            navigationController.navigationBar.tintColor = .white
+        }
+        if !(navigationController is CampusNC) {
+            navigationController.navigationBar.prefersLargeTitles = false
+        }
         let tabBarController = viewController.tabBarController
         if let coordinator = viewController.transitionCoordinator {
             coordinator.animate(alongsideTransition: nil) { context in
