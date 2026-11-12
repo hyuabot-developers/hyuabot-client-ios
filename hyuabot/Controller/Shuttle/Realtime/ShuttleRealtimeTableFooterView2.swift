@@ -5,72 +5,77 @@
 
 import UIKit
 
-class ShuttleRealtimeTableFooterView2: UIView {
-    private let showStopModal: @MainActor (_ stop: ShuttleStopEnum) -> Void
+final class ShuttleRealtimeTableFooterView2: UIView {
     private let stopID: ShuttleStopEnum
-    private var showEntireTimetable: (@MainActor (_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
-    private var section: Int?
-    let showEntireTimeTableButton1 = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var title = AttributedString(String(localized: "shuttle.show.entire.timetable.station"))
-        title.font = .godo(size: 16, weight: .medium)
-        conf.attributedTitle = title
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
+    private let showEntireTimetable: @MainActor (_ stop: ShuttleStopEnum, _ section: Int) -> Void
+    private let footnoteLabel = UILabel().then {
+        $0.numberOfLines = 0
+        $0.attributedText = SettingsStyle.attributedText(
+            String(localized: "shuttle.realtime.footnote"),
+            font: SettingsStyle.font(12),
+            color: SettingsStyle.Color.commuterFaint,
+            lineHeight: 16
+        )
     }
 
-    private let showEntireTimeTableButton2 = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var title = AttributedString(String(localized: "shuttle.show.entire.timetable.campus"))
-        title.font = .godo(size: 16, weight: .medium)
-        conf.attributedTitle = title
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-    }
-
-    private let showEntireTimeTableButton3 = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var title = AttributedString(String(localized: "shuttle.show.entire.timetable.terminal"))
-        title.font = .godo(size: 16, weight: .medium)
-        conf.attributedTitle = title
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-    }
-
-    private let showEntireTimeTableButton4 = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var title = AttributedString(String(localized: "shuttle.show.entire.timetable.jungang_stn"))
-        title.font = .godo(size: 16, weight: .medium)
-        conf.attributedTitle = title
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-    }
-
-    let showStopModalButton = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var title = AttributedString(String(localized: "shuttle.show.stop.modal"))
-        title.font = .godo(size: 16, weight: .medium)
-        conf.attributedTitle = title
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-    }
+    private let showEntireTimeTableButton1 = ShuttleRealtimeTableFooterView2.makeTimetableButton("shuttle.show.entire.timetable.station")
+    private let showEntireTimeTableButton2 = ShuttleRealtimeTableFooterView2.makeTimetableButton("shuttle.show.entire.timetable.campus")
+    private let showEntireTimeTableButton3 = ShuttleRealtimeTableFooterView2.makeTimetableButton("shuttle.show.entire.timetable.terminal")
+    private let showEntireTimeTableButton4 = ShuttleRealtimeTableFooterView2
+        .makeTimetableButton("shuttle.show.entire.timetable.jungang_stn")
 
     init(
         parentView: UIView,
         stopID: ShuttleStopEnum,
-        showStopModal: @escaping @MainActor (_ stop: ShuttleStopEnum) -> Void,
         showEntireTimetable: @escaping @MainActor (_ stop: ShuttleStopEnum, _ section: Int) -> Void
     ) {
-        self.showEntireTimetable = showEntireTimetable
-        self.showStopModal = showStopModal
         self.stopID = stopID
-        let visibleButtonCount = if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
-            2
-        } else {
-            4
+        self.showEntireTimetable = showEntireTimetable
+
+        let width = parentView.bounds.width
+        let noteSize = footnoteLabel.sizeThatFits(CGSize(width: max(0, width - 40), height: .greatestFiniteMagnitude))
+        let buttonCount = Self.visibleButtonCount(for: stopID)
+        let cardHeight = CGFloat(buttonCount * 44 + max(0, buttonCount - 1))
+        super.init(frame: CGRect(x: 0, y: 0, width: width, height: cardHeight + 12 + noteSize.height + 8))
+
+        let buttons = visibleButtons()
+        for button in buttons {
+            button.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
         }
-        super.init(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: CGFloat(visibleButtonCount * 50)))
-        setupUI()
+
+        let card = UIStackView()
+        card.axis = .vertical
+        card.spacing = 0
+        card.backgroundColor = SettingsStyle.Color.card
+        card.layer.cornerRadius = 16
+        card.clipsToBounds = true
+
+        for (index, button) in buttons.enumerated() {
+            let row = makeRow(for: button)
+            card.addArrangedSubview(row)
+            row.snp.makeConstraints { $0.height.equalTo(44) }
+            if index < buttons.count - 1 {
+                let separator = UIView().then { $0.backgroundColor = SettingsStyle.Color.separator }
+                card.addArrangedSubview(separator)
+                separator.snp.makeConstraints { make in
+                    make.height.equalTo(1)
+                    make.leading.trailing.equalToSuperview().inset(16)
+                }
+            }
+        }
+
+        addSubview(card)
+        card.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(16)
+        }
+
+        addSubview(footnoteLabel)
+        footnoteLabel.snp.makeConstraints { make in
+            make.top.equalTo(card.snp.bottom).offset(12)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().inset(8)
+        }
     }
 
     @available(*, unavailable)
@@ -78,82 +83,66 @@ class ShuttleRealtimeTableFooterView2: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setupUI() {
-        backgroundColor = .systemBackground
-        showStopModalButton.addTarget(self, action: #selector(showStopModalButtonTapped), for: .touchUpInside)
-        showEntireTimeTableButton1.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
-        showEntireTimeTableButton2.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
-        showEntireTimeTableButton3.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
-        showEntireTimeTableButton4.addTarget(self, action: #selector(showEntireTimeTable(_:)), for: .touchUpInside)
+    private static func makeTimetableButton(_ key: String) -> UIButton {
+        UIButton().then {
+            var configuration = UIButton.Configuration.plain()
+            var title = AttributedString(String(localized: String.LocalizationValue(key)))
+            title.font = SettingsStyle.font(14, bold: true)
+            configuration.attributedTitle = title
+            configuration.contentInsets = .zero
+            $0.configuration = configuration
+            $0.contentHorizontalAlignment = .leading
+            $0.tintColor = SettingsStyle.Color.link
+        }
+    }
+
+    private static func visibleButtonCount(for stopID: ShuttleStopEnum) -> Int {
+        stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn ? 1 : 3
+    }
+
+    private func visibleButtons() -> [UIButton] {
         if stopID == .dormiotryOut || stopID == .shuttlecockOut {
-            showEntireTimeTableButton2.isHidden = true
-        } else if stopID == .station {
-            showEntireTimeTableButton1.isHidden = true
-        } else if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
-            showEntireTimeTableButton1.isHidden = true
-            showEntireTimeTableButton3.isHidden = true
-            showEntireTimeTableButton4.isHidden = true
+            return [showEntireTimeTableButton1, showEntireTimeTableButton3, showEntireTimeTableButton4]
         }
-        showEntireTimeTableButton1.snp.makeConstraints { make in
-            make.height.equalTo(50)
+        if stopID == .station {
+            return [showEntireTimeTableButton2, showEntireTimeTableButton3, showEntireTimeTableButton4]
         }
-        showEntireTimeTableButton2.snp.makeConstraints { make in
-            make.height.equalTo(50)
+        return [showEntireTimeTableButton2]
+    }
+
+    private func makeRow(for button: UIButton) -> UIView {
+        let row = UIView()
+        row.addSubview(button)
+        button.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.top.bottom.equalToSuperview()
+            make.trailing.equalToSuperview().inset(44)
         }
-        showEntireTimeTableButton3.snp.makeConstraints { make in
-            make.height.equalTo(50)
+
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevron.tintColor = SettingsStyle.Color.commuterFaint
+        chevron.contentMode = .scaleAspectFit
+        row.addSubview(chevron)
+        chevron.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(12)
         }
-        showEntireTimeTableButton4.snp.makeConstraints { make in
-            make.height.equalTo(50)
-        }
-        showStopModalButton.snp.makeConstraints { make in
-            make.height.equalTo(50)
-        }
-        let verticalView = UIStackView(arrangedSubviews: [
-            showEntireTimeTableButton1,
-            showEntireTimeTableButton2,
-            showEntireTimeTableButton3,
-            showEntireTimeTableButton4,
-            showStopModalButton
-        ]).then {
-            $0.axis = .vertical
-            $0.spacing = 0
-            $0.alignment = .fill
-            $0.backgroundColor = .systemBackground
-        }
-        addSubview(verticalView)
-        verticalView.snp.makeConstraints { make in
-            make.leading.top.trailing.equalToSuperview()
-        }
+        return row
     }
 
     @objc
-    func showStopModalButtonTapped() {
-        AnalyticsManager.logSelect(.shuttleShowStopModal)
-        showStopModal(stopID)
-    }
-
-    @objc
-    func showEntireTimeTable(_ sender: UIButton) {
+    private func showEntireTimeTable(_ sender: UIButton) {
+        guard let index = visibleButtons().firstIndex(of: sender) else { return }
         AnalyticsManager.logSelect(.shuttleShowEntireTimetable)
-        guard let showEntireTimetable else { return }
+
         if stopID == .dormiotryOut || stopID == .shuttlecockOut {
-            if sender == showEntireTimeTableButton1 {
-                showEntireTimetable(stopID, 0)
-            } else if sender == showEntireTimeTableButton3 {
-                showEntireTimetable(stopID, 1)
-            } else if sender == showEntireTimeTableButton4 {
-                showEntireTimetable(stopID, 2)
-            }
+            let section = [0, 1, 2][index]
+            showEntireTimetable(stopID, section)
         } else if stopID == .station {
-            if sender == showEntireTimeTableButton2 {
-                showEntireTimetable(stopID, 0)
-            } else if sender == showEntireTimeTableButton3 {
-                showEntireTimetable(stopID, 1)
-            } else if sender == showEntireTimeTableButton4 {
-                showEntireTimetable(stopID, 2)
-            }
-        } else if stopID == .terminal || stopID == .jungangStation || stopID == .shuttlecockIn {
+            let section = [0, 1, 2][index]
+            showEntireTimetable(stopID, section)
+        } else {
             showEntireTimetable(stopID, 0)
         }
     }

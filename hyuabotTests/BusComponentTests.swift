@@ -9,6 +9,22 @@ import XCTest
 
 final class BusComponentTests: XCTestCase {
     @MainActor
+    func testHourHeaderInsetDefaultsToTwentyAndAcceptsSixteen() throws {
+        let header = BusTimetableHourHeaderView(reuseIdentifier: nil)
+        header.frame = CGRect(x: 0, y: 0, width: 390, height: BusTimetableHourHeaderView.height(isFirst: true))
+        header.configure(hour: 8, isFirst: true, roundsTop: true)
+        header.layoutIfNeeded()
+        let strip = try XCTUnwrap(header.contentView.subviews.first)
+        XCTAssertEqual(strip.frame.minX, 20, accuracy: 0.5)
+        XCTAssertEqual(strip.frame.maxX, 370, accuracy: 0.5)
+
+        header.configure(hour: 8, isFirst: true, roundsTop: true, horizontalInset: 16)
+        header.layoutIfNeeded()
+        XCTAssertEqual(strip.frame.minX, 16, accuracy: 0.5)
+        XCTAssertEqual(strip.frame.maxX, 374, accuracy: 0.5)
+    }
+
+    @MainActor
     func testStopSheetKeepsMapStaticAndHeaderAligned() throws {
         let controller = BusStopInfoVC(input: [])
         controller.loadViewIfNeeded()

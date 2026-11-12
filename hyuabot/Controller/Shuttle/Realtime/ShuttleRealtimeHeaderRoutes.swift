@@ -6,8 +6,8 @@
 import UIKit
 
 enum ShuttleRealtimeHeaderRoutes {
-    private static func route(_ color: UIColor, current: Int = 0, _ stops: KeyValuePairs<String, Int>) -> ShuttleRouteItemView.Route {
-        ShuttleRouteItemView.Route(
+    private static func route(_ color: UIColor, current: Int = 0, _ stops: KeyValuePairs<String, Int>) -> ShuttleRoutePath {
+        ShuttleRoutePath(
             color: color,
             stops: stops.map(\.key),
             currentStopIndex: current,
@@ -16,13 +16,24 @@ enum ShuttleRealtimeHeaderRoutes {
     }
 
     static func adapter(stop: ShuttleStopEnum, section: Int) -> ShuttleRouteAdapter {
-        switch stop {
+        let base: ShuttleRouteAdapter = switch stop {
         case .dormiotryOut: dormiotryOut(section: section)
         case .shuttlecockOut: shuttlecockOut(section: section)
         case .station: station(section: section)
         case .terminal: terminal(section: section)
         case .jungangStation: jungangStation(section: section)
         case .shuttlecockIn: shuttlecockIn(section: section)
+        }
+        return base.withDestination(destinationKey(stop: stop, section: section))
+    }
+
+    /// Stop key the section's route map ends at; nil means the end of each route.
+    private static func destinationKey(stop: ShuttleStopEnum, section: Int) -> String? {
+        switch (stop, section) {
+        case (.dormiotryOut, 0), (.shuttlecockOut, 0): "shuttle.stop.station"
+        case (.dormiotryOut, 1), (.shuttlecockOut, 1), (.station, 1): "shuttle.stop.terminal"
+        case (.dormiotryOut, 2), (.shuttlecockOut, 2), (.station, 2): "shuttle.stop.jungang.station"
+        default: nil
         }
     }
 }
@@ -317,8 +328,8 @@ extension ShuttleRealtimeHeaderRoutes {
         )
     }
 
-    private static func stationCircularShuttlecockRoute() -> ShuttleRouteItemView.Route {
-        ShuttleRouteItemView.Route(
+    private static func stationCircularShuttlecockRoute() -> ShuttleRoutePath {
+        ShuttleRoutePath(
             color: .white,
             stops: [
                 "shuttle.stop.dormitory.out",
@@ -331,7 +342,7 @@ extension ShuttleRealtimeHeaderRoutes {
                 "shuttle.stop.dormitory.out": -15,
                 "shuttle.stop.station": 0,
                 "shuttle.stop.terminal": 5,
-                "shuttle.stop.dormitory.in": 20
+                "shuttle.stop.shuttlecock.in": 15
             ]
         )
     }
@@ -373,7 +384,7 @@ extension ShuttleRealtimeHeaderRoutes {
             routes: [
                 route(
                     .hanyangGreen,
-                    current: 1,
+                    current: 2,
                     [
                         "shuttle.stop.dormitory.out": -15,
                         "shuttle.stop.shuttlecock.out": -10,
@@ -414,7 +425,8 @@ extension ShuttleRealtimeHeaderRoutes {
             labels: [
                 String.LocalizationValue("shuttle.type.dormitory"),
                 String.LocalizationValue("shuttle.type.shuttlecock")
-            ]
+            ],
+            mergesByType: false
         )
     }
 }
@@ -436,7 +448,8 @@ extension ShuttleRealtimeHeaderRoutes {
             ],
             labels: [
                 String.LocalizationValue("shuttle.type.dormitory")
-            ]
+            ],
+            mergesByType: false
         )
     }
 }
@@ -453,7 +466,8 @@ extension ShuttleRealtimeHeaderRoutes {
             ],
             labels: [
                 String.LocalizationValue("shuttle.type.dormitory")
-            ]
+            ],
+            mergesByType: false
         )
     }
 }

@@ -3,9 +3,9 @@
 //  hyuabotTests
 //
 
+@testable import hyuabot
 import UIKit
 import XCTest
-@testable import hyuabot
 
 @MainActor
 final class ShuttleRealtimeRowHeightTests: XCTestCase {

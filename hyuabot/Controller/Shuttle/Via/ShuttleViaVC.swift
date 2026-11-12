@@ -10,26 +10,18 @@ class ShuttleViaVC: UIViewController {
     private var itemByOrder: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order?
     private var itemByDestination: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
     private var timetableItem: ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order?
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
-        $0.textColor = .white
-        $0.backgroundColor = .hanyangBlue
-        $0.text = String(localized: "shuttle.via.stop")
-        $0.textAlignment = .center
-    }
+    private let sheetView = HYUSheetView(title: String(localized: "shuttle.via.stop"))
+    private let card = HYUSheetView.card()
 
     private lazy var tableView = UITableView().then {
-        $0.backgroundColor = .systemBackground
+        $0.backgroundColor = .clear
+        $0.separatorStyle = .none
+        $0.isScrollEnabled = false
+        $0.contentInset = UIEdgeInsets(top: 6, left: 0, bottom: 6, right: 0)
+        $0.rowHeight = 44
         $0.register(ShuttleViaCellView.self, forCellReuseIdentifier: ShuttleViaCellView.reuseIdentifier)
         $0.dataSource = self
         $0.delegate = self
-    }
-
-    private lazy var contentView = UIStackView().then {
-        $0.axis = .vertical
-        $0.spacing = 0
-        $0.backgroundColor = .systemBackground
-        $0.addArrangedSubview(self.tableView)
     }
 
     init(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
@@ -63,11 +55,8 @@ class ShuttleViaVC: UIViewController {
     }
 
     var sheetHeight: CGFloat {
-        let titleHeight: CGFloat = 60
-        let rowHeight: CGFloat = 52
-        let bottomPadding: CGFloat = 16
-        let rows = max(routeStopCount, 1)
-        return titleHeight + CGFloat(rows) * rowHeight + bottomPadding
+        view.layoutIfNeeded()
+        return sheetView.contentHeight
     }
 
     private var routeStopCount: Int {
@@ -82,18 +71,20 @@ class ShuttleViaVC: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = .hanyangBlue
-        view.addSubview(titleLabel)
-        view.addSubview(contentView)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
-        }
-        contentView.snp.makeConstraints { make in
-            make.top.equalTo(self.titleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
+        view.backgroundColor = SettingsStyle.Color.busSheetBackground
+        view.addSubview(sheetView)
+        sheetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        card.addArrangedSubview(tableView)
+        tableView.snp.makeConstraints { $0.height.equalTo(CGFloat(routeStopCount) * 44 + 12) }
+        sheetView.contentStack.addArrangedSubview(card)
+    }
+
+    private func formatTime(_ time: String) -> String {
+        guard let date = time.toLocalTimeOrNil() else { return time.substring(from: 0, to: 4) }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        guard let hour = components.hour, let minute = components.minute else { return time.substring(from: 0, to: 4) }
+        return String(format: String(localized: "shuttle.shorten.time.%lld.%lld"), hour, minute)
     }
 }
 
@@ -116,6 +107,7 @@ extension ShuttleViaVC: UITableViewDataSource, UITableViewDelegate {
         } else if let timetableItem, timetableItem.stops.indices.contains(indexPath.row) {
             cell.setupUI(startStop: timetableItem, item: timetableItem.stops[indexPath.row])
         }
+        cell.setTimelinePosition(isFirst: indexPath.row == 0, isLast: indexPath.row == routeStopCount - 1)
         return cell
     }
 }

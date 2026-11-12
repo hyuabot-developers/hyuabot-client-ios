@@ -353,7 +353,7 @@ final class BusTimetableHourHeaderView: UITableViewHeaderFooterView {
 
     static func height(isFirst: Bool) -> CGFloat { (isFirst ? 12 : 6) + 18 + 2 }
 
-    func configure(hour: Int, isFirst: Bool, roundsTop: Bool) {
+    func configure(hour: Int, isFirst: Bool, roundsTop: Bool, horizontalInset: CGFloat = 20) {
         let hourText = String(format: "%02d", hour >= 24 ? hour - 24 : hour)
         let text: String
         if hour >= 24 {
@@ -368,6 +368,7 @@ final class BusTimetableHourHeaderView: UITableViewHeaderFooterView {
             lineHeight: 18
         )
         label.snp.updateConstraints { $0.top.equalToSuperview().offset(isFirst ? 12 : 6) }
+        strip.snp.updateConstraints { $0.leading.trailing.equalToSuperview().inset(horizontalInset) }
         strip.backgroundColor = SettingsStyle.Color.card
         strip.layer.cornerRadius = roundsTop ? 16 : 0
         strip.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]

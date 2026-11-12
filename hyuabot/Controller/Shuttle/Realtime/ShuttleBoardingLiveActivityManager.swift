@@ -61,6 +61,7 @@ private let shuttleBoardingLiveActivityManagerLogger = Logger(
                 key: context.key,
                 alarmKind: "boarding",
                 routeDisplayName: context.routeDisplayName,
+                routeChipKind: Self.chipKindName(context.chipKind),
                 boardingStopName: context.boardingStop.name,
                 targetStopName: context.boardingStop.name,
                 departureTime: context.departureTime,
@@ -106,6 +107,7 @@ private let shuttleBoardingLiveActivityManagerLogger = Logger(
                 key: context.key,
                 alarmKind: "alighting",
                 routeDisplayName: context.routeDisplayName,
+                routeChipKind: Self.chipKindName(context.chipKind),
                 boardingStopName: context.boardingStop.name,
                 targetStopName: destination.name,
                 departureTime: destination.time,
@@ -502,6 +504,16 @@ private let shuttleBoardingLiveActivityManagerLogger = Logger(
                 return String(format: "%.1fkm", locale: Locale(identifier: "en_US_POSIX"), Double(distance) / 1000)
             }
             return "\(distance)m"
+        }
+
+        private static func chipKindName(_ kind: ShuttleDisplayLogic.RouteChipKind) -> String {
+            switch kind {
+            case .direct: "direct"
+            case .circular: "circular"
+            case .jungang: "jungang"
+            case .terminal: "terminal"
+            case .fallback: "fallback"
+            }
         }
 
         private func departureText(_ date: Date) -> String {

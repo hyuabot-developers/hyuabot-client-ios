@@ -11,6 +11,10 @@ protocol ContentViewDelegate: AnyObject {
 }
 
 class ContentView: UIView {
+    private(set) var currentIndex = 0
+    private var pendingIndex: Int?
+    private var lastCollectionViewWidth: CGFloat?
+
     var pages: [UIView] = [] {
         didSet { collectionView.reloadData() }
     }
@@ -23,7 +27,8 @@ class ContentView: UIView {
         return UICollectionView(frame: .zero, collectionViewLayout: layout).then {
             $0.showsHorizontalScrollIndicator = false
             $0.isPagingEnabled = true
-            $0.backgroundColor = .systemBackground
+            $0.contentInsetAdjustmentBehavior = .never
+            $0.backgroundColor = .clear
             $0.register(ContentViewCell.self, forCellWithReuseIdentifier: "ContentViewCell")
             $0.dataSource = self
             $0.delegate = self
@@ -46,6 +51,7 @@ class ContentView: UIView {
     // MARK: - UI Setup
 
     private func setupUI() {
+        backgroundColor = .clear
         addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -54,7 +60,32 @@ class ContentView: UIView {
 
     func moveToPage(index: Int, animated: Bool = true) {
         guard pages.indices.contains(index) else { return }
+        currentIndex = index
+        guard collectionView.bounds.width > 0 else {
+            pendingIndex = index
+            setNeedsLayout()
+            return
+        }
         collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: animated)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let width = collectionView.bounds.width
+        if lastCollectionViewWidth != width {
+            lastCollectionViewWidth = width
+            collectionView.collectionViewLayout.invalidateLayout()
+            if width > 0, pages.indices.contains(currentIndex) {
+                collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: .centeredHorizontally, animated: false)
+            }
+        }
+
+        if let pendingIndex, width > 0 {
+            self.pendingIndex = nil
+            collectionView.layoutIfNeeded()
+            collectionView.scrollToItem(at: IndexPath(item: pendingIndex, section: 0), at: .centeredHorizontally, animated: false)
+        }
     }
 }
 
@@ -76,8 +107,9 @@ extension ContentView: UICollectionViewDataSource {
 extension ContentView: UICollectionViewDelegateFlowLayout {
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         guard scrollView.frame.width > 0 else { return }
-        let index = Int(scrollView.contentOffset.x / scrollView.frame.width)
+        let index = Int((scrollView.contentOffset.x / scrollView.frame.width).rounded())
         guard pages.indices.contains(index) else { return }
+        currentIndex = index
         delegate?.didMoveToPage(index: index)
     }
 

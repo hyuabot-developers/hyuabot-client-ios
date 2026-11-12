@@ -8,59 +8,67 @@ import Then
 import UIKit
 
 final class ShuttleCompactTransferRowView: UIView {
-    private let accentView = UIView()
+    static let rowHeight: CGFloat = 48
+    private let badge = BusRouteBadgeView(size: .shuttle)
     private let dividerView = UIView().then {
-        $0.backgroundColor = .separator
+        $0.backgroundColor = SettingsStyle.Color.separator
     }
 
     private let routeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
+        $0.font = SettingsStyle.font(14, bold: true)
+        $0.textColor = SettingsStyle.Color.text
         $0.adjustsFontSizeToFitWidth = true
         $0.minimumScaleFactor = 0.75
+        $0.numberOfLines = 1
     }
 
     private let arrivalLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .medium)
+        $0.font = SettingsStyle.monospacedDigitFont(15, bold: true)
+        $0.textColor = SettingsStyle.Color.text
         $0.textAlignment = .right
         $0.numberOfLines = 1
         $0.adjustsFontSizeToFitWidth = true
         $0.minimumScaleFactor = 0.65
     }
 
+    var hidesDivider = false {
+        didSet { dividerView.isHidden = hidesDivider }
+    }
+
     init(row: TransferRow) {
         super.init(frame: .zero)
-        backgroundColor = .systemBackground
-        accentView.backgroundColor = row.color
-        routeLabel.textColor = row.color
+        backgroundColor = .clear
+        badge.configure(text: row.name, fill: row.color)
         routeLabel.text = Self.routeText(row: row)
         arrivalLabel.text = Self.arrivalText(row: row)
 
-        addSubview(accentView)
         addSubview(dividerView)
+        addSubview(badge)
         addSubview(routeLabel)
         addSubview(arrivalLabel)
-        accentView.snp.makeConstraints { make in
-            make.leading.top.bottom.equalToSuperview()
-            make.width.equalTo(4)
-        }
         dividerView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(20)
+            make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(1 / UIScreen.main.scale)
         }
-        routeLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
+        badge.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
-            make.width.lessThanOrEqualToSuperview().multipliedBy(0.42)
+            make.width.lessThanOrEqualTo(72)
+        }
+        routeLabel.snp.makeConstraints { make in
+            make.leading.equalTo(badge.snp.trailing).offset(10)
+            make.centerY.equalToSuperview()
         }
         arrivalLabel.snp.makeConstraints { make in
-            make.leading.greaterThanOrEqualTo(routeLabel.snp.trailing).offset(8)
-            make.trailing.equalToSuperview().inset(20)
+            make.leading.greaterThanOrEqualTo(routeLabel.snp.trailing).offset(10)
+            make.trailing.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
         }
+        arrivalLabel.setContentHuggingPriority(.required, for: .horizontal)
+        arrivalLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
 
         isAccessibilityElement = true
-        accessibilityLabel = [routeLabel.text, arrivalLabel.text]
+        accessibilityLabel = [row.name, routeLabel.text, arrivalLabel.text]
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .joined(separator: ", ")
@@ -111,7 +119,7 @@ final class ShuttleCompactTransferRowView: UIView {
     private static func routeText(row: TransferRow) -> String {
         switch row.vehicleType {
         case .bus:
-            row.name
+            row.timeline.first?.destination ?? ""
         case .subway:
             if let destination = row.timeline.first?.destination {
                 String(

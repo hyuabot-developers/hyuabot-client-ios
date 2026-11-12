@@ -42,14 +42,12 @@ enum ShuttleSubwayTransferDestination: String, CaseIterable {
 }
 
 enum ShuttleAlternativeDisplayMode: Int, CaseIterable {
-    case automatic
-    case always
-    case hidden
+    // Raw values stay stable: 0 was the retired "automatic" mode and now falls back to .always.
+    case always = 1
+    case hidden = 2
 
     var title: String {
         switch self {
-        case .automatic:
-            String(localized: "shuttle.quick_settings.alternative.mode.automatic")
         case .always:
             String(localized: "shuttle.quick_settings.alternative.mode.always")
         case .hidden:
@@ -98,10 +96,9 @@ enum ShuttleTransferDisplaySettings {
 
     static var alternativeDisplayMode: ShuttleAlternativeDisplayMode {
         get {
-            guard let mode = ShuttleAlternativeDisplayMode(
-                rawValue: UserDefaults.standard.integer(forKey: alternativeDisplayModeKey)
-            ) else { return .automatic }
-            return mode
+            // The retired "automatic" mode (stored as 0) now behaves like "always".
+            ShuttleAlternativeDisplayMode(rawValue: UserDefaults.standard.integer(forKey: alternativeDisplayModeKey))
+                ?? .always
         }
         set {
             UserDefaults.standard.set(newValue.rawValue, forKey: alternativeDisplayModeKey)

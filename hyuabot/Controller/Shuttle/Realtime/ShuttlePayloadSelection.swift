@@ -14,11 +14,11 @@ struct ShuttlePayloadSelection: Equatable {
     let alternatives: ShuttleAlternativeDisplayMode
 
     var needsBus: Bool {
-        byDestination && showBus
+        showBus
     }
 
     var subwayPairs: [(String, String)] {
-        guard byDestination, showSubway else { return [] }
+        guard showSubway else { return [] }
         return switch subwayDestination {
         case .seoul: [("K449", "up"), ("K450", "up")]
         case .suwonYongin: [("K251", "up")]

@@ -11,66 +11,44 @@ import Then
 import UIKit
 import UserNotifications
 
+// swiftlint:disable:next type_body_length
 class ShuttleAlarmVC: UIViewController {
     private let context: ShuttleAlarmContext
     private var selectedDestinationIndex = 0
     private var isBoardingAlarmActive = false
     private var isAlightingAlarmActive = false
+    private var isAlarmRequestInFlight = false
     private let locationPermissionRequester = ShuttleAlarmLocationPermissionRequester()
     var shareJourney: ((String) -> Void)?
 
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
-        $0.textColor = .white
-        $0.backgroundColor = .hanyangBlue
-        $0.textAlignment = .center
-        $0.text = String(localized: "shuttle.alarm.title")
+    private let titleLabel = UILabel().then { $0.text = String(localized: "shuttle.alarm.sheet.title") }
+    private lazy var sheetView = HYUSheetView(title: titleLabel.text ?? "")
+    private let boardingTitleLabel = UILabel().then {
+        $0.attributedText = SettingsStyle.attributedText(
+            String(localized: "shuttle.alarm.boarding"),
+            font: SettingsStyle.font(15, bold: true),
+            color: SettingsStyle.Color.text,
+            lineHeight: 20
+        )
     }
 
-    private let stackView = UIStackView().then {
-        $0.axis = .vertical
-        $0.spacing = 12
-        $0.alignment = .fill
-        $0.isLayoutMarginsRelativeArrangement = true
-        $0.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 16, leading: 18, bottom: 18, trailing: 18)
-    }
-
-    private lazy var boardingCard = makeCard()
-    private lazy var boardingTitleLabel = makeTitleLabel(text: String(localized: "shuttle.alarm.boarding"))
     private let boardingDescriptionLabel = UILabel().then {
-        $0.font = .godo(size: 15, weight: .regular)
-        $0.textColor = .secondaryLabel
+        $0.font = SettingsStyle.font(13)
+        $0.textColor = SettingsStyle.Color.secondaryText
         $0.numberOfLines = 0
     }
 
-    private lazy var boardingButton = makeActionButton()
-    private lazy var alightingCard = makeCard()
-    private lazy var alightingTitleLabel = makeTitleLabel(text: String(localized: "shuttle.alarm.alighting"))
-    private let destinationButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.bordered()
-        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-            var outgoing = incoming
-            outgoing.font = .godo(size: 15, weight: .medium)
-            return outgoing
-        }
-        $0.configuration = configuration
-        $0.contentHorizontalAlignment = .center
+    private let departureTimeLabel = UILabel()
+    private let remainingTimeLabel = UILabel()
+    private let boardingSwitch = UISwitch().then {
+        $0.onTintColor = SettingsStyle.Color.accent
+        $0.accessibilityIdentifier = "shuttle.alarm.boarding_switch"
     }
 
-    private lazy var alightingButton = makeActionButton()
-    private let shareButton = UIButton(type: .system).then {
-        var configuration = UIButton.Configuration.plain()
-        configuration.image = UIImage(systemName: "square.and.arrow.up")
-        configuration.imagePadding = 8
-        configuration.title = String(localized: "shuttle.share.journey")
-        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-            var outgoing = incoming
-            outgoing.font = .godo(size: 15, weight: .medium)
-            return outgoing
-        }
-        $0.configuration = configuration
-        $0.tintColor = .hanyangBlue
-    }
+    private var radioRows: [ShuttleAlarmStopRadioRow] = []
+    private let permissionBanner = UIView()
+    private let shareButton = UIButton(type: .system)
+    private let startButton = UIButton(type: .system)
 
     init(context: ShuttleAlarmContext) {
         self.context = context
@@ -83,58 +61,199 @@ class ShuttleAlarmVC: UIViewController {
     }
 
     var sheetHeight: CGFloat {
-        let baseHeight: CGFloat = 52 + 28 + 122 + 28
-        let alightingHeight: CGFloat = context.destinationStops.isEmpty ? 0 : 176
-        return baseHeight + alightingHeight
+        sheetView.contentHeight
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         reloadAlarmState()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (vc: Self, _: UITraitCollection) in
-            vc.boardingCard.backgroundColor = vc.cardBackgroundColor
-            vc.alightingCard.backgroundColor = vc.cardBackgroundColor
-        }
     }
 
     private func setupUI() {
-        view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(stackView)
+        view.backgroundColor = SettingsStyle.Color.busSheetBackground
+        view.addSubview(sheetView)
+        sheetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        configurePermissionBanner()
+        sheetView.contentStack.addArrangedSubview(permissionBanner)
+        sheetView.contentStack.setCustomSpacing(12, after: permissionBanner)
 
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview()
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(52)
-        }
-        stackView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
+        let badge = BusRouteBadgeView(size: .shuttle)
+        badge.configure(text: context.routeDisplayName, fill: BusRouteBadgeView.shuttleFill(for: shuttleChipKind))
+        badge.setContentHuggingPriority(.required, for: .horizontal)
+        let head = UIStackView(arrangedSubviews: [badge, departureTimeLabel, UIView(), remainingTimeLabel])
+        head.alignment = .center
+        head.spacing = 8
+        head.isLayoutMarginsRelativeArrangement = true
+        head.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+        head.snp.makeConstraints { $0.height.greaterThanOrEqualTo(56) }
+        let departs = String(localized: "shuttle.alarm.departs")
+        departureTimeLabel.text = "\(context.boardingStop.name) \(timeText(context.departureTime)) \(departs)"
+        departureTimeLabel.font = SettingsStyle.monospacedDigitFont(17, bold: true)
+        departureTimeLabel.textColor = SettingsStyle.Color.text
+        departureTimeLabel.lineBreakMode = .byTruncatingTail
+        departureTimeLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        remainingTimeLabel.text = remainingText()
+        remainingTimeLabel.font = SettingsStyle.monospacedDigitFont(15, bold: true)
+        remainingTimeLabel.textColor = SettingsStyle.Color.link
+        remainingTimeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        remainingTimeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let boardingMessage = String(localized: "shuttle.alarm.boarding.initial")
-        let departureMinutes = String(format: boardingMessage, context.minutesUntilDeparture)
-        boardingDescriptionLabel.text = "\(context.boardingStop.name) · \(departureMinutes)"
-        boardingButton.addTarget(self, action: #selector(boardingButtonTapped), for: .touchUpInside)
-        let boardingStack = makeCardStack([boardingTitleLabel, boardingDescriptionLabel, boardingButton])
-        boardingCard.addSubview(boardingStack)
-        boardingStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(14)
-        }
-        stackView.addArrangedSubview(boardingCard)
+        let boardingRow = switchRow(title: boardingTitleLabel, subtitle: boardingDescriptionLabel, toggle: boardingSwitch, minHeight: 64)
+        let boardingCard = HYUSheetView.card()
+        boardingCard.addArrangedSubview(head)
+        boardingCard.addArrangedSubview(HYUSheetView.separator())
+        boardingCard.addArrangedSubview(boardingRow)
+        boardingDescriptionLabel.text = String(localized: "shuttle.alarm.boarding.hint")
+        boardingSwitch.addTarget(self, action: #selector(boardingSwitchChanged(_:)), for: .valueChanged)
+        sheetView.contentStack.addArrangedSubview(boardingCard)
 
-        guard !context.destinationStops.isEmpty else { return }
-        configureDestinationButton()
-        destinationButton.addTarget(self, action: #selector(destinationButtonTapped), for: .touchUpInside)
-        alightingButton.addTarget(self, action: #selector(alightingButtonTapped), for: .touchUpInside)
+        let destinations = context.destinationStops
+        if !destinations.isEmpty {
+            sheetView.contentStack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.alarm.alighting.header")))
+            let radioCard = HYUSheetView.card()
+            for (index, stop) in destinations.enumerated() {
+                if index > 0 {
+                    radioCard.addArrangedSubview(HYUSheetView.separator())
+                }
+                let row = ShuttleAlarmStopRadioRow(name: stop.name, time: timeText(stop.time))
+                row.addTarget(self, action: #selector(radioRowTapped(_:)), for: .touchUpInside)
+                row.tag = index
+                radioRows.append(row)
+                radioCard.addArrangedSubview(row)
+            }
+            sheetView.contentStack.addArrangedSubview(radioCard)
+            let footnote = HYUSheetView.footnote(String(localized: "shuttle.alarm.alighting.footnote"))
+            sheetView.contentStack.addArrangedSubview(footnote)
+            sheetView.contentStack.setCustomSpacing(16, after: footnote)
+            applyRadioSelection()
+            configureActionButtons()
+        }
+    }
+
+    private var shuttleChipKind: ShuttleDisplayLogic.RouteChipKind {
+        context.chipKind
+    }
+
+    private func remainingText() -> String {
+        let minutes = ShuttleDisplayLogic.minutesUntil(context.departureTime, now: .now)
+        if minutes <= 0 {
+            return String(localized: "shuttle.alarm.remaining.now")
+        }
+        return String(format: String(localized: "shuttle.alarm.remaining.format.%lld"), minutes)
+    }
+
+    private func configurePermissionBanner() {
+        permissionBanner.isHidden = true
+        permissionBanner.backgroundColor = SettingsStyle.Color.warnFill
+        permissionBanner.layer.cornerRadius = 12
+        permissionBanner.layer.cornerCurve = .continuous
+        let icon = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
+        icon.tintColor = SettingsStyle.Color.warnText
+        icon.setContentHuggingPriority(.required, for: .horizontal)
+        let label = UILabel().then {
+            $0.attributedText = SettingsStyle.attributedText(
+                String(localized: "shuttle.alarm.permission.off"),
+                font: SettingsStyle.font(13, bold: true),
+                color: SettingsStyle.Color.warnText,
+                lineHeight: 18
+            )
+            $0.numberOfLines = 0
+        }
+        var configuration = UIButton.Configuration.plain()
+        configuration.background.backgroundColor = SettingsStyle.Color.sheet
+        configuration.background.cornerRadius = 16
+        configuration.baseForegroundColor = SettingsStyle.Color.link
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
+        configuration.attributedTitle = AttributedString(
+            String(localized: "shuttle.alarm.permission.open"),
+            attributes: AttributeContainer([.font: SettingsStyle.font(13, bold: true)])
+        )
+        let openButton = UIButton(configuration: configuration)
+        openButton.addAction(UIAction { _ in
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        }, for: .touchUpInside)
+        openButton.setContentHuggingPriority(.required, for: .horizontal)
+        let row = UIStackView(arrangedSubviews: [icon, label, openButton])
+        row.alignment = .center
+        row.spacing = 10
+        permissionBanner.addSubview(row)
+        row.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 8)) }
+        openButton.snp.makeConstraints { $0.height.equalTo(32) }
+        permissionBanner.snp.makeConstraints { $0.height.greaterThanOrEqualTo(48) }
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            let denied = settings.authorizationStatus == .denied
+            DispatchQueue.main.async {
+                self?.permissionBanner.isHidden = !denied
+                self?.sheetView.contentStack.setCustomSpacing(denied ? 12 : 0, after: self?.permissionBanner ?? UIView())
+            }
+        }
+    }
+
+    private func configureActionButtons() {
+        let share = HYUSheetView.actionButton(
+            title: String(localized: "shuttle.share.journey.short"),
+            systemImage: "square.and.arrow.up",
+            identifier: "shuttle.alarm.share"
+        )
+        shareButton.configuration = share.configuration
+        shareButton.accessibilityIdentifier = share.accessibilityIdentifier
         shareButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
-        let alightingStack = makeCardStack([alightingTitleLabel, destinationButton, alightingButton, shareButton])
-        alightingCard.addSubview(alightingStack)
-        alightingStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(14)
+        let start = HYUSheetView.primaryButton(title: "", identifier: "shuttle.alarm.alighting_start")
+        startButton.configuration = start.configuration
+        startButton.accessibilityIdentifier = start.accessibilityIdentifier
+        startButton.addTarget(self, action: #selector(alightingButtonTapped), for: .touchUpInside)
+        let buttons = UIStackView(arrangedSubviews: [shareButton, startButton])
+        buttons.spacing = 8
+        buttons.distribution = .fill
+        sheetView.contentStack.addArrangedSubview(buttons)
+        shareButton.snp.makeConstraints { $0.height.equalTo(48) }
+        startButton.snp.makeConstraints { make in
+            make.height.equalTo(48)
+            make.width.equalTo(shareButton).multipliedBy(2).offset(-8)
         }
-        stackView.addArrangedSubview(alightingCard)
+        updateStartButtonTitle()
+    }
+
+    private func updateStartButtonTitle() {
+        guard var configuration = startButton.configuration else { return }
+        let key = isAlightingAlarmActive ? "shuttle.alarm.alighting.stop" : "shuttle.alarm.alighting.start"
+        configuration.attributedTitle = AttributedString(
+            String(localized: String.LocalizationValue(key)),
+            attributes: AttributeContainer([.font: SettingsStyle.font(15, bold: true)])
+        )
+        startButton.configuration = configuration
+    }
+
+    private func applyRadioSelection() {
+        for (index, row) in radioRows.enumerated() {
+            row.setSelected(index == selectedDestinationIndex)
+        }
+    }
+
+    @objc
+    private func radioRowTapped(_ sender: UIControl) {
+        selectedDestinationIndex = sender.tag
+        applyRadioSelection()
+    }
+
+    private func switchRow(title: UILabel, subtitle: UILabel?, toggle: UISwitch, minHeight: CGFloat) -> UIView {
+        let row = UIView()
+        let labels = UIStackView(arrangedSubviews: subtitle.map { [title, $0] } ?? [title])
+        labels.axis = .vertical
+        labels.spacing = 2
+        row.addSubview(labels)
+        row.addSubview(toggle)
+        labels.snp
+            .makeConstraints {
+                $0.leading.equalToSuperview().offset(16); $0.centerY.equalToSuperview(); $0.trailing.lessThanOrEqualTo(toggle.snp.leading)
+                    .offset(-12)
+            }
+        toggle.snp.makeConstraints { $0.trailing.equalToSuperview().inset(16); $0.centerY.equalToSuperview() }
+        row.snp.makeConstraints { $0.height.greaterThanOrEqualTo(minHeight) }
+        return row
     }
 
     private func reloadAlarmState() {
@@ -142,39 +261,32 @@ class ShuttleAlarmVC: UIViewController {
             guard let self else { return }
             isBoardingAlarmActive = boarding
             isAlightingAlarmActive = alighting
-            updateButtons()
+            syncSwitches()
         }
     }
 
-    private func updateButtons() {
-        boardingButton.configuration?.title = String(localized: isBoardingAlarmActive ? "shuttle.alarm.cancel" : "shuttle.alarm.start")
-        alightingButton.configuration?.title = String(localized: isAlightingAlarmActive ? "shuttle.alarm.cancel" : "shuttle.alarm.start")
+    private func syncSwitches() {
+        boardingSwitch.setOn(isBoardingAlarmActive, animated: true)
+        boardingSwitch.isEnabled = !isAlarmRequestInFlight
+        startButton.isEnabled = !isAlarmRequestInFlight
+        updateStartButtonTitle()
     }
 
-    private func configureDestinationButton() {
-        destinationButton.configuration?.title = context.destinationStops[selectedDestinationIndex].name
+    private func finishAlarmRequest() {
+        isAlarmRequestInFlight = false
+        syncSwitches()
+        reloadAlarmState()
     }
 
     @objc
-    private func destinationButtonTapped() {
-        let vc = ShuttleDestinationSelectionVC(
-            stops: context.destinationStops,
-            selectedIndex: selectedDestinationIndex
-        ) { [weak self] index in
-            self?.selectedDestinationIndex = index
-            self?.configureDestinationButton()
-        }
-        if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.custom(resolver: { _ in vc.sheetHeight })]
-            sheet.prefersGrabberVisible = true
-        }
-        present(vc, animated: true)
-    }
-
-    @objc
-    private func boardingButtonTapped() {
+    private func boardingSwitchChanged(_ sender: UISwitch) {
+        sender.setOn(isBoardingAlarmActive, animated: false)
+        guard !isAlarmRequestInFlight else { return }
+        isAlarmRequestInFlight = true
+        syncSwitches()
         if isBoardingAlarmActive {
             ShuttleAlarmNotificationService.shared.cancelBoardingAlarm(for: context.key)
+            finishAlarmRequest()
             dismiss(animated: true)
             return
         }
@@ -183,8 +295,10 @@ class ShuttleAlarmVC: UIViewController {
             if granted {
                 ShuttleAlarmNotificationService.shared.scheduleBoardingAlarm(context: context)
                 NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
+                finishAlarmRequest()
                 dismiss(animated: true)
             } else {
+                finishAlarmRequest()
                 presentPermissionAlert()
             }
         }
@@ -192,19 +306,25 @@ class ShuttleAlarmVC: UIViewController {
 
     @objc
     private func alightingButtonTapped() {
+        guard !isAlarmRequestInFlight else { return }
+        isAlarmRequestInFlight = true
+        syncSwitches()
         if isAlightingAlarmActive {
             ShuttleAlarmNotificationService.shared.cancelAlightingAlarm(for: context.key)
+            finishAlarmRequest()
             dismiss(animated: true)
             return
         }
-        guard context.destinationStops.indices.contains(selectedDestinationIndex) else { return }
+        guard context.destinationStops.indices.contains(selectedDestinationIndex) else { finishAlarmRequest(); return }
         let destination = context.destinationStops[selectedDestinationIndex]
         requestNotificationAndLocationAuthorization { [weak self] granted in
             guard let self else { return }
             if granted {
                 ShuttleAlarmNotificationService.shared.scheduleAlightingAlarm(context: context, destination: destination)
+                finishAlarmRequest()
                 dismiss(animated: true)
             } else {
+                finishAlarmRequest()
                 presentPermissionAlert()
             }
         }
@@ -238,90 +358,26 @@ class ShuttleAlarmVC: UIViewController {
         return components.url?.absoluteString ?? "hyuabot://shuttle?stop=\(context.boardingStop.id)"
     }
 
-    private func requestNotificationAndLocationAuthorization(
-        completion: @escaping @MainActor @Sendable (Bool) -> Void
-    ) {
+    private func requestNotificationAndLocationAuthorization(completion: @escaping @MainActor @Sendable (Bool) -> Void) {
         requestNotificationAuthorization { [weak self] granted in
             guard let self else { return }
-            guard granted else {
-                completion(false)
-                return
-            }
-            locationPermissionRequester.requestIfNeeded {
-                completion(true)
-            }
+            guard granted else { completion(false); return }
+            locationPermissionRequester.requestIfNeeded { completion(true) }
         }
     }
 
     private func requestNotificationAuthorization(completion: @escaping @MainActor @Sendable (Bool) -> Void) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
-            DispatchQueue.main.async {
-                completion(granted)
-            }
+            DispatchQueue.main.async { completion(granted) }
         }
     }
 
     private func presentPermissionAlert() {
         let title = String(localized: "shuttle.alarm.no.permission")
-        let alert = UIAlertController(
-            title: title,
-            message: nil,
-            preferredStyle: .alert
-        )
+        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
         alert.applyGodoTypography(title: title, message: nil)
         alert.addAction(UIAlertAction(title: String(localized: "common.ok"), style: .default))
         present(alert, animated: true)
-    }
-
-    private func makeCard() -> UIView {
-        UIView().then {
-            $0.backgroundColor = cardBackgroundColor
-            $0.layer.cornerRadius = 8
-            $0.layer.masksToBounds = false
-            $0.layer.borderWidth = 1
-            $0.layer.borderColor = UIColor.separator.cgColor
-            $0.layer.shadowColor = UIColor.black.cgColor
-            $0.layer.shadowOpacity = 0.08
-            $0.layer.shadowRadius = 8
-            $0.layer.shadowOffset = CGSize(width: 0, height: 2)
-        }
-    }
-
-    private var cardBackgroundColor: UIColor {
-        traitCollection.userInterfaceStyle == .dark ? .tertiarySystemBackground : .secondarySystemBackground
-    }
-
-    private func makeCardStack(_ views: [UIView]) -> UIStackView {
-        UIStackView(arrangedSubviews: views).then {
-            $0.axis = .vertical
-            $0.spacing = 10
-            $0.alignment = .fill
-        }
-    }
-
-    private func makeTitleLabel(text: String) -> UILabel {
-        UILabel().then {
-            $0.font = .godo(size: 17, weight: .bold)
-            $0.text = text
-            $0.textColor = .label
-        }
-    }
-
-    private func makeActionButton() -> UIButton {
-        UIButton(type: .system).then {
-            var configuration = UIButton.Configuration.filled()
-            configuration.baseBackgroundColor = .hanyangBlue
-            configuration.baseForegroundColor = .white
-            configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-                var outgoing = incoming
-                outgoing.font = .godo(size: 16, weight: .medium)
-                return outgoing
-            }
-            $0.configuration = configuration
-            $0.snp.makeConstraints { make in
-                make.height.equalTo(42)
-            }
-        }
     }
 
     private func timeText(_ date: Date) -> String {
@@ -371,144 +427,53 @@ private final class ShuttleAlarmLocationPermissionRequester: NSObject, @preconcu
     }
 }
 
-private final class ShuttleDestinationSelectionVC: UIViewController {
-    private let stops: [ShuttleAlarmStop]
-    private let selectedIndex: Int
-    private let onSelect: (Int) -> Void
+private final class ShuttleAlarmStopRadioRow: UIControl {
+    private let radio = UIView()
+    private let dot = UIView()
+    private let nameLabel = UILabel()
+    private let timeLabel = UILabel()
 
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 18, weight: .bold)
-        $0.textColor = .label
-        $0.text = String(localized: "shuttle.alarm.alighting")
-    }
-
-    private let tableView = UITableView(frame: .zero, style: .plain).then {
-        $0.backgroundColor = .clear
-        $0.separatorInset = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18)
-        $0.rowHeight = 68
-        $0.register(ShuttleDestinationSelectionCell.self, forCellReuseIdentifier: ShuttleDestinationSelectionCell.reuseIdentifier)
-    }
-
-    var sheetHeight: CGFloat {
-        min(CGFloat(stops.count) * 68 + 72, 460)
-    }
-
-    init(stops: [ShuttleAlarmStop], selectedIndex: Int, onSelect: @escaping (Int) -> Void) {
-        self.stops = stops
-        self.selectedIndex = selectedIndex
-        self.onSelect = onSelect
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        tableView.dataSource = self
-        tableView.delegate = self
-
-        view.addSubview(titleLabel)
-        view.addSubview(tableView)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(18)
-            make.leading.trailing.equalToSuperview().inset(18)
-        }
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(12)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-    }
-
-    private func timeText(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
-}
-
-extension ShuttleDestinationSelectionVC: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        stops.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: ShuttleDestinationSelectionCell.reuseIdentifier,
-            for: indexPath
-        ) as? ShuttleDestinationSelectionCell else { return UITableViewCell() }
-        let stop = stops[indexPath.row]
-        cell.configure(name: stop.name, time: timeText(stop.time), isSelected: indexPath.row == selectedIndex)
-        return cell
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        onSelect(indexPath.row)
-        dismiss(animated: true)
-    }
-}
-
-private final class ShuttleDestinationSelectionCell: UITableViewCell {
-    static let reuseIdentifier = "ShuttleDestinationSelectionCell"
-
-    private let nameLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .medium)
-        $0.textColor = .label
-        $0.lineBreakMode = .byTruncatingTail
-    }
-
-    private let timeLabel = UILabel().then {
-        $0.font = .godo(size: 13, weight: .regular)
-        $0.textColor = .secondaryLabel
-        $0.lineBreakMode = .byTruncatingTail
-    }
-
-    private let checkImageView = UIImageView().then {
-        $0.image = UIImage(systemName: "checkmark")
-        $0.tintColor = .hanyangBlue
-        $0.contentMode = .scaleAspectFit
-    }
-
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .systemBackground
-        contentView.addSubview(nameLabel)
-        contentView.addSubview(timeLabel)
-        contentView.addSubview(checkImageView)
-
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(11)
-            make.leading.equalToSuperview().offset(18)
-            make.trailing.lessThanOrEqualTo(checkImageView.snp.leading).offset(-12)
-        }
-        timeLabel.snp.makeConstraints { make in
-            make.top.equalTo(nameLabel.snp.bottom).offset(5)
-            make.leading.equalTo(nameLabel)
-            make.trailing.lessThanOrEqualTo(checkImageView.snp.leading).offset(-12)
-            make.bottom.lessThanOrEqualToSuperview().offset(-10)
-        }
-        checkImageView.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(18)
-            make.centerY.equalToSuperview()
-            make.size.equalTo(18)
-        }
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    func configure(name: String, time: String, isSelected: Bool) {
+    init(name: String, time: String) {
+        super.init(frame: .zero)
+        radio.layer.cornerRadius = 11
+        radio.layer.borderWidth = 2
+        radio.isUserInteractionEnabled = false
+        dot.layer.cornerRadius = 5
+        dot.isUserInteractionEnabled = false
+        radio.addSubview(dot)
         nameLabel.text = name
+        nameLabel.numberOfLines = 1
+        nameLabel.isUserInteractionEnabled = false
         timeLabel.text = time
-        checkImageView.isHidden = !isSelected
+        timeLabel.font = SettingsStyle.monospacedDigitFont(15)
+        timeLabel.textColor = SettingsStyle.Color.secondaryText
+        timeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        timeLabel.isUserInteractionEnabled = false
+        let row = UIStackView(arrangedSubviews: [radio, nameLabel, timeLabel])
+        row.alignment = .center
+        row.spacing = 12
+        row.isUserInteractionEnabled = false
+        addSubview(row)
+        row.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)) }
+        radio.snp.makeConstraints { $0.size.equalTo(22) }
+        dot.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(10) }
+        snp.makeConstraints { $0.height.greaterThanOrEqualTo(48) }
+        isAccessibilityElement = true
+        accessibilityLabel = "\(name) \(time)"
+        setSelected(false)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setSelected(_ selected: Bool) {
+        radio.layer.borderColor = (selected ? SettingsStyle.Color.accent : SettingsStyle.Color.commuterFaint).cgColor
+        dot.backgroundColor = selected ? SettingsStyle.Color.accent : .clear
+        nameLabel.font = SettingsStyle.font(15, bold: selected)
+        nameLabel.textColor = SettingsStyle.Color.text
+        accessibilityTraits = selected ? [.button, .selected] : .button
     }
 }
 
@@ -591,14 +556,21 @@ final class ShuttleAlarmNotificationService: @unchecked Sendable {
         }
     }
 
+    private static func clockText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
     @MainActor
     func scheduleBoardingAlarm(context: ShuttleAlarmContext) {
         let content = UNMutableNotificationContent()
-        content.title = String(format: String(localized: "shuttle.alarm.boarding.notification.title"), context.boardingStop.name)
+        content.title = String(format: String(localized: "shuttle.alarm.notif.boarding.title.%@"), context.routeDisplayName)
         content.body = String(
-            format: String(localized: "shuttle.alarm.boarding.notification.body"),
-            context.minutesUntilDeparture,
-            context.boardingStop.name
+            format: String(localized: "shuttle.alarm.notif.boarding.body.%@.%@.%d"),
+            context.boardingStop.name,
+            Self.clockText(context.departureTime),
+            context.minutesUntilDeparture
         )
         content.sound = .default
         content.userInfo = [
@@ -620,8 +592,12 @@ final class ShuttleAlarmNotificationService: @unchecked Sendable {
     @MainActor
     func scheduleAlightingAlarm(context: ShuttleAlarmContext, destination: ShuttleAlarmStop) {
         let content = UNMutableNotificationContent()
-        content.title = String(format: String(localized: "shuttle.alarm.alighting.notification.title"), destination.name)
-        content.body = String(format: String(localized: "shuttle.alarm.alighting.notification.body"), destination.name)
+        content.title = String(format: String(localized: "shuttle.alarm.notif.alighting.title.%@"), destination.name)
+        content.body = String(
+            format: String(localized: "shuttle.alarm.notif.alighting.body.%@.%@"),
+            destination.name,
+            Self.clockText(destination.time)
+        )
         content.sound = .default
         content.userInfo = [
             "url": "hyuabot://shuttle",
@@ -644,9 +620,9 @@ final class ShuttleAlarmNotificationService: @unchecked Sendable {
     func fireAlightingProximityAlert(context: ShuttleAlarmContext, destination: ShuttleAlarmStop, distance: Int) {
         cancelAlightingAlarm(for: context.key)
         let content = UNMutableNotificationContent()
-        content.title = String(localized: "shuttle.alarm.alighting.alert.title")
+        content.title = String(localized: "shuttle.alarm.notif.soon.title")
         content.body = String(
-            format: String(localized: "shuttle.alarm.alighting.alert.body"),
+            format: String(localized: "shuttle.alarm.notif.soon.body.%@.%@"),
             destination.name,
             formatDistance(distance)
         )

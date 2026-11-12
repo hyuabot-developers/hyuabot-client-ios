@@ -17,9 +17,11 @@ private final class ExtendedHitAreaButton: UIButton {
     }
 }
 
+// swiftlint:disable:next type_body_length
 class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "ShuttleRealtimeFooterView"
-    static let timetableButtonHeight: CGFloat = 50
+    static let timetableButtonHeight: CGFloat = 44
+    static let cardGap: CGFloat = 16
     static let connectorSpacing: CGFloat = 8
     private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
     private var showBusAlternativeStop: ((_ alternative: ShuttleBusAlternativeDisplayData) -> Void)?
@@ -27,7 +29,6 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     private var section: Int?
     private var alternatives: [ShuttleBusAlternativeDisplayData] = []
     private weak var transferView: ShuttleTransferInfoView?
-    private var transferConnectorView: TransferConnectorView?
 
     private let transferContainer = UIView()
     let busAlternativeContainer = UIView()
@@ -38,21 +39,15 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         $0.alignment = .fill
     }
 
-    let showEntireTimeTableButton = UIButton().then {
-        var conf = UIButton.Configuration.plain()
-        var title = AttributedString(String(localized: "shuttle.show.entire.timetable"))
-        title.font = .godo(size: 16, weight: .medium)
-        conf.attributedTitle = title
-        $0.configuration = conf
-        $0.tintColor = .plainButtonText
-    }
+    let showEntireTimeTableButton = UIButton(type: .system)
+    private let cardContainer = UIView()
+    private let timetableSeparator = UIView()
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
-        backgroundView = UIView().then {
-            $0.backgroundColor = .systemBackground
-        }
-        contentView.backgroundColor = .systemBackground
+        backgroundView = UIView()
+        backgroundView?.backgroundColor = .clear
+        contentView.backgroundColor = .clear
         setupLayout()
     }
 
@@ -63,8 +58,8 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
 
     private func setupLayout() {
         contentView.clipsToBounds = false
-        transferContainer.backgroundColor = .systemBackground
-        busAlternativeContainer.backgroundColor = .systemBackground
+        transferContainer.backgroundColor = .clear
+        busAlternativeContainer.backgroundColor = .clear
         busAlternativeContainer.addSubview(busAlternativeStackView)
         busAlternativeStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -74,6 +69,27 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         }
         transferConnectorSpacer.snp.makeConstraints { make in
             make.height.equalTo(Self.connectorSpacing)
+        }
+
+        configureTimetableButton()
+
+        cardContainer.backgroundColor = SettingsStyle.Color.card
+        cardContainer.layer.cornerRadius = 16
+        cardContainer.layer.cornerCurve = .continuous
+        cardContainer.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        cardContainer.clipsToBounds = true
+        contentView.addSubview(cardContainer)
+        cardContainer.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-Self.cardGap)
+        }
+
+        timetableSeparator.backgroundColor = SettingsStyle.Color.separator
+        cardContainer.addSubview(timetableSeparator)
+        timetableSeparator.snp.makeConstraints { make in
+            make.leading.trailing.top.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
         }
 
         let stackView = UIStackView(arrangedSubviews: [
@@ -86,7 +102,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             $0.spacing = 0
             $0.alignment = .fill
         }
-        contentView.addSubview(stackView)
+        cardContainer.addSubview(stackView)
         stackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -94,6 +110,22 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         transferContainer.isHidden = true
         busAlternativeContainer.isHidden = true
         transferConnectorSpacer.isHidden = true
+    }
+
+    private func configureTimetableButton() {
+        var configuration = UIButton.Configuration.plain()
+        var title = AttributedString(String(localized: "shuttle.show.entire.timetable"))
+        title.font = SettingsStyle.font(14, bold: true)
+        title.foregroundColor = SettingsStyle.Color.link
+        configuration.attributedTitle = title
+        configuration.image = UIImage(
+            systemName: "calendar",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        )
+        configuration.imagePlacement = .leading
+        configuration.imagePadding = 6
+        configuration.contentInsets = .zero
+        showEntireTimeTableButton.configuration = configuration
     }
 
     func setupUI(
@@ -153,7 +185,6 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     }
 
     private func setTransferView(_ transferView: ShuttleTransferInfoView?) {
-        updateTransferConnector(transferView)
         if self.transferView === transferView, transferView?.superview === transferContainer {
             transferContainer.isHidden = transferView?.preferredHeight == 0
             return
@@ -171,49 +202,99 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
         transferContainer.isHidden = false
     }
 
-    private func updateTransferConnector(_ transferView: ShuttleTransferInfoView?) {
-        transferConnectorView?.removeFromSuperview()
-        transferConnectorView = nil
-        guard let title = transferView?.inlineConnectorTitle,
-              let tintColor = transferView?.inlineConnectorTintColor
-        else {
-            transferConnectorSpacer.isHidden = true
-            return
-        }
-        transferConnectorSpacer.isHidden = false
-        let connector = TransferConnectorView(title: title, tintColor: tintColor)
-        contentView.addSubview(connector)
-        connector.snp.makeConstraints { make in
-            make.height.equalTo(24)
-            make.centerX.equalToSuperview()
-            make.centerY.equalTo(transferContainer.snp.top).offset(-Self.connectorSpacing / 2)
-        }
-        transferConnectorView = connector
-    }
-
-    private func makeAlternativeRow(alternative: ShuttleBusAlternativeDisplayData, index: Int) -> UIView {
-        let row = UIView()
-        row.backgroundColor = .systemBackground
-        let accent = UIView().then {
-            $0.backgroundColor = alternative.color
-        }
-        let route = UILabel().then {
-            $0.font = .godo(size: 16, weight: .bold)
-            $0.textColor = alternative.color
-            $0.text = alternative.routeName
-            $0.adjustsFontSizeToFitWidth = true
-            $0.minimumScaleFactor = 0.75
-        }
-        let time = UILabel().then {
-            $0.font = .godo(size: 16, weight: .medium)
+    private func makeAlternativeTimeLabel(_ alternative: ShuttleBusAlternativeDisplayData) -> UILabel {
+        UILabel().then {
+            $0.font = SettingsStyle.monospacedDigitFont(17, bold: true)
+            $0.textColor = SettingsStyle.Color.text
             $0.textAlignment = .right
             if let minutes = alternative.minutes {
-                $0.text = String(format: String(localized: "shuttle.bus.alternative.time.%lld"), minutes)
+                $0.text = String(format: String(localized: "shuttle.bus.alternative.minutes.%lld"), minutes)
             } else {
                 $0.text = String(localized: "shuttle.bus.alternative.no.data")
             }
         }
-        let infoButton = ExtendedHitAreaButton(type: .system).then {
+    }
+
+    private func addAlternativeSeparator(to row: UIView) {
+        let separator = UIView()
+        separator.backgroundColor = SettingsStyle.Color.separator
+        row.addSubview(separator)
+        separator.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.equalToSuperview()
+            make.height.equalTo(1 / UIScreen.main.scale)
+        }
+    }
+
+    // swiftlint:disable:next function_body_length
+    private func makeAlternativeRow(alternative: ShuttleBusAlternativeDisplayData, index: Int) -> UIView {
+        let row = UIView()
+        row.backgroundColor = .clear
+        let routeBadge = BusRouteBadgeView(size: .shuttle)
+        let nameParts = alternative.routeName.components(separatedBy: " (")
+        let routeNumber = nameParts.first ?? alternative.routeName
+        let direction = nameParts.count > 1 ? nameParts[1].trimmingCharacters(in: CharacterSet(charactersIn: ")")) : nil
+        let directionText = direction.map { raw -> String in
+            raw.hasSuffix("방면") ? raw : String(
+                format: String(localized: "shuttle.bus.alternative.direction.%@"),
+                locale: Locale.current,
+                raw
+            )
+        }
+        let stopText = alternative.busStopName.isEmpty ? nil : alternative.busStopName
+        let titleText = directionText ?? stopText ?? alternative.routeName
+        let subtitleText = directionText == nil ? nil : stopText
+        routeBadge.configure(text: routeNumber, fill: alternative.color)
+        routeBadge.setContentHuggingPriority(.required, for: .horizontal)
+        routeBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let title = UILabel().then {
+            $0.attributedText = SettingsStyle.attributedText(
+                titleText,
+                font: SettingsStyle.font(15, bold: true),
+                color: SettingsStyle.Color.text,
+                lineHeight: 20,
+                lineBreakMode: .byTruncatingTail
+            )
+            $0.numberOfLines = 1
+        }
+        let subtitle = UILabel().then {
+            $0.attributedText = SettingsStyle.attributedText(
+                subtitleText ?? "",
+                font: SettingsStyle.font(12),
+                color: SettingsStyle.Color.secondaryText,
+                lineHeight: 16,
+                lineBreakMode: .byTruncatingTail
+            )
+            $0.numberOfLines = 1
+            $0.isHidden = subtitleText == nil
+        }
+        let textStack = UIStackView(arrangedSubviews: [title, subtitle]).then {
+            $0.axis = .vertical
+            $0.spacing = 2
+        }
+        let time = makeAlternativeTimeLabel(alternative)
+        time.setContentHuggingPriority(.required, for: .horizontal)
+        time.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let infoButton = makeAlternativeInfoButton(alternative: alternative, index: index)
+
+        row.addSubview(routeBadge)
+        row.addSubview(textStack)
+        row.addSubview(time)
+        row.addSubview(infoButton)
+        if index > 0 {
+            addAlternativeSeparator(to: row)
+        }
+        setupAlternativeRowConstraints(
+            routeBadge: routeBadge,
+            textStack: textStack,
+            time: time,
+            infoButton: infoButton
+        )
+        return row
+    }
+
+    private func makeAlternativeInfoButton(alternative: ShuttleBusAlternativeDisplayData, index: Int) -> UIButton {
+        ExtendedHitAreaButton(type: .system).then {
             $0.tag = index
             let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
             $0.setImage(UIImage(systemName: "info.circle", withConfiguration: symbolConfiguration), for: .normal)
@@ -224,30 +305,33 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
             $0.isEnabled = hasStopInfo
             $0.alpha = hasStopInfo ? 1 : 0.38
         }
+    }
 
-        row.addSubview(accent)
-        row.addSubview(route)
-        row.addSubview(time)
-        row.addSubview(infoButton)
-        accent.snp.makeConstraints { make in
-            make.leading.top.bottom.equalToSuperview()
-            make.width.equalTo(4)
-        }
-        route.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
+    private func setupAlternativeRowConstraints(
+        routeBadge: BusRouteBadgeView,
+        textStack: UIStackView,
+        time: UILabel,
+        infoButton: UIButton
+    ) {
+        routeBadge.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
         }
+        textStack.snp.makeConstraints { make in
+            make.leading.equalTo(routeBadge.snp.trailing).offset(12)
+            make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(time.snp.leading).offset(-8)
+        }
         infoButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
+            make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
             make.width.height.equalTo(20)
         }
         time.snp.makeConstraints { make in
             make.trailing.equalTo(infoButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
-            make.leading.greaterThanOrEqualTo(route.snp.trailing).offset(8)
+            make.leading.greaterThanOrEqualTo(textStack.snp.trailing).offset(8)
         }
-        return row
     }
 
     @objc

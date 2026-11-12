@@ -13,28 +13,8 @@ class ShuttleTimetableVC: UIViewController {
     private let disposeBag = DisposeBag()
     private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true, showViaVC: openShuttleViaVC)
     private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false, showViaVC: openShuttleViaVC)
-    private lazy var viewPager: ViewPager = {
-        let viewPager = ViewPager(sizeConfiguration: .fillEqually(height: 60, spacing: 0), navigationBarEnabled: true)
-        viewPager.tabView.tabs = [
-            TabItem(title: String(localized: "shuttle.timetable.weekdays")),
-            TabItem(title: String(localized: "shuttle.timetable.weekends"))
-        ]
-        viewPager.contentView.pages = [weekdaysVC.view, weekendsVC.view]
-        return viewPager
-    }()
-
-    private lazy var filterButton = UIButton().then {
-        var config = UIButton.Configuration.filled()
-        config.baseBackgroundColor = .hanyangGreen
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "line.3.horizontal.decrease")?.withConfiguration(UIImage.SymbolConfiguration(
-            pointSize: 20,
-            weight: .regular
-        ))
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
-        $0.configuration = config
-        $0.addTarget(self, action: #selector(openFilterVC), for: .touchUpInside)
-    }
+    private let header = ShuttleTimetableHeaderView()
+    private let pager = ContentView()
 
     init(stopID: String.LocalizationValue, destination: String.LocalizationValue) {
         self.stopID = stopID
@@ -88,19 +68,19 @@ class ShuttleTimetableVC: UIViewController {
         let items: [CoachMarkItem] = [
             CoachMarkItem(
                 id: "shuttle.timetable.tabs",
-                targetView: viewPager.tabView,
+                targetView: header.daySegment,
                 title: String(localized: "coach.shuttle.timetable.tabs.title"),
                 message: String(localized: "coach.shuttle.timetable.tabs.message")
             ),
             CoachMarkItem(
                 id: "shuttle.timetable.row",
-                targetView: viewPager.contentView,
+                targetView: pager,
                 title: String(localized: "coach.shuttle.timetable.row.title"),
                 message: String(localized: "coach.shuttle.timetable.row.message")
             ),
             CoachMarkItem(
                 id: "shuttle.timetable.filter",
-                targetView: filterButton,
+                targetView: header.routeButton,
                 title: String(localized: "coach.shuttle.timetable.filter.title"),
                 message: String(localized: "coach.shuttle.timetable.filter.message")
             )
@@ -123,52 +103,48 @@ class ShuttleTimetableVC: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = .systemBackground
-        view.addSubview(viewPager)
-        view.addSubview(filterButton)
-        viewPager.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        view.backgroundColor = SettingsStyle.Color.background
+        view.addSubview(header)
+        view.addSubview(pager)
+        pager.pages = [weekdaysVC.view, weekendsVC.view]
+        pager.delegate = self
+        header.onRouteTap = { [weak self] in self?.openFilterVC() }
+        header.onSelectDay = { [weak self] isWeekdays in
+            self?.pager.moveToPage(index: isWeekdays ? 0 : 1)
         }
-        filterButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).inset(20)
-            make.width.height.equalTo(50)
+        header.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+        }
+        pager.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(header.snp.bottom)
+            make.bottom.equalToSuperview()
         }
     }
 
     private func configureNavigationBar() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .hanyangBlue
-
-        let whiteAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.white
-        ]
-        appearance.titleTextAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 17, weight: .bold)
-        ]) { _, new in new }
-        appearance.largeTitleTextAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 34, weight: .bold)
-        ]) { _, new in new }
-        let buttonAttributes = whiteAttributes.merging([
-            .font: UIFont.godo(size: 17, weight: .medium)
-        ]) { _, new in new }
-        appearance.buttonAppearance.normal.titleTextAttributes = buttonAttributes
-        appearance.doneButtonAppearance.normal.titleTextAttributes = buttonAttributes
-        appearance.backButtonAppearance.normal.titleTextAttributes = buttonAttributes
-
-        navigationItem.standardAppearance = appearance
-        navigationItem.scrollEdgeAppearance = appearance
-        navigationItem.compactAppearance = appearance
-        navigationController?.navigationBar.tintColor = .white
+        SettingsNavigationStyle.apply(to: self)
     }
 
     private func observeSubjects() {
         ShuttleTimetableData.shared.options.subscribe(onNext: { options in
             guard let options else { return }
-            self.navigationItem.title = "\(String(localized: options.start)) ▶ \(String(localized: options.end))"
+            let period: String?
+            if let date = options.date {
+                let formatter = DateFormatter()
+                formatter.locale = .current
+                formatter.dateFormat = "M/d(E)"
+                period = formatter.string(from: date)
+            } else {
+                period = options.period.map { String(localized: $0) }
+            }
+            self.header.configure(
+                start: String(localized: options.start),
+                end: String(localized: options.end),
+                period: period,
+                isWeekdays: self.pager.currentIndex == 0
+            )
             // Query the timetable data
             let (stopID, destinations) = self.resolveStopAndDestination(options: options)
             self.fetchTimetable(options: options, stopID: stopID, destinations: destinations)
@@ -187,40 +163,8 @@ class ShuttleTimetableVC: UIViewController {
     }
 
     private func resolveStopAndDestination(options: ShuttleTimetableOptions) -> (String, [String]) {
-        switch options.start {
-        case "shuttle.stop.dormitory.out":
-            ("dormitory_o", outboundDestinations(options.end))
-        case "shuttle.stop.shuttlecock.out":
-            ("shuttlecock_o", outboundDestinations(options.end))
-        case "shuttle.stop.station":
-            ("station", stationDestinations(options.end))
-        case "shuttle.stop.terminal":
-            ("terminal", ["CAMPUS"])
-        case "shuttle.stop.jungang.station":
-            ("jungang_stn", ["CAMPUS"])
-        case "shuttle.stop.shuttlecock.in":
-            ("shuttlecock_i", ["CAMPUS"])
-        default:
-            ("", [])
-        }
-    }
-
-    private func outboundDestinations(_ destination: String.LocalizationValue) -> [String] {
-        switch destination {
-        case "shuttle.destination.shorten.station": ["STATION"]
-        case "shuttle.destination.shorten.jungang_station": ["JUNGANG"]
-        case "shuttle.destination.shorten.terminal": ["TERMINAL"]
-        default: []
-        }
-    }
-
-    private func stationDestinations(_ destination: String.LocalizationValue) -> [String] {
-        switch destination {
-        case "shuttle.destination.shorten.campus": ["CAMPUS"]
-        case "shuttle.destination.shorten.jungang_station": ["JUNGANG"]
-        case "shuttle.destination.shorten.terminal": ["TERMINAL"]
-        default: []
-        }
+        let route = ShuttleDisplayLogic.timetableRoute(start: options.start, end: options.end)
+        return (route.stopID, route.destinationKey.map { [$0] } ?? [])
     }
 
     private func fetchTimetable(options: ShuttleTimetableOptions, stopID: String, destinations: [String]) {
@@ -299,11 +243,18 @@ class ShuttleTimetableVC: UIViewController {
         AnalyticsManager.logSelect(.shuttleOpenFilter)
         let vc = ShuttleTimetableFilterVC()
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.custom(resolver: { _ in
-                800
-            })]
+            sheet.detents = [.custom { [weak vc] context in
+                guard let vc else { return 0 }
+                return min(vc.sheetHeight, context.maximumDetentValue)
+            }]
             sheet.prefersGrabberVisible = true
         }
         present(vc, animated: true, completion: nil)
+    }
+}
+
+extension ShuttleTimetableVC: ContentViewDelegate {
+    func didMoveToPage(index: Int) {
+        header.daySegment.setSelected(index)
     }
 }

@@ -16,14 +16,6 @@ class BusAlternativeStopVC: UIViewController {
     private let routeCacheKey: BusAlternativeRouteCache.Key
     private var fallbackPolyline: MKPolyline?
 
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
-        $0.textColor = .white
-        $0.backgroundColor = .hanyangBlue
-        $0.textAlignment = .center
-        $0.text = String(localized: "coach.shuttle.footer.title")
-    }
-
     private let mapView = MKMapView().then {
         $0.isZoomEnabled = true
         $0.isScrollEnabled = true
@@ -69,20 +61,38 @@ class BusAlternativeStopVC: UIViewController {
         renderStops()
     }
 
-    private func setupUI() {
-        view.backgroundColor = .hanyangBlue
-        view.addSubview(titleLabel)
-        view.addSubview(mapView)
-        mapView.delegate = self
+    private let sheetView = HYUSheetView(title: String(localized: "coach.shuttle.footer.title"))
 
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
+    private var cachedSheetHeight: CGFloat?
+
+    var sheetHeight: CGFloat {
+        if let cachedSheetHeight {
+            return cachedSheetHeight
+        }
+        view.layoutIfNeeded()
+        let height = sheetView.contentHeight
+        cachedSheetHeight = height
+        return height
+    }
+
+    private func setupUI() {
+        let sheet = sheetView
+        let mapCard = UIView()
+        mapCard.layer.cornerRadius = 16
+        mapCard.layer.cornerCurve = .continuous
+        mapCard.clipsToBounds = true
+        view.addSubview(sheet)
+        mapCard.addSubview(mapView)
+        sheet.contentStack.addArrangedSubview(mapCard)
+        mapView.delegate = self
+        sheet.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
         mapView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.edges.equalToSuperview()
+        }
+        mapCard.snp.makeConstraints { make in
+            make.height.equalTo(280)
         }
     }
 

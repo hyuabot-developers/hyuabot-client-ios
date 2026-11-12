@@ -8,31 +8,38 @@ import Then
 import UIKit
 
 final class ShuttleQuickSettingsVC: UIViewController {
-    private static let actionButtonBackground = UIColor(red: 0.86, green: 0.93, blue: 0.98, alpha: 1.00)
-    private static let menuForegroundColor = UIColor { traits in
-        traits.userInterfaceStyle == .dark ? .systemBlue : .hanyangBlue
-    }
-
     var openHome: (() -> Void)?
+    var openHelp: (() -> Void)?
     var openInquiry: (() -> Void)?
-    var updateShowArrivalByTime: ((Bool) -> Void)?
     var updateShowDepartureTime: ((Bool) -> Void)?
+    var updateShowArrivalByTime: ((Bool) -> Void)?
     var updateShowPresenceStatus: ((Bool) -> Void)?
     var updateShowBusTransfer: ((Bool) -> Void)?
     var updateShowSubwayTransfer: ((Bool) -> Void)?
     var updateSubwayDestination: ((ShuttleSubwayTransferDestination) -> Void)?
     var updateAlternativeDisplayMode: ((ShuttleAlternativeDisplayMode) -> Void)?
-    let preferredSheetHeight: CGFloat = 680
+    /// Measured once: re-measuring on every detent pass makes the sheet resize between taps.
+    private var cachedSheetHeight: CGFloat?
+    var preferredSheetHeight: CGFloat {
+        if let cachedSheetHeight {
+            return cachedSheetHeight
+        }
+        view.layoutIfNeeded()
+        let height = sheetView.contentHeight
+        cachedSheetHeight = height
+        return height
+    }
 
-    private let scrollView = UIScrollView()
-    private let contentStack = UIStackView()
-    private let showArrivalByTimeSwitch = UISwitch()
+    private let sheetView = HYUSheetView(title: String(localized: "shuttle.quick_settings.title"))
     private let showDepartureTimeSwitch = UISwitch()
+    private let emphasisSegment = SubwaySegmentView(buttonIdentifierPrefix: "shuttle.quick_settings.emphasis")
+    private let showArrivalByTimeSwitch = UISwitch()
     private let showPresenceStatusSwitch = UISwitch()
     private let showBusTransferSwitch = UISwitch()
     private let showSubwayTransferSwitch = UISwitch()
     private let subwayDestinationButton = UIButton(type: .system)
-    private let alternativeModeButton = UIButton(type: .system)
+    private let showAlternativeSwitch = UISwitch()
+    private let sortSegment = SubwaySegmentView(buttonIdentifierPrefix: "shuttle.quick_settings.sort")
     private var subwayDestination: ShuttleSubwayTransferDestination
     private var alternativeDisplayMode: ShuttleAlternativeDisplayMode
 
@@ -69,171 +76,178 @@ final class ShuttleQuickSettingsVC: UIViewController {
 
 extension ShuttleQuickSettingsVC {
     private func setupUI() {
-        view.backgroundColor = .systemBackground
-
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentStack)
-        scrollView.alwaysBounceVertical = false
-        scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
-        }
-
-        contentStack.axis = .vertical
-        contentStack.spacing = 12
-        contentStack.layoutMargins = UIEdgeInsets(top: 20, left: 20, bottom: 18, right: 20)
-        contentStack.isLayoutMarginsRelativeArrangement = true
-        contentStack.snp.makeConstraints { make in
-            make.edges.equalTo(scrollView.contentLayoutGuide)
-            make.width.equalTo(scrollView.frameLayoutGuide)
-        }
-
-        let title = UILabel()
-        title.text = String(localized: "shuttle.quick_settings.title")
-        title.font = .godo(size: 20, weight: .bold)
-        title.textColor = .label
-
+        view.addSubview(sheetView)
+        sheetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        sheetView.showsCloseButton(true, identifier: "shuttle.quick_settings.close")
+        sheetView.closeButton.addTarget(self, action: #selector(onTapClose), for: .touchUpInside)
         configureControls()
-        contentStack.addArrangedSubview(title)
-        contentStack.addArrangedSubview(displaySettingsGroup())
-        contentStack.addArrangedSubview(connectionSettingsGroup())
-        contentStack.addArrangedSubview(inquiryActionRow())
-        contentStack.addArrangedSubview(homeActionRow())
+        let stack = sheetView.contentStack
+        stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.display"), isFirst: true))
+        stack.addArrangedSubview(displaySettingsGroup())
+        stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.connections")))
+        stack.addArrangedSubview(connectionSettingsGroup())
+        stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.alternative")))
+        let alternative = alternativeGroup()
+        stack.addArrangedSubview(alternative)
+        let home = HYUSheetView.actionButton(
+            title: String(localized: "home.experience_new"),
+            systemImage: "house",
+            identifier: "shuttle.quick_settings.open_home"
+        )
+        home.addTarget(self, action: #selector(onTapHome), for: .touchUpInside)
+        let bottom = UIStackView(arrangedSubviews: [home])
+        bottom.axis = .vertical
+        bottom.spacing = 8
+        bottom.addArrangedSubview(horizontalActionButtons())
+        stack.setCustomSpacing(16, after: alternative)
+        stack.addArrangedSubview(bottom)
     }
 
     private func displaySettingsGroup() -> UIView {
-        settingsGroup(
-            title: String(localized: "shuttle.quick_settings.section.display"),
-            rows: [
-                switchSettingRow(
-                    title: String(localized: "shuttle.realtime.showByDestination"),
-                    hint: String(localized: "shuttle.quick_settings.arrival_by_time.subtitle"),
-                    control: showArrivalByTimeSwitch,
-                    identifier: "shuttle.quick_settings.arrival_by_time_row"
-                ),
-                switchSettingRow(
-                    title: String(localized: "shuttle.realtime.showDepartureTime"),
-                    hint: String(localized: "shuttle.quick_settings.departure_time.subtitle"),
-                    control: showDepartureTimeSwitch,
-                    identifier: "shuttle.quick_settings.departure_time_row"
-                ),
-                switchSettingRow(
-                    title: String(localized: "shuttle.quick_settings.presence.title"),
-                    hint: String(localized: "shuttle.quick_settings.presence.subtitle"),
-                    control: showPresenceStatusSwitch,
-                    identifier: "shuttle.quick_settings.presence_row"
+        let card = HYUSheetView.card()
+        sortSegment.configure(
+            items: [
+                SubwaySegmentView.Item(title: String(localized: "shuttle.quick_settings.sort.destination"), dotColors: [], count: nil),
+                SubwaySegmentView.Item(
+                    title: String(localized: "shuttle.quick_settings.sort.time"),
+                    dotColors: [],
+                    count: nil
                 )
-            ]
+            ],
+            selected: showArrivalByTimeSwitch.isOn ? 1 : 0
         )
+        sortSegment.onSelect = { [weak self] index in self?.updateShowArrivalByTime?(index == 1) }
+        emphasisSegment.configure(
+            items: [
+                SubwaySegmentView.Item(title: String(localized: "shuttle.quick_settings.emphasis.remaining"), dotColors: [], count: nil),
+                SubwaySegmentView.Item(
+                    title: String(localized: "shuttle.quick_settings.emphasis.departure"),
+                    dotColors: [],
+                    count: nil
+                )
+            ],
+            selected: showDepartureTimeSwitch.isOn ? 1 : 0
+        )
+        emphasisSegment.onSelect = { [weak self] index in self?.updateShowDepartureTime?(index == 1) }
+        let sort = settingTitleRow(
+            String(localized: "shuttle.quick_settings.sort.title"),
+            identifier: "shuttle.quick_settings.arrival_by_time_row"
+        )
+        sort.addArrangedSubview(sortSegment)
+        let emphasis = settingTitleRow(
+            String(localized: "shuttle.quick_settings.emphasis.title"),
+            identifier: "shuttle.quick_settings.departure_time_row"
+        )
+        emphasis.addArrangedSubview(emphasisSegment)
+        [
+            sort,
+            emphasis,
+            switchSettingRow(
+                title: String(localized: "shuttle.quick_settings.presence.title"),
+                hint: String(localized: "shuttle.quick_settings.presence.subtitle"),
+                control: showPresenceStatusSwitch,
+                identifier: "shuttle.quick_settings.presence_row"
+            )
+        ].enumerated().forEach { index, row in
+            if index > 0 {
+                card.addArrangedSubview(HYUSheetView.separator())
+            }
+            card.addArrangedSubview(row)
+        }
+        return card
     }
 
     private func connectionSettingsGroup() -> UIView {
         settingsGroup(
-            title: String(localized: "shuttle.quick_settings.section.connections"),
             rows: [
-                switchSettingRow(
-                    title: String(localized: "home.quick_settings.bus50_transfer.title"),
-                    hint: String(localized: "home.quick_settings.bus50_transfer.subtitle"),
-                    control: showBusTransferSwitch,
-                    identifier: "shuttle.quick_settings.bus_transfer_row"
-                ),
                 switchSettingRow(
                     title: String(localized: "home.quick_settings.subway_transfer.title"),
                     hint: String(localized: "home.quick_settings.subway_transfer.subtitle"),
                     control: showSubwayTransferSwitch,
                     identifier: "shuttle.quick_settings.subway_transfer_row"
                 ),
+                switchSettingRow(
+                    title: String(localized: "home.quick_settings.bus50_transfer.title"),
+                    hint: String(localized: "home.quick_settings.bus50_transfer.subtitle"),
+                    control: showBusTransferSwitch,
+                    identifier: "shuttle.quick_settings.bus_transfer_row"
+                ),
                 valueSettingRow(
                     title: String(localized: "shuttle.quick_settings.subway_destination.title"),
                     control: subwayDestinationButton,
                     identifier: "shuttle.quick_settings.subway_destination_row"
-                ),
-                valueSettingRow(
+                )
+            ]
+        )
+    }
+
+    private func alternativeGroup() -> UIView {
+        settingsGroup(
+            rows: [
+                switchSettingRow(
                     title: String(localized: "shuttle.quick_settings.alternative.title"),
-                    control: alternativeModeButton,
+                    hint: String(localized: "shuttle.quick_settings.alternative.subtitle"),
+                    control: showAlternativeSwitch,
                     identifier: "shuttle.quick_settings.alternative_row"
                 )
-            ],
-            footer: String(localized: "shuttle.quick_settings.alternative.subtitle")
+            ]
         )
     }
 
     private func configureControls() {
-        showArrivalByTimeSwitch.addTarget(self, action: #selector(onChangeArrivalByTime), for: .valueChanged)
-        showDepartureTimeSwitch.addTarget(self, action: #selector(onChangeDepartureTime), for: .valueChanged)
-        showPresenceStatusSwitch.addTarget(self, action: #selector(onChangePresenceStatus), for: .valueChanged)
-        showBusTransferSwitch.addTarget(self, action: #selector(onChangeBusTransfer), for: .valueChanged)
-        showSubwayTransferSwitch.addTarget(self, action: #selector(onChangeSubwayTransfer), for: .valueChanged)
-        configureMenuButton(subwayDestinationButton)
-        configureMenuButton(alternativeModeButton)
-        subwayDestinationButton.isEnabled = showSubwayTransferSwitch.isOn
-    }
-
-    private func configureMenuButton(_ button: UIButton) {
-        var config = UIButton.Configuration.plain()
-        config.baseForegroundColor = Self.menuForegroundColor
-        config.image = UIImage(systemName: "chevron.up.chevron.down")
-        config.imagePlacement = .trailing
-        config.imagePadding = 6
-        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8)
-        button.configuration = config
-        button.contentHorizontalAlignment = .trailing
-        button.showsMenuAsPrimaryAction = true
-        button.setContentHuggingPriority(.required, for: .horizontal)
-        button.setContentCompressionResistancePriority(.required, for: .horizontal)
-    }
-
-    private func settingsGroup(title: String, rows: [UIView], footer: String? = nil) -> UIView {
-        let section = UIStackView()
-        section.axis = .vertical
-        section.spacing = 6
-
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .godo(size: 13, weight: .bold)
-        titleLabel.textColor = .secondaryLabel
-        section.addArrangedSubview(titleLabel)
-
-        let card = UIStackView()
-        card.axis = .vertical
-        card.backgroundColor = .secondarySystemBackground
-        card.layer.cornerRadius = 12
-        card.clipsToBounds = true
-        for (index, row) in rows.enumerated() {
-            if index > 0 {
-                card.addArrangedSubview(separator())
-            }
-            card.addArrangedSubview(row)
+        let values = [showPresenceStatusSwitch, showBusTransferSwitch, showSubwayTransferSwitch]
+        for (index, control) in values.enumerated() {
+            control.onTintColor = SettingsStyle.Color.accent
+            control.addTarget(
+                self,
+                action: [#selector(onChangePresenceStatus), #selector(onChangeBusTransfer), #selector(onChangeSubwayTransfer)][index],
+                for: .valueChanged
+            )
         }
-        section.addArrangedSubview(card)
-
-        if let footer {
-            let footerLabel = UILabel()
-            footerLabel.text = footer
-            footerLabel.font = .godo(size: 12, weight: .regular)
-            footerLabel.textColor = .secondaryLabel
-            footerLabel.numberOfLines = 0
-            section.addArrangedSubview(footerLabel)
-            section.setCustomSpacing(8, after: card)
-        }
-        return section
+        showAlternativeSwitch.onTintColor = SettingsStyle.Color.accent
+        showAlternativeSwitch.isOn = alternativeDisplayMode != .hidden
+        showAlternativeSwitch.addTarget(self, action: #selector(onChangeAlternative), for: .valueChanged)
+        var menuConfig = UIButton.Configuration.plain()
+        menuConfig.image = UIImage(
+            systemName: "chevron.up.chevron.down",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .regular)
+        )
+        menuConfig.imagePlacement = .trailing
+        menuConfig.imagePadding = 6
+        menuConfig.contentInsets = .zero
+        subwayDestinationButton.configuration = menuConfig
+        subwayDestinationButton.setContentHuggingPriority(.required, for: .horizontal)
+        subwayDestinationButton.tintColor = SettingsStyle.Color.link
+        subwayDestinationButton.showsMenuAsPrimaryAction = true
     }
 
-    private func separator() -> UIView {
-        UIView().then {
-            $0.backgroundColor = .separator
-            $0.snp.makeConstraints { make in
-                make.height.equalTo(1 / UIScreen.main.scale)
-            }
-        }
-    }
-
-    private func switchSettingRow(
-        title: String,
-        hint: String,
-        control: UISwitch,
-        identifier: String
-    ) -> UIView {
-        let row = horizontalSettingRow(title: title, control: control, identifier: identifier)
+    private func switchSettingRow(title: String, hint: String, control: UISwitch, identifier: String) -> UIView {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 12
+        row.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        row.isLayoutMarginsRelativeArrangement = true
+        row.accessibilityIdentifier = identifier
+        let labels = UIStackView()
+        labels.axis = .vertical
+        labels.spacing = 2
+        let label = UILabel()
+        label.attributedText = SettingsStyle.attributedText(
+            title, font: SettingsStyle.font(15, bold: true),
+            color: SettingsStyle.Color.text, lineHeight: 20
+        )
+        let detail = UILabel()
+        detail.attributedText = SettingsStyle.attributedText(
+            hint, font: SettingsStyle.font(13),
+            color: SettingsStyle.Color.secondaryText, lineHeight: 18
+        )
+        detail.numberOfLines = 0
+        labels.addArrangedSubview(label)
+        labels.addArrangedSubview(detail)
+        row.addArrangedSubview(labels)
+        row.addArrangedSubview(control)
+        row.heightAnchor.constraint(greaterThanOrEqualToConstant: 64).isActive = true
         control.accessibilityLabel = title
         control.accessibilityHint = hint
         control.accessibilityIdentifier = "\(identifier).switch"
@@ -241,36 +255,83 @@ extension ShuttleQuickSettingsVC {
     }
 
     private func valueSettingRow(title: String, control: UIButton, identifier: String) -> UIView {
-        let row = horizontalSettingRow(title: title, control: control, identifier: identifier)
-        control.accessibilityLabel = title
-        control.accessibilityIdentifier = "\(identifier).menu"
-        return row
-    }
-
-    private func horizontalSettingRow(title: String, control: UIView, identifier: String) -> UIView {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .center
         row.spacing = 12
-        row.layoutMargins = UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 10)
+        row.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        row.isLayoutMarginsRelativeArrangement = true
+        let label = UILabel()
+        label.attributedText = SettingsStyle.attributedText(
+            title, font: SettingsStyle.font(15, bold: true),
+            color: SettingsStyle.Color.text, lineHeight: 20
+        )
+        row.addArrangedSubview(label)
+        row.addArrangedSubview(control)
+        control.accessibilityIdentifier = "\(identifier).menu"
+        row.heightAnchor.constraint(greaterThanOrEqualToConstant: 56).isActive = true
+        return row
+    }
+
+    private func settingsGroup(rows: [UIView], footer: String? = nil) -> UIView {
+        let container = UIStackView()
+        container.axis = .vertical
+        container.spacing = 8
+        let card = HYUSheetView.card()
+        for (index, row) in rows.enumerated() {
+            if index > 0 {
+                card.addArrangedSubview(HYUSheetView.separator())
+            }
+            card.addArrangedSubview(row)
+        }
+        container.addArrangedSubview(card)
+        if let footer {
+            container.addArrangedSubview(HYUSheetView.footnote(footer))
+        }
+        return container
+    }
+
+    private func horizontalActionButtons() -> UIStackView {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 8
+        stack.distribution = .fillEqually
+        let help = HYUSheetView.actionButton(
+            title: String(localized: "common.help"),
+            systemImage: "questionmark.circle",
+            identifier: "shuttle.quick_settings.help"
+        )
+        help.addTarget(self, action: #selector(onTapHelp), for: .touchUpInside)
+        let inquiry = HYUSheetView.actionButton(
+            title: String(localized: "inquiry.title"),
+            systemImage: "bubble.left.and.bubble.right",
+            identifier: "shuttle.quick_settings.inquiry"
+        )
+        inquiry.addTarget(self, action: #selector(onTapInquiry), for: .touchUpInside)
+        stack.addArrangedSubview(help)
+        stack.addArrangedSubview(inquiry)
+        return stack
+    }
+
+    @objc
+    private func onTapHelp() {
+        dismiss(animated: true) { [weak self] in self?.openHelp?() }
+    }
+
+    private func settingTitleRow(_ title: String, identifier: String) -> UIStackView {
+        let row = UIStackView()
+        row.axis = .vertical
+        row.spacing = 10
+        row.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         row.isLayoutMarginsRelativeArrangement = true
         row.accessibilityIdentifier = identifier
         row.isAccessibilityElement = false
-
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .godo(size: 15, weight: .bold)
-        titleLabel.textColor = .label
-        titleLabel.adjustsFontSizeToFitWidth = true
-        titleLabel.minimumScaleFactor = 0.85
-
-        row.addArrangedSubview(titleLabel)
-        row.addArrangedSubview(control)
-        row.snp.makeConstraints { make in
-            make.height.equalTo(52)
-        }
-        row.setContentHuggingPriority(.required, for: .vertical)
-        row.setContentCompressionResistancePriority(.required, for: .vertical)
+        let label = UILabel()
+        label.attributedText = SettingsStyle.attributedText(
+            title, font: SettingsStyle.font(15, bold: true),
+            color: SettingsStyle.Color.text, lineHeight: 20
+        )
+        row.addArrangedSubview(label)
         return row
     }
 
@@ -284,22 +345,12 @@ extension ShuttleQuickSettingsVC {
             }
         })
         updateMenuButtonTitle(subwayDestinationButton, title: subwayDestination.title)
-
-        alternativeModeButton.menu = UIMenu(children: ShuttleAlternativeDisplayMode.allCases.map { mode in
-            UIAction(
-                title: mode.title,
-                state: mode == alternativeDisplayMode ? .on : .off
-            ) { [weak self] _ in
-                self?.selectAlternativeDisplayMode(mode)
-            }
-        })
-        updateMenuButtonTitle(alternativeModeButton, title: alternativeDisplayMode.title)
     }
 
     private func updateMenuButtonTitle(_ button: UIButton, title: String) {
         var config = button.configuration
         config?.attributedTitle = AttributedString(title, attributes: AttributeContainer([
-            .font: UIFont.godo(size: 14, weight: .bold)
+            .font: SettingsStyle.font(15, bold: true)
         ]))
         button.configuration = config
         button.accessibilityValue = title
@@ -311,58 +362,15 @@ extension ShuttleQuickSettingsVC {
         updateSubwayDestination?(destination)
     }
 
-    private func selectAlternativeDisplayMode(_ mode: ShuttleAlternativeDisplayMode) {
-        alternativeDisplayMode = mode
-        updateSelectionMenus()
-        updateAlternativeDisplayMode?(mode)
+    @objc
+    private func onChangeAlternative() {
+        alternativeDisplayMode = showAlternativeSwitch.isOn ? .always : .hidden
+        updateAlternativeDisplayMode?(alternativeDisplayMode)
     }
 
-    private func homeActionRow() -> UIView {
-        let button = UIButton(type: .system)
-        var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = Self.actionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "house.fill")
-        config.attributedTitle = AttributedString(String(localized: "home.experience_new"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 17, weight: .bold)
-        ]))
-        config.imagePadding = 8
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
-        button.configuration = config
-        button.contentHorizontalAlignment = .leading
-        button.addTarget(self, action: #selector(onTapHome), for: .touchUpInside)
-        button.accessibilityIdentifier = "shuttle.quick_settings.open_home"
-        button.snp.makeConstraints { make in
-            make.height.equalTo(48)
-        }
-        button.setContentHuggingPriority(.required, for: .vertical)
-        button.setContentCompressionResistancePriority(.required, for: .vertical)
-        return button
-    }
-
-    private func inquiryActionRow() -> UIView {
-        let button = UIButton(type: .system)
-        var config = UIButton.Configuration.plain()
-        config.background.backgroundColor = Self.actionButtonBackground
-        config.baseForegroundColor = .hanyangBlue
-        config.cornerStyle = .medium
-        config.image = UIImage(systemName: "message")
-        config.attributedTitle = AttributedString(String(localized: "inquiry.title"), attributes: AttributeContainer([
-            .font: UIFont.godo(size: 17, weight: .bold)
-        ]))
-        config.imagePadding = 8
-        config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
-        button.configuration = config
-        button.contentHorizontalAlignment = .leading
-        button.addTarget(self, action: #selector(onTapInquiry), for: .touchUpInside)
-        button.accessibilityIdentifier = "shuttle.quick_settings.open_inquiry"
-        button.snp.makeConstraints { make in
-            make.height.equalTo(48)
-        }
-        button.setContentHuggingPriority(.required, for: .vertical)
-        button.setContentCompressionResistancePriority(.required, for: .vertical)
-        return button
+    @objc
+    private func onTapClose() {
+        dismiss(animated: true)
     }
 
     @objc
@@ -382,11 +390,6 @@ extension ShuttleQuickSettingsVC {
     @objc
     private func onChangeArrivalByTime() {
         updateShowArrivalByTime?(showArrivalByTimeSwitch.isOn)
-    }
-
-    @objc
-    private func onChangeDepartureTime() {
-        updateShowDepartureTime?(showDepartureTimeSwitch.isOn)
     }
 
     @objc

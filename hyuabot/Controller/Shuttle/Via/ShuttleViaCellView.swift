@@ -9,13 +9,11 @@ import UIKit
 
 class ShuttleViaCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleViaCellView"
-    private let shuttleStopLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
-    }
-
-    private let shuttleTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-    }
+    private let timeline = UIView()
+    private let timelineLine = UIView()
+    private let timelineDot = UIView()
+    private let shuttleStopLabel = UILabel()
+    private let shuttleTimeLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -29,23 +27,61 @@ class ShuttleViaCellView: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        shuttleStopLabel.textColor = .label
-        shuttleTimeLabel.textColor = .label
+        shuttleStopLabel.textColor = SettingsStyle.Color.text
+        shuttleTimeLabel.textColor = SettingsStyle.Color.text
+        shuttleStopLabel.font = SettingsStyle.font(15)
+        shuttleTimeLabel.font = SettingsStyle.monospacedDigitFont(15)
+        timelineLine.isHidden = false
+        timelineDot.backgroundColor = SettingsStyle.Color.commuterFaint
     }
 
     func setupUI() {
-        contentView.addSubview(shuttleStopLabel)
-        contentView.addSubview(shuttleTimeLabel)
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
         selectionStyle = .none
+        shuttleStopLabel.font = SettingsStyle.font(15)
+        shuttleStopLabel.textColor = SettingsStyle.Color.text
+        shuttleStopLabel.numberOfLines = 1
+        shuttleStopLabel.lineBreakMode = .byTruncatingTail
+        shuttleTimeLabel.font = SettingsStyle.monospacedDigitFont(15)
+        shuttleTimeLabel.textColor = SettingsStyle.Color.text
+        shuttleTimeLabel.textAlignment = .right
+        timelineLine.backgroundColor = SettingsStyle.Color.separator
+        timelineDot.layer.cornerRadius = 4
+        timelineDot.backgroundColor = SettingsStyle.Color.commuterFaint
+        [timelineLine, timelineDot].forEach(timeline.addSubview)
+        [timeline, shuttleStopLabel, shuttleTimeLabel].forEach(contentView.addSubview)
+        timeline.snp.makeConstraints { $0.leading.equalToSuperview().offset(16); $0.width.equalTo(12); $0.top.bottom.equalToSuperview() }
+        timelineLine.snp.makeConstraints { $0.centerX.equalToSuperview(); $0.width.equalTo(2); $0.top.bottom.equalToSuperview() }
+        timelineDot.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(8) }
+        shuttleTimeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        shuttleTimeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         shuttleStopLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
-            make.verticalEdges.equalToSuperview().inset(15)
+            make.leading.equalTo(timeline.snp.trailing).offset(12)
+            make.top.bottom.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(shuttleTimeLabel.snp.leading).offset(-8)
         }
         shuttleTimeLabel.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
+            make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
         }
+    }
+
+    func setTimelinePosition(isFirst: Bool, isLast: Bool) {
+        timelineLine.snp.remakeConstraints { make in
+            make.centerX.equalToSuperview(); make.width.equalTo(2)
+            make.top.equalToSuperview().offset(isFirst ? 22 : 0)
+            make.bottom.equalToSuperview().inset(isLast ? 22 : 0)
+        }
+    }
+
+    /// Stops already passed stay grey; the stop the shuttle departs from now is emphasised in blue.
+    private func applyCurrentStopStyle() {
+        timelineDot.backgroundColor = SettingsStyle.Color.accent
+        shuttleStopLabel.font = SettingsStyle.font(15, bold: true)
+        shuttleStopLabel.textColor = SettingsStyle.Color.link
+        shuttleTimeLabel.font = SettingsStyle.monospacedDigitFont(15, bold: true)
+        shuttleTimeLabel.textColor = SettingsStyle.Color.link
     }
 
     func setupUI(
@@ -69,8 +105,10 @@ class ShuttleViaCellView: UITableViewCell {
         }
         shuttleTimeLabel.text = formatTime(item.time)
         if startStop.time > item.time {
-            shuttleStopLabel.textColor = .gray
-            shuttleTimeLabel.textColor = .gray
+            shuttleStopLabel.textColor = SettingsStyle.Color.subwayPast
+            shuttleTimeLabel.textColor = SettingsStyle.Color.subwayPast
+        } else if startStop.time == item.time {
+            applyCurrentStopStyle()
         }
     }
 
@@ -95,8 +133,10 @@ class ShuttleViaCellView: UITableViewCell {
         }
         shuttleTimeLabel.text = formatTime(item.time)
         if startStop.time > item.time {
-            shuttleStopLabel.textColor = .gray
-            shuttleTimeLabel.textColor = .gray
+            shuttleStopLabel.textColor = SettingsStyle.Color.subwayPast
+            shuttleTimeLabel.textColor = SettingsStyle.Color.subwayPast
+        } else if startStop.time == item.time {
+            applyCurrentStopStyle()
         }
     }
 
@@ -121,8 +161,10 @@ class ShuttleViaCellView: UITableViewCell {
         }
         shuttleTimeLabel.text = formatTime(item.time)
         if startStop.time > item.time {
-            shuttleStopLabel.textColor = .gray
-            shuttleTimeLabel.textColor = .gray
+            shuttleStopLabel.textColor = SettingsStyle.Color.subwayPast
+            shuttleTimeLabel.textColor = SettingsStyle.Color.subwayPast
+        } else if startStop.time == item.time {
+            applyCurrentStopStyle()
         }
     }
 
