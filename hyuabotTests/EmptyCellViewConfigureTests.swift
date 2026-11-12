@@ -13,9 +13,33 @@ import XCTest
 final class EmptyCellViewConfigureTests: XCTestCase {
     private let message = "다른 조건으로 검색해 보세요."
 
-    func testShuttleRealtimeEmptyCellForwardsConfiguration() {
+    func testShuttleRealtimeEmptyCellShowsTitleAndBody() {
         let cell = ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)
-        assertForwardsConfiguration(cell) { cell.configure($0) }
+        cell.configure(title: "운행 종료", body: "내일 첫차 08:00")
+        let labels = descendants(in: cell).compactMap { $0 as? UILabel }
+        XCTAssertEqual(labels.map(\.text), ["운행 종료", "내일 첫차 08:00"])
+        XCTAssertEqual(labels.map { $0.font.pointSize }, [15, 13])
+        XCTAssertTrue(labels.allSatisfy { $0.textAlignment == .center && $0.numberOfLines == 0 })
+        XCTAssertEqual(labels.last?.textColor, .secondaryLabel)
+        cell.configure(title: "운행 없음", body: "평일 시간표")
+        XCTAssertEqual(labels.map(\.text), ["운행 없음", "평일 시간표"])
+    }
+
+    func testShuttleEmptyTextDistinguishesNoServiceAndEndedService() {
+        let weekday = ShuttleDisplayLogic.emptyText(destination: "한대앞", departureTimes: [], isWeekend: false)
+        XCTAssertEqual(weekday.title, String(localized: "shuttle.realtime.empty.not_operating.title"))
+        XCTAssertEqual(weekday.body, String(localized: "shuttle.realtime.empty.not_operating.body"))
+        let weekend = ShuttleDisplayLogic.emptyText(destination: "한대앞", departureTimes: [], isWeekend: true)
+        XCTAssertEqual(weekend.title, String(localized: "shuttle.realtime.empty.weekend.title"))
+        let ended = ShuttleDisplayLogic.emptyText(
+            destination: "한대앞", departureTimes: ["23:00:00", "00:30:00", "08:10:00"], isWeekend: true
+        )
+        XCTAssertEqual(ended.title, String(format: String(localized: "shuttle.realtime.empty.ended.title"), "한대앞"))
+        XCTAssertEqual(ended.body, String(format: String(localized: "shuttle.realtime.empty.ended.body"), "08:10"))
+    }
+
+    private func descendants(in view: UIView) -> [UIView] {
+        view.subviews.flatMap { [$0] + descendants(in: $0) }
     }
 
     func testContactSearchEmptyCellForwardsConfiguration() {
@@ -41,7 +65,6 @@ final class EmptyCellViewConfigureTests: XCTestCase {
     /// Each cell must report its own analytics screen through the StateView it hosts.
     func testEmptyCellsReportExpectedSourceScreen() {
         let cases: [(UITableViewCell, AnalyticsScreen)] = [
-            (ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil), .shuttleRealtime),
             (ContactSearchEmptyCellView(style: .default, reuseIdentifier: nil), .contact),
             (SearchEmptyCellView(style: .default, reuseIdentifier: nil), .map),
             (ShuttleTimetableEmptyCellView(style: .default, reuseIdentifier: nil), .shuttleTimetable),

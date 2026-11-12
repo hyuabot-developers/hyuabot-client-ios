@@ -29,6 +29,19 @@ final class ShuttleComponentTests: XCTestCase {
         XCTAssertTrue(pill.isHidden)
     }
 
+    func testPresencePillHugsText() throws {
+        let header = ShuttleRealtimeListHeaderView(stopTitles: ["North", "South", "West"])
+        header.setPresence(text: "3", accessibilityLabel: "3", dotColor: .systemGreen)
+        header.frame = CGRect(x: 0, y: 0, width: 390, height: 200)
+        header.setNeedsLayout()
+        header.layoutIfNeeded()
+
+        let label = try XCTUnwrap(descendants(of: header).compactMap { $0 as? UILabel }.first { $0.text == "3" })
+        let pill = try XCTUnwrap(label.superview?.superview)
+        XCTAssertLessThan(pill.bounds.width, 80)
+        XCTAssertGreaterThan(pill.bounds.width, 0)
+    }
+
     func testShuttleTimetableHeaderIdentifiersAndBadgeMetrics() {
         let header = ShuttleTimetableHeaderView()
         XCTAssertEqual(header.routeButton.accessibilityIdentifier, "shuttle.timetable.route")

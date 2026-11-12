@@ -610,7 +610,8 @@ class ShuttleRealtimeVC: UIViewController {
                 destinations: [(String, BehaviorSubject<[Entry]>)]
             ) {
                 let stop = data.first(where: { $0.name == stopName })
-                order.onNext(stop?.timetable.order ?? [])
+                // The query fetches the full day; hide departures before the current minute.
+                order.onNext(stop?.timetable.order.filter { $0.time >= String(currentTime.prefix(5)) } ?? [])
                 for (destination, subject) in destinations {
                     subject.onNext(
                         stop?.timetable.destination.first(where: { $0.destination == destination })?.entries
@@ -691,7 +692,6 @@ class ShuttleRealtimeVC: UIViewController {
         let request = latestDataRequest
         let selection = currentPayloadSelection()
         let now = Date.now
-        let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm" }
         let dataDelegate = ShuttleRealtimeData.shared
         let currentLanguage = LanguageManager.shared.apiLanguageTag
         let noticeLanguage = currentLanguage.starts(with: "ko") ? "KOREAN" : "ENGLISH"
@@ -707,9 +707,9 @@ class ShuttleRealtimeVC: UIViewController {
                 query: ShuttleRealtimePageQuery(
                     language: noticeLanguage,
                     subwayLanguage: currentLanguage,
-                    after: GraphQLNullable(stringLiteral: timeFormatter.string(from: now)),
+                    after: nil,
                     shuttleStops: Self.presenceStopIds.map {
-                        ShuttleStopInput(name: $0, limit: ShuttleLimitInput(order: 100, destination: 100))
+                        ShuttleStopInput(name: $0, limit: ShuttleLimitInput(order: 1000, destination: 1000))
                     },
                     subwayKeys: selection.subwayPairs.filter { $0.0 != "S26" }.map {
                         SubwayStationInput(stationID: $0.0, direction: [$0.1], weekdays: [currentWeekdayString()], limit: 12)

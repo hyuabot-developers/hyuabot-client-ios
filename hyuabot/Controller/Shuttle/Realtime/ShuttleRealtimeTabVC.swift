@@ -1282,10 +1282,13 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 return cell
             }
         }
-        return tableView.dequeueReusableCell(
+        let cell = tableView.dequeueReusableCell(
             withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier,
             for: displayedIndexPath
         )
+        let text = ShuttleRealtimeTimeTableDelegate.emptyText(stopID: stopID, section: indexPath.section)
+        (cell as? ShuttleRealtimeEmptyCellView)?.configure(title: text.title, body: text.body)
+        return cell
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {

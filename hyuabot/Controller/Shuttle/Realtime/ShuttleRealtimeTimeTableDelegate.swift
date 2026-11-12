@@ -8,6 +8,35 @@ import UIKit
 
 @MainActor
 class ShuttleRealtimeTimeTableDelegate: NSObject {
+    static func emptyText(stopID: ShuttleStopEnum, section: Int?) -> ShuttleDisplayLogic.EmptyText {
+        let boardingStop = ShuttleDisplayLogic.stopKey(stopID)
+        let stops = (try? ShuttleRealtimeData.shared.arrival.value()) ?? []
+        let timetable = stops.first { $0.name == boardingStop }?.timetable
+        let destinationKey = section.flatMap { ShuttleDisplayLogic.destinationKey(stopID: boardingStop, section: $0) }
+        let times: [String]
+        if let destinationKey {
+            times = timetable?.destination.first { $0.destination == destinationKey }?.entries.map(\.time) ?? []
+        } else {
+            times = timetable?.order.map(\.time) ?? []
+        }
+        let destinationStop: String
+        switch destinationKey {
+        case "STATION": destinationStop = "station"
+        case "TERMINAL": destinationStop = "terminal"
+        case "JUNGANG": destinationStop = "jungang_stn"
+        default: destinationStop = "dormitory_i"
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        return ShuttleDisplayLogic.emptyText(
+            destination: destinationStop == "dormitory_i"
+                ? String(localized: "shuttle.realtime.empty.destination.campus")
+                : ShuttleDisplayLogic.stopShortName(destinationStop) ?? "",
+            departureTimes: times,
+            isWeekend: calendar.isDateInWeekend(Date())
+        )
+    }
+
     let showViaVC: @MainActor (_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
     let showAlarmVC: @MainActor (_ stopID: ShuttleStopEnum, _ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) -> Void
     let stopID: ShuttleStopEnum
@@ -103,7 +132,12 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
             return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
         }
         guard let data = timetableData, !data.isEmpty else {
-            return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier, for: indexPath)
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier, for: indexPath
+            )
+            let text = Self.emptyText(stopID: stopID, section: nil)
+            (cell as? ShuttleRealtimeEmptyCellView)?.configure(title: text.title, body: text.body)
+            return cell
         }
         if isExpansionRow(indexPath), let expandedRow, data.indices.contains(expandedRow) {
             guard let expandedCell = tableView.dequeueReusableCell(

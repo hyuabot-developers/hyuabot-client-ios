@@ -16,7 +16,8 @@ final class EmptyCellViewFitTests: XCTestCase {
 
     func testShuttleRealtimeEmptyCellFitsContent() {
         let cell = ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)
-        assertFitsContent(cell) { cell.configure($0) }
+        cell.configure(title: "운행 종료", body: message)
+        assertShuttleRealtimeCellFitsContent(cell, categories: [.large, .accessibilityExtraExtraExtraLarge])
     }
 
     func testContactSearchEmptyCellFitsContent() {
@@ -91,40 +92,59 @@ final class EmptyCellViewFitTests: XCTestCase {
     func testLongestLocalizedStateTextFitsAtAccessibilityExtraExtraExtraLarge() throws {
         let cell = ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)
         let longest = try longestKoStateText()
-        // Repeat the longest catalog string so the message wraps onto several lines at AX5.
-        let message = Array(repeating: longest, count: 3).joined(separator: " ")
-        cell.configure(.empty(message: message, action: StateAction(title: longest, handler: {})))
-        cell.traitOverrides.preferredContentSizeCategory = .accessibilityExtraExtraExtraLarge
+        // Repeat the longest catalog string so both labels wrap onto several lines at AX5.
+        let text = Array(repeating: longest, count: 3).joined(separator: " ")
+        cell.configure(title: text, body: text)
+        assertShuttleRealtimeCellFitsContent(cell, categories: [.accessibilityExtraExtraExtraLarge])
+    }
 
-        let cellFit = fittingSize(of: cell)
-        cell.frame = CGRect(origin: .zero, size: CGSize(width: width, height: cellFit.height))
-        cell.layoutIfNeeded()
+    private func assertShuttleRealtimeCellFitsContent(
+        _ cell: ShuttleRealtimeEmptyCellView,
+        categories: [UIContentSizeCategory],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        for category in categories {
+            cell.traitOverrides.preferredContentSizeCategory = category
+            let cellFit = fittingSize(of: cell)
+            cell.frame = CGRect(origin: .zero, size: CGSize(width: width, height: cellFit.height))
+            cell.layoutIfNeeded()
 
-        let stateView = try XCTUnwrap(cell.contentView.subviews.compactMap { $0 as? StateView }.first)
-        stateView.layoutIfNeeded()
-        let stateFit = fittingSize(of: stateView)
-
-        XCTAssertGreaterThanOrEqual(
-            cellFit.height,
-            stateFit.height,
-            "Cell is shorter than StateView content at AX5 with long text"
-        )
-        let wrappingLabels = labels(in: stateView).filter { $0.numberOfLines == 0 }
-        XCTAssertFalse(wrappingLabels.isEmpty, "No wrapping labels found in StateView; truncation check would be vacuous")
-        for label in wrappingLabels {
-            let frame = label.convert(label.bounds, to: stateView)
-            XCTAssertTrue(
-                stateView.bounds.insetBy(dx: -0.5, dy: -0.5).contains(frame),
-                "Label frame \(frame) is outside StateView bounds \(stateView.bounds) at AX5"
+            guard let card = cell.contentView.subviews.first,
+                  let stack = card.subviews.first(where: { $0 is UIStackView }) else {
+                XCTFail("Card label stack is missing (\(category.rawValue))", file: file, line: line)
+                return
+            }
+            stack.layoutIfNeeded()
+            let wrappingLabels = labels(in: stack).filter { $0.numberOfLines == 0 }
+            XCTAssertEqual(wrappingLabels.count, 2, "Expected title and body wrapping labels", file: file, line: line)
+            let contentHeight = wrappingLabels.reduce(CGFloat(0)) { $0 + $1.bounds.height } + 4 + 42
+            XCTAssertGreaterThanOrEqual(
+                cellFit.height,
+                contentHeight,
+                "Cell is shorter than its label stack content (\(category.rawValue))",
+                file: file,
+                line: line
             )
-            let requiredHeight = label.sizeThatFits(
-                CGSize(width: label.bounds.width, height: .greatestFiniteMagnitude)
-            ).height
-            XCTAssertLessThanOrEqual(
-                requiredHeight,
-                label.bounds.height + 1,
-                "Label text is clipped at AX5: needs \(requiredHeight), has \(label.bounds.height)"
-            )
+            for label in wrappingLabels {
+                let frame = label.convert(label.bounds, to: card)
+                XCTAssertTrue(
+                    card.bounds.insetBy(dx: -0.5, dy: -0.5).contains(frame),
+                    "Label frame \(frame) is outside card bounds \(card.bounds) at \(category.rawValue)",
+                    file: file,
+                    line: line
+                )
+                let requiredHeight = label.sizeThatFits(
+                    CGSize(width: label.bounds.width, height: .greatestFiniteMagnitude)
+                ).height
+                XCTAssertLessThanOrEqual(
+                    requiredHeight,
+                    label.bounds.height + 1,
+                    "Label text is clipped at \(category.rawValue): needs \(requiredHeight), has \(label.bounds.height)",
+                    file: file,
+                    line: line
+                )
+            }
         }
     }
 
