@@ -1024,7 +1024,13 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard shuttleRealtimeSection.indices.contains(indexPath.section) else { return UITableViewCell() }
         if showsInitialSkeleton {
-            return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier,
+                for: indexPath
+            )
+            let isLast = indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1
+            (cell as? ShuttleRealtimeSkeletonCellView)?.setIsLast(isLast)
+            return cell
         }
         if isTransferExpansionRow(indexPath), let expandedRow = expandedDataRow(section: indexPath.section) {
             let entries = destinationEntries(section: indexPath.section)

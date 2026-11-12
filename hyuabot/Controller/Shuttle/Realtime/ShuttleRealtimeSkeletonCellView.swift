@@ -36,8 +36,7 @@ class ShuttleRealtimeSkeletonCellView: UITableViewCell {
         contentView.backgroundColor = .clear
         contentView.addSubview(cardView)
         cardView.backgroundColor = SettingsStyle.Color.card
-        cardView.layer.cornerRadius = SettingsStyle.Metric.cardRadius
-        cardView.layer.masksToBounds = true
+        // Flat segment: the section header and footer own the card's rounded corners.
         cardView.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset)
@@ -92,6 +91,13 @@ class ShuttleRealtimeSkeletonCellView: UITableViewCell {
         }
 
         startAnimating()
+    }
+
+    func setIsLast(_ isLast: Bool) {
+        cardView.layer.cornerRadius = isLast ? SettingsStyle.Metric.cardRadius : 0
+        cardView.layer.cornerCurve = .continuous
+        cardView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        cardView.clipsToBounds = isLast
     }
 
     private func startAnimating() {
