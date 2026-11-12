@@ -40,10 +40,6 @@ final class UIQualityUITests: XCTestCase {
 
     func testShuttleQuickSettingsVisualQuality() throws {
         let app = makeApp()
-        app.launchArguments += [
-            "-homeExperienceEnabled", "NO",
-            "-homeExperiencePromptDecision", "YES"
-        ]
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
 
@@ -55,10 +51,8 @@ final class UIQualityUITests: XCTestCase {
 
         let firstRow = app.otherElements["shuttle.quick_settings.arrival_by_time_row"]
         let secondRow = app.otherElements["shuttle.quick_settings.departure_time_row"]
-        let homeButton = app.buttons["shuttle.quick_settings.open_home"]
         XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
         XCTAssertTrue(secondRow.waitForExistence(timeout: 5))
-        XCTAssertTrue(homeButton.waitForExistence(timeout: 5))
 
         capture("shuttle-quick-settings", app: app)
         XCTAssertEqual(firstRow.frame.height, secondRow.frame.height, accuracy: 1)
@@ -66,7 +60,7 @@ final class UIQualityUITests: XCTestCase {
 
         let issues = auditSheetLayout(
             pageName: "shuttle-quick-settings",
-            elements: [firstRow, secondRow, homeButton],
+            elements: [firstRow, secondRow],
             screen: app.windows.firstMatch.frame
         )
         XCTAssertTrue(issues.isEmpty, issues.joined(separator: "\n"))
@@ -231,8 +225,6 @@ final class UIQualityUITests: XCTestCase {
             "-UITestsDisableCoachMarks",
             "-AppleLanguages", "(\(language))",
             "-AppleLocale", locale,
-            "-homeExperienceEnabled", "NO",
-            "-homeExperiencePromptDecision", "YES",
             "-UITestsDisableReviewPrompt"
         ]
         if style == "dark" {
@@ -461,11 +453,10 @@ final class UIQualityUITests: XCTestCase {
     private func auditKnownSheetRows(app: XCUIApplication, pageName: String) -> [String] {
         let firstRow = app.otherElements["shuttle.quick_settings.arrival_by_time_row"]
         let secondRow = app.otherElements["shuttle.quick_settings.departure_time_row"]
-        let homeButton = app.buttons["shuttle.quick_settings.open_home"]
-        guard firstRow.exists, secondRow.exists, homeButton.exists else {
+        guard firstRow.exists, secondRow.exists else {
             return ["\(pageName): expected quick settings controls are missing"]
         }
-        var issues = auditSheetLayout(pageName: pageName, elements: [firstRow, secondRow, homeButton], screen: app.windows.firstMatch.frame)
+        var issues = auditSheetLayout(pageName: pageName, elements: [firstRow, secondRow], screen: app.windows.firstMatch.frame)
         if abs(firstRow.frame.height - secondRow.frame.height) > 1 {
             issues.append("\(pageName): quick settings row heights differ \(firstRow.frame.height) vs \(secondRow.frame.height)")
         }

@@ -9,9 +9,8 @@ import XCTest
 @MainActor
 final class ShuttleComponentTests: XCTestCase {
     func testShuttleRealtimeTitleBarIdentifiersAndHeight() {
-        let titleBar = ShuttleRealtimeTitleBar(showsHomeButton: true)
+        let titleBar = ShuttleRealtimeTitleBar()
         XCTAssertEqual(titleBar.settingsButton.accessibilityIdentifier, "shuttle.quick_settings")
-        XCTAssertEqual(titleBar.homeButton.accessibilityIdentifier, "shuttle.return_home")
         titleBar.layoutIfNeeded()
         XCTAssertEqual(titleBar.constraints.first { $0.firstAttribute == .height }?.constant, 56)
     }

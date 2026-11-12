@@ -98,10 +98,6 @@ extension Foundation.Date {
         GraphQLDateFormatters.localTime.withLock { $0.string(from: self) }
     }
 
-    func toZonedDateTimeString() -> String {
-        GraphQLDateFormatters.zonedFractional.withLock { $0.string(from: self) }
-    }
-
     /// Seconds since the start of the current bus service day, which rolls over at 04:00
     /// local time. Times earlier than 04:00 belong to the previous day's service window
     /// and are shifted by 24h so before/after comparisons work across the boundary.

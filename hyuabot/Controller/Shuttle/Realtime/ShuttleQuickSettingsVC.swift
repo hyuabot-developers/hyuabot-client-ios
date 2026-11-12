@@ -8,7 +8,6 @@ import Then
 import UIKit
 
 final class ShuttleQuickSettingsVC: UIViewController {
-    var openHome: (() -> Void)?
     var openHelp: (() -> Void)?
     var openInquiry: (() -> Void)?
     var updateShowDepartureTime: ((Bool) -> Void)?
@@ -89,16 +88,9 @@ extension ShuttleQuickSettingsVC {
         stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.alternative")))
         let alternative = alternativeGroup()
         stack.addArrangedSubview(alternative)
-        let home = HYUSheetView.actionButton(
-            title: String(localized: "home.experience_new"),
-            systemImage: "house",
-            identifier: "shuttle.quick_settings.open_home"
-        )
-        home.addTarget(self, action: #selector(onTapHome), for: .touchUpInside)
-        let bottom = UIStackView(arrangedSubviews: [home])
+        let bottom = UIStackView(arrangedSubviews: [horizontalActionButtons()])
         bottom.axis = .vertical
         bottom.spacing = 8
-        bottom.addArrangedSubview(horizontalActionButtons())
         stack.setCustomSpacing(16, after: alternative)
         stack.addArrangedSubview(bottom)
     }
@@ -371,13 +363,6 @@ extension ShuttleQuickSettingsVC {
     @objc
     private func onTapClose() {
         dismiss(animated: true)
-    }
-
-    @objc
-    private func onTapHome() {
-        dismiss(animated: true) { [weak self] in
-            self?.openHome?()
-        }
     }
 
     @objc

@@ -48,6 +48,6 @@ final class AppIntentSearchTests: XCTestCase {
         XCTAssertEqual(HyuabotSearchLogic.url(for: .cafeteria(day: nil, meal: nil, restaurant: nil)).absoluteString, "hyuabot://cafeteria")
         XCTAssertEqual(HyuabotSearchLogic.url(for: .subway(line: nil)).absoluteString, "hyuabot://subway")
         XCTAssertEqual(HyuabotSearchLogic.url(for: .bus(route: nil)).absoluteString, "hyuabot://bus")
-        XCTAssertEqual(HyuabotSearchLogic.url(for: nil).absoluteString, "hyuabot://home")
+        XCTAssertEqual(HyuabotSearchLogic.url(for: nil).absoluteString, "hyuabot://shuttle")
     }
 }
