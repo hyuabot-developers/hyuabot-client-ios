@@ -32,7 +32,6 @@ class ShuttleRealtimeVC: UIViewController {
         "shuttlecock_i"
     ]
 
-    private let returnsToHome: Bool
     private let initialStopID: String?
     private let initialDestinationID: String?
     private var appDelegate: AppDelegate? {
@@ -155,11 +154,9 @@ class ShuttleRealtimeVC: UIViewController {
     private var latestDataRequest = 0
     private var lastAppliedDataRequest = 0
     init(
-        returnsToHome: Bool = false,
         initialStopID: String? = nil,
         initialDestinationID: String? = nil
     ) {
-        self.returnsToHome = returnsToHome
         self.initialStopID = initialStopID
         self.initialDestinationID = initialDestinationID
         hasManualStopSelection = initialStopID != nil
@@ -394,9 +391,6 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if returnsToHome {
-            navigationItem.title = String(localized: "home.movement.detail")
-        }
         setupUI()
         observeSubjects()
         checkBirthdayDialog()

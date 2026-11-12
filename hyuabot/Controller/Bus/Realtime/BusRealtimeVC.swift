@@ -386,9 +386,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         destinationStop: Int32,
         showSecondary: Bool
     ) -> [BusArrivalItem] {
-        // The home screen also uses scheduled arrival rows that carry an arrivalTime
-        // but are marked non-realtime. Keep the same source set here so both screens
-        // show the same upcoming bus instead of falling through to a much later log.
+        // Scheduled arrivals can carry an arrivalTime while marked non-realtime.
+        // Keep them so the next scheduled bus is shown instead of a much later log.
         let liveArrivals = bus.arrival
         let liveItems = liveArrivals.map { arrival in
             BusArrivalItem(

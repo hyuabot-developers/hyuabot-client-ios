@@ -39,7 +39,6 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "CommuteShuttleRoute": Api.Objects.CommuteShuttleRoute,
     "CommuteShuttleStop": Api.Objects.CommuteShuttleStop,
     "CommuteShuttleTimetable": Api.Objects.CommuteShuttleTimetable,
-    "HomeWeather": Api.Objects.HomeWeather,
     "Menu": Api.Objects.Menu,
     "Notice": Api.Objects.Notice,
     "NoticeCategory": Api.Objects.NoticeCategory,

@@ -34,13 +34,6 @@ final class AnalyticsConfigurationTests: XCTestCase {
         XCTAssertEqual(Set(AnalyticsContentType.allCases.map(\.rawValue)).count, AnalyticsContentType.allCases.count)
     }
 
-    func testHomeUsesDedicatedCrossPlatformIdentifiers() {
-        XCTAssertEqual(AnalyticsScreen.home.rawValue, "home")
-        XCTAssertEqual(AnalyticsItem.tabHome.rawValue, "tab_home")
-        XCTAssertEqual(AnalyticsItem.homeOpenShuttleDetail.rawValue, "home_open_shuttle_detail")
-        XCTAssertEqual(AnalyticsItem.homeSelectDestination.rawValue, "home_select_destination")
-    }
-
     func testSelectionParametersIncludeReportableDimensions() {
         let parameters = AnalyticsManager.selectionParameters(
             .campusSelectTool,
