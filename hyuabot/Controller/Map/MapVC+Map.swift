@@ -227,11 +227,6 @@ extension MapVC: MKMapViewDelegate {
         }
         guard let url else { return }
         let controller = BuildingVC(buildingName: buildingName, url: url)
-        if let sheet = controller.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-            sheet.preferredCornerRadius = 20
-        }
         present(controller, animated: true)
     }
 

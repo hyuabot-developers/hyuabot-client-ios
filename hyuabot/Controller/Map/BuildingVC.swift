@@ -26,6 +26,8 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         self.buildingName = buildingName
         self.url = url
         super.init(nibName: nil, bundle: nil)
+        modalPresentationStyle = .pageSheet
+        HYUSheet.configure(self, detents: [.large()])
     }
 
     @available(*, unavailable)
@@ -50,7 +52,7 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
     }
 
     private func setupUI() {
-        view.backgroundColor = SettingsStyle.Color.card
+        HYUSheet.applyBackground(to: view)
         configureHeader()
         configureProgress()
         configureWebBody()
@@ -63,7 +65,7 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         captionLabel.textColor = SettingsStyle.Color.secondaryText
         captionLabel.adjustsFontForContentSizeCategory = true
         titleLabel.setKoreanTranslatedText(buildingName)
-        titleLabel.font = SettingsStyle.font(22, bold: true)
+        titleLabel.font = SettingsStyle.font(20, bold: true)
         titleLabel.textColor = SettingsStyle.Color.text
         titleLabel.numberOfLines = 1
         titleLabel.lineBreakMode = .byTruncatingTail
@@ -73,27 +75,8 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         header.spacing = 2
         view.addSubview(header)
 
-        var closeConfig = UIButton.Configuration.plain()
-        closeConfig.contentInsets = .zero
-        let closeButton = UIButton(configuration: closeConfig)
-        closeButton.accessibilityLabel = String(localized: "map.sheet.close")
-        let circle = UIView()
-        circle.backgroundColor = SettingsStyle.Color.segmentBackground
-        circle.layer.cornerRadius = 15
-        circle.layer.cornerCurve = .continuous
-        circle.isUserInteractionEnabled = false
-        let symbol = UIImage.SymbolConfiguration(pointSize: 11, weight: .bold)
-        let icon = UIImageView(
-            image: UIImage(systemName: "xmark", withConfiguration: symbol)
-        )
-        icon.tintColor = SettingsStyle.Color.secondaryText
-        circle.addSubview(icon)
-        icon.snp.makeConstraints { $0.center.equalToSuperview() }
-        closeButton.addSubview(circle)
-        circle.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.size.equalTo(30)
-        }
+        let closeButton = HYUSheetCloseButton()
+        closeButton.accessibilityIdentifier = "map.sheet.close"
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
         view.addSubview(closeButton)
         header.snp.makeConstraints { make in
@@ -130,6 +113,9 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         webView.isOpaque = false
         webView.backgroundColor = SettingsStyle.Color.card
         webView.scrollView.backgroundColor = SettingsStyle.Color.card
+        webView.layer.cornerRadius = HYUMetrics.Radius.card
+        webView.layer.cornerCurve = .continuous
+        webView.clipsToBounds = true
         webView.navigationDelegate = self
         view.addSubview(webView)
         webView.snp.makeConstraints { make in

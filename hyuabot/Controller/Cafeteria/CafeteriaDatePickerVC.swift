@@ -15,10 +15,7 @@ final class CafeteriaDatePickerVC: UIViewController {
         self.onSelect = onSelect
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .pageSheet
-        if let sheet = sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
+        HYUSheet.configure(self, detents: [.medium(), .large()])
     }
 
     @available(*, unavailable)
@@ -28,17 +25,23 @@ final class CafeteriaDatePickerVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = SettingsStyle.Color.background
-        let title = UILabel()
-        title.text = String(localized: "cafeteria.date.picker.title")
-        title.font = SettingsStyle.font(17, bold: true)
-        title.textColor = SettingsStyle.Color.text
-        title.textAlignment = .center
+        HYUSheet.applyBackground(to: view)
+        let title = HYUSheet.makeTitleLabel()
+        HYUSheet.setTitle(String(localized: "cafeteria.date.picker.title"), on: title)
         view.addSubview(title)
-        title.snp
-            .makeConstraints {
-                $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16); $0.leading.trailing.equalToSuperview().inset(16)
-            }
+        title.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(HYUMetrics.Layout.sheetTitleTop)
+            $0.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+        }
+        let card = UIView()
+        card.backgroundColor = SettingsStyle.Color.card
+        card.layer.cornerRadius = HYUMetrics.Radius.card
+        view.addSubview(card)
+        card.snp.makeConstraints {
+            $0.top.equalTo(title.snp.bottom).offset(8)
+            $0.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+        }
+
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .inline
@@ -46,11 +49,10 @@ final class CafeteriaDatePickerVC: UIViewController {
         picker.date = selectedDate
         picker.accessibilityIdentifier = "cafeteria.date_picker"
         picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
-        view.addSubview(picker)
-        picker.snp
-            .makeConstraints {
-                $0.top.equalTo(title.snp.bottom).offset(8); $0.centerX.equalToSuperview(); $0.leading.trailing.equalToSuperview().inset(16)
-            }
+        card.addSubview(picker)
+        picker.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(8)
+        }
     }
 
     @objc

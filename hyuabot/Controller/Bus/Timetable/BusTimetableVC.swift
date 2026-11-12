@@ -108,12 +108,14 @@ final class BusTimetableVC: UIViewController {
     private func configureNavigationBar() {
         let scrolledAppearance = UINavigationBarAppearance()
         scrolledAppearance.configureWithDefaultBackground()
-        scrolledAppearance.titleTextAttributes = [.foregroundColor: SettingsStyle.Color.text]
+        scrolledAppearance.titleTextAttributes = SettingsNavigationStyle.makeAppearance().titleTextAttributes
         let edgeAppearance = UINavigationBarAppearance()
         edgeAppearance.configureWithTransparentBackground()
         edgeAppearance.backgroundColor = .clear
         edgeAppearance.shadowColor = .clear
-        edgeAppearance.titleTextAttributes = [.foregroundColor: UIColor.clear]
+        var edgeTitleAttributes = SettingsNavigationStyle.makeAppearance().titleTextAttributes
+        edgeTitleAttributes[.foregroundColor] = UIColor.clear
+        edgeAppearance.titleTextAttributes = edgeTitleAttributes
         navigationItem.title = stopName
         navigationItem.standardAppearance = scrolledAppearance
         navigationItem.compactAppearance = scrolledAppearance

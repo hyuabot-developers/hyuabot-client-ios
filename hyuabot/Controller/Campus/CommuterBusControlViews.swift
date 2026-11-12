@@ -222,7 +222,7 @@ final class CommuterRouteGridView: UIView {
     private func makeCard(_ item: CommuterRouteItem, index: Int) -> UIControl {
         let card = UIControl()
         card.tag = index
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = HYUMetrics.Radius.card
         card.layer.borderWidth = 2
         card.backgroundColor = SettingsStyle.Color.card
         func refresh(_ view: UIControl) {
@@ -313,7 +313,7 @@ final class CommuterSkeletonCardView: UIView {
         var animated: [UIView] = []
         super.init(frame: frame)
         backgroundColor = SettingsStyle.Color.card
-        layer.cornerRadius = 16
+        layer.cornerRadius = HYUMetrics.Radius.card
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = 20

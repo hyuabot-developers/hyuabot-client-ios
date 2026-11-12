@@ -349,6 +349,14 @@ class SubwayRealtimeVC: UIViewController {
     }
 }
 
+extension SubwayRealtimeVC {
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        // Pushed screens (e.g. the timetable) show only the back chevron.
+        navigationItem.backButtonDisplayMode = .minimal
+    }
+}
+
 extension SubwayArrivalInfo {
     init(entry: SubwayRealtimePageQuery.Data.Subway.Arrival.Entry) {
         self.init(

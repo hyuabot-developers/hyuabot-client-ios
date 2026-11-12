@@ -107,20 +107,21 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         footnoteContainer.addSubview(footnote)
         footnote.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)) }
         [headerBar, weekStrip, mealSegment, skeletonList, cardsStack, emptyCard, footnoteContainer].forEach(contentStack.addArrangedSubview)
-        contentStack.setCustomSpacing(16, after: headerBar)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.titleToControl, after: headerBar)
         contentStack.setCustomSpacing(12, after: weekStrip)
-        contentStack.setCustomSpacing(20, after: mealSegment)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: mealSegment)
         contentStack.setCustomSpacing(12, after: skeletonList)
-        contentStack.setCustomSpacing(4, after: cardsStack)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: cardsStack)
         contentStack.setCustomSpacing(12, after: emptyCard)
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
         view.addSubview(bottomFade)
         setupCompactBar()
+        headerBar.accessory.install(in: view)
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
         contentStack.snp.makeConstraints { make in
             make.top.equalTo(scrollView.contentLayoutGuide).offset(45)
-            make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-24)
+            make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
         bottomFade.snp.makeConstraints { make in
@@ -154,11 +155,6 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
             make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(1 / UIScreen.main.scale)
         }
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
-        compactBar.alpha = min(max((offset - 36) / 16, 0), 1)
     }
 
     private func bindInteractions() {
@@ -327,6 +323,17 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
 }
 
 extension CafeteriaVC {
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        headerBar.accessory.update(layoutNow: false)
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        compactBar.alpha = min(max((offset - 36) / 16, 0), 1)
+        headerBar.accessory.update()
+    }
+
     private func selectDate(_ date: Foundation.Date) {
         AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
         selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast

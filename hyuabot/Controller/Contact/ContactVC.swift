@@ -21,7 +21,7 @@ final class ContactVC: UIViewController, SettingsStyledScreen {
     let campusPill = ContactCampusPillView()
     let searchField = ContactSearchFieldView()
     let chipBar = ContactFilterChipBarView()
-    let tableView = UITableView(frame: .zero, style: .plain)
+    let tableView = UITableView(frame: .zero, style: .grouped)
     let loadingView = ContactLoadingView()
     let summaryView = ContactSummaryView()
     let footerView = ContactListFooterView()
@@ -101,6 +101,7 @@ final class ContactVC: UIViewController, SettingsStyledScreen {
         tableView.backgroundColor = SettingsStyle.Color.background
         tableView.separatorStyle = .none
         tableView.sectionHeaderTopPadding = 0
+        tableView.sectionFooterHeight = .leastNonzeroMagnitude
         tableView.keyboardDismissMode = .onDrag
         tableView.estimatedRowHeight = 64
         tableView.rowHeight = UITableView.automaticDimension

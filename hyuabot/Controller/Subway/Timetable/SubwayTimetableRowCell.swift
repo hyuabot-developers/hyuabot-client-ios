@@ -57,6 +57,12 @@ final class SubwayTimetableRowCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func setRoundsBottom(_ rounds: Bool) {
+        strip.layer.cornerRadius = rounds ? HYUMetrics.Radius.card : 0
+        strip.layer.cornerCurve = HYUMetrics.cornerCurve
+        strip.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+    }
+
     func configure(_ row: SubwayTimetableRowModel, merged: Bool = false) {
         let timeColor = row.isPast ? SettingsStyle.Color.subwayPast : (row.isNext ? SettingsStyle.Color.link : SettingsStyle.Color.text)
         timeLabel.attributedText = SettingsStyle.attributedText(

@@ -266,7 +266,7 @@ extension RootVC {
 
     private func updateChildBottomInset() {
         guard let child = selectedViewController else { return }
-        let covered = floatingTabBar.isHidden ? 0 : max(0, view.bounds.maxY - floatingTabBar.frame.minY)
+        let covered = floatingTabBar.isHidden ? 0 : max(0, view.bounds.maxY - floatingTabBar.frame.minY) + FloatingTabBar.contentGap
         let systemBottom = child.view.safeAreaInsets.bottom - child.additionalSafeAreaInsets.bottom
         let wanted = max(0, covered - systemBottom)
         if abs(child.additionalSafeAreaInsets.bottom - wanted) > 0.5 {

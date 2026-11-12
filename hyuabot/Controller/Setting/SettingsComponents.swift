@@ -109,7 +109,7 @@ final class SettingsSectionView: UIView {
                 make.top.bottom.equalToSuperview()
             }
             stack.addArrangedSubview(footerContainer)
-            stack.setCustomSpacing(8, after: content)
+            stack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: content)
         }
     }
 

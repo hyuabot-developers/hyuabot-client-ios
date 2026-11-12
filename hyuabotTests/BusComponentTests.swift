@@ -125,7 +125,7 @@ final class BusComponentTests: XCTestCase {
         footer.frame = CGRect(x: 0, y: 0, width: 390, height: BusTimetableCardFooterView.height(showsCard: true, width: 390))
         footer.layoutIfNeeded()
         let label = try XCTUnwrap(allLabels(in: footer).first)
-        XCTAssertEqual(label.convert(label.bounds, to: footer).minY, 8, accuracy: 0.5)
+        XCTAssertEqual(label.convert(label.bounds, to: footer).minY, HYUMetrics.Layout.contentToFootnote, accuracy: 0.5)
         XCTAssertEqual(label.numberOfLines, 1)
         XCTAssertEqual(label.lineBreakMode, .byTruncatingTail)
         XCTAssertLessThanOrEqual(label.bounds.height, 17)

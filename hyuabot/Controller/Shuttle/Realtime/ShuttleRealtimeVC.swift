@@ -924,12 +924,9 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func openShuttleStopVC(_ stop: ShuttleStopEnum) {
         let vc = ShuttleStopInfoVC(stop: stop)
-        if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.custom(resolver: { context in
-                min(vc.sheetHeight, context.maximumDetentValue)
-            })]
-            sheet.prefersGrabberVisible = true
-        }
+        HYUSheet.configure(vc, detents: [.custom(resolver: { context in
+            min(vc.sheetHeight, context.maximumDetentValue)
+        })])
         present(vc, animated: true, completion: nil)
     }
 

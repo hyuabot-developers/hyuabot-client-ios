@@ -72,6 +72,8 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        navigationItem.largeTitleDisplayMode = .never
+        navigationController?.navigationBar.prefersLargeTitles = true
         SettingsNavigationStyle.screenWillDisappear(self)
         InquiryPush.isChatVisible = false
         removeDidBecomeActiveObserver()

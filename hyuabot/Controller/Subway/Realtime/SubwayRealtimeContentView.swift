@@ -92,7 +92,7 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints {
             $0.top.equalTo(scrollView.contentLayoutGuide).offset(45)
-            $0.bottom.equalTo(scrollView.contentLayoutGuide).offset(-24)
+            $0.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
         titleLabel.attributedText = SettingsStyle.attributedText(
@@ -105,9 +105,9 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         titleContainer.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { $0.leading.trailing.equalToSuperview().inset(4); $0.top.bottom.equalToSuperview() }
         contentStack.addArrangedSubview(titleContainer)
-        contentStack.setCustomSpacing(20, after: titleContainer)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.titleToControl, after: titleContainer)
         contentStack.addArrangedSubview(segmentView)
-        contentStack.setCustomSpacing(16, after: segmentView)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: segmentView)
         contentStack.addArrangedSubview(skeletonList)
         contentStack.setCustomSpacing(16, after: skeletonList)
         cardsStack.axis = .vertical
@@ -118,7 +118,7 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
             cardsStack.addArrangedSubview(card)
         }
         contentStack.addArrangedSubview(cardsStack)
-        contentStack.setCustomSpacing(12, after: cardsStack)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: cardsStack)
         footnoteLabel.font = SettingsStyle.font(12)
         footnoteLabel.textColor = SettingsStyle.Color.commuterFaint
         footnoteLabel.numberOfLines = 0
