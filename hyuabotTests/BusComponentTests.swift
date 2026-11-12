@@ -387,6 +387,60 @@ extension BusComponentTests {
     }
 }
 
+extension BusComponentTests {
+    func testSectionHeaderDropsBadgesAndRowsShowThem() {
+        let card = BusSectionCardView()
+        card.configure(BusSectionContent(
+            routeNames: ["10-1"], stopName: String(localized: "bus.stop.main_gate"),
+            rows: [
+                BusArrivalRowModel(route: "10-1", isRealtime: true, primary: .stopsBefore(3),
+                                   remaining: .minutes(5), seats: .unknown, isLowFloor: false,
+                                   destinationArrival: nil),
+                BusArrivalRowModel(route: "10-1", isRealtime: true, primary: .stopsBefore(2),
+                                   remaining: .minutes(8), seats: .unknown, isLowFloor: false,
+                                   destinationArrival: nil)
+            ], isLoading: false
+        ))
+        card.frame = CGRect(x: 0, y: 0, width: 375, height: 200)
+        card.layoutIfNeeded()
+        let badges = descendants(of: card).compactMap { $0 as? BusRouteBadgeView }
+        XCTAssertEqual(badges.count, 2)
+        for badge in badges {
+            var ancestor = badge.superview
+            var belongsToRow = false
+            while let view = ancestor {
+                if view is BusArrivalRowView { belongsToRow = true; break }
+                ancestor = view.superview
+            }
+            XCTAssertTrue(belongsToRow)
+        }
+    }
+
+    func testArrivalRowShowsPrimaryUnderMinutes() {
+        let row = BusArrivalRowView()
+        let model = BusArrivalRowModel(route: "10-1", isRealtime: false, primary: .waitingAtOrigin,
+                                       remaining: .minutes(5), seats: .unknown, isLowFloor: false,
+                                       destinationArrival: nil)
+        row.configure(model, showsRouteBadge: true, showsSeparator: false)
+        row.frame = CGRect(x: 0, y: 0, width: 375, height: 64)
+        row.layoutIfNeeded()
+        let label = descendants(of: row).compactMap { $0 as? UILabel }.first {
+            $0.text == String(localized: "bus.realtime.waiting_at_origin")
+        }
+        let minutesLabel = descendants(of: row).compactMap { $0 as? UILabel }.first {
+            $0.text == BusDisplayLogic.remainingText(.minutes(5))
+        }
+        XCTAssertNotNil(label, "Non-realtime rows must include the primary subtitle")
+        XCTAssertNotNil(minutesLabel, "The remaining-time label must be present")
+        if let label, let minutesLabel {
+            let subtitleFrame = label.convert(label.bounds, to: row)
+            let minutesFrame = minutesLabel.convert(minutesLabel.bounds, to: row)
+            XCTAssertGreaterThan(subtitleFrame.minY, minutesFrame.maxY)
+            XCTAssertEqual(subtitleFrame.maxX, minutesFrame.maxX, accuracy: 1)
+        }
+    }
+}
+
 final class BusRealtimeNavigationTests: XCTestCase {
     @MainActor
     func testRealtimeScreenShowsChevronOnlyBackOnPushedScreens() {

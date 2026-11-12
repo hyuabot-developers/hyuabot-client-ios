@@ -22,7 +22,6 @@ final class BusSectionCardView: UIView {
     let timetableButton = BusSectionFooterButton()
     let logButton = BusSectionFooterButton()
     private let header = UIView()
-    private let badgeStack = UIStackView()
     private let stopLabel = UILabel()
     private let bodyStack = UIStackView()
     private var routeNames: [String] = []
@@ -50,12 +49,6 @@ final class BusSectionCardView: UIView {
 
     func configure(_ content: BusSectionContent) {
         routeNames = content.routeNames
-        badgeStack.arrangedSubviews.forEach { view in badgeStack.removeArrangedSubview(view); view.removeFromSuperview() }
-        for route in content.routeNames {
-            let badge = BusRouteBadgeView(size: .regular)
-            badge.configure(route: route)
-            badgeStack.addArrangedSubview(badge)
-        }
         stopLabel.text = content.stopName
         stopLabel.attributedText = SettingsStyle.attributedText(
             content.stopName,
@@ -69,10 +62,6 @@ final class BusSectionCardView: UIView {
     }
 
     private func setupHeader() {
-        badgeStack.axis = .horizontal
-        badgeStack.spacing = 4
-        badgeStack.setContentHuggingPriority(.required, for: .horizontal)
-        badgeStack.setContentCompressionResistancePriority(.required, for: .horizontal)
         stopLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         stopLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         stopLabel.font = SettingsStyle.font(15, bold: true)
@@ -85,10 +74,9 @@ final class BusSectionCardView: UIView {
         stopInfoButton.tintColor = SettingsStyle.Color.secondaryText
         stopInfoButton.accessibilityIdentifier = "bus.section.stopInfo"
         stopInfoButton.accessibilityLabel = String(format: String(localized: "bus.realtime.stop_info.%@"), "")
-        [badgeStack, stopLabel, stopInfoButton].forEach(header.addSubview)
-        badgeStack.snp.makeConstraints { $0.leading.equalToSuperview().inset(16); $0.centerY.equalToSuperview() }
+        [stopLabel, stopInfoButton].forEach(header.addSubview)
         stopLabel.snp.makeConstraints {
-            $0.leading.equalTo(badgeStack.snp.trailing).offset(6)
+            $0.leading.equalToSuperview().inset(16)
             $0.centerY.equalToSuperview()
             $0.trailing.equalTo(stopInfoButton.snp.leading).offset(-4)
         }
@@ -104,7 +92,7 @@ final class BusSectionCardView: UIView {
         if content.rows.isEmpty { bodyStack.addArrangedSubview(emptyState()); return }
         for (index, model) in content.rows.enumerated() {
             let row = BusArrivalRowView()
-            row.configure(model, showsRouteBadge: content.routeNames.count > 1, showsSeparator: index > 0)
+            row.configure(model, showsRouteBadge: true, showsSeparator: index > 0)
             bodyStack.addArrangedSubview(row)
         }
     }
