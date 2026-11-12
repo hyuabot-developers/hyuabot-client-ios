@@ -77,6 +77,22 @@ extension String {
         return calendar.date(from: merged)
     }
 
+    func toLocalTimeOrNil(on now: Foundation.Date) -> Foundation.Date? {
+        let normalizedTime = String(split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)[0])
+        guard let time = GraphQLDateFormatters.localTime.withLock({ $0.date(from: normalizedTime) }) else { return nil }
+        let calendar = Calendar.current
+        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
+        let dayComponents = calendar.dateComponents([.year, .month, .day], from: now)
+        var merged = DateComponents()
+        merged.year = dayComponents.year
+        merged.month = dayComponents.month
+        merged.day = dayComponents.day
+        merged.hour = timeComponents.hour
+        merged.minute = timeComponents.minute
+        merged.second = timeComponents.second
+        return calendar.date(from: merged)
+    }
+
     func toZonedDateTime() -> Foundation.Date {
         toZonedDateTimeOrNil() ?? Date.now
     }

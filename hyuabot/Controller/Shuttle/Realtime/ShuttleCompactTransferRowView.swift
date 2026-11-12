@@ -31,6 +31,21 @@ final class ShuttleCompactTransferRowView: UIView {
         $0.minimumScaleFactor = 0.65
     }
 
+    private let secondaryArrivalLabel = UILabel().then {
+        $0.font = SettingsStyle.monospacedDigitFont(12)
+        $0.textColor = SettingsStyle.Color.secondaryText
+        $0.textAlignment = .right
+        $0.numberOfLines = 1
+        $0.adjustsFontSizeToFitWidth = true
+        $0.minimumScaleFactor = 0.65
+    }
+
+    private let arrivalStack = UIStackView().then {
+        $0.axis = .vertical
+        $0.alignment = .trailing
+        $0.spacing = 2
+    }
+
     var hidesDivider = false {
         didSet { dividerView.isHidden = hidesDivider }
     }
@@ -41,11 +56,16 @@ final class ShuttleCompactTransferRowView: UIView {
         badge.configure(text: row.name, fill: row.color)
         routeLabel.text = Self.routeText(row: row)
         arrivalLabel.text = Self.arrivalText(row: row)
+        let secondaryText = Self.secondaryArrivalText(row: row)
+        secondaryArrivalLabel.text = secondaryText
+        secondaryArrivalLabel.isHidden = secondaryText == nil
+        arrivalStack.addArrangedSubview(arrivalLabel)
+        arrivalStack.addArrangedSubview(secondaryArrivalLabel)
 
         addSubview(dividerView)
         addSubview(badge)
         addSubview(routeLabel)
-        addSubview(arrivalLabel)
+        addSubview(arrivalStack)
         dividerView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(1 / UIScreen.main.scale)
@@ -59,16 +79,20 @@ final class ShuttleCompactTransferRowView: UIView {
             make.leading.equalTo(badge.snp.trailing).offset(10)
             make.centerY.equalToSuperview()
         }
-        arrivalLabel.snp.makeConstraints { make in
+        arrivalStack.snp.makeConstraints { make in
             make.leading.greaterThanOrEqualTo(routeLabel.snp.trailing).offset(10)
             make.trailing.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
         }
         arrivalLabel.setContentHuggingPriority(.required, for: .horizontal)
         arrivalLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        secondaryArrivalLabel.setContentHuggingPriority(.required, for: .horizontal)
+        secondaryArrivalLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        arrivalStack.setContentHuggingPriority(.required, for: .horizontal)
+        arrivalStack.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
 
         isAccessibilityElement = true
-        accessibilityLabel = [row.name, routeLabel.text, arrivalLabel.text]
+        accessibilityLabel = [row.name, routeLabel.text, arrivalLabel.text, secondaryArrivalLabel.text]
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .joined(separator: ", ")
@@ -81,6 +105,10 @@ final class ShuttleCompactTransferRowView: UIView {
 
     private static func arrivalText(row: TransferRow) -> String {
         guard let entry = row.timeline.first else { return "" }
+        return entryText(entry, vehicleType: row.vehicleType)
+    }
+
+    private static func entryText(_ entry: TransferTimelineEntry, vehicleType: TransferVehicleType) -> String {
         if let waitingText = entry.waitingText {
             return waitingText
         }
@@ -88,7 +116,7 @@ final class ShuttleCompactTransferRowView: UIView {
             return scheduledArrivalText
         }
         var components: [String] = []
-        switch row.vehicleType {
+        switch vehicleType {
         case .subway:
             if let stops = entry.stops {
                 components.append(String(
@@ -114,6 +142,12 @@ final class ShuttleCompactTransferRowView: UIView {
             ))
         }
         return components.joined(separator: " · ")
+    }
+
+    private static func secondaryArrivalText(row: TransferRow) -> String? {
+        guard row.vehicleType == .bus, row.timeline.count > 1 else { return nil }
+        let text = entryText(row.timeline[1], vehicleType: .bus)
+        return text.isEmpty ? nil : text
     }
 
     private static func routeText(row: TransferRow) -> String {

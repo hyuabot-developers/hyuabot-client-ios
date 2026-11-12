@@ -14,6 +14,7 @@ struct ShuttleBusAlternativeDisplayData: Equatable {
     let busStopName: String
     let busStopLatitude: Double
     let busStopLongitude: Double
+    var isRealtime = true
 }
 
 struct ShuttleAlarmStop: Equatable {

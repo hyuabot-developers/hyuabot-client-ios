@@ -720,7 +720,7 @@ class ShuttleRealtimeVC: UIViewController {
                     transferBusInput: selection.needsBus ? [BusRouteStopInput(
                         route: 216_000_075, stop: 216_000_759, limit: 12, dates: .some(busLogReferenceDates())
                     )] : [],
-                    alternativeInput: selection.alternativePairs.map { BusRouteStopInput(route: $0.0, stop: $0.1, limit: 1) }
+                    alternativeInput: selection.alternativePairs.map { BusRouteStopInput(route: $0.0, stop: $0.1, limit: 3) }
                 ),
                 cachePolicy: .networkOnly
             )
@@ -774,14 +774,29 @@ class ShuttleRealtimeVC: UIViewController {
             routeName: String,
             color: UIColor
         ) -> ShuttleBusAlternativeDisplayData? {
-            guard let bus, let minutes = bus.arrival.first?.minutes else { return nil }
+            guard let bus else { return nil }
+            let now = Date.now
+            let candidate = bus.arrival.compactMap { arrival -> (minutes: Int, isRealtime: Bool)? in
+                if let minutes = arrival.minutes {
+                    return (minutes, arrival.isRealtime)
+                }
+                guard let departure = arrival.time?.toLocalTimeOrNil(on: now),
+                      let arrivalDate = ShuttleDisplayLogic.logArrivalDate(
+                          startDeparture: departure,
+                          minutesFromStart: bus.minutes,
+                          now: now
+                      ) else { return nil }
+                return (ShuttleDisplayLogic.minutesUntil(arrivalDate, now: now), arrival.isRealtime)
+            }.min { $0.minutes < $1.minutes }
+            guard let candidate else { return nil }
             return ShuttleBusAlternativeDisplayData(
                 routeName: routeName,
-                minutes: minutes,
+                minutes: candidate.minutes,
                 color: color,
                 busStopName: bus.stop.name,
                 busStopLatitude: bus.stop.latitude,
-                busStopLongitude: bus.stop.longitude
+                busStopLongitude: bus.stop.longitude,
+                isRealtime: candidate.isRealtime
             )
         }
 
@@ -798,6 +813,7 @@ class ShuttleRealtimeVC: UIViewController {
 
         let route10ToSangnoksu = String(localized: "shuttle.bus.alternative.route")
         let route10FromSangnoksu = String(localized: "shuttle.bus.alternative.route.campus")
+        let route41Campus = String(localized: "shuttle.bus.alternative.route.4-1.campus")
         let route62Terminal = String(localized: "shuttle.bus.alternative.route.62.terminal")
         let route62Dormitory = String(localized: "shuttle.bus.alternative.route.62.dormitory")
         let route62Jungang = String(localized: "shuttle.bus.alternative.route.62.jungang")
@@ -811,6 +827,7 @@ class ShuttleRealtimeVC: UIViewController {
         let dormitory10 = display(item(routeSeq: 216_000_068, stopSeq: 216_000_383), routeName: route10ToSangnoksu, color: green)
         let shuttlecock10 = display(item(routeSeq: 216_000_068, stopSeq: 216_000_379), routeName: route10ToSangnoksu, color: green)
         let station10 = display(item(routeSeq: 216_000_068, stopSeq: 216_000_138), routeName: route10FromSangnoksu, color: green)
+        let station41 = display(item(routeSeq: 216_000_049, stopSeq: 216_000_722), routeName: route41Campus, color: green)
         let dormitory80 = bestRoute([
             ShuttleBusRouteOption(bus: item(routeSeq: 216_000_081, stopSeq: 216_000_028), routeName: route80A, color: blue),
             ShuttleBusRouteOption(bus: item(routeSeq: 216_000_101, stopSeq: 216_000_028), routeName: routeN80A, color: blue)
@@ -839,7 +856,7 @@ class ShuttleRealtimeVC: UIViewController {
             "shuttlecock_station": [shuttlecock10].compactMap { $0 },
             "shuttlecock_terminal": [shuttlecock62].compactMap { $0 },
             "shuttlecock_jungang": [shuttlecock62Jungang].compactMap { $0 },
-            "station_dormitory": [station10].compactMap { $0 },
+            "station_dormitory": [station41, station10].compactMap { $0 },
             "terminal_dormitory": [terminal80, terminal62].compactMap { $0 },
             "jungang_dormitory": [jungang80, jungang62].compactMap { $0 }
         ]

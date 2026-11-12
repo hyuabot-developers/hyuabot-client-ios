@@ -54,6 +54,102 @@ final class ShuttleComponentTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(badge.intrinsicContentSize.width, 44)
     }
 
+    func testCompactBusTransferRowShowsRealtimeThenLog() throws {
+        let realtime = transferEntry(minutes: 3, stops: 2, source: .realtime, clockTime: nil)
+        let log = transferEntry(
+            minutes: nil,
+            stops: nil,
+            source: .arrivalLog,
+            clockTime: Foundation.Date(timeIntervalSince1970: 1_794_456_000)
+        )
+        let view = ShuttleCompactTransferRowView(row: transferRow(timeline: [realtime, log]))
+        let texts = visibleTexts(view)
+        XCTAssertTrue(texts.contains(try XCTUnwrap(log.scheduledArrivalText)))
+        XCTAssertTrue(texts.contains { $0.contains(minuteText(3)) })
+        XCTAssertTrue(try XCTUnwrap(view.accessibilityLabel).contains(try XCTUnwrap(log.scheduledArrivalText)))
+    }
+
+    func testCompactBusTransferRowShowsLogOnly() throws {
+        let first = transferEntry(
+            minutes: nil, stops: nil, source: .arrivalLog,
+            clockTime: Foundation.Date(timeIntervalSince1970: 1_794_456_000)
+        )
+        let second = transferEntry(
+            minutes: nil, stops: nil, source: .arrivalLog,
+            clockTime: Foundation.Date(timeIntervalSince1970: 1_794_456_600)
+        )
+        let view = ShuttleCompactTransferRowView(row: transferRow(timeline: [first, second]))
+        let texts = visibleTexts(view)
+        XCTAssertTrue(texts.contains(try XCTUnwrap(first.scheduledArrivalText)))
+        XCTAssertTrue(texts.contains(try XCTUnwrap(second.scheduledArrivalText)))
+        XCTAssertTrue(try XCTUnwrap(view.accessibilityLabel).contains(try XCTUnwrap(first.scheduledArrivalText)))
+        XCTAssertTrue(try XCTUnwrap(view.accessibilityLabel).contains(try XCTUnwrap(second.scheduledArrivalText)))
+    }
+
+    func testCompactBusTransferRowShowsTwoRealtimeArrivals() {
+        let first = transferEntry(minutes: 3, stops: 2, source: .realtime, clockTime: nil)
+        let second = transferEntry(minutes: 7, stops: 4, source: .realtime, clockTime: nil)
+        let view = ShuttleCompactTransferRowView(row: transferRow(timeline: [first, second]))
+        let texts = visibleTexts(view)
+        XCTAssertTrue(texts.contains { $0.contains(minuteText(3)) })
+        XCTAssertTrue(texts.contains { $0.contains(minuteText(7)) })
+    }
+
+    func testCompactBusTransferRowHandlesEmptyTimeline() {
+        let view = ShuttleCompactTransferRowView(row: transferRow(timeline: []))
+        XCTAssertEqual(view.accessibilityLabel, "50")
+        XCTAssertEqual(ShuttleCompactTransferRowView.rowHeight, 48)
+    }
+
+    func testCompactSubwayTransferRowStaysSingleLine() throws {
+        let first = transferEntry(
+            minutes: nil, stops: nil, source: .arrivalLog,
+            clockTime: Foundation.Date(timeIntervalSince1970: 1_794_456_000)
+        )
+        let second = transferEntry(
+            minutes: nil, stops: nil, source: .arrivalLog,
+            clockTime: Foundation.Date(timeIntervalSince1970: 1_794_456_600)
+        )
+        let row = TransferRow(name: "50", targetName: "Terminal", color: .systemGreen, vehicleType: .subway, timeline: [first, second])
+        let texts = visibleTexts(ShuttleCompactTransferRowView(row: row))
+        XCTAssertTrue(texts.contains(try XCTUnwrap(first.scheduledArrivalText)))
+        XCTAssertFalse(texts.contains(try XCTUnwrap(second.scheduledArrivalText)))
+    }
+
+    private func transferEntry(
+        minutes: Int?,
+        stops: Int?,
+        source: TransferTimelineSource,
+        clockTime: Foundation.Date?
+    ) -> TransferTimelineEntry {
+        TransferTimelineEntry(
+            destination: "Terminal",
+            minutes: minutes,
+            stops: stops,
+            locationLabel: nil,
+            direction: -1,
+            source: source,
+            clockTime: clockTime,
+            waitingMinutes: nil
+        )
+    }
+
+    private func transferRow(timeline: [TransferTimelineEntry]) -> TransferRow {
+        TransferRow(name: "50", targetName: "Terminal", color: .systemGreen, vehicleType: .bus, timeline: timeline)
+    }
+
+    private func minuteText(_ minutes: Int) -> String {
+        String(format: String(localized: "home.minutes"), locale: Locale.current, minutes)
+    }
+
+    private func visibleTexts(_ view: UIView) -> [String] {
+        descendants(of: view)
+            .compactMap { $0 as? UILabel }
+            .filter { !$0.isHidden }
+            .compactMap(\.text)
+            .filter { !$0.isEmpty }
+    }
+
     private func descendants(of view: UIView) -> [UIView] {
         view.subviews.flatMap { [$0] + descendants(of: $0) }
     }

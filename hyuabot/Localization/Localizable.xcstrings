@@ -15364,6 +15364,34 @@
         }
       }
     },
+    "shuttle.bus.alternative.route.4-1.campus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (to Daengigol)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (テンイゴル方面)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (댕이골 방면)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (校园方向)"
+          }
+        }
+      }
+    },
     "shuttle.bus.alternative.route.campus" : {
       "localizations" : {
         "en" : {

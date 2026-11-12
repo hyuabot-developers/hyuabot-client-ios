@@ -14,6 +14,11 @@ enum ShuttleDisplayLogic {
         max(0, Int(departure.timeIntervalSince(now)) / 60)
     }
 
+    static func logArrivalDate(startDeparture: Date, minutesFromStart: Int, now: Date) -> Date? {
+        let arrival = startDeparture.addingTimeInterval(TimeInterval(minutesFromStart) * 60)
+        return arrival >= now ? arrival : nil
+    }
+
     static func clockText(_ date: Date, calendar: Calendar = .current) -> String {
         let components = calendar.dateComponents([.hour, .minute], from: date)
         return String(format: "%02d:%02d", components.hour ?? 0, components.minute ?? 0)

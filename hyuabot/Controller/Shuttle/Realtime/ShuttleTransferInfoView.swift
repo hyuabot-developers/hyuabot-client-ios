@@ -1131,7 +1131,9 @@ final class ShuttleTransferInfoView: UIView {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     private func buildBusRows(data: [ShuttleRealtimePageQuery.Data.TransferBus], stopSeq: Int) -> [TransferRow] {
+        let now = Foundation.Date.now
         let displayLabel = String(localized: "home.transfer.bus50.badge")
         let destinationLabel = String(localized: "home.transfer.bus50.destination")
         let earliestArrival = selectedTransferArrivalDate
@@ -1141,7 +1143,7 @@ final class ShuttleTransferInfoView: UIView {
             .filter(\.isRealtime)
             .compactMap { arrival -> TransferTimelineEntry? in
                 guard let minutes = arrival.minutes else { return nil }
-                let arrivalDate = Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60))
+                let arrivalDate = now.addingTimeInterval(TimeInterval(minutes * 60))
                 guard earliestArrival.map({ arrivalDate >= $0 }) ?? true else { return nil }
                 return TransferTimelineEntry(
                     destination: destinationLabel,
@@ -1157,12 +1159,18 @@ final class ShuttleTransferInfoView: UIView {
             }
             .sorted { ($0.minutes ?? .max) < ($1.minutes ?? .max) }
             .prefix(2)
+        let realtimeEntries = Array(realtimeTimeline)
+        let lastRealtimeArrival = realtimeEntries.compactMap(\.minutes).max().map {
+            now.addingTimeInterval(TimeInterval($0 * 60))
+        }
         let logTimes = Set(matchingBuses
             .flatMap(\.log)
-            .compactMap { $0.time.toLocalTimeOrNil() })
+            .compactMap { $0.time.toLocalTimeOrNil(on: now) })
         let logTimeline = logTimes
             .filter { logDate in
-                earliestArrival.map { logDate >= $0 } ?? true
+                logDate >= now &&
+                    (earliestArrival.map { logDate >= $0 } ?? true) &&
+                    (lastRealtimeArrival.map { logDate > $0 } ?? true)
             }
             .sorted()
             .prefix(2)
@@ -1178,7 +1186,7 @@ final class ShuttleTransferInfoView: UIView {
                     waitingMinutes: transferWaitingMinutes(until: $0)
                 )
             }
-        let timeline = realtimeTimeline.isEmpty ? Array(logTimeline) : Array(realtimeTimeline)
+        let timeline = Array((realtimeEntries + Array(logTimeline)).prefix(2))
         guard !timeline.isEmpty else { return [] }
         return [
             TransferRow(
