@@ -61,7 +61,7 @@ class ShuttleRealtimeVC: UIViewController {
         "shuttle.stop.shuttlecock.in"
     ]
     private lazy var stopTitles = stopTitleKeys.map { String(localized: $0) }
-    private lazy var titleBar = ShuttleRealtimeTitleBar(showsHomeButton: returnsToHome)
+    private lazy var titleBar = ShuttleRealtimeTitleBar()
     private lazy var listHeader = ShuttleRealtimeListHeaderView(stopTitles: stopTitles)
     private let pager = ContentView()
     private let headerContainer = UIView()
@@ -182,7 +182,6 @@ class ShuttleRealtimeVC: UIViewController {
         }
         logScreenView(.shuttleRealtime)
         scheduleCoachMarksIfNeeded()
-        promptHomeExperienceIfNeeded()
         // `viewWillAppear`'s presence report is skipped because `view.window` is
         // still nil at that point, so trigger the first heartbeat here once the
         // view is attached to a window and the count can render immediately.
@@ -558,7 +557,6 @@ class ShuttleRealtimeVC: UIViewController {
         pager.delegate = self
         listHeader.setLocationSource(isManual: initialStopID != nil)
         titleBar.onSettingsTap = { [weak self] in self?.openQuickSettings() }
-        titleBar.onHomeTap = { [weak self] in self?.returnToHome() }
         listHeader.onSelectStop = { [weak self] index in
             self?.handleUserStopSelection(index, fromSwipe: false)
         }
@@ -1071,18 +1069,6 @@ class ShuttleRealtimeVC: UIViewController {
         present(vc, animated: true, completion: nil)
     }
 
-    private func openHomeExperience() {
-        AnalyticsManager.logSelect(.homeTry)
-        guard let nc = navigationController as? ShuttleNC else { return }
-        nc.showHome()
-    }
-
-    @objc
-    private func returnToHome() {
-        guard let nc = navigationController as? ShuttleNC else { return }
-        nc.showHome()
-    }
-
     @objc
     private func openQuickSettings() {
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -1096,9 +1082,6 @@ class ShuttleRealtimeVC: UIViewController {
             subwayDestination: ShuttleTransferDisplaySettings.subwayDestination,
             alternativeDisplayMode: ShuttleTransferDisplaySettings.alternativeDisplayMode
         )
-        vc.openHome = { [weak self] in
-            self?.openHomeExperience()
-        }
         vc.openHelp = { [weak self] in self?.openHelpVC() }
         vc.openInquiry = { [weak self] in
             self?.openInquiry()
@@ -1155,33 +1138,6 @@ class ShuttleRealtimeVC: UIViewController {
             jungangStationTabVC,
             shuttlecockInTabVC
         ].forEach { $0.reloadTransferDisplaySettings() }
-    }
-
-    private func promptHomeExperienceIfNeeded() {
-        guard HomeExperienceManager.shouldPrompt else { return }
-        guard presentedViewController == nil, coachMarkOverlayIsAbsent else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
-            guard let self else { return }
-            guard HomeExperienceManager.shouldPrompt else { return }
-            guard presentedViewController == nil, coachMarkOverlayIsAbsent else { return }
-            let title = String(localized: "home.prompt.title")
-            let message = String(localized: "home.prompt.message")
-            let alert = UIAlertController(
-                title: title,
-                message: message,
-                preferredStyle: .alert
-            )
-            alert.applyGodoTypography(title: title, message: message)
-            alert.addAction(UIAlertAction(title: String(localized: "home.open_new"), style: .default) { [weak self] _ in
-                AnalyticsManager.logSelect(.homeTry)
-                (self?.navigationController as? ShuttleNC)?.showHome()
-            })
-            alert.addAction(UIAlertAction(title: String(localized: "common.later"), style: .cancel) { _ in
-                AnalyticsManager.logSelect(.homeDismissPrompt)
-                HomeExperienceManager.deferPrompt()
-            })
-            present(alert, animated: true)
-        }
     }
 
     private func applyShowDepartureTime(_ isOn: Bool) {

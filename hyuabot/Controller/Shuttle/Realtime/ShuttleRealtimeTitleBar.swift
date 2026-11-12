@@ -9,13 +9,11 @@ import UIKit
 @MainActor
 final class ShuttleRealtimeTitleBar: UIView {
     let settingsButton = UIButton(type: .custom)
-    let homeButton = UIButton(type: .custom)
     var onSettingsTap: (() -> Void)?
-    var onHomeTap: (() -> Void)?
 
     private let titleLabel = UILabel()
 
-    init(showsHomeButton: Bool) {
+    init() {
         super.init(frame: .zero)
         backgroundColor = SettingsStyle.Color.background
         snp.makeConstraints { $0.height.equalTo(56) }
@@ -35,26 +33,14 @@ final class ShuttleRealtimeTitleBar: UIView {
         settingsButton.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
         addSubview(settingsButton)
 
-        configureHomeButton()
-        homeButton.isHidden = !showsHomeButton
-        homeButton.accessibilityLabel = String(localized: "home.return")
-        homeButton.accessibilityIdentifier = "shuttle.return_home"
-        homeButton.addTarget(self, action: #selector(homeTapped), for: .touchUpInside)
-        addSubview(homeButton)
-
         settingsButton.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(16)
             $0.top.bottom.equalToSuperview().inset(6)
             $0.height.equalTo(44)
         }
-        homeButton.snp.makeConstraints {
-            $0.trailing.equalTo(settingsButton.snp.leading).offset(-8)
-            $0.centerY.equalTo(settingsButton)
-            $0.size.equalTo(44)
-        }
         titleLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(20)
-            $0.trailing.lessThanOrEqualTo(homeButton.snp.leading).offset(-8)
+            $0.trailing.lessThanOrEqualTo(settingsButton.snp.leading).offset(-8)
             $0.centerY.equalToSuperview()
         }
     }
@@ -97,32 +83,9 @@ final class ShuttleRealtimeTitleBar: UIView {
         icon.snp.makeConstraints { $0.size.equalTo(18) }
     }
 
-    private func configureHomeButton() {
-        let circle = UIView()
-        circle.backgroundColor = SettingsStyle.Color.segmentBackground
-        circle.layer.cornerRadius = 18
-        circle.isUserInteractionEnabled = false
-        homeButton.addSubview(circle)
-        circle.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.size.equalTo(36)
-        }
-        let icon = UIImageView(image: UIImage(
-            systemName: "house.fill",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
-        ))
-        icon.tintColor = SettingsStyle.Color.link
-        circle.addSubview(icon)
-        icon.snp.makeConstraints { $0.center.equalToSuperview() }
-    }
-
     @objc
     private func settingsTapped() {
         onSettingsTap?()
     }
 
-    @objc
-    private func homeTapped() {
-        onHomeTap?()
-    }
 }

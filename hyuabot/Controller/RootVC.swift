@@ -28,7 +28,7 @@ class RootVC: UITabBarController {
     override var preferredStatusBarStyle: UIStatusBarStyle {
         guard let navigationController = selectedViewController as? UINavigationController,
               let top = navigationController.topViewController,
-              top is TodayHomeVC || top is SettingsStyledScreen
+              top is SettingsStyledScreen
         else {
             return .lightContent
         }
@@ -107,7 +107,6 @@ class RootVC: UITabBarController {
         // TabBar
         shuttleNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.shuttle"), image: UIImage(systemName: "bus"), tag: 0)
         shuttleNC.tabBarItem.accessibilityIdentifier = "tab.shuttle"
-        shuttleNC.updateTabBarItemForCurrentExperience()
         busNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.bus"), image: UIImage(systemName: "bus.doubledecker"), tag: 1)
         busNC.tabBarItem.accessibilityIdentifier = "tab.bus"
         subwayNC.tabBarItem = UITabBarItem(title: String(localized: "tabbar.subway"), image: UIImage(systemName: "tram"), tag: 2)
@@ -155,7 +154,7 @@ class RootVC: UITabBarController {
     /// Maps a tab's view controller to its analytics item for tab-switch tracking.
     func analyticsItem(for viewController: UIViewController?) -> AnalyticsItem? {
         switch viewController {
-        case shuttleNC: HomeExperienceManager.isEnabled ? .tabHome : .tabShuttle
+        case shuttleNC: .tabShuttle
         case busNC: .tabBus
         case subwayNC: .tabSubway
         case cafeteriaNC: .tabCafeteria

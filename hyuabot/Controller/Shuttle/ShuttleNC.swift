@@ -7,67 +7,15 @@ import UIKit
 
 class ShuttleNC: UINavigationController {
     convenience init() {
-        self.init(rootViewController: HomeExperienceManager.isEnabled ? TodayHomeVC() : ShuttleRealtimeVC())
-    }
-
-    func showHome(animated: Bool = true) {
-        HomeExperienceManager.enable()
-        updateTabBarItemForCurrentExperience()
-        if let homeVC = viewControllers.first as? TodayHomeVC {
-            popToViewController(homeVC, animated: animated)
-        } else {
-            setViewControllers([TodayHomeVC()], animated: animated)
-        }
-    }
-
-    func showLegacyShuttle() {
-        HomeExperienceManager.disable()
-        updateTabBarItemForCurrentExperience()
-        setViewControllers([ShuttleRealtimeVC()], animated: true)
-    }
-
-    func showShuttleDetailFromHome(stopID: String? = nil) {
-        updateTabBarItemForCurrentExperience()
-        pushViewController(ShuttleRealtimeVC(returnsToHome: true, initialStopID: stopID), animated: true)
+        self.init(rootViewController: ShuttleRealtimeVC())
     }
 
     func openShuttle(stopID: String?, destinationID: String?, animated: Bool = false) {
-        updateTabBarItemForCurrentExperience()
         let shuttleVC = ShuttleRealtimeVC(
-            returnsToHome: HomeExperienceManager.isEnabled,
             initialStopID: stopID,
             initialDestinationID: destinationID
         )
-        if HomeExperienceManager.isEnabled {
-            let homeVC = (viewControllers.first as? TodayHomeVC) ?? TodayHomeVC()
-            setViewControllers([homeVC, shuttleVC], animated: animated)
-        } else {
-            setViewControllers([shuttleVC], animated: animated)
-        }
-    }
-
-    func showShuttleTimetableFromHome(
-        stopID: String.LocalizationValue,
-        destination: String.LocalizationValue
-    ) {
-        updateTabBarItemForCurrentExperience()
-        pushViewController(
-            ShuttleTimetableVC(stopID: stopID, destination: destination),
-            animated: true
-        )
-    }
-
-    func updateTabBarItemForCurrentExperience() {
-        if HomeExperienceManager.isEnabled {
-            tabBarItem.title = String(localized: "tabbar.home")
-            tabBarItem.image = UIImage(systemName: "house")
-            tabBarItem.accessibilityIdentifier = "tab.home"
-        } else {
-            tabBarItem.title = String(localized: "tabbar.shuttle")
-            tabBarItem.image = UIImage(systemName: "bus")
-            tabBarItem.accessibilityIdentifier = "tab.shuttle"
-        }
-        (tabBarController as? RootVC)?.refreshFloatingTabItem(for: self)
+        setViewControllers([shuttleVC], animated: animated)
     }
 
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {

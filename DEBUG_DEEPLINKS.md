@@ -15,11 +15,12 @@ xcrun simctl openurl booted \
   'hyuabot://debug/map-building-sheet?name=Library&url=https%3A%2F%2Fhyuabot.app'
 ```
 
-Supported page routes are `home`, `shuttle`, `bus`, `subway`, `cafeteria`,
+Supported page routes are `shuttle` (`home` is kept as an alias that opens
+Shuttle), `bus`, `subway`, `cafeteria`,
 `reading-room`, `map`, `setting`, `contact`, `calendar`, `inquiry`, and
 `campus`. Existing public routes remain available as `hyuabot://<page>`.
 
-Supported direct overlays are `home-quick-settings`, `shuttle-quick-settings`,
+Supported direct overlays are `shuttle-quick-settings`,
 `bus-quick-settings`, `shuttle-stop-sheet`, `bus-departure-sheet`,
 `bus-stop-sheet`, `cafeteria-info-sheet`, `map-building-sheet`, and
 `web-sheet`.

@@ -45,7 +45,7 @@ enum HyuabotSearchLogic {
         case .bus:
             components.host = "bus"
         case nil:
-            components.host = "home"
+            components.host = "shuttle"
         }
 
         return components.url ?? URL(fileURLWithPath: "/")

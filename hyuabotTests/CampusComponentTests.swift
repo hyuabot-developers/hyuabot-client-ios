@@ -116,8 +116,7 @@ final class CampusComponentTests: XCTestCase {
         XCTAssertEqual(root.floatingTabBar.frame.maxY, 874 - 16, accuracy: 0.5)
         if #available(iOS 18.0, *) { XCTAssertTrue(root.isTabBarHidden) } else { XCTAssertTrue(root.tabBar.isHidden) }
         let identifiers = (0..<5).compactMap { root.floatingTabBar.button(at: $0)?.accessibilityIdentifier }
-        XCTAssertTrue(identifiers == ["tab.shuttle", "tab.bus", "tab.subway", "tab.cafeteria", "tab.campus"] ||
-                      identifiers == ["tab.home", "tab.bus", "tab.subway", "tab.cafeteria", "tab.campus"])
+        XCTAssertEqual(identifiers, ["tab.shuttle", "tab.bus", "tab.subway", "tab.cafeteria", "tab.campus"])
         root.selectedIndex = 3
         XCTAssertEqual(root.floatingTabBar.selectedIndex, 3)
         root.selectedViewController = root.campusNC
@@ -128,15 +127,15 @@ final class CampusComponentTests: XCTestCase {
         let bar = makeBar(selectedIndex: 2)
         var tapped: Int?
         bar.onSelect = { tapped = $0 }
-        let home = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), tag: 0)
-        home.accessibilityIdentifier = "tab.home"
-        bar.updateItem(home, at: 0)
+        let custom = UITabBarItem(title: "Custom", image: UIImage(systemName: "star"), tag: 0)
+        custom.accessibilityIdentifier = "tab.custom"
+        bar.updateItem(custom, at: 0)
         let button = try XCTUnwrap(bar.button(at: 0))
-        XCTAssertEqual(button.accessibilityIdentifier, "tab.home")
-        XCTAssertEqual(button.accessibilityLabel, "Home")
-        XCTAssertEqual(button.largeContentTitle, "Home")
+        XCTAssertEqual(button.accessibilityIdentifier, "tab.custom")
+        XCTAssertEqual(button.accessibilityLabel, "Custom")
+        XCTAssertEqual(button.largeContentTitle, "Custom")
         XCTAssertNotNil(button.largeContentImage)
-        XCTAssertTrue(labels(in: button).contains { $0.attributedText?.string == "Home" })
+        XCTAssertTrue(labels(in: button).contains { $0.attributedText?.string == "Custom" })
         XCTAssertNotNil(bar.button(at: 4))
         XCTAssertNil(bar.button(at: 5))
         XCTAssertEqual(bar.selectedIndex, 2)
@@ -150,22 +149,22 @@ final class CampusComponentTests: XCTestCase {
         XCTAssertEqual(button.largeContentTitle, "Shuttle")
         XCTAssertNotNil(button.largeContentImage)
         XCTAssertTrue(labels(in: button).contains { $0.attributedText?.string == "Shuttle" })
-        bar.updateItem(home, at: 9)
+        bar.updateItem(custom, at: 9)
         XCTAssertEqual(button.accessibilityLabel, "Shuttle")
     }
 
-    func testRootVCRefreshesShuttleHomeTabItem() {
+    func testRootVCRefreshesShuttleTabItem() {
         let root = RootVC()
         root.loadViewIfNeeded()
         root.selectedIndex = 2
-        root.shuttleNC.tabBarItem.title = String(localized: "tabbar.home")
-        root.shuttleNC.tabBarItem.image = UIImage(systemName: "house")
-        root.shuttleNC.tabBarItem.accessibilityIdentifier = "tab.home"
+        root.shuttleNC.tabBarItem.title = "Updated"
+        root.shuttleNC.tabBarItem.image = UIImage(systemName: "star")
+        root.shuttleNC.tabBarItem.accessibilityIdentifier = "tab.shuttle.updated"
         root.refreshFloatingTabItem(for: root.shuttleNC)
         let button = root.floatingTabBar.button(at: 0)
-        XCTAssertEqual(button?.accessibilityIdentifier, "tab.home")
-        XCTAssertEqual(button?.accessibilityLabel, String(localized: "tabbar.home"))
-        XCTAssertEqual(button?.largeContentTitle, String(localized: "tabbar.home"))
+        XCTAssertEqual(button?.accessibilityIdentifier, "tab.shuttle.updated")
+        XCTAssertEqual(button?.accessibilityLabel, "Updated")
+        XCTAssertEqual(button?.largeContentTitle, "Updated")
         XCTAssertNotNil(root.floatingTabBar.button(at: 4))
         XCTAssertNil(root.floatingTabBar.button(at: 5))
         XCTAssertEqual(root.selectedIndex, 2)

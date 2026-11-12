@@ -125,11 +125,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 ?? (rootVC.selectedViewController as? UINavigationController)?.topViewController
 
             switch route {
-            case "home-quick-settings":
-                rootVC.selectedViewController = rootVC.shuttleNC
-                rootVC.shuttleNC.showHome(animated: false)
-                (rootVC.shuttleNC.topViewController as? TodayHomeVC)?.presentDebugQuickSettings()
-
             case "shuttle-quick-settings":
                 rootVC.selectedViewController = rootVC.shuttleNC
                 rootVC.shuttleNC.openShuttle(stopID: query("stop"), destinationID: query("to"))
@@ -193,10 +188,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let params = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
 
         switch route {
-        case "home":
-            rootVC.selectedViewController = rootVC.shuttleNC
-            rootVC.shuttleNC.showHome(animated: false)
-
         case "bus":
             rootVC.busNC.popToRootViewController(animated: false)
             rootVC.selectedViewController = rootVC.busNC
@@ -222,7 +213,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 rootVC.cafeteriaNC.popToRootViewController(animated: false)
             }
 
-        case "shuttle":
+        case "home", "shuttle":
             let stop = params?.first(where: { $0.name == "stop" })?.value
             let destination = params?.first(where: { $0.name == "to" })?.value
             rootVC.selectedViewController = rootVC.shuttleNC
