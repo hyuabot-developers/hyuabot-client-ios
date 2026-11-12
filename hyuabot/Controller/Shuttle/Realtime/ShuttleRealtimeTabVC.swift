@@ -892,6 +892,9 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        if showsInitialSkeleton {
+            return nil
+        }
         guard let footerView = tableView
             .dequeueReusableHeaderFooterView(withIdentifier: ShuttleRealtimeFooterView.reuseIdentifier) as? ShuttleRealtimeFooterView
         else { return UIView() }
@@ -1296,7 +1299,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         if showsInitialSkeleton {
-            return CGFloat.leastNormalMagnitude
+            return ShuttleRealtimeFooterView.cardGap
         }
         let alternativesCount = displayedBusAlternatives(from: busAlternatives, section: section).count
         let effectiveAlternativesCount = if alternativesCount > 0 {
