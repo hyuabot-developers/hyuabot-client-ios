@@ -26,6 +26,7 @@ struct ShuttleBoardingActivityAttributes: ActivityAttributes {
     let key: String
     let alarmKind: String?
     let routeDisplayName: String
+    var routeChipKind: String?
     let boardingStopName: String
     let targetStopName: String?
     let departureTime: Date

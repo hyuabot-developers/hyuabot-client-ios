@@ -12,8 +12,8 @@ import UIKit
 
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeTabVC: UIViewController {
-    private static let floatingStatusClearance: CGFloat = 48
-    private static let automaticAlternativeThresholdMinutes = 20
+    private static let floatingStatusClearance: CGFloat = 28
+    var forceShowBusAlternative = false
     let stopID: ShuttleStopEnum
     private let disposeBag = DisposeBag()
     private let destinationRefreshControl = UIRefreshControl()
@@ -28,8 +28,11 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let showAlarmVC: @MainActor (ShuttleStopEnum, ShuttleAlarmContext) -> Void
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
+    private var routeHeights: [Int: CGFloat] = [:]
+    private var hasAppliedTopInset = false
     private(set) var transferInfoView: ShuttleTransferInfoView?
     private var transferInfoViewsByIndexPath: [IndexPath: ShuttleTransferInfoView] = [:]
+    private var transferInfoViewsByOrderSeq: [String: ShuttleTransferInfoView] = [:]
     private var expandedShuttleIndexPath: IndexPath?
     private var isAnimatingShuttleExpansion = false
     private var latestTransferData: ShuttleRealtimePageQuery.Data?
@@ -38,19 +41,20 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let busAlternativeEmptyGraceInterval: TimeInterval = 60
     private var activeBoardingAlarmKeys: Set<String> = []
     private var showsInitialSkeleton = true
-    var forceShowBusAlternative = false
-    lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view, stopID: self.stopID, showStopModal: showStopModal)
+    lazy var tableFooterView1 = ShuttleRealtimeTableFooterView(parentView: self.view)
     lazy var tableFooterView2 = ShuttleRealtimeTableFooterView2(
         parentView: self.view,
         stopID: self.stopID,
-        showStopModal: showStopModal,
         showEntireTimetable: showEntireTimetable
     )
     private lazy var shuttleRealtimeTableView: UITableView = .init(frame: .zero, style: .grouped).then {
+        $0.backgroundColor = SettingsStyle.Color.background
+        $0.separatorStyle = .none
+        $0.sectionHeaderTopPadding = 0
+        $0.contentInsetAdjustmentBehavior = .never
         $0.delegate = self
         $0.dataSource = self
         $0.sectionHeaderTopPadding = 0
-        $0.backgroundColor = .systemBackground
         $0.refreshControl = destinationRefreshControl
         $0.refreshControl?.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
         $0.tableFooterView = self.tableFooterView1
@@ -72,10 +76,13 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     private lazy var shuttleRealtimeTableTimeView: UITableView = .init(frame: .zero, style: .grouped).then {
+        $0.backgroundColor = SettingsStyle.Color.background
+        $0.separatorStyle = .none
+        $0.sectionHeaderTopPadding = 0
+        $0.contentInsetAdjustmentBehavior = .never
         $0.delegate = self.timetableDelegate
         $0.dataSource = self.timetableDelegate
         $0.sectionHeaderTopPadding = 0
-        $0.backgroundColor = .systemBackground
         $0.tableFooterView = self.tableFooterView2
         $0.rowHeight = ShuttleRealtimeCellView.informationRowHeight
         $0.estimatedRowHeight = ShuttleRealtimeCellView.informationRowHeight
@@ -90,6 +97,10 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.register(ShuttleRealtimeEmptyCellView.self, forCellReuseIdentifier: ShuttleRealtimeEmptyCellView.reuseIdentifier)
         $0.register(ShuttleRealtimeSkeletonCellView.self, forCellReuseIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier)
         $0.register(ShuttleRealtimeCellView.self, forCellReuseIdentifier: ShuttleRealtimeCellView.reuseIdentifier)
+        $0.register(
+            ShuttleExpandedTransferCellView.self,
+            forCellReuseIdentifier: ShuttleExpandedTransferCellView.reuseIdentifier
+        )
     }
 
     required init(
@@ -126,6 +137,7 @@ class ShuttleRealtimeTabVC: UIViewController {
             stopID: self.stopID
         )
         super.init(nibName: nil, bundle: nil)
+        timetableDelegate.transferViewProvider = { [weak self] item in self?.orderTransferViews(for: item) ?? [] }
     }
 
     @available(*, unavailable)
@@ -195,6 +207,10 @@ class ShuttleRealtimeTabVC: UIViewController {
                 for transferView in transferInfoViewsByIndexPath.values {
                     transferView.setup(data: data)
                 }
+                for transferView in transferInfoViewsByOrderSeq.values {
+                    transferView.setup(data: data)
+                }
+                shuttleRealtimeTableTimeView.reloadData()
                 UIView.performWithoutAnimation {
                     shuttleRealtimeTableView.reloadData()
                 }
@@ -319,56 +335,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         section: Int
     ) -> [ShuttleBusAlternativeDisplayData] {
         let values = alternatives[busAlternativeKey(section: section)] ?? []
-        switch ShuttleTransferDisplaySettings.alternativeDisplayMode {
-        case .always:
-            return values
-        case .hidden:
-            return []
-        case .automatic:
-            if section == 0, canForceShowBusAlternative {
-                return values
-            }
-            return shouldAutomaticallyShowBusAlternatives(section: section) ? values : []
-        }
-    }
-
-    private func shouldAutomaticallyShowBusAlternatives(section: Int) -> Bool {
-        guard let time = nextShuttleTime(section: section),
-              let departureDate = time.toLocalTimeOrNil()
-        else { return true }
-        let minutes = Int(ceil(departureDate.timeIntervalSince(Foundation.Date.now) / 60))
-        return minutes >= Self.automaticAlternativeThresholdMinutes
-    }
-
-    private func nextShuttleTime(section: Int) -> LocalTime? {
-        switch (stopID, section) {
-        case (.dormiotryOut, 0):
-            try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value().first?.time
-        case (.dormiotryOut, 1):
-            try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value().first?.time
-        case (.dormiotryOut, 2):
-            try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value().first?.time
-        case (.shuttlecockOut, 0):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value().first?.time
-        case (.shuttlecockOut, 1):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value().first?.time
-        case (.shuttlecockOut, 2):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value().first?.time
-        case (.station, 0):
-            try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value().first?.time
-        case (.station, 1):
-            try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value().first?.time
-        case (.station, 2):
-            try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value().first?.time
-        case (.terminal, 0):
-            try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value().first?.time
-        case (.jungangStation, 0):
-            try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value().first?.time
-        case (.shuttlecockIn, 0):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value().first?.time
-        default:
-            nil
-        }
+        return ShuttleTransferDisplaySettings.alternativeDisplayMode == .hidden ? [] : values
     }
 
     private func destinationEntries(
@@ -410,6 +377,35 @@ class ShuttleRealtimeTabVC: UIViewController {
         case 1: .terminal
         case 2: .jungangStation
         default: nil
+        }
+    }
+
+    private func orderTransferViews(
+        for item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
+    ) -> [ShuttleTransferInfoView] {
+        guard shouldShowTransferSection else { return [] }
+        let stopNames = Set(item.stops.map(\.stop))
+        let destinations: [ShuttleTransferDestination] = switch item.route.tag {
+        case "DY" where stopNames.contains("terminal"): [.terminal]
+        case "DJ": []
+        default:
+            [
+                stopNames.contains("station") ? ShuttleTransferDestination.station : nil,
+                stopNames.contains("terminal") ? ShuttleTransferDestination.terminal : nil
+            ].compactMap { $0 }
+        }
+        return destinations.map { destination in
+            let cacheKey = "\(item.seq)-\(destination)"
+            let transferView: ShuttleTransferInfoView
+            if let cached = transferInfoViewsByOrderSeq[cacheKey] {
+                transferView = cached
+            } else {
+                transferView = ShuttleTransferInfoView(stopID: stopID, destination: destination, presentation: .inline)
+                transferInfoViewsByOrderSeq[cacheKey] = transferView
+            }
+            transferView.selectShuttle(item)
+            transferView.setup(data: latestTransferData)
+            return transferView
         }
     }
 
@@ -470,45 +466,20 @@ class ShuttleRealtimeTabVC: UIViewController {
         return IndexPath(row: row, section: displayedIndexPath.section)
     }
 
-    private func toggleShuttleExpansion(
-        at indexPath: IndexPath,
-        selectedCell: ShuttleRealtimeCellView,
-        transferView: ShuttleTransferInfoView?
-    ) {
+    private func toggleShuttleExpansion(at indexPath: IndexPath, selectedCell: ShuttleRealtimeCellView) {
         let previousIndexPath = expandedShuttleIndexPath
         let isCollapsing = previousIndexPath == indexPath
-        var previousCell: ShuttleRealtimeCellView?
-        let visiblePreviousCell = previousIndexPath.flatMap {
-            shuttleRealtimeTableView.cellForRow(
-                at: IndexPath(row: $0.row, section: $0.section)
-            ) as? ShuttleRealtimeCellView
-        }
-        if let visiblePreviousCell {
-            previousCell = visiblePreviousCell
-            visiblePreviousCell.hideTransferConnector(animated: true)
-        }
-        if let previousIndexPath {
-            transferInfoViewsByIndexPath[previousIndexPath]?.hideInlineConnectors(animated: true)
+        let previousCell = previousIndexPath.flatMap {
+            shuttleRealtimeTableView.cellForRow(at: $0) as? ShuttleRealtimeCellView
         }
         expandedShuttleIndexPath = isCollapsing ? nil : indexPath
-
-        let connectorTitle = transferView?.inlineConnectorTitle
-        let connectorTintColor = transferView?.inlineConnectorTintColor
-        if !isCollapsing, let connectorTitle, let connectorTintColor {
-            selectedCell.setTransferSelectionState(true)
-            selectedCell.prepareTransferConnector(
-                title: connectorTitle,
-                travelMinutes: transferView?.inlineConnectorTravelMinutes,
-                tintColor: connectorTintColor
-            )
+        selectedCell.setExpanded(!isCollapsing)
+        if previousCell !== selectedCell {
+            previousCell?.setExpanded(false)
         }
 
-        let deletedRow = previousIndexPath.map {
-            IndexPath(row: $0.row + 1, section: $0.section)
-        }
-        let insertedRow = isCollapsing
-            ? nil
-            : IndexPath(row: indexPath.row + 1, section: indexPath.section)
+        let deletedRow = previousIndexPath.map { IndexPath(row: $0.row + 1, section: $0.section) }
+        let insertedRow = isCollapsing ? nil : IndexPath(row: indexPath.row + 1, section: indexPath.section)
 
         isAnimatingShuttleExpansion = true
         shuttleRealtimeTableView.performBatchUpdates {
@@ -520,13 +491,6 @@ class ShuttleRealtimeTabVC: UIViewController {
             }
         } completion: { _ in
             self.isAnimatingShuttleExpansion = false
-            if let previousCell, previousCell !== selectedCell || isCollapsing {
-                previousCell.setTransferSelectionState(false)
-            }
-            if !isCollapsing {
-                selectedCell.showTransferConnector(animated: true)
-                transferView?.showInlineConnectors(animated: true)
-            }
         }
     }
 
@@ -535,7 +499,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     var firstSectionHeaderHelpView: UIView? {
-        (visibleTableView.headerView(forSection: 0) as? ShuttleRealtimeHeaderView)?.helpImageView
+        (visibleTableView.headerView(forSection: 0) as? ShuttleRealtimeHeaderView)?.routeToggleButton
     }
 
     func reload() {
@@ -555,7 +519,11 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     func scrollToFooter() {
         shuttleRealtimeTableView.layoutIfNeeded()
-        let offset = max(0, shuttleRealtimeTableView.contentSize.height - shuttleRealtimeTableView.bounds.height)
+        let table = shuttleRealtimeTableView
+        let offset = max(
+            -table.adjustedContentInset.top,
+            table.contentSize.height + table.adjustedContentInset.bottom - table.bounds.height
+        )
         shuttleRealtimeTableView.setContentOffset(CGPoint(x: 0, y: offset), animated: false)
         // Force UITableView to re-render visible section footers at the new scroll position
         shuttleRealtimeTableView.setNeedsLayout()
@@ -579,8 +547,9 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     func scrollToTop() {
-        visibleTableView.setContentOffset(.zero, animated: false)
-        visibleTableView.layoutIfNeeded()
+        let table = visibleTableView
+        table.setContentOffset(CGPoint(x: 0, y: -table.adjustedContentInset.top), animated: false)
+        table.layoutIfNeeded()
     }
 
     func scrollToDestination(_ destinationID: String) {
@@ -610,10 +579,6 @@ class ShuttleRealtimeTabVC: UIViewController {
             let y = max(-tableView.adjustedContentInset.top, headerRect.minY - tableView.adjustedContentInset.top)
             tableView.setContentOffset(CGPoint(x: 0, y: y), animated: false)
         }
-    }
-
-    private func showStopModal(_ stop: ShuttleStopEnum) {
-        showStopVC(stop)
     }
 
     static func makeAlarmContext(
@@ -693,7 +658,8 @@ class ShuttleRealtimeTabVC: UIViewController {
             routeStops: orderedStops,
             departureTime: departureDate,
             minutesUntilDeparture: minutes,
-            createdAt: Foundation.Date.now
+            createdAt: Foundation.Date.now,
+            chipKind: ShuttleDisplayLogic.routeChipKind(stopID: boardingStopID, destinationKey: nil, routeTag: routeTag)
         )
     }
 
@@ -889,6 +855,20 @@ private struct ShuttleAlarmRouteStop {
 }
 
 extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
+    /// Insets are managed by the parent: `top` is the gap below the pinned header, `bottom` clears the floating tab bar.
+    func setContentInsets(top: CGFloat, bottom: CGFloat) {
+        for table in [shuttleRealtimeTableView, shuttleRealtimeTableTimeView] {
+            let atTop = !hasAppliedTopInset || table.contentOffset.y + table.adjustedContentInset.top <= 12
+            table.contentInset.top = top
+            table.contentInset.bottom = bottom
+            table.verticalScrollIndicatorInsets = UIEdgeInsets(top: top, left: 0, bottom: bottom, right: 0)
+            if atTop {
+                table.contentOffset.y = -top
+            }
+        }
+        hasAppliedTopInset = true
+    }
+
     func numberOfSections(in tableView: UITableView) -> Int {
         shuttleRealtimeSection.count
     }
@@ -939,6 +919,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         ) as? ShuttleRealtimeCellView else {
             fatalError("Unable to dequeue ShuttleRealtimeCellView")
         }
+        cell.showsTopSeparator = (dataIndexPath(for: indexPath)?.row ?? indexPath.row) > 0
         return cell
     }
 
@@ -1045,25 +1026,29 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         if showsInitialSkeleton {
             return tableView.dequeueReusableCell(withIdentifier: ShuttleRealtimeSkeletonCellView.reuseIdentifier, for: indexPath)
         }
-        // swiftlint:disable opening_brace
-        if isTransferExpansionRow(indexPath),
-           let expandedRow = expandedDataRow(section: indexPath.section)
-        {
+        if isTransferExpansionRow(indexPath), let expandedRow = expandedDataRow(section: indexPath.section) {
             let entries = destinationEntries(section: indexPath.section)
-            guard entries.indices.contains(expandedRow) else { return UITableViewCell() }
+            guard entries.indices.contains(expandedRow),
+                  let cell = tableView.dequeueReusableCell(
+                      withIdentifier: ShuttleExpandedTransferCellView.reuseIdentifier,
+                      for: indexPath
+                  ) as? ShuttleExpandedTransferCellView else { return UITableViewCell() }
             let item = entries[expandedRow]
-            guard let transferView = transferView(
-                at: IndexPath(row: expandedRow, section: indexPath.section),
-                item: item
-            ), transferView.preferredHeight > 0 else { return UITableViewCell() }
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: ShuttleExpandedTransferCellView.reuseIdentifier,
-                for: indexPath
-            ) as? ShuttleExpandedTransferCellView else { return UITableViewCell() }
-            cell.setup(transferView: transferView)
+            let section = indexPath.section
+            let direction = directionDisplayName(section: section)
+            cell.setup(
+                transferView: transferView(at: IndexPath(row: expandedRow, section: section), item: item),
+                isAlarmActive: isBoardingAlarmActive(stopID: stopID, item: item, directionDisplayName: direction),
+                onAlarm: { [weak self] in
+                    guard let self,
+                          let context = Self.makeAlarmContext(stopID: stopID, item: item, directionDisplayName: direction)
+                    else { return }
+                    showAlarmVC(stopID, context)
+                },
+                onStops: { [weak self] in self?.showViaVCByDestination(item) }
+            )
             return cell
         }
-        // swiftlint:enable opening_brace
         let displayedIndexPath = indexPath
         guard let indexPath = dataIndexPath(for: displayedIndexPath) else { return UITableViewCell() }
         if stopID == .dormiotryOut {
@@ -1082,14 +1067,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .dormiotryOut,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.dormiotryOut, context)
-                    }
+                    )
                     return cell
                 }
             } else if indexPath.section == 1 {
@@ -1107,14 +1085,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .dormiotryOut,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.dormiotryOut, context)
-                    }
+                    )
                     return cell
                 }
             } else if indexPath.section == 2 {
@@ -1133,14 +1104,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .dormiotryOut,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.dormiotryOut, context)
-                    }
+                    )
                     return cell
                 }
             }
@@ -1160,14 +1124,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .shuttlecockOut,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.shuttlecockOut, context)
-                    }
+                    )
                     return cell
                 }
             } else if indexPath.section == 1 {
@@ -1185,14 +1142,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .shuttlecockOut,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.shuttlecockOut, context)
-                    }
+                    )
                     return cell
                 }
             } else if indexPath.section == 2 {
@@ -1211,14 +1161,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .shuttlecockOut,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.shuttlecockOut, context)
-                    }
+                    )
                     return cell
                 }
             }
@@ -1238,14 +1181,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .station,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.station, context)
-                    }
+                    )
                     return cell
                 }
             } else if indexPath.section == 1 {
@@ -1263,14 +1199,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .station,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.station, context)
-                    }
+                    )
                     return cell
                 }
             } else if indexPath.section == 2 {
@@ -1289,14 +1218,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                             item: item,
                             directionDisplayName: directionDisplayName
                         )
-                    ) { [weak self] in
-                        guard let self, let context = Self.makeAlarmContext(
-                            stopID: .station,
-                            item: item,
-                            directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                        ) else { return }
-                        showAlarmVC(.station, context)
-                    }
+                    )
                     return cell
                 }
             }
@@ -1311,14 +1233,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     indexPath: indexPath,
                     item: item,
                     isBoardingAlarmActive: isBoardingAlarmActive(stopID: .terminal, item: item, directionDisplayName: directionDisplayName)
-                ) { [weak self] in
-                    guard let self, let context = Self.makeAlarmContext(
-                        stopID: .terminal,
-                        item: item,
-                        directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                    ) else { return }
-                    showAlarmVC(.terminal, context)
-                }
+                )
                 return cell
             }
         } else if stopID == .jungangStation {
@@ -1336,14 +1251,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                         item: item,
                         directionDisplayName: directionDisplayName
                     )
-                ) { [weak self] in
-                    guard let self, let context = Self.makeAlarmContext(
-                        stopID: .jungangStation,
-                        item: item,
-                        directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                    ) else { return }
-                    showAlarmVC(.jungangStation, context)
-                }
+                )
                 return cell
             }
         } else if stopID == .shuttlecockIn {
@@ -1361,14 +1269,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                         item: item,
                         directionDisplayName: directionDisplayName
                     )
-                ) { [weak self] in
-                    guard let self, let context = Self.makeAlarmContext(
-                        stopID: .shuttlecockIn,
-                        item: item,
-                        directionDisplayName: self.directionDisplayName(section: indexPath.section)
-                    ) else { return }
-                    showAlarmVC(.shuttlecockIn, context)
-                }
+                )
                 return cell
             }
         }
@@ -1379,7 +1280,12 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        UITableView.automaticDimension
+        guard headerExpandedStates[section] == true else { return ShuttleRealtimeHeaderView.headerHeight }
+        let header = tableView.headerView(forSection: section) as? ShuttleRealtimeHeaderView
+        if let header, header.routeAdapterHeight > 0 {
+            routeHeights[section] = header.routeAdapterHeight
+        }
+        return ShuttleRealtimeHeaderView.headerHeight + (routeHeights[section] ?? 0)
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
@@ -1394,7 +1300,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         } else {
             0
         }
-        return ShuttleRealtimeFooterView.timetableButtonHeight
+        return ShuttleRealtimeFooterView.cardGap + ShuttleRealtimeFooterView.timetableButtonHeight
             + ShuttleRealtimeCellView.informationRowHeight * CGFloat(effectiveAlternativesCount)
     }
 
@@ -1432,78 +1338,35 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             at: IndexPath(row: expandedRow, section: indexPath.section),
             item: entries[expandedRow]
         )
-        return max(
-            ShuttleExpandedTransferCellView.preferredHeight(transferView: transferView),
-            CGFloat.leastNormalMagnitude
-        )
+        return ShuttleExpandedTransferCellView.preferredHeight(transferView: transferView)
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let isExpandedTransferRow =
-            tableView === shuttleRealtimeTableView &&
-            isTransferExpansionRow(indexPath) &&
-            !isAnimatingShuttleExpansion
-        if isExpandedTransferRow, let expandedRow = expandedDataRow(section: indexPath.section) {
-            transferInfoViewsByIndexPath[
-                IndexPath(row: expandedRow, section: indexPath.section)
-            ]?.showInlineConnectors(animated: false)
-            return
-        }
         guard tableView === shuttleRealtimeTableView,
               let shuttleCell = cell as? ShuttleRealtimeCellView,
               let dataIndexPath = dataIndexPath(for: indexPath)
         else { return }
-        let isExpanded = expandedShuttleIndexPath == dataIndexPath
-        guard isExpanded,
-              let item = shuttleCell.itemByDestination,
-              let transferView = transferView(at: dataIndexPath, item: item)
-        else {
-            shuttleCell.setTransferSelectionState(false)
-            return
-        }
-        shuttleCell.setTransferSelectionState(true)
-        let connectorTitle = transferView.inlineConnectorTitle
-        let connectorTintColor = transferView.inlineConnectorTintColor
-        if let connectorTitle, let connectorTintColor {
-            shuttleCell.prepareTransferConnector(
-                title: connectorTitle,
-                travelMinutes: transferView.inlineConnectorTravelMinutes,
-                tintColor: connectorTintColor
-            )
-            shuttleCell.showTransferConnector(animated: false)
-        }
+        shuttleCell.setExpanded(expandedShuttleIndexPath == dataIndexPath)
     }
 
     func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
         guard let header = tableView.headerView(forSection: section) as? ShuttleRealtimeHeaderView else {
-            return 50
+            return ShuttleRealtimeHeaderView.headerHeight
         }
-        return header.isExpanded ? 50 + header.routeAdapterHeight : 50
+        return header.isExpanded ? ShuttleRealtimeHeaderView.headerHeight + header.routeAdapterHeight : ShuttleRealtimeHeaderView
+            .headerHeight
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard !isTransferExpansionRow(indexPath) else { return }
-        guard let dataIndexPath = dataIndexPath(for: indexPath),
-              let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView
+        guard !isTransferExpansionRow(indexPath),
+              let dataIndexPath = dataIndexPath(for: indexPath),
+              let cell = tableView.cellForRow(at: indexPath) as? ShuttleRealtimeCellView,
+              cell.itemByDestination != nil
         else { return }
-        if expandedShuttleIndexPath == dataIndexPath {
-            toggleShuttleExpansion(
-                at: dataIndexPath,
-                selectedCell: cell,
-                transferView: nil
-            )
-            return
+        if expandedShuttleIndexPath != dataIndexPath {
+            AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
         }
-        guard let item = cell.itemByDestination,
-              let transferView = transferView(at: dataIndexPath, item: item),
-              transferView.preferredHeight > 0
-        else { return }
-        AnalyticsManager.logSelect(.shuttleSelectViaRow, type: .listItem)
-        toggleShuttleExpansion(
-            at: dataIndexPath,
-            selectedCell: cell,
-            transferView: transferView
-        )
+        toggleShuttleExpansion(at: dataIndexPath, selectedCell: cell)
     }
 
     private func busAlternativeKey(section: Int) -> String {

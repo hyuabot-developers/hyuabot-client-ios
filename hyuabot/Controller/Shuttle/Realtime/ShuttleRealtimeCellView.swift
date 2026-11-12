@@ -9,50 +9,86 @@ import UIKit
 
 // swiftlint:disable file_length
 
-private final class ExtendedHitAreaButton: UIButton {
-    var minimumHitArea = CGSize(width: 44, height: 44)
-
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        let widthInset = min(0, bounds.width - minimumHitArea.width) / 2
-        let heightInset = min(0, bounds.height - minimumHitArea.height) / 2
-        return bounds.insetBy(dx: widthInset, dy: heightInset).contains(point)
-    }
-}
-
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleRealtimeCellView"
-    static let informationRowHeight: CGFloat = 44
+    static let informationRowHeight: CGFloat = 56
+    static let expandedRowHeight: CGFloat = 48
+    private let cardBackground = UIView().then { $0.backgroundColor = SettingsStyle.Color.card }
+    private let routeBadge = BusRouteBadgeView(size: .shuttle)
+
+    private let shuttleTypeLabel = UILabel().then { $0.isHidden = true }
+    private let primaryLabel = UILabel().then {
+        $0.font = SettingsStyle.monospacedDigitFont(17, bold: true)
+        $0.textColor = SettingsStyle.Color.text
+        $0.numberOfLines = 1
+        $0.lineBreakMode = .byTruncatingTail
+    }
+
+    private let trailingLabel = UILabel().then {
+        $0.font = SettingsStyle.monospacedDigitFont(20, bold: true)
+        $0.textColor = SettingsStyle.Color.text
+        $0.textAlignment = .right
+    }
+
+    private let subLabel = UILabel().then {
+        $0.textColor = SettingsStyle.Color.secondaryText
+        $0.numberOfLines = 1
+        $0.lineBreakMode = .byTruncatingTail
+    }
+
+    private var arrivalText: String?
+    private var titleText: String?
     private let disposeBag = DisposeBag()
-    private var transferConnectorView: TransferConnectorView?
-    private var standardSeparatorInset: UIEdgeInsets?
-    private let transferSelectionAccentView = UIView().then {
-        $0.backgroundColor = .hanyangBlue
+    private var showsRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
+    private var departureDate: Foundation.Date?
+    /// Rounds the card's outer corners when the row is the first/last row of a standalone card (time-ordered list).
+    func setCardCorners(isFirst: Bool, isLast: Bool) {
+        var corners: CACornerMask = []
+        if isFirst {
+            corners.formUnion([.layerMinXMinYCorner, .layerMaxXMinYCorner])
+        }
+        if isLast {
+            corners.formUnion([.layerMinXMaxYCorner, .layerMaxXMaxYCorner])
+        }
+        cardBackground.layer.cornerRadius = corners.isEmpty ? 0 : 16
+        cardBackground.layer.cornerCurve = .continuous
+        cardBackground.layer.maskedCorners = corners
+        cardBackground.clipsToBounds = !corners.isEmpty
+    }
+
+    var showsTopSeparator = false {
+        didSet { topSeparator.isHidden = !showsTopSeparator }
+    }
+
+    private let topSeparator = UIView().then {
+        $0.backgroundColor = SettingsStyle.Color.separator
         $0.isHidden = true
     }
 
-    private let shuttleTypeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
+    private lazy var primaryStack = UIStackView(arrangedSubviews: [routeBadge, primaryLabel, lastRunView, shuttleAlertView]).then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 6
     }
 
-    private let shuttleTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
-    }
-
-    private let shuttleRemainingTimeLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .regular)
+    private lazy var leftStack = UIStackView(arrangedSubviews: [primaryStack, subLabel]).then {
+        $0.axis = .vertical
+        $0.alignment = .leading
+        $0.spacing = 4
+        $0.isAccessibilityElement = true
     }
 
     private let shuttleAlertLabel = UILabel().then {
-        $0.font = .godo(size: 12, weight: .bold)
-        $0.textColor = .white
+        $0.font = SettingsStyle.font(12, bold: true)
+        $0.textColor = SettingsStyle.Color.warnText
         $0.text = String(localized: "shuttle.location.alert")
         $0.textAlignment = .center
     }
 
     private lazy var shuttleAlertView = UIView().then {
-        $0.backgroundColor = .shuttleStatusBadgeBackground
-        $0.layer.cornerRadius = 5
+        $0.backgroundColor = SettingsStyle.Color.warnFill
+        $0.layer.cornerRadius = 6
         $0.layer.masksToBounds = true
         $0.isHidden = true
         $0.isAccessibilityElement = true
@@ -61,15 +97,15 @@ class ShuttleRealtimeCellView: UITableViewCell {
     }
 
     private let lastRunLabel = UILabel().then {
-        $0.font = .godo(size: 12, weight: .bold)
-        $0.textColor = .white
+        $0.font = SettingsStyle.font(12, bold: true)
+        $0.textColor = SettingsStyle.Color.subwayLastText
         $0.text = String(localized: "shuttle.last_run")
         $0.textAlignment = .center
     }
 
     private lazy var lastRunView = UIView().then {
-        $0.backgroundColor = .shuttleStatusBadgeBackground
-        $0.layer.cornerRadius = 5
+        $0.backgroundColor = SettingsStyle.Color.subwayLastFill
+        $0.layer.cornerRadius = 6
         $0.layer.masksToBounds = true
         $0.isHidden = true
         $0.isAccessibilityElement = true
@@ -77,36 +113,25 @@ class ShuttleRealtimeCellView: UITableViewCell {
         $0.addSubview(self.lastRunLabel)
     }
 
-    private lazy var statusStackView = UIStackView(arrangedSubviews: [shuttleTypeLabel, lastRunView, shuttleAlertView]).then {
-        $0.axis = .horizontal
-        $0.alignment = .center
-        $0.spacing = 8
-    }
-
-    private let alarmButton = ExtendedHitAreaButton(type: .system).then {
-        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
-        $0.setImage(UIImage(systemName: "bell", withConfiguration: symbolConfiguration), for: .normal)
-        if UITraitCollection.current.userInterfaceStyle == .light {
-            $0.tintColor = .hanyangBlue
-        } else {
-            $0.tintColor = .white
-        }
-        $0.accessibilityLabel = String(localized: "shuttle.alarm.button.description")
+    private let chevronView = UIImageView().then {
+        $0.tintColor = SettingsStyle.Color.chevron
+        $0.contentMode = .scaleAspectFit
+        $0.isUserInteractionEnabled = false
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
     var itemByOrder: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order?
     var itemByDestination: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
-    private var showAlarm: (() -> Void)?
     private var isBoardingAlarmActive = false {
-        didSet {
-            updateAlarmButtonAppearance()
-        }
+        didSet { renderSubtitle() }
     }
+
+    private(set) var isRowExpanded = false
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
-        observeSubjects()
     }
 
     @available(*, unavailable)
@@ -116,165 +141,102 @@ class ShuttleRealtimeCellView: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        setTransferSelectionState(false)
+        setExpanded(false)
     }
 
     func setupUI() {
-        backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
         clipsToBounds = false
         contentView.clipsToBounds = false
-        contentView.addSubview(transferSelectionAccentView)
-        contentView.addSubview(statusStackView)
-        contentView.addSubview(shuttleTimeLabel)
-        contentView.addSubview(shuttleRemainingTimeLabel)
-        contentView.addSubview(alarmButton)
+        contentView.addSubview(cardBackground)
+        cardBackground.addSubview(leftStack)
+        cardBackground.addSubview(trailingLabel)
+        cardBackground.addSubview(chevronView)
+        cardBackground.addSubview(topSeparator)
+        cardBackground.isAccessibilityElement = false
+        cardBackground.accessibilityElements = [leftStack]
         selectionStyle = .none
-        alarmButton.addTarget(self, action: #selector(alarmButtonTapped), for: .touchUpInside)
-        shuttleTypeLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        primaryLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         lastRunView.setContentCompressionResistancePriority(.required, for: .horizontal)
         shuttleAlertView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        setupConstraints()
+        observeSubjects()
+        setExpanded(false)
+    }
+
+    private func setupConstraints() {
         shuttleAlertLabel.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(9)
+            make.horizontalEdges.equalToSuperview().inset(6)
             make.centerY.equalToSuperview()
         }
         shuttleAlertView.snp.makeConstraints { make in
-            make.height.equalTo(24)
+            make.height.equalTo(20)
         }
         lastRunLabel.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(9)
+            make.horizontalEdges.equalToSuperview().inset(6)
             make.centerY.equalToSuperview()
         }
         lastRunView.snp.makeConstraints { make in
-            make.height.equalTo(24)
+            make.height.equalTo(20)
         }
-        statusStackView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
+        cardBackground.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(16)
+        }
+        leftStack.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(self.shuttleTimeLabel.snp.leading).offset(-8)
+            make.top.greaterThanOrEqualToSuperview().inset(12)
+            make.bottom.lessThanOrEqualToSuperview().inset(12)
+            make.trailing.lessThanOrEqualTo(trailingLabel.snp.leading).offset(-12)
         }
-        shuttleTimeLabel.snp.makeConstraints { make in
-            make.trailing.equalTo(self.alarmButton.snp.leading).offset(-8)
+        trailingLabel.snp.makeConstraints { make in
+            make.trailing.equalTo(chevronView.snp.leading).offset(-10)
             make.centerY.equalToSuperview()
+            make.width.greaterThanOrEqualTo(52)
         }
-        shuttleRemainingTimeLabel.snp.makeConstraints { make in
-            make.trailing.equalTo(self.alarmButton.snp.leading).offset(-8)
+        chevronView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
+            make.size.equalTo(16)
         }
-        alarmButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(20)
+        topSeparator.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview()
+            make.leading.equalToSuperview().inset(16)
+            make.height.equalTo(1 / UIScreen.main.scale)
         }
-        transferSelectionAccentView.snp.makeConstraints { make in
-            make.leading.top.bottom.equalToSuperview()
-            make.width.equalTo(4)
-        }
-        if UITraitCollection.current.userInterfaceStyle == .dark {
-            alarmButton.tintColor = .white
-        } else {
-            alarmButton.tintColor = .hanyangBlue
-        }
-        updateAlarmButtonAppearance()
     }
 
-    func setTransferSelectionState(_ isSelected: Bool) {
-        if !isSelected {
-            removeTransferConnector()
-        }
-        if standardSeparatorInset == nil {
-            standardSeparatorInset = separatorInset
-        }
-        transferSelectionAccentView.isHidden = !isSelected
-        contentView.backgroundColor = isSelected
-            ? UIColor.hanyangBlue.withAlphaComponent(traitCollection.userInterfaceStyle == .dark ? 0.16 : 0.07)
-            : .systemBackground
-        separatorInset = isSelected
-            ? UIEdgeInsets(top: 0, left: bounds.width + 1, bottom: 0, right: 0)
-            : standardSeparatorInset ?? .zero
-        layer.zPosition = isSelected ? 1 : 0
-    }
-
-    func prepareTransferConnector(title: String, travelMinutes: Int?, tintColor: UIColor) {
-        removeTransferConnector()
-        let connector = TransferConnectorView(
-            title: title,
-            travelMinutes: travelMinutes,
-            tintColor: tintColor
+    func setExpanded(_ expanded: Bool) {
+        isRowExpanded = expanded
+        chevronView.image = UIImage(
+            systemName: expanded ? "chevron.up" : "chevron.down",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
         )
-        connector.alpha = 0
-        connector.transform = CGAffineTransform(scaleX: 0.92, y: 0.92)
-        addSubview(connector)
-        connector.snp.makeConstraints { make in
-            make.height.equalTo(24)
-            make.centerX.equalToSuperview()
-            make.centerY.equalTo(contentView.snp.bottom)
-        }
-        bringSubviewToFront(connector)
-        transferConnectorView = connector
-    }
-
-    func showTransferConnector(animated: Bool) {
-        guard let connector = transferConnectorView else { return }
-        let animations = {
-            connector.alpha = 1
-            connector.transform = .identity
-        }
-        if animated {
-            UIView.animate(
-                withDuration: 0.18,
-                delay: 0,
-                options: [.curveEaseOut, .beginFromCurrentState],
-                animations: animations
-            )
-        } else {
-            animations()
-        }
-    }
-
-    func hideTransferConnector(animated: Bool) {
-        guard let connector = transferConnectorView else { return }
-        let animations = {
-            connector.alpha = 0
-            connector.transform = CGAffineTransform(scaleX: 0.92, y: 0.92)
-        }
-        let completion: (Bool) -> Void = { [weak self, weak connector] _ in
-            guard let self, let connector, transferConnectorView === connector else { return }
-            removeTransferConnector()
-        }
-        if animated {
-            UIView.animate(
-                withDuration: 0.16,
-                delay: 0,
-                options: [.curveEaseIn, .beginFromCurrentState],
-                animations: animations,
-                completion: completion
-            )
-        } else {
-            animations()
-            completion(true)
-        }
-    }
-
-    private func removeTransferConnector() {
-        transferConnectorView?.removeFromSuperview()
-        transferConnectorView = nil
+        leftStack.accessibilityTraits = .button
+        leftStack.accessibilityHint = String(localized: expanded ? "shuttle.row.collapse.hint" : "shuttle.row.expand.hint")
     }
 
     func setupUI(
         stopID: ShuttleStopEnum,
         indexPath: IndexPath,
         item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order,
-        isBoardingAlarmActive: Bool = false,
-        showAlarm: @escaping () -> Void
+        isBoardingAlarmActive: Bool = false
     ) {
+        shuttleTypeLabel.text = nil
         shuttleAlertView.isHidden = true
         lastRunView.isHidden = !isLastRun(stopID: stopID, indexPath: indexPath, item: item)
         itemByDestination = nil
-        self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
         setTypeText(stopID: stopID, item: item)
         itemByOrder = item
+        let stopKey = ShuttleDisplayLogic.stopKey(stopID)
+        applyRouteBadge(stopKey: stopKey, destinationKey: nil, routeTag: item.route.tag)
+        let stops = item.stops.map { ShuttleDisplayLogic.StopTime(stop: $0.stop, time: $0.time) }
+        titleText = ShuttleDisplayLogic.orderRowText(boardingStopID: stopKey, boardingTime: item.time, stops: stops)
+        arrivalText = nil
+        renderSubtitle()
         setUITimeLabel(time: item.time)
     }
 
@@ -282,39 +244,85 @@ class ShuttleRealtimeCellView: UITableViewCell {
         stopID: ShuttleStopEnum,
         indexPath: IndexPath,
         item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry,
-        isBoardingAlarmActive: Bool = false,
-        showAlarm: @escaping () -> Void
+        isBoardingAlarmActive: Bool = false
     ) {
+        shuttleTypeLabel.text = nil
         shuttleAlertView.isHidden = true
         lastRunView.isHidden = !isLastRun(stopID: stopID, indexPath: indexPath, item: item)
         itemByOrder = nil
-        self.showAlarm = showAlarm
         self.isBoardingAlarmActive = isBoardingAlarmActive
         setTypeText(stopID: stopID, indexPath: indexPath, item: item)
         itemByDestination = item
+        let stopKey = ShuttleDisplayLogic.stopKey(stopID)
+        let destinationKey = ShuttleDisplayLogic.destinationKey(stopID: stopKey, section: indexPath.section)
+        applyRouteBadge(stopKey: stopKey, destinationKey: destinationKey, routeTag: item.route.tag)
+        let stops = item.stops.map { ShuttleDisplayLogic.StopTime(stop: $0.stop, time: $0.time) }
+        titleText = destinationKey.flatMap {
+            ShuttleDisplayLogic.destinationRowText(destinationKey: $0, boardingTime: item.time, stops: stops)
+        }
+        arrivalText = nil
+        renderSubtitle()
         setUITimeLabel(time: item.time)
     }
 
     func setUITimeLabel(time: LocalTime) {
         guard let date = time.toLocalTimeOrNil() else {
-            shuttleTimeLabel.text = time.substring(from: 0, to: 4)
-            shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
+            departureDate = nil
+            primaryLabel.text = nil
+            trailingLabel.text = String(localized: "shuttle.time.remaining.0")
             return
         }
-        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
-        guard let hour = components.hour,
-              let minute = components.minute
-        else {
-            shuttleTimeLabel.text = time.substring(from: 0, to: 4)
-            shuttleRemainingTimeLabel.text = String(localized: "shuttle.time.remaining.0")
-            return
-        }
-        shuttleTimeLabel.text = String(format: String(localized: "shuttle.time.%lld.%lld"), hour, minute)
-        let remainingTime = Int(date.timeIntervalSince(Foundation.Date.now))
-        shuttleRemainingTimeLabel.text = String(
-            format: String(localized: "shuttle.time.remaining.%lld"),
-            remainingTime / 60
+        departureDate = date
+        renderTimes()
+    }
+
+    private func renderTimes() {
+        guard let departureDate else { return }
+        let times = ShuttleDisplayLogic.rowTimes(departure: departureDate, now: .now, showsRemainingTime: showsRemainingTime)
+        primaryLabel.text = nil
+        primaryLabel.isHidden = true
+        trailingLabel.text = times.trailing
+        trailingLabel.textColor = times.isSoon ? SettingsStyle.Color.subwaySoon : SettingsStyle.Color.text
+        updateAccessibilityLabel()
+    }
+
+    private func applyRouteBadge(stopKey: String, destinationKey: String?, routeTag: String) {
+        let text = shuttleTypeLabel.text ?? ""
+        routeBadge.isHidden = text.isEmpty
+        routeBadge.configure(
+            text: text,
+            fill: BusRouteBadgeView.shuttleFill(for: ShuttleDisplayLogic.routeChipKind(
+                stopID: stopKey,
+                destinationKey: destinationKey,
+                routeTag: routeTag
+            ))
         )
+    }
+
+    private func renderSubtitle() {
+        let parts = [arrivalText, isBoardingAlarmActive ? String(localized: "shuttle.row.alarm.on") : nil].compactMap { $0 }
+        subLabel.isHidden = parts.isEmpty
+        subLabel.attributedText = SettingsStyle.attributedText(
+            parts.joined(separator: " · "),
+            font: SettingsStyle.font(15, bold: false),
+            color: isBoardingAlarmActive ? SettingsStyle.Color.link : SettingsStyle.Color.secondaryText,
+            lineHeight: 18
+        )
+        updateAccessibilityLabel()
+    }
+
+    private func updateAccessibilityLabel() {
+        var parts = [shuttleTypeLabel.text, titleText, trailingLabel.text].compactMap { $0 }.filter { !$0.isEmpty }
+        if !subLabel.isHidden, let subtitle = subLabel.attributedText?.string {
+            parts.append(subtitle)
+        }
+        if !lastRunView.isHidden, let text = lastRunLabel.text {
+            parts.append(text)
+        }
+        if !shuttleAlertView.isHidden, let text = shuttleAlertLabel.text {
+            parts.append(text)
+        }
+        leftStack.accessibilityLabel = parts.joined(separator: " ")
     }
 
     private func setTypeText(stopID: ShuttleStopEnum, item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
@@ -341,16 +349,18 @@ class ShuttleRealtimeCellView: UITableViewCell {
         switch item.route.tag {
         case "DH":
             shuttleTypeLabel.text = String(localized: "shuttle_type_school_station")
-            shuttleTypeLabel.textColor = .busRed
+
         case "DY":
             shuttleTypeLabel.text = String(localized: "shuttle_type_school_terminal")
-            shuttleTypeLabel.textColor = .hanyangOrange
+
             shuttleAlertView.isHidden = stopID != .shuttlecockOut
+
         case "DJ":
             shuttleTypeLabel.text = String(localized: "shuttle_type_school_jungang_station")
-            shuttleTypeLabel.textColor = .hanyangGreen
+
         case "C":
             shuttleTypeLabel.text = String(localized: "shuttle_type_school_circular")
+
         default:
             break
         }
@@ -362,7 +372,6 @@ class ShuttleRealtimeCellView: UITableViewCell {
             setStationDormitoryOrShuttlecockText(routeName: item.route.name)
         case "DJ":
             shuttleTypeLabel.text = String(localized: "shuttle_type_jungang_station")
-            shuttleTypeLabel.textColor = .hanyangGreen
         case "C":
             setStationCircularText(routeName: item.route.name)
         default:
@@ -373,10 +382,9 @@ class ShuttleRealtimeCellView: UITableViewCell {
     private func setStationDormitoryOrShuttlecockText(routeName: String) {
         if routeName.hasSuffix("S") {
             shuttleTypeLabel.text = String(localized: "shuttle_type_shuttlecock")
-            shuttleTypeLabel.textColor = .busRed
+
         } else if routeName.hasSuffix("D") {
             shuttleTypeLabel.text = String(localized: "shuttle_type_dormitory")
-            shuttleTypeLabel.textColor = .hanyangBlue
         }
     }
 
@@ -406,21 +414,9 @@ class ShuttleRealtimeCellView: UITableViewCell {
 
     func observeSubjects() {
         ShuttleRealtimeData.shared.showRemainingTime.subscribe(onNext: { [weak self] showRemainingTime in
-            self?.shuttleTimeLabel.isHidden = !showRemainingTime
-            self?.shuttleRemainingTimeLabel.isHidden = showRemainingTime
+            self?.showsRemainingTime = showRemainingTime
+            self?.renderTimes()
         }).disposed(by: disposeBag)
-    }
-
-    @objc
-    private func alarmButtonTapped() {
-        showAlarm?()
-    }
-
-    private func updateAlarmButtonAppearance() {
-        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
-        let imageName = isBoardingAlarmActive ? "bell.fill" : "bell"
-        alarmButton.setImage(UIImage(systemName: imageName, withConfiguration: symbolConfiguration), for: .normal)
-        alarmButton.accessibilityValue = isBoardingAlarmActive ? String(localized: "shuttle.alarm.cancel") : nil
     }
 }
 
@@ -447,22 +443,19 @@ extension ShuttleRealtimeCellView {
         if section == 0 {
             if item.route.tag == "DH" || item.route.tag == "DJ" {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                shuttleTypeLabel.textColor = .busRed
+
             } else if item.route.tag == "C" {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                shuttleTypeLabel.textColor = circularTextColor
             }
         } else if section == 1 {
             if item.route.tag == "DY" {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.direct")
-                shuttleTypeLabel.textColor = .busRed
+
             } else if item.route.tag == "C" {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.circular")
-                shuttleTypeLabel.textColor = circularTextColor
             }
         } else if section == 2 {
             shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-            shuttleTypeLabel.textColor = .hanyangGreen
         }
     }
 
@@ -476,7 +469,6 @@ extension ShuttleRealtimeCellView {
             setStationTerminalRouteTypeText(item: item)
         } else if section == 2 {
             shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-            shuttleTypeLabel.textColor = .hanyangGreen
         }
     }
 
@@ -487,17 +479,16 @@ extension ShuttleRealtimeCellView {
             } else if item.route.name.hasSuffix("S") {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.direct.shuttlecock")
             }
-            shuttleTypeLabel.textColor = .busRed
+
         } else if item.route.tag == "DJ" {
             shuttleTypeLabel.text = String(localized: "shuttle.type.jungang_station")
-            shuttleTypeLabel.textColor = .hanyangGreen
+
         } else if item.route.tag == "C" {
             if item.route.name.hasSuffix("D") {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.circular.dormitory")
             } else if item.route.name.hasSuffix("S") {
                 shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
             }
-            shuttleTypeLabel.textColor = circularTextColor
         }
     }
 
@@ -507,7 +498,6 @@ extension ShuttleRealtimeCellView {
         } else if item.route.name.hasSuffix("S") {
             shuttleTypeLabel.text = String(localized: "shuttle.type.circular.shuttlecock")
         }
-        shuttleTypeLabel.textColor = circularTextColor
     }
 
     private func setCampusBoundTypeText(item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
@@ -516,10 +506,6 @@ extension ShuttleRealtimeCellView {
         } else if item.route.name.hasSuffix("D") {
             shuttleTypeLabel.text = String(localized: "shuttle.type.dormitory")
         }
-    }
-
-    private var circularTextColor: UIColor {
-        UITraitCollection.current.userInterfaceStyle == .light ? .busBlue : .white
     }
 
     private func isLastRun(

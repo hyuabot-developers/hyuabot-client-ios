@@ -8,9 +8,12 @@ import UIKit
 class ShuttleRealtimeSkeletonCellView: UITableViewCell {
     static let reuseIdentifier = "ShuttleRealtimeSkeletonCellView"
 
-    private let routePlaceholder = UIView()
-    private let timePlaceholder = UIView()
-    private let alarmPlaceholder = UIView()
+    private let cardView = UIView()
+    private let leadingPlaceholder = UIView()
+    private let upperPlaceholder = UIView()
+    private let lowerPlaceholder = UIView()
+    private let trailingPlaceholder = UIView()
+    private let centerStack = UIStackView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -29,32 +32,63 @@ class ShuttleRealtimeSkeletonCellView: UITableViewCell {
 
     private func setupUI() {
         selectionStyle = .none
-        backgroundColor = .systemBackground
-        contentView.backgroundColor = .systemBackground
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+        contentView.addSubview(cardView)
+        cardView.backgroundColor = SettingsStyle.Color.card
+        cardView.layer.cornerRadius = SettingsStyle.Metric.cardRadius
+        cardView.layer.masksToBounds = true
+        cardView.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset)
+        }
 
-        for view in [routePlaceholder, timePlaceholder, alarmPlaceholder] {
-            view.backgroundColor = .secondarySystemFill
-            view.layer.cornerRadius = 4
+        for view in [leadingPlaceholder, upperPlaceholder, lowerPlaceholder, trailingPlaceholder] {
+            view.backgroundColor = SettingsStyle.Color.segmentBackground
             view.layer.masksToBounds = true
-            contentView.addSubview(view)
         }
+        leadingPlaceholder.layer.cornerRadius = 6
+        trailingPlaceholder.layer.cornerRadius = 6
+        upperPlaceholder.layer.cornerRadius = 7
+        lowerPlaceholder.layer.cornerRadius = 7
 
-        routePlaceholder.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(20)
+        cardView.addSubview(leadingPlaceholder)
+        cardView.addSubview(centerStack)
+        cardView.addSubview(trailingPlaceholder)
+
+        centerStack.axis = .vertical
+        centerStack.spacing = 6
+        centerStack.alignment = .leading
+        centerStack.distribution = .fillEqually
+        centerStack.addArrangedSubview(upperPlaceholder)
+        centerStack.addArrangedSubview(lowerPlaceholder)
+
+        leadingPlaceholder.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.width.equalTo(82)
-            make.height.equalTo(18)
+            make.width.equalTo(44)
+            make.height.equalTo(20)
         }
-        alarmPlaceholder.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
+        trailingPlaceholder.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
-            make.width.height.equalTo(20)
+            make.width.equalTo(44)
+            make.height.equalTo(20)
         }
-        timePlaceholder.snp.makeConstraints { make in
-            make.trailing.equalTo(alarmPlaceholder.snp.leading).offset(-12)
+        centerStack.snp.makeConstraints { make in
+            make.leading.equalTo(leadingPlaceholder.snp.trailing).offset(12)
+            make.trailing.lessThanOrEqualTo(trailingPlaceholder.snp.leading).offset(-12)
             make.centerY.equalToSuperview()
-            make.width.equalTo(74)
-            make.height.equalTo(18)
+            make.width.equalTo(cardView.snp.width).multipliedBy(0.5)
+            make.height.equalTo(34)
+        }
+        upperPlaceholder.snp.makeConstraints { make in
+            make.width.equalTo(cardView.snp.width).multipliedBy(0.34)
+            make.height.equalTo(14)
+        }
+        lowerPlaceholder.snp.makeConstraints { make in
+            make.width.equalTo(cardView.snp.width).multipliedBy(0.5)
+            make.height.equalTo(14)
         }
 
         startAnimating()
@@ -69,7 +103,7 @@ class ShuttleRealtimeSkeletonCellView: UITableViewCell {
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        for view in [routePlaceholder, timePlaceholder, alarmPlaceholder] {
+        for view in [leadingPlaceholder, upperPlaceholder, lowerPlaceholder, trailingPlaceholder] {
             view.layer.removeAnimation(forKey: "shuttleRealtimeSkeletonOpacity")
             view.layer.add(animation, forKey: "shuttleRealtimeSkeletonOpacity")
         }

@@ -113,6 +113,15 @@ enum SettingsStyle {
         static let busLowFloorText = adaptive(light: 0x15803D, dark: 0x86EFAC)
         static let busChipLine = adaptive(light: 0xD5DBE2, dark: 0x3A4450)
         static let busSheetBackground = HYUColor.Sheet.background
+        static let inset = adaptive(light: 0xF5F7FA, dark: 0x1C232C)
+        static let warnFill = adaptive(light: 0xFFF1E6, dark: 0x3A2210)
+        static let warnText = adaptive(light: 0x9A3412, dark: 0xFDBA74)
+        static let infoFill = adaptive(light: 0xE6F0FA, dark: 0x132638)
+        static let shuttleRouteDirect = adaptive(light: 0xD1001C, dark: 0xD1001C)
+        static let shuttleRouteCircular = adaptive(light: 0x1D4ED8, dark: 0x1D4ED8)
+        static let shuttleRouteJungang = adaptive(light: 0x15803D, dark: 0x15803D)
+        static let shuttleRouteTerminal = adaptive(light: 0xC2410C, dark: 0xC2410C)
+        static let shuttleRouteFallback = adaptive(light: 0x5B6472, dark: 0x5B6472)
 
         private static func adaptive(light: UInt32, dark: UInt32) -> UIColor {
             UIColor { traits in

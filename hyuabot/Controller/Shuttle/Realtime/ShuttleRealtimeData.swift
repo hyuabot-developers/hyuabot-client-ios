@@ -34,6 +34,7 @@ struct ShuttleAlarmContext: Equatable {
     let departureTime: Foundation.Date
     let minutesUntilDeparture: Int
     let createdAt: Foundation.Date
+    var chipKind: ShuttleDisplayLogic.RouteChipKind = .fallback
 
     var destinationStops: [ShuttleAlarmStop] {
         guard let boardingIndex = routeStops.firstIndex(where: { $0.id == boardingStop.id }) else {
@@ -89,8 +90,8 @@ class ShuttleRealtimeData {
     /// Bus alternative data
     let busAlternatives = BehaviorSubject<[String: [ShuttleBusAlternativeDisplayData]]>(value: [:])
     /// Show Remaining Time
-    let showRemainingTime = BehaviorSubject<Bool>(value: true)
     /// Show arrival by time
+    let showRemainingTime = BehaviorSubject<Bool>(value: true)
     let showArrivalByTime = BehaviorSubject<Bool>(value: true)
 
     func prepareForSubwayLanguage(_ language: String) {

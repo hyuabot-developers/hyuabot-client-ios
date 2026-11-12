@@ -327,7 +327,7 @@ extension DomainLogicTests {
             showBus: true,
             showSubway: true,
             subwayDestination: .seoul,
-            alternatives: .automatic
+            alternatives: .always
         )
         XCTAssertTrue(selection.needsBus)
         XCTAssertEqual(selection.subwayPairs.map { "\($0.0):\($0.1)" }, ["K449:up", "K450:up"])
@@ -339,8 +339,8 @@ extension DomainLogicTests {
             subwayDestination: .seoul,
             alternatives: .hidden
         )
-        XCTAssertFalse(timeView.needsBus)
-        XCTAssertTrue(timeView.subwayPairs.isEmpty)
+        XCTAssertTrue(timeView.needsBus)
+        XCTAssertEqual(timeView.subwayPairs.map { "\($0.0):\($0.1)" }, ["K449:up", "K450:up"])
         XCTAssertTrue(timeView.alternativePairs.isEmpty)
     }
 
@@ -358,7 +358,7 @@ extension DomainLogicTests {
                 showBus: true,
                 showSubway: true,
                 subwayDestination: destination,
-                alternatives: .automatic
+                alternatives: .always
             )
             XCTAssertTrue(selection.needsBus)
             XCTAssertEqual(selection.subwayPairs.map { "\($0.0):\($0.1)" }, pairs)

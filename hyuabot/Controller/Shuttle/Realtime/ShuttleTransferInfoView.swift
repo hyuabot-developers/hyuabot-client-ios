@@ -376,7 +376,7 @@ private final class TransferTimelineView: UIView {
             guard x >= geometry.left, x <= geometry.right else { continue }
             context.setFillColor(drawing.color.cgColor)
             context.fillEllipse(in: CGRect(x: x - 4, y: geometry.centerY - 4, width: 8, height: 8))
-            context.setFillColor(UIColor.systemBackground.cgColor)
+            context.setFillColor(SettingsStyle.Color.card.cgColor)
             context.fillEllipse(in: CGRect(x: x - 2, y: geometry.centerY - 2, width: 4, height: 4))
         }
     }
@@ -387,8 +387,8 @@ private final class TransferTimelineView: UIView {
         context.fillEllipse(in: rect)
         let text = type == .subway ? "M" : "B"
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.godo(size: 10, weight: .bold),
-            .foregroundColor: UIColor.white
+            .font: SettingsStyle.font(12, bold: true),
+            .foregroundColor: SettingsStyle.Color.onAccent
         ]
         let size = text.size(withAttributes: attributes)
         text.draw(at: CGPoint(x: rect.midX - size.width / 2, y: rect.midY - size.height / 2), withAttributes: attributes)
@@ -439,17 +439,17 @@ private final class TransferTimelineView: UIView {
         let left = clamp(x - width / 2, bounds.minX + 4, bounds.maxX - width - 4)
         let rect = CGRect(x: left, y: top, width: width, height: height)
         let path = UIBezierPath(roundedRect: rect, cornerRadius: 6)
-        UIColor.systemBackground.setFill()
+        SettingsStyle.Color.card.setFill()
         path.fill()
-        UIColor.separator.setStroke()
+        SettingsStyle.Color.separator.setStroke()
         path.stroke()
 
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         for (lineIndex, line) in lines.enumerated() {
             let attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.godo(size: lineIndex == 0 ? 10 : 8, weight: lineIndex == 0 ? .semibold : .regular),
-                .foregroundColor: lineIndex == 0 ? UIColor.label : UIColor.secondaryLabel,
+                .font: SettingsStyle.font(12, bold: true),
+                .foregroundColor: lineIndex == 0 ? SettingsStyle.Color.text : SettingsStyle.Color.secondaryText,
                 .paragraphStyle: paragraph
             ]
             let lineRect = CGRect(x: rect.minX + 4, y: rect.minY + 3 + CGFloat(lineIndex * 12), width: rect.width - 8, height: 12)
@@ -458,8 +458,8 @@ private final class TransferTimelineView: UIView {
     }
 
     private func bubbleWidth(for lines: [String], type: TransferVehicleType) -> CGFloat {
-        let maxTextWidth = lines.enumerated().map { index, line in
-            let font = UIFont.godo(size: index == 0 ? 10 : 8, weight: index == 0 ? .semibold : .regular)
+        let maxTextWidth = lines.map { line in
+            let font = SettingsStyle.font(12, bold: true)
             return String(line.prefix(16)).size(withAttributes: [.font: font]).width
         }.max() ?? 0
         let minimumWidth: CGFloat = type == .bus ? 84 : 64
@@ -469,7 +469,7 @@ private final class TransferTimelineView: UIView {
 
     private func drawTarget(context: CGContext, type: TransferVehicleType, targetX: CGFloat, centerY: CGFloat, color: UIColor) {
         guard let targetName = row?.targetName, !targetName.isEmpty else {
-            context.setFillColor(UIColor.systemBackground.cgColor)
+            context.setFillColor(SettingsStyle.Color.card.cgColor)
             context.fillEllipse(in: CGRect(x: targetX - 7, y: centerY - 7, width: 14, height: 14))
             context.setStrokeColor(color.cgColor)
             context.setLineWidth(3)
@@ -477,13 +477,13 @@ private final class TransferTimelineView: UIView {
             return
         }
 
-        let font = UIFont.godo(size: 10, weight: .bold)
+        let font = SettingsStyle.font(14, bold: true)
         let text = String(targetName.prefix(8))
         let width = targetWidth(text: text, font: font)
         let left = clamp(targetX - width / 2, bounds.minX + 4, bounds.maxX - width - 4)
         let rect = CGRect(x: left, y: centerY - 12, width: width, height: 24)
         let path = UIBezierPath(roundedRect: rect, cornerRadius: 12)
-        UIColor.systemBackground.setFill()
+        SettingsStyle.Color.card.setFill()
         path.fill()
         color.setStroke()
         path.lineWidth = 3
@@ -495,7 +495,7 @@ private final class TransferTimelineView: UIView {
             in: rect.insetBy(dx: 4, dy: 5),
             withAttributes: [
                 .font: font,
-                .foregroundColor: UIColor.label,
+                .foregroundColor: SettingsStyle.Color.text,
                 .paragraphStyle: paragraph
             ]
         )
@@ -507,7 +507,7 @@ private final class TransferTimelineView: UIView {
 
     private func targetHalfWidth() -> CGFloat {
         guard let targetName = row?.targetName, !targetName.isEmpty else { return 7 }
-        let font = UIFont.godo(size: 10, weight: .bold)
+        let font = SettingsStyle.font(14, bold: true)
         return targetWidth(text: String(targetName.prefix(8)), font: font) / 2
     }
 
@@ -535,8 +535,8 @@ private final class TransferTimelineView: UIView {
 
 private final class TransferRowView: UIView {
     private let nameLabel = UILabel().then {
-        $0.font = .godo(size: 12, weight: .bold)
-        $0.textColor = .white
+        $0.font = SettingsStyle.font(12, bold: true)
+        $0.textColor = SettingsStyle.Color.onAccent
         $0.textAlignment = .center
         $0.adjustsFontSizeToFitWidth = true
         $0.minimumScaleFactor = 0.7
@@ -583,8 +583,8 @@ final class ShuttleTransferInfoView: UIView {
     private var rows: [TransferRow] = []
     private var emptyRowsSince: Foundation.Date?
     private var latestData: ShuttleRealtimePageQuery.Data?
-    private var selectedShuttle: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?
-    private var inlineConnectorViews: [TransferConnectorView] = []
+    private var selectedShuttleSeq: Int?
+    private var selectedShuttleStops: [(stop: String, time: String)]?
 
     private let titleLabel = UILabel().then {
         $0.text = String(localized: "shuttle.transfer.section.title")
@@ -594,20 +594,27 @@ final class ShuttleTransferInfoView: UIView {
         $0.axis = .vertical
         $0.spacing = 0
         $0.alignment = .fill
-        $0.backgroundColor = .systemBackground
+        $0.backgroundColor = SettingsStyle.Color.card
     }
 
     var preferredHeight: CGFloat {
         guard !rows.isEmpty else { return 0 }
         if presentation == .inline {
-            return CGFloat(rows.count) * ShuttleRealtimeCellView.informationRowHeight
+            return CGFloat(rows.count) * ShuttleCompactTransferRowView.rowHeight
         }
         return titleHeight + rows.reduce(CGFloat(0)) { $0 + $1.preferredHeight } + 4
     }
 
-    var inlineConnectorTitle: String? {
+    /// Explains the Choji interchange when the 일산·부천 route needs one.
+    var inlineNote: String? {
+        guard ShuttleTransferDisplaySettings.subwayDestination == .sosa,
+              rows.contains(where: { $0.connectorTitle != nil }) else { return nil }
+        return String(localized: "shuttle.expand.choji.note")
+    }
+
+    var inlineLocationName: String? {
         guard presentation == .inline, !rows.isEmpty else { return nil }
-        let location = switch destination {
+        return switch destination {
         case .station:
             String(localized: "home.transfer.subway.connector")
         case .terminal:
@@ -617,16 +624,6 @@ final class ShuttleTransferInfoView: UIView {
         case .all:
             rows[0].targetName
         }
-        return String(
-            format: String(localized: "shuttle.connection.transfer.%@"),
-            locale: Locale.current,
-            location
-        )
-    }
-
-    var inlineConnectorTintColor: UIColor? {
-        guard presentation == .inline else { return nil }
-        return rows.first?.color
     }
 
     var inlineConnectorTravelMinutes: Int? {
@@ -660,12 +657,13 @@ final class ShuttleTransferInfoView: UIView {
     }
 
     private func setupUI() {
-        backgroundColor = .systemBackground
+        backgroundColor = presentation == .summary ? SettingsStyle.Color.card : .clear
+        rowStackView.backgroundColor = presentation == .summary ? SettingsStyle.Color.card : .clear
         if presentation == .summary {
-            titleLabel.textColor = .white
+            titleLabel.textColor = SettingsStyle.Color.onAccent
             titleLabel.textAlignment = .center
-            titleLabel.font = .godo(size: 16, weight: .bold)
-            titleLabel.backgroundColor = .hanyangBlue
+            titleLabel.font = SettingsStyle.font(16, bold: true)
+            titleLabel.backgroundColor = SettingsStyle.Color.accent
             addSubview(titleLabel)
             titleLabel.snp.makeConstraints { make in
                 make.top.leading.trailing.equalToSuperview()
@@ -703,22 +701,15 @@ final class ShuttleTransferInfoView: UIView {
                 stopSeq: 216_000_759
             )
             : []
-        let jungangStationRows = ShuttleTransferDisplaySettings.showsSubwayTransfer
-            ? buildSubwayRows(
-                data: data.subway,
-                lines: [TransferLine(stationID: "K450", name: String(localized: "subway.line4"), color: .line4Color)],
-                targetName: String(localized: "shuttle.stop.jungang.station")
-            )
-            : []
         let rows: [TransferRow] = switch destination {
         case .all:
-            stationRows + terminalRows + jungangStationRows
+            stationRows + terminalRows
         case .station:
             stationRows
         case .terminal:
             terminalRows
         case .jungangStation:
-            jungangStationRows
+            []
         }
 
         guard !rows.isEmpty else {
@@ -731,8 +722,17 @@ final class ShuttleTransferInfoView: UIView {
     }
 
     func selectShuttle(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry?) {
-        guard selectedShuttle?.seq != item?.seq else { return }
-        selectedShuttle = item
+        selectShuttle(seq: item?.seq, stops: item?.stops.map { (stop: $0.stop, time: $0.time) })
+    }
+
+    func selectShuttle(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order) {
+        selectShuttle(seq: item.seq, stops: item.stops.map { (stop: $0.stop, time: $0.time) })
+    }
+
+    private func selectShuttle(seq: Int?, stops: [(stop: String, time: String)]?) {
+        guard selectedShuttleSeq != seq else { return }
+        selectedShuttleSeq = seq
+        selectedShuttleStops = stops
         emptyRowsSince = nil
         render(rows: [])
         setup(data: latestData)
@@ -765,14 +765,14 @@ final class ShuttleTransferInfoView: UIView {
             rowStackView.removeArrangedSubview(arrangedSubview)
             arrangedSubview.removeFromSuperview()
         }
-        inlineConnectorViews.forEach { $0.removeFromSuperview() }
-        inlineConnectorViews = []
-        for row in rows {
+        for (index, row) in rows.enumerated() {
             let rowView: UIView
             let rowHeight: CGFloat
             if presentation == .inline {
-                rowView = ShuttleCompactTransferRowView(row: row)
-                rowHeight = ShuttleRealtimeCellView.informationRowHeight
+                let compact = ShuttleCompactTransferRowView(row: row)
+                compact.hidesDivider = index == 0
+                rowView = compact
+                rowHeight = ShuttleCompactTransferRowView.rowHeight
             } else {
                 rowView = TransferRowView(row: row)
                 rowHeight = row.preferredHeight
@@ -781,65 +781,9 @@ final class ShuttleTransferInfoView: UIView {
             rowView.snp.makeConstraints { make in
                 make.height.equalTo(rowHeight)
             }
-            if presentation == .inline, let connectorTitle = row.connectorTitle {
-                let connectorView = TransferConnectorView(
-                    title: connectorTitle,
-                    travelMinutes: row.connectorTravelMinutes,
-                    tintColor: row.color
-                )
-                connectorView.alpha = 0
-                connectorView.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
-                addSubview(connectorView)
-                connectorView.snp.makeConstraints { make in
-                    make.height.equalTo(24)
-                    make.centerX.equalToSuperview()
-                    make.centerY.equalTo(rowView.snp.top)
-                }
-                inlineConnectorViews.append(connectorView)
-            }
         }
         isHidden = rows.isEmpty
         onHeightChange?()
-    }
-
-    func showInlineConnectors(animated: Bool) {
-        guard !inlineConnectorViews.isEmpty else { return }
-        let changes = {
-            for inlineConnectorView in self.inlineConnectorViews {
-                inlineConnectorView.alpha = 1
-                inlineConnectorView.transform = .identity
-            }
-        }
-        guard animated else {
-            changes()
-            return
-        }
-        UIView.animate(
-            withDuration: 0.18,
-            delay: 0,
-            options: [.curveEaseOut, .beginFromCurrentState],
-            animations: changes
-        )
-    }
-
-    func hideInlineConnectors(animated: Bool) {
-        guard !inlineConnectorViews.isEmpty else { return }
-        let changes = {
-            for inlineConnectorView in self.inlineConnectorViews {
-                inlineConnectorView.alpha = 0
-                inlineConnectorView.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
-            }
-        }
-        guard animated else {
-            changes()
-            return
-        }
-        UIView.animate(
-            withDuration: 0.12,
-            delay: 0,
-            options: [.curveEaseIn, .beginFromCurrentState],
-            animations: changes
-        )
     }
 
     private func buildStationSubwayRows(data: [ShuttleRealtimePageQuery.Data.Subway]) -> [TransferRow] {
@@ -1189,6 +1133,7 @@ final class ShuttleTransferInfoView: UIView {
 
     private func buildBusRows(data: [ShuttleRealtimePageQuery.Data.TransferBus], stopSeq: Int) -> [TransferRow] {
         let displayLabel = String(localized: "home.transfer.bus50.badge")
+        let destinationLabel = String(localized: "home.transfer.bus50.destination")
         let earliestArrival = selectedTransferArrivalDate
         let matchingBuses = data.filter { $0.stop.seq == stopSeq }
         let realtimeTimeline = matchingBuses
@@ -1199,7 +1144,7 @@ final class ShuttleTransferInfoView: UIView {
                 let arrivalDate = Foundation.Date.now.addingTimeInterval(TimeInterval(minutes * 60))
                 guard earliestArrival.map({ arrivalDate >= $0 }) ?? true else { return nil }
                 return TransferTimelineEntry(
-                    destination: displayLabel,
+                    destination: destinationLabel,
                     minutes: minutes,
                     stops: arrival.stops,
                     locationLabel: arrival.stops
@@ -1223,7 +1168,7 @@ final class ShuttleTransferInfoView: UIView {
             .prefix(2)
             .map {
                 TransferTimelineEntry(
-                    destination: displayLabel,
+                    destination: destinationLabel,
                     minutes: nil,
                     stops: nil,
                     locationLabel: nil,
@@ -1262,7 +1207,7 @@ final class ShuttleTransferInfoView: UIView {
 
 extension ShuttleTransferInfoView {
     private var selectedTransferStartDate: Foundation.Date? {
-        guard let selectedShuttle else { return nil }
+        guard let selectedShuttleStops else { return nil }
         let stopName: String
         switch destination {
         case .station:
@@ -1274,7 +1219,7 @@ extension ShuttleTransferInfoView {
         case .all:
             return nil
         }
-        return selectedShuttle.stops
+        return selectedShuttleStops
             .first(where: { $0.stop == stopName })?
             .time
             .toLocalTimeOrNil()

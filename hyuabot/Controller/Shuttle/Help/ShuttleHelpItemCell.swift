@@ -4,26 +4,19 @@
 //
 
 import RxSwift
+import SnapKit
 import UIKit
 
 class ShuttleHelpItemCell: UITableViewCell {
     static let reuseIdentifier = "ShuttleHelpItemCell"
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 16, weight: .bold)
-        $0.textAlignment = .left
-    }
-
-    private let contentLabel = UILabel().then {
-        $0.font = .godo(size: 14, weight: .regular)
-        $0.textAlignment = .left
-        $0.numberOfLines = 0
-        $0.textColor = .secondaryLabel
-    }
+    private let cardView = UIView()
+    private let titleLabel = UILabel()
+    private let contentLabel = UILabel()
 
     private lazy var cellStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [self.titleLabel, self.contentLabel])
         stackView.axis = .vertical
-        stackView.spacing = 8
+        stackView.spacing = 4
         return stackView
     }()
 
@@ -38,15 +31,37 @@ class ShuttleHelpItemCell: UITableViewCell {
     }
 
     func setupUI() {
-        contentView.addSubview(cellStackView)
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+        cardView.backgroundColor = SettingsStyle.Color.sheet
+        cardView.layer.cornerRadius = 16
+        cardView.layer.cornerCurve = .continuous
+        cardView.clipsToBounds = true
+        titleLabel.numberOfLines = 0
+        contentLabel.numberOfLines = 0
+        contentView.addSubview(cardView)
+        cardView.addSubview(cellStackView)
+        cardView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(12)
+        }
         cellStackView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.verticalEdges.equalToSuperview().inset(12)
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16))
         }
     }
 
     func setupUI(title: String.LocalizationValue, content: String.LocalizationValue) {
-        titleLabel.text = String(localized: title)
-        contentLabel.text = String(localized: content)
+        titleLabel.attributedText = SettingsStyle.attributedText(
+            String(localized: title),
+            font: SettingsStyle.font(15, bold: true),
+            color: SettingsStyle.Color.text,
+            lineHeight: 20
+        )
+        contentLabel.attributedText = SettingsStyle.attributedText(
+            String(localized: content),
+            font: SettingsStyle.font(13),
+            color: SettingsStyle.Color.secondaryText,
+            lineHeight: 18
+        )
     }
 }

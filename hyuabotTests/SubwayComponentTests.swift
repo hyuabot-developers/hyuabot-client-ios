@@ -29,6 +29,34 @@ final class SubwayComponentTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(view.button(at: 2)).accessibilityIdentifier, "viewpager.tab.2")
     }
 
+    func testGridSegmentWrapsIntoRows() throws {
+        let segment = SubwaySegmentView(buttonIdentifierPrefix: "viewpager.tab", columns: 3)
+        segment.configure(items: (1...6).map { item("\($0)") }, selected: 0)
+        segment.frame = CGRect(x: 0, y: 0, width: 358, height: 84)
+        segment.layoutIfNeeded()
+        let b0 = try XCTUnwrap(segment.button(at: 0))
+        let b3 = try XCTUnwrap(segment.button(at: 3))
+        XCTAssertEqual(try XCTUnwrap(segment.button(at: 5)).accessibilityIdentifier, "viewpager.tab.5")
+        let first = segment.convert(b0.bounds, from: b0)
+        let fourth = segment.convert(b3.bounds, from: b3)
+        XCTAssertGreaterThanOrEqual(fourth.minY, first.maxY + 4 - 0.5)
+        XCTAssertLessThan(abs(fourth.minX - first.minX), 0.5)
+        XCTAssertEqual(segment.systemLayoutSizeFitting(
+            CGSize(width: 358, height: 0), withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height, 84)
+    }
+
+    func testSetSelectedDoesNotFireOnSelect() {
+        let segment = SubwaySegmentView(buttonIdentifierPrefix: "viewpager.tab")
+        segment.configure(items: [item("1"), item("2"), item("3")], selected: 0)
+        var didSelect = false
+        segment.onSelect = { _ in didSelect = true }
+        segment.setSelected(2)
+        XCTAssertFalse(didSelect)
+        XCTAssertEqual(segment.selectedIndex, 2)
+    }
+
     func testArrivalSubtitleHeight() {
         let row = SubwayArrivalRowView()
         row.configure(arrival(subtitle: "곧 도착"), showsSeparator: false)

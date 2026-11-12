@@ -3,6 +3,7 @@
 //  hyuabot
 //
 
+import SnapKit
 import UIKit
 
 class ShuttleHelpVC: UIViewController {
@@ -20,19 +21,18 @@ class ShuttleHelpVC: UIViewController {
         "shuttle.help.content4",
         "shuttle.help.content5"
     ]
-    private let titleLabel = UILabel().then {
-        $0.font = .godo(size: 20, weight: .bold)
-        $0.textColor = .white
-        $0.backgroundColor = .hanyangBlue
-        $0.textAlignment = .center
-        $0.text = String(localized: "shuttle.help")
-    }
-
     private lazy var helpTableView = UITableView().then {
         $0.dataSource = self
         $0.delegate = self
-        $0.register(ShuttleHelpItemCell.self, forCellReuseIdentifier: ShuttleViaCellView.reuseIdentifier)
+        $0.register(ShuttleHelpItemCell.self, forCellReuseIdentifier: ShuttleHelpItemCell.reuseIdentifier)
+        $0.isScrollEnabled = false
+        $0.backgroundColor = .clear
+        $0.separatorStyle = .none
+        $0.rowHeight = UITableView.automaticDimension
+        $0.estimatedRowHeight = 100
     }
+
+    private var helpTableHeightConstraint: Constraint?
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -45,18 +45,26 @@ class ShuttleHelpVC: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = .hanyangBlue
-        view.addSubview(titleLabel)
-        view.addSubview(helpTableView)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(50)
-        }
+        let sheet = HYUSheetView(title: String(localized: "shuttle.help"))
+        view.addSubview(sheet)
+        sheet.contentStack.addArrangedSubview(helpTableView)
+        sheet.snp.makeConstraints { $0.edges.equalToSuperview() }
         helpTableView.snp.makeConstraints { make in
-            make.top.equalTo(self.titleLabel.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+            helpTableHeightConstraint = make.height.equalTo(0).constraint
         }
+        helpTableView.reloadData()
+        view.layoutIfNeeded()
+        updateHelpTableHeight()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateHelpTableHeight()
+    }
+
+    private func updateHelpTableHeight() {
+        helpTableView.layoutIfNeeded()
+        helpTableHeightConstraint?.update(offset: helpTableView.contentSize.height)
     }
 }
 
