@@ -48,9 +48,11 @@ final class SubwayArrivalRowView: UIView {
                 font: SettingsStyle.font(13),
                 color: SettingsStyle.Color.secondaryText,
                 lineHeight: 18,
+                alignment: .right,
                 lineBreakMode: .byTruncatingTail
             )
         }
+        subtitleLabel.textAlignment = .right
 
         minutesLabel.text = model.minutesText
         minutesLabel.textAlignment = .right
@@ -87,11 +89,17 @@ final class SubwayArrivalRowView: UIView {
         titleLine.alignment = .center
         titleLine.spacing = 6
 
-        let leftColumn = UIStackView(arrangedSubviews: [titleLine, subtitleLabel])
-        leftColumn.axis = .vertical
-        leftColumn.spacing = 4
+        titleLine.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        titleLine.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
-        let content = UIStackView(arrangedSubviews: [leftColumn, minutesLabel])
+        let rightColumn = UIStackView(arrangedSubviews: [minutesLabel, subtitleLabel])
+        rightColumn.axis = .vertical
+        rightColumn.alignment = .trailing
+        rightColumn.spacing = 2
+        rightColumn.setContentHuggingPriority(.required, for: .horizontal)
+        rightColumn.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        let content = UIStackView(arrangedSubviews: [titleLine, rightColumn])
         content.axis = .horizontal
         content.alignment = .center
         content.spacing = 12
