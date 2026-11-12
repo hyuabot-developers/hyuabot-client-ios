@@ -13645,6 +13645,14 @@
         }
       }
     },
+    "setting.start_screen" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Screen" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "起動画面" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "첫 화면" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "启动页面" } }
+      }
+    },
     "setting.theme" : {
       "localizations" : {
         "en" : {

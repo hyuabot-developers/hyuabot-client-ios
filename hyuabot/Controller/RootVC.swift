@@ -130,6 +130,7 @@ class RootVC: UITabBarController {
         )
         tabBar.isHidden = true
         configureFloatingTabBar()
+        selectedIndex = AppStartScreen.current().tabIndex
     }
 
     private func installTranslationPreparationHostIfNeeded() {
