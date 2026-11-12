@@ -73,10 +73,6 @@ final class HyuabotSmokeUITests: XCTestCase {
 
     func testShuttleQuickSettingsRowsHaveMatchingHeights() {
         let app = makeApp()
-        app.launchArguments += [
-            "-homeExperienceEnabled", "NO",
-            "-homeExperiencePromptDecision", "YES"
-        ]
         app.launch()
 
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
@@ -104,9 +100,7 @@ final class HyuabotSmokeUITests: XCTestCase {
         app.launchArguments = [
             "-UITestsDisableCoachMarks",
             "-AppleLanguages", "(en)",
-            "-AppleLocale", "en_US",
-            "-homeExperienceEnabled", "NO",
-            "-homeExperiencePromptDecision", "YES"
+            "-AppleLocale", "en_US"
         ]
         return app
     }

@@ -37,29 +37,14 @@ final class ScreenshotCaptureUITests: XCTestCase {
             withIntermediateDirectories: true
         )
 
-        // Phase 1 – Home screen (requires home experience to be enabled)
-        captureHomeScreen(language: language, outputDir: outputDir)
-
-        // Phase 2 – All other screens (home experience disabled)
+        // Capture every screen
         captureRemainingScreens(language: language, outputDir: outputDir)
     }
 
     // MARK: - Phase helpers
 
-    private func captureHomeScreen(language: String, outputDir: String) {
-        let app = makeApp(language: language, homeEnabled: true)
-        app.launch()
-        guard app.wait(for: .runningForeground, timeout: 15) else {
-            XCTFail("App failed to launch for home screen capture")
-            return
-        }
-        waitForSettle()
-        saveScreenshot(name: "home", to: outputDir)
-        app.terminate()
-    }
-
     private func captureRemainingScreens(language: String, outputDir: String) {
-        let app = makeApp(language: language, homeEnabled: false)
+        let app = makeApp(language: language)
         app.launch()
         guard app.wait(for: .runningForeground, timeout: 15) else {
             XCTFail("App failed to launch for remaining screens capture")
@@ -67,7 +52,7 @@ final class ScreenshotCaptureUITests: XCTestCase {
         }
         waitForSettle()
 
-        // Shuttle realtime (default screen when home is disabled)
+        // Shuttle realtime (default screen)
         saveScreenshot(name: "shuttle", to: outputDir)
 
         // Shuttle timetable
@@ -150,14 +135,12 @@ final class ScreenshotCaptureUITests: XCTestCase {
 
     // MARK: - Factory helpers
 
-    private func makeApp(language: String, homeEnabled: Bool) -> XCUIApplication {
+    private func makeApp(language: String) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = [
             "-UITestsDisableCoachMarks",
             "-AppleLanguages", "(\(language))",
-            "-AppleLocale", localeIdentifier(for: language),
-            "-homeExperienceEnabled", homeEnabled ? "YES" : "NO",
-            "-homeExperiencePromptDecision", "YES"
+            "-AppleLocale", localeIdentifier(for: language)
         ]
         return app
     }
