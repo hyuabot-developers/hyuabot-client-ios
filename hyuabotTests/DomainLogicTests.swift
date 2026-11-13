@@ -7,6 +7,35 @@
 import XCTest
 
 final class DomainLogicTests: XCTestCase {
+    func testLogBusArrivalAddsMinutesFromStart() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let arrival = try XCTUnwrap(ShuttleDisplayLogic.logArrivalDate(
+            startDeparture: now.addingTimeInterval(-10 * 60),
+            minutesFromStart: 25,
+            now: now
+        ))
+        XCTAssertEqual(arrival, now.addingTimeInterval(15 * 60))
+        XCTAssertEqual(ShuttleDisplayLogic.minutesUntil(arrival, now: now), 15)
+    }
+
+    func testLogBusArrivalDropsPastArrival() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertNil(ShuttleDisplayLogic.logArrivalDate(
+            startDeparture: now.addingTimeInterval(-30 * 60),
+            minutesFromStart: 25,
+            now: now
+        ))
+    }
+
+    func testLogBusArrivalKeepsArrivalAtNow() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertEqual(ShuttleDisplayLogic.logArrivalDate(
+            startDeparture: now.addingTimeInterval(-25 * 60),
+            minutesFromStart: 25,
+            now: now
+        ), now)
+    }
+
     func testZonedDateTimeParsesWithAndWithoutFractionalSeconds() {
         XCTAssertNotNil("2026-07-21T16:00:00+09:00".toZonedDateTimeOrNil())
         XCTAssertNotNil("2026-07-21T16:00:00.123+09:00".toZonedDateTimeOrNil())
@@ -247,8 +276,9 @@ extension DomainLogicTests {
             subwayDestination: .seoul,
             alternatives: .always
         )
-        XCTAssertEqual(selection.alternativePairs.count, 12)
+        XCTAssertEqual(selection.alternativePairs.count, 13)
         XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_068 && $0.1 == 216_000_138 })
+        XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_049 && $0.1 == 216_000_722 })
         XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_068 && $0.1 == 216_000_379 })
         XCTAssertEqual(Set(BusLocationInputs.inputs.map(\.stop)).count, 11)
     }

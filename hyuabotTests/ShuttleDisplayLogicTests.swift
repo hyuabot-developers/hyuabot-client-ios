@@ -49,7 +49,7 @@ final class ShuttleDisplayLogicTests: XCTestCase {
             departure: now.addingTimeInterval(60), now: now, showsRemainingTime: true, calendar: calendar
         )
         XCTAssertTrue(soon.isSoon)
-        XCTAssertEqual(soon.trailing, String(localized: "shuttle.realtime.departing_soon"))
+        XCTAssertEqual(soon.trailing, String(format: String(localized: "shuttle.realtime.duration.format.%lld"), 1))
     }
 
     func testMinutesUntilTruncatesAndClamps() throws {

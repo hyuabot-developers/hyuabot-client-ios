@@ -310,9 +310,9 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 }
             BusRealtimeData.shared.busRealtimeGunpoFromCampus.onNext(
                 Array(
-                    gunpoFromCampus.flatMap { route in
+                    BusArrivalDeduplication.uniqueItems(gunpoFromCampus.flatMap { route in
                         arrivalItems(for: route, destinationStop: seoulSecondSecondaryStop, showSecondary: showSecondary)
-                    }.sorted().prefix(4)
+                    }).sorted().prefix(4)
                 )
             )
             // Suwon bus (7070/9090) — primary stop widened to campus entrance or Suwon station
@@ -321,9 +321,9 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             let suwonFromCampus = result
                 .filter { $0.stop.seq == suwonStopID && ($0.route.seq == 216_000_104 || $0.route.seq == 200_000_015) }
             BusRealtimeData.shared.busRealtimeSuwonFromCampus.onNext(
-                suwonFromCampus.flatMap { route in
+                BusArrivalDeduplication.uniqueItems(suwonFromCampus.flatMap { route in
                     arrivalItems(for: route, destinationStop: suwonSecondaryStop, showSecondary: showSecondary)
-                }.sorted()
+                }).sorted()
             )
             let ktxFromCampus = result.first(where: { $0.stop.seq == 216_000_759 && $0.route.seq == 216_000_075 })
             BusRealtimeData.shared.busRealtimeKTXFromCampus.onNext(
@@ -413,7 +413,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             .map { entries in
                 let times = entries.map(\.1).sorted()
                 return zip(times, times.dropFirst())
-                    .map { next, current in next.timeIntervalSince(current) }
+                    .map { current, next in next.timeIntervalSince(current) }
                     .filter { $0 > 0 }
                     .min()
             }
@@ -434,7 +434,9 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             estimatedArrivalTime(for: arrival)?.toLocalTimeOrNil()
         }.max()
         let earliestAllowedLogDate = lastLiveArrivalDate?.addingTimeInterval(minimumDispatchGap)
-        var seenLogTimes = Set<String>()
+        // With no dispatch interval, a log at the live arrival time used to pass
+        // both gap checks and appear a second time as a waiting-at-origin row.
+        var seenLogTimes = Set(liveArrivals.compactMap { estimatedArrivalTime(for: $0)?.toLocalTimeOrNil() })
         var lastDisplayedLogDate = earliestAllowedLogDate.map { $0 - minimumDispatchGap }
         let futureLogCandidates: [FutureLogCandidate] = parsedLogs
             .compactMap { log, time in
@@ -449,8 +451,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             guard earliestAllowedLogDate.map({ serviceDate >= $0 }) ?? true,
                   lastDisplayedLogDate.map({ serviceDate.timeIntervalSince($0) >= minimumDispatchGap }) ?? true
             else { return nil }
-            let logKey = String(format: "%lld", Int64(serviceDate.timeIntervalSince1970))
-            guard seenLogTimes.insert(logKey).inserted else { return nil }
+            guard seenLogTimes.insert(time).inserted else { return nil }
             // A historical log is valid even when realtime has no row with the same
             // clock value. Reuse an arrival only as a rendering template; scheduledTime
             // remains the source of truth for this row's ETA.
@@ -477,7 +478,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         // Realtime entries are ordered by their remaining minutes. Log entries are
         // appended only when they are at least one dispatch interval apart from the
         // preceding realtime/log entry.
-        return liveItems.sorted() + logItems.sorted { $0.1 < $1.1 }.map(\.0)
+        return BusArrivalDeduplication.uniqueItems(liveItems.sorted() + logItems.sorted { $0.1 < $1.1 }.map(\.0))
     }
 
     private func busRealtimeInput(dates: [Api.Date]) -> [BusRouteStopInput] {

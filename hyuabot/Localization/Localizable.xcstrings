@@ -13645,6 +13645,14 @@
         }
       }
     },
+    "setting.start_screen" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Screen" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "起動画面" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "첫 화면" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "启动页面" } }
+      }
+    },
     "setting.theme" : {
       "localizations" : {
         "en" : {
@@ -15364,6 +15372,34 @@
         }
       }
     },
+    "shuttle.bus.alternative.route.4-1.campus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (to Daengigol)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (テンイゴル方面)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (댕이골 방면)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-1 (校园方向)"
+          }
+        }
+      }
+    },
     "shuttle.bus.alternative.route.campus" : {
       "localizations" : {
         "en" : {
@@ -16822,34 +16858,6 @@
         }
       }
     },
-    "shuttle.realtime.departing_soon" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "곧 출발"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Departing soon"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "まもなく出発"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "即将发车"
-          }
-        }
-      }
-    },
     "shuttle.realtime.duration.format.%lld" : {
       "localizations" : {
         "en" : {
@@ -16878,30 +16886,170 @@
         }
       }
     },
-    "shuttle.realtime.empty" : {
+    "shuttle.realtime.empty.destination.campus" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Out out service"
+            "value" : "campus"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "到着予定のシャトルバスはありません。"
+            "value" : "キャンパス"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "도착 예정인 셔틀버스가 없습니다."
+            "value" : "캠퍼스"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暂无即将到达的校车。"
+            "value" : "校园"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty.ended.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First departure tomorrow: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明日の始発 %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 첫차 %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明天首班车 %@"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty.ended.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Service toward %@ has ended for today"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本日の%@方面の運行は終了しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 %@ 방면 운행이 끝났어요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天开往%@方向的服务已结束"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty.not_operating.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the weekday timetable"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平日の時刻表をご確認ください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평일 시간표에서 확인하세요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请查看工作日时刻表"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty.not_operating.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No service in this direction today"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本日はこの方面の運行はありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘은 이 방면을 운행하지 않아요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天此方向停运"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty.weekend.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No service in this direction on weekends"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "週末はこの方面の運行はありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말에는 이 방면을 운행하지 않아요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "周末此方向停运"
           }
         }
       }

@@ -131,16 +131,18 @@ enum SettingsRowAccessory {
     case chevron
     case externalLink
     case value(String)
+    case menu(String)
     case valueAndExternalLink(String, accessibilityLabel: String)
     case action(String)
     case toggle(UISwitch)
 }
 
-final class SettingsRowView: UIControl {
+final class SettingsRowView: UIButton {
     private let title: String
     private let subtitle: String?
     private let accessory: SettingsRowAccessory
     var onTap: (() -> Void)?
+    private var valueTextLabel: UILabel?
 
     init(
         symbolName: String?, tileColor: UIColor?, title: String, subtitle: String? = nil,
@@ -205,7 +207,7 @@ final class SettingsRowView: UIControl {
 
     private var accessoryText: String? {
         switch accessory {
-        case let .value(value), let .valueAndExternalLink(value, _), let .action(value): value
+        case let .value(value), let .menu(value), let .valueAndExternalLink(value, _), let .action(value): value
         default: nil
         }
     }
@@ -216,7 +218,22 @@ final class SettingsRowView: UIControl {
             if case let .toggle(toggle) = accessory { stack.addArrangedSubview(toggle) }
         case .chevron: stack.addArrangedSubview(icon("chevron.right"))
         case .externalLink: stack.addArrangedSubview(icon("arrow.up.right"))
-        case let .value(text): stack.addArrangedSubview(valueLabel(text))
+        case let .value(text):
+            let label = valueLabel(text)
+            valueTextLabel = label
+            stack.addArrangedSubview(label)
+        case let .menu(text):
+            let label = valueLabel(text)
+            valueTextLabel = label
+            let group = UIStackView(arrangedSubviews: [label, icon("chevron.up.chevron.down")])
+            group.spacing = 6
+            group.alignment = .center
+            group.isUserInteractionEnabled = false
+            group.setContentHuggingPriority(.required, for: .horizontal)
+            group.setContentCompressionResistancePriority(.required, for: .horizontal)
+            stack.addArrangedSubview(group)
+            // The row is the menu button so its entire area opens the dropdown.
+            showsMenuAsPrimaryAction = true
         case let .valueAndExternalLink(text, accessibilityLabel):
             let group = UIStackView(arrangedSubviews: [valueLabel(text), icon("arrow.up.right")])
             group.spacing = 6
@@ -236,6 +253,11 @@ final class SettingsRowView: UIControl {
             label.textColor = SettingsStyle.Color.link
             stack.addArrangedSubview(label)
         }
+    }
+
+    func setValueText(_ text: String) {
+        valueTextLabel?.text = text
+        accessibilityLabel = [title, subtitle, text].compactMap { $0 }.joined(separator: ", ")
     }
 
     private func icon(_ name: String) -> UIImageView {

@@ -2,6 +2,10 @@
 //  BusDisplayLogicTests.swift
 //  hyuabotTests
 //
+@_spi(Unsafe)
+import Api
+@_spi(Unsafe)
+import ApolloAPI
 import XCTest
 @testable import hyuabot
 
@@ -55,7 +59,52 @@ final class BusDisplayLogicTests: XCTestCase {
         XCTAssertEqual(BusDisplayLogic.clockText(""), "—")
     }
 
-    private func date(_ day: Int, _ hour: Int, _ minute: Int) throws -> Date {
+    func testIdenticalSeoulArrivalsAreDeduplicated() {
+        let arrival = arrivalItem("3100N", time: "23:59:00")
+        let items = BusArrivalDeduplication.uniqueItems([arrival, arrival])
+        XCTAssertEqual(items.count, 1)
+        XCTAssertEqual(items.first?.route, "3100N")
+    }
+
+    func testArrivalDeduplicationPrefersRealtimeAndPreservesOrderAndOtherDepartures() {
+        let realtime = arrivalItem("3100N", time: "00:59:30", isRealtime: true)
+        var log = realtime
+        log.scheduledTime = "00:59:00"
+        let otherRoute = arrivalItem("3100", time: "00:59:00")
+        let later = arrivalItem("3100N", time: "01:29:00")
+        let scheduled = arrivalItem("3100N", time: "00:59:00")
+        let items = BusArrivalDeduplication.uniqueItems([log, otherRoute, scheduled, realtime, later, log])
+        XCTAssertEqual(items.map(\.route), ["3100N", "3100", "3100N"])
+        XCTAssertNil(items.first?.scheduledTime)
+        XCTAssertEqual(items.first?.item.isRealtime, true)
+        XCTAssertEqual(items.last?.item.arrivalTime, "01:29:00")
+        XCTAssertNil(BusArrivalDeduplication.uniqueItems([realtime, log]).first?.scheduledTime)
+    }
+
+    func testArrivalDeduplicationMatchesEstimatedMinuteAndKeepsUnknownTimes() throws {
+        let now = try XCTUnwrap("23:59:20".toLocalTimeOrNil())
+        let estimated = arrivalItem("3100N", time: nil, isRealtime: true, minutes: 60)
+        var log = estimated
+        log.scheduledTime = "00:59:00"
+        let unknown = arrivalItem("3100N", time: nil)
+        let items = BusArrivalDeduplication.uniqueItems([log, estimated, unknown, unknown], now: now)
+        XCTAssertEqual(items.count, 3)
+        XCTAssertNil(items.first?.scheduledTime)
+        XCTAssertEqual(items.first?.item.minutes, 60)
+    }
+
+    private func arrivalItem(_ route: String, time: String?, isRealtime: Bool = false, minutes: Int? = nil) -> BusArrivalItem {
+        typealias Arrival = BusRealtimePageQuery.Data.Bus.Arrival
+        let arrival = Arrival(_dataDict: DataDict(data: [
+            "__typename": "BusArrival",
+            "isRealtime": isRealtime,
+            "arrivalTime": time as String?,
+            "minutes": minutes as Int?
+        ], fulfilledFragments: [ObjectIdentifier(Arrival.self)]))
+        return BusArrivalItem(route: route, item: arrival)
+    }
+
+    private func date(_ day: Int, _ hour: Int, _ minute: Int) throws -> Foundation.Date {
         let components = DateComponents(year: 2026, month: 11, day: day, hour: hour, minute: minute)
         return try XCTUnwrap(BusDisplayLogic.serviceCalendar.date(from: components))
     }

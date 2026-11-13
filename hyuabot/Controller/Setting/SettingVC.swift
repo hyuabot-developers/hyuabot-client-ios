@@ -15,6 +15,7 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
     private let themePicker = SettingsThemePickerView()
     private let analyticsSwitch = UISwitch()
     private var languageRow: SettingsRowView?
+    private var startScreenRow: SettingsRowView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,6 +95,19 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
     private func buildDisplaySection() {
         let card = SettingsCardView()
         card.addRow(themePicker)
+        let startRow = SettingsRowView(
+            symbolName: "house.fill",
+            tileColor: SettingsStyle.Tile.blue,
+            title: String(localized: "setting.start_screen"),
+            accessory: .menu(AppStartScreen.current().title)
+        )
+        startRow.accessibilityIdentifier = "setting.start_screen"
+        startRow.addAction(UIAction { _ in
+            AnalyticsManager.logSelect(.settingSelectRow, type: .listItem, name: "setting.start_screen")
+        }, for: .menuActionTriggered)
+        startScreenRow = startRow
+        updateStartScreenMenu()
+        card.addRow(startRow)
         let locale = Locale.current.localizedString(forIdentifier: Bundle.main.preferredLocalizations.first ?? "ko") ?? ""
         let row = SettingsRowView(
             symbolName: "globe",
@@ -116,6 +130,18 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
             content: card,
             footer: String(localized: "setting.language.footer")
         ))
+    }
+
+    private func updateStartScreenMenu() {
+        let current = AppStartScreen.current()
+        startScreenRow?.setValueText(current.title)
+        let actions = AppStartScreen.allCases.map { screen in
+            UIAction(title: screen.title, state: screen == current ? .on : .off) { [weak self] _ in
+                AppStartScreen.save(screen)
+                self?.updateStartScreenMenu()
+            }
+        }
+        startScreenRow?.menu = UIMenu(children: actions)
     }
 
     private func buildPrivacySection() {

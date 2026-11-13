@@ -14,6 +14,11 @@ enum ShuttleDisplayLogic {
         max(0, Int(departure.timeIntervalSince(now)) / 60)
     }
 
+    static func logArrivalDate(startDeparture: Date, minutesFromStart: Int, now: Date) -> Date? {
+        let arrival = startDeparture.addingTimeInterval(TimeInterval(minutesFromStart) * 60)
+        return arrival >= now ? arrival : nil
+    }
+
     static func clockText(_ date: Date, calendar: Calendar = .current) -> String {
         let components = calendar.dateComponents([.hour, .minute], from: date)
         return String(format: "%02d:%02d", components.hour ?? 0, components.minute ?? 0)
@@ -31,9 +36,7 @@ enum ShuttleDisplayLogic {
         guard showsRemainingTime else {
             return RowTimes(trailing: clockText(departure, calendar: calendar), isSoon: isSoon)
         }
-        let remaining = isSoon
-            ? String(localized: "shuttle.realtime.departing_soon")
-            : String(format: String(localized: "shuttle.realtime.duration.format.%lld"), minutes)
+        let remaining = String(format: String(localized: "shuttle.realtime.duration.format.%lld"), minutes)
         return RowTimes(trailing: remaining, isSoon: isSoon)
     }
 
@@ -326,6 +329,32 @@ enum ShuttleDisplayLogic {
             hiddenPastCount: foldsPastRows ? pastCount : 0,
             states: states,
             scrollTargetItem: scrollTarget
+        )
+    }
+}
+
+extension ShuttleDisplayLogic {
+    struct EmptyText: Equatable {
+        let title: String
+        let body: String
+    }
+
+    static func emptyText(destination: String, departureTimes: [String], isWeekend: Bool) -> EmptyText {
+        let firstDeparture = departureTimes.compactMap { time -> (Int, String)? in
+            guard let minutes = serviceMinutes(time: time), let clock = clock(time: time) else { return nil }
+            return (minutes, clock)
+        }.min { $0.0 < $1.0 }
+        guard let firstDeparture else {
+            return EmptyText(
+                title: isWeekend
+                    ? String(localized: "shuttle.realtime.empty.weekend.title")
+                    : String(localized: "shuttle.realtime.empty.not_operating.title"),
+                body: String(localized: "shuttle.realtime.empty.not_operating.body")
+            )
+        }
+        return EmptyText(
+            title: String(format: String(localized: "shuttle.realtime.empty.ended.title"), destination),
+            body: String(format: String(localized: "shuttle.realtime.empty.ended.body"), firstDeparture.1)
         )
     }
 }

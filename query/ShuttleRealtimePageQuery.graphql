@@ -111,6 +111,7 @@ query ShuttleRealtimePageQuery(
         }
     }
     alternativeBus: bus(input: $alternativeInput) {
+        minutes
         route { seq }
         stop { seq name latitude longitude }
         arrival { stops seats minutes lowFloor isRealtime time }

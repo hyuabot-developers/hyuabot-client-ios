@@ -63,6 +63,29 @@ final class SubwayComponentTests: XCTestCase {
         XCTAssertEqual(fit(row).height, 68, accuracy: 1)
     }
 
+    func testArrivalSubtitleSitsUnderMinutes() throws {
+        let row = SubwayArrivalRowView()
+        row.configure(arrival(subtitle: "곧 도착"), showsSeparator: false)
+        row.frame = CGRect(x: 0, y: 0, width: 375, height: 68)
+        row.layoutIfNeeded()
+
+        func findSubtitle(in view: UIView) -> UILabel? {
+            if let label = view as? UILabel, label.text == "곧 도착" {
+                return label
+            }
+            for subview in view.subviews {
+                if let label = findSubtitle(in: subview) {
+                    return label
+                }
+            }
+            return nil
+        }
+
+        let subtitle = try XCTUnwrap(findSubtitle(in: row))
+        let subtitleFrame = row.convert(subtitle.bounds, from: subtitle)
+        XCTAssertGreaterThan(subtitleFrame.minX, row.bounds.midX)
+    }
+
     func testSectionCardEmptyAndFourArrivalHeights() {
         let empty = SubwaySectionCardView()
         empty.configure(section(rows: []))

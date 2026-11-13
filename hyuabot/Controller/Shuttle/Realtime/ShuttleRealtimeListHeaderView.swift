@@ -57,6 +57,8 @@ final class ShuttleRealtimeListHeaderView: UIView {
         stopInfoButton.setContentHuggingPriority(.required, for: .horizontal)
         stopInfoButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         let locationContainer = UIView()
+        locationContainer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        locationContainer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         locationContainer.addSubview(locationStack)
         locationContainer.addSubview(locationButton)
         locationStack.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -143,6 +145,8 @@ final class ShuttleRealtimeListHeaderView: UIView {
         content.setContentHuggingPriority(.required, for: .horizontal)
         content.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 10)) }
         presenceLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        presenceLabel.setContentHuggingPriority(.required, for: .horizontal)
+        presenceDot.setContentHuggingPriority(.required, for: .horizontal)
         presenceDot.layer.cornerRadius = 4
         presenceDot.snp.makeConstraints { $0.size.equalTo(8) }
         presenceLabel.font = SettingsStyle.monospacedDigitFont(12)

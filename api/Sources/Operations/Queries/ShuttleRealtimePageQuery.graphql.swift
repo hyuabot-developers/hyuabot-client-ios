@@ -8,7 +8,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleRealtimePageQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleRealtimePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $shuttleStops: [ShuttleStopInput!]!, $subwayKeys: [SubwayStationInput!]!, $subwayTimetableKeys: [SubwayStationInput!]!, $transferBusInput: [BusRouteStopInput!]!, $alternativeInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle(input: { stops: $shuttleStops, after: $after }) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename latitude longitude name timetable { __typename order { __typename seq route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } subway(input: { language: $subwayLanguage, keys: $subwayKeys }) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops terminal { __typename stationID name } } } } subwayTimetable: subway( input: { language: $subwayLanguage, keys: $subwayTimetableKeys } ) { __typename stationID timetable { __typename weekday direction time terminal { __typename stationID name } } } transferBus: bus(input: $transferBusInput) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops isRealtime } log { __typename date time } } alternativeBus: bus(input: $alternativeInput) { __typename route { __typename seq } stop { __typename seq name latitude longitude } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
+      #"query ShuttleRealtimePageQuery($language: String!, $subwayLanguage: String!, $after: LocalTime, $shuttleStops: [ShuttleStopInput!]!, $subwayKeys: [SubwayStationInput!]!, $subwayTimetableKeys: [SubwayStationInput!]!, $transferBusInput: [BusRouteStopInput!]!, $alternativeInput: [BusRouteStopInput!]!) { notices(input: { language: $language, category: "셔틀,날씨" }) { __typename notices { __typename title url expiredAt } } shuttle(input: { stops: $shuttleStops, after: $after }) { __typename initialStopRules { __typename seq stopName priority polygon { __typename latitude longitude } } stops { __typename latitude longitude name timetable { __typename order { __typename seq route { __typename tag name } time stops { __typename stop time } } destination { __typename destination entries { __typename seq route { __typename tag name } time stops { __typename stop time } } } } } } subway(input: { language: $subwayLanguage, keys: $subwayKeys }) { __typename stationID arrival { __typename direction entries { __typename minutes isRealtime location stops terminal { __typename stationID name } } } } subwayTimetable: subway( input: { language: $subwayLanguage, keys: $subwayTimetableKeys } ) { __typename stationID timetable { __typename weekday direction time terminal { __typename stationID name } } } transferBus: bus(input: $transferBusInput) { __typename route { __typename seq name } stop { __typename seq } arrival { __typename minutes stops isRealtime } log { __typename date time } } alternativeBus: bus(input: $alternativeInput) { __typename minutes route { __typename seq } stop { __typename seq name latitude longitude } arrival { __typename stops seats minutes lowFloor isRealtime time } } }"#
     ))
 
   public var language: String
@@ -673,6 +673,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.BusRouteStop }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
+        .field("minutes", Int.self),
         .field("route", Route.self),
         .field("stop", Stop.self),
         .field("arrival", [Arrival].self),
@@ -681,6 +682,7 @@ nonisolated public struct ShuttleRealtimePageQuery: GraphQLQuery {
         ShuttleRealtimePageQuery.Data.AlternativeBus.self
       ] }
 
+      public var minutes: Int { __data["minutes"] }
       public var route: Route { __data["route"] }
       public var stop: Stop { __data["stop"] }
       public var arrival: [Arrival] { __data["arrival"] }

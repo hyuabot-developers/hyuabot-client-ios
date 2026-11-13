@@ -52,13 +52,10 @@ final class BusArrivalRowView: UIView {
         case .waitingAtOrigin:
             value = String(localized: "bus.realtime.waiting_at_origin")
         }
-        let color = model.isRealtime ? SettingsStyle.Color.text : SettingsStyle.Color.secondaryText
         primaryLabel.text = value
         primaryLabel.attributedText = SettingsStyle.attributedText(
-            value,
-            font: SettingsStyle.font(17, bold: model.isRealtime),
-            color: color,
-            lineHeight: 22,
+            value, font: SettingsStyle.font(13), color: SettingsStyle.Color.secondaryText,
+            lineHeight: 18, alignment: .right,
             lineBreakMode: .byTruncatingTail
         )
         primaryLabel.adjustsFontForContentSizeCategory = true
@@ -121,7 +118,7 @@ final class BusArrivalRowView: UIView {
     private func buildView() {
         primaryLabel.numberOfLines = 1
         primaryLabel.lineBreakMode = .byTruncatingTail
-        primaryLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        primaryLabel.textAlignment = .right
         detailLabel.numberOfLines = 1
         detailLabel.lineBreakMode = .byTruncatingTail
         lowFloorLabel.textColor = SettingsStyle.Color.busLowFloorText
@@ -135,14 +132,25 @@ final class BusArrivalRowView: UIView {
         lowFloorLabel.setContentHuggingPriority(.required, for: .horizontal)
         lowFloorLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let titleLine = UIStackView(arrangedSubviews: [routeBadge, primaryLabel, lowFloorLabel])
+        let titleLine = UIStackView(arrangedSubviews: [routeBadge, lowFloorLabel])
         titleLine.axis = .horizontal
         titleLine.alignment = .center
         titleLine.spacing = 6
         let leftColumn = UIStackView(arrangedSubviews: [titleLine, detailLabel])
         leftColumn.axis = .vertical
+        leftColumn.alignment = .leading
         leftColumn.spacing = 4
-        let content = UIStackView(arrangedSubviews: [leftColumn, minutesLabel])
+        leftColumn.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        leftColumn.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        let rightColumn = UIStackView(arrangedSubviews: [minutesLabel, primaryLabel])
+        rightColumn.axis = .vertical
+        rightColumn.alignment = .trailing
+        rightColumn.spacing = 2
+        rightColumn.setContentHuggingPriority(.required, for: .horizontal)
+        rightColumn.setContentCompressionResistancePriority(.required, for: .horizontal)
+        routeBadge.setContentHuggingPriority(.required, for: .horizontal)
+        routeBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let content = UIStackView(arrangedSubviews: [leftColumn, rightColumn])
         content.axis = .horizontal
         content.alignment = .center
         content.spacing = 12

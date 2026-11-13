@@ -205,7 +205,7 @@ class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     private func makeAlternativeTimeLabel(_ alternative: ShuttleBusAlternativeDisplayData) -> UILabel {
         UILabel().then {
             $0.font = SettingsStyle.monospacedDigitFont(17, bold: true)
-            $0.textColor = SettingsStyle.Color.text
+            $0.textColor = alternative.isRealtime ? SettingsStyle.Color.text : SettingsStyle.Color.commuterFaint
             $0.textAlignment = .right
             if let minutes = alternative.minutes {
                 $0.text = String(format: String(localized: "shuttle.bus.alternative.minutes.%lld"), minutes)
