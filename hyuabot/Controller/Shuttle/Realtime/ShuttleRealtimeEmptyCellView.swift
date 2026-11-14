@@ -35,11 +35,9 @@ class ShuttleRealtimeEmptyCellView: UITableViewCell {
         cardView.layer.cornerRadius = 0
         cardView.layer.masksToBounds = true
         contentView.addSubview(cardView)
-        titleLabel.font = UIFontMetrics(forTextStyle: .headline).scaledFont(for: .boldSystemFont(ofSize: 15))
-        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.apply(.subheadlineBold)
         titleLabel.textColor = .label
-        bodyLabel.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: .systemFont(ofSize: 13))
-        bodyLabel.adjustsFontForContentSizeCategory = true
+        bodyLabel.apply(.footnote)
         bodyLabel.textColor = .secondaryLabel
         for label in [titleLabel, bodyLabel] {
             label.textAlignment = .center

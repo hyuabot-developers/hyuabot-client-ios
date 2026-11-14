@@ -16942,6 +16942,62 @@
         }
       }
     },
+    "shuttle.realtime.empty.ended.body.check_timetable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the timetable for tomorrow's first departure"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明日の始発は時刻表で確認してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 첫차는 시간표에서 확인하세요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在时刻表中查看明天的首班车"
+          }
+        }
+      }
+    },
+    "shuttle.realtime.empty.ended.body.no_service_next_day" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No service in this direction tomorrow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明日はこの方面の運行はありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일은 이 방면을 운행하지 않아요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明天该方向不运行"
+          }
+        }
+      }
+    },
     "shuttle.realtime.empty.ended.title" : {
       "localizations" : {
         "en" : {

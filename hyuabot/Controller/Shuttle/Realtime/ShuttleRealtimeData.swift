@@ -52,6 +52,48 @@ struct ShuttleAlarmContext: Equatable {
     }
 }
 
+struct ShuttleNextDayTimetable: Equatable {
+    let date: String
+    let isWeekend: Bool
+    let departures: [String: [String: [String]]]
+}
+
+/// Use this loader only on the main actor. A completion for a date that is no longer in flight is discarded, so an older request can never overwrite a newer date.
+@MainActor
+final class ShuttleNextDayTimetableLoader {
+    typealias Departures = [String: [String: [String]]]
+    typealias Fetch = @MainActor (_ date: String, _ completion: @escaping @MainActor (Departures?) -> Void) -> Void
+
+    private let current: @MainActor () -> ShuttleNextDayTimetable?
+    private let publish: @MainActor (ShuttleNextDayTimetable?) -> Void
+    private let fetch: Fetch
+    private(set) var inFlightDate: String?
+
+    init(
+        current: @escaping @MainActor () -> ShuttleNextDayTimetable?,
+        publish: @escaping @MainActor (ShuttleNextDayTimetable?) -> Void,
+        fetch: @escaping Fetch
+    ) {
+        self.current = current
+        self.publish = publish
+        self.fetch = fetch
+    }
+
+    func load(date: String, isWeekend: Bool) {
+        let existing = current()
+        if existing?.date == date { return }
+        if inFlightDate == date { return }
+        if existing != nil { publish(nil) }
+        inFlightDate = date
+        fetch(date) { [weak self] departures in
+            guard let self, self.inFlightDate == date else { return }
+            self.inFlightDate = nil
+            guard let departures else { return }
+            self.publish(ShuttleNextDayTimetable(date: date, isWeekend: isWeekend, departures: departures))
+        }
+    }
+}
+
 @MainActor
 class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
@@ -60,6 +102,7 @@ class ShuttleRealtimeData {
     let isLoading = BehaviorSubject<Bool>(value: true)
     // Realtime Query
     let arrival = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop]>(value: [])
+    let nextDayTimetable = BehaviorSubject<ShuttleNextDayTimetable?>(value: nil)
     let notices = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Notice.Notice]>(value: [])
     let shuttleDormitoryData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
     let shuttleDormitoryToStationData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])

@@ -386,6 +386,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         destinationStop: Int32,
         showSecondary: Bool
     ) -> [BusArrivalItem] {
+        let now = Foundation.Date.now
         // Scheduled arrivals can carry an arrivalTime while marked non-realtime.
         // Keep them so the next scheduled bus is shown instead of a much later log.
         let liveArrivals = bus.arrival
@@ -411,7 +412,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         let logTimesByDate = Dictionary(grouping: parsedLogs, by: { $0.0.date })
         let logDerivedDispatchMinutes = logTimesByDate.values
             .map { entries in
-                let times = entries.map(\.1).sorted()
+                let times = BusLogMerging.merged(entries.map(\.1), time: { $0 })
                 return zip(times, times.dropFirst())
                     .map { current, next in next.timeIntervalSince(current) }
                     .filter { $0 > 0 }
@@ -420,7 +421,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             .compactMap { $0 }
             .min()
             .map { Int($0 / 60) }
-        let currentWeekday = switch Calendar.current.component(.weekday, from: .now) {
+        let currentWeekday = switch Calendar.current.component(.weekday, from: now) {
         case 1: "sunday"
         case 7: "saturday"
         default: "weekdays"
@@ -429,28 +430,26 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             .first(where: { $0.weekday == currentWeekday })?.minutes
             ?? logDerivedDispatchMinutes
             ?? 0
-        let minimumDispatchGap = TimeInterval(dispatchMinutes * 60)
         let lastLiveArrivalDate = liveArrivals.compactMap { arrival -> Foundation.Date? in
             estimatedArrivalTime(for: arrival)?.toLocalTimeOrNil()
         }.max()
-        let earliestAllowedLogDate = lastLiveArrivalDate?.addingTimeInterval(minimumDispatchGap)
-        // With no dispatch interval, a log at the live arrival time used to pass
-        // both gap checks and appear a second time as a waiting-at-origin row.
         var seenLogTimes = Set(liveArrivals.compactMap { estimatedArrivalTime(for: $0)?.toLocalTimeOrNil() })
-        var lastDisplayedLogDate = earliestAllowedLogDate.map { $0 - minimumDispatchGap }
         let futureLogCandidates: [FutureLogCandidate] = parsedLogs
             .compactMap { log, time in
-                guard let serviceDate = self.serviceDate(for: time, now: .now), serviceDate > .now else { return nil }
+                guard let serviceDate = self.serviceDate(for: time, now: now), serviceDate > now else { return nil }
                 return FutureLogCandidate(log: log, time: time, serviceDate: serviceDate)
             }
-            .sorted { $0.serviceDate < $1.serviceDate }
-        let logItems = futureLogCandidates.compactMap { candidate -> (BusArrivalItem, Foundation.Date)? in
+        let selectedLogs = BusLogMerging.realtimeTabLogs(
+            candidates: futureLogCandidates,
+            serviceDate: { $0.serviceDate },
+            dispatchMinutes: dispatchMinutes,
+            lastLiveArrival: lastLiveArrivalDate,
+            now: now
+        )
+        let logItems = selectedLogs.compactMap { candidate -> (BusArrivalItem, Foundation.Date)? in
             let log = candidate.log
             let time = candidate.time
             let serviceDate = candidate.serviceDate
-            guard earliestAllowedLogDate.map({ serviceDate >= $0 }) ?? true,
-                  lastDisplayedLogDate.map({ serviceDate.timeIntervalSince($0) >= minimumDispatchGap }) ?? true
-            else { return nil }
             guard seenLogTimes.insert(time).inserted else { return nil }
             // A historical log is valid even when realtime has no row with the same
             // clock value. Reuse an arrival only as a rendering template; scheduledTime
@@ -472,12 +471,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 scheduledTime: log.time,
                 destinationStopID: destinationStop
             )
-            lastDisplayedLogDate = serviceDate
             return (item, serviceDate)
         }
         // Realtime entries are ordered by their remaining minutes. Log entries are
-        // appended only when they are at least one dispatch interval apart from the
-        // preceding realtime/log entry.
+        // selected by BusLogMerging.realtimeTabLogs (at least max(dispatch interval, 15 min)
+        // apart from the preceding live/log entry).
         return BusArrivalDeduplication.uniqueItems(liveItems.sorted() + logItems.sorted { $0.1 < $1.1 }.map(\.0))
     }
 

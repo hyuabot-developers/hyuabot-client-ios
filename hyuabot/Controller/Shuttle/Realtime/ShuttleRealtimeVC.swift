@@ -153,6 +153,7 @@ class ShuttleRealtimeVC: UIViewController {
     private var selectedPresenceIndex = 0
     private var latestDataRequest = 0
     private var lastAppliedDataRequest = 0
+    private var nextDayTimetableLoader: ShuttleNextDayTimetableLoader!
     init(
         initialStopID: String? = nil,
         initialDestinationID: String? = nil
@@ -162,6 +163,25 @@ class ShuttleRealtimeVC: UIViewController {
         hasManualStopSelection = initialStopID != nil
         selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
         super.init(nibName: nil, bundle: nil)
+        nextDayTimetableLoader = ShuttleNextDayTimetableLoader(
+            current: { try? ShuttleRealtimeData.shared.nextDayTimetable.value() },
+            publish: { ShuttleRealtimeData.shared.nextDayTimetable.onNext($0) },
+            fetch: { date, completion in
+                Task { @MainActor in
+                    var departures: ShuttleNextDayTimetableLoader.Departures = [:]
+                    for stopKey in ShuttleRealtimeVC.presenceStopIds {
+                        let response = try? await Network.shared.client.fetch(query: ShuttleStopDialogQuery(date: date, stopID: stopKey))
+                        guard let data = response?.data else {
+                            completion(nil)
+                            return
+                        }
+                        let groups = data.shuttle.stops.first?.timetable.destination ?? []
+                        departures[stopKey] = Dictionary(groups.map { ($0.destination, $0.entries.map(\.time)) }, uniquingKeysWith: +)
+                    }
+                    completion(departures)
+                }
+            }
+        )
     }
 
     @available(*, unavailable)
@@ -688,6 +708,7 @@ class ShuttleRealtimeVC: UIViewController {
 
     // swiftlint:disable:next function_body_length
     private func fetchShuttleRealtimeData() {
+        fetchNextDayTimetableIfNeeded()
         latestDataRequest += 1
         let request = latestDataRequest
         let selection = currentPayloadSelection()
@@ -759,6 +780,16 @@ class ShuttleRealtimeVC: UIViewController {
                 markInitialBusAlternativeDataLoaded()
             }
         }
+    }
+
+    private func fetchNextDayTimetableIfNeeded(now: Foundation.Date = .now) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        let nextDate = ShuttleDisplayLogic.nextServiceDate(after: now, calendar: calendar)
+        nextDayTimetableLoader.load(
+            date: ShuttleDisplayLogic.serviceDateString(nextDate, calendar: calendar),
+            isWeekend: calendar.isDateInWeekend(nextDate)
+        )
     }
 
     // swiftlint:disable:next function_body_length
