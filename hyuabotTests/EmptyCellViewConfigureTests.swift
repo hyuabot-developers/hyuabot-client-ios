@@ -38,6 +38,58 @@ final class EmptyCellViewConfigureTests: XCTestCase {
         XCTAssertEqual(ended.body, String(format: String(localized: "shuttle.realtime.empty.ended.body"), "08:10"))
     }
 
+    func testShuttleEmptyTextUsesNextDayDepartures() {
+        let ended = ShuttleDisplayLogic.emptyText(
+            destination: "한대앞", departureTimes: ["08:00:00", "22:00:00"], isWeekend: false,
+            nextDayDepartureTimes: ["10:00:00", "09:30:00"], isNextDayWeekend: true
+        )
+        XCTAssertEqual(ended.body, String(format: String(localized: "shuttle.realtime.empty.ended.body"), "09:30"))
+        XCTAssertEqual(ended.title, String(format: String(localized: "shuttle.realtime.empty.ended.title"), "한대앞"))
+
+        let noService = ShuttleDisplayLogic.emptyText(
+            destination: "한대앞", departureTimes: ["08:00:00", "22:00:00"], isWeekend: false,
+            nextDayDepartureTimes: [], isNextDayWeekend: true
+        )
+        XCTAssertEqual(noService.body, String(localized: "shuttle.realtime.empty.ended.body.no_service_next_day"))
+
+        let differentSchedule = ShuttleDisplayLogic.emptyText(
+            destination: "한대앞", departureTimes: ["08:00:00", "22:00:00"], isWeekend: false,
+            nextDayDepartureTimes: nil, isNextDayWeekend: true
+        )
+        XCTAssertEqual(differentSchedule.body, String(localized: "shuttle.realtime.empty.ended.body.check_timetable"))
+
+        let sameSchedule = ShuttleDisplayLogic.emptyText(
+            destination: "한대앞", departureTimes: ["08:00:00", "22:00:00"], isWeekend: false,
+            nextDayDepartureTimes: nil, isNextDayWeekend: false
+        )
+        XCTAssertEqual(sameSchedule.body, String(format: String(localized: "shuttle.realtime.empty.ended.body"), "08:00"))
+    }
+
+    func testNextServiceDateRollsOverAtFourAM() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Seoul"))
+        func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int, _ minute: Int) throws -> Foundation.Date {
+            try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute)))
+        }
+
+        let fridayNight = try date(2026, 11, 13, 23, 30)
+        let saturday = ShuttleDisplayLogic.nextServiceDate(after: fridayNight, calendar: calendar)
+        XCTAssertEqual(saturday, calendar.startOfDay(for: try date(2026, 11, 14, 0, 0)))
+        XCTAssertTrue(calendar.isDateInWeekend(saturday))
+        XCTAssertEqual(ShuttleDisplayLogic.serviceDateString(saturday, calendar: calendar), "2026-11-14")
+
+        let saturdayEarly = try date(2026, 11, 14, 1, 30)
+        XCTAssertEqual(
+            ShuttleDisplayLogic.nextServiceDate(after: saturdayEarly, calendar: calendar),
+            calendar.startOfDay(for: try date(2026, 11, 14, 0, 0))
+        )
+
+        let saturdayAtFour = try date(2026, 11, 14, 4, 0)
+        let sunday = ShuttleDisplayLogic.nextServiceDate(after: saturdayAtFour, calendar: calendar)
+        XCTAssertEqual(sunday, calendar.startOfDay(for: try date(2026, 11, 15, 0, 0)))
+        XCTAssertEqual(ShuttleDisplayLogic.serviceDateString(sunday, calendar: calendar), "2026-11-15")
+    }
+
     private func descendants(in view: UIView) -> [UIView] {
         view.subviews.flatMap { [$0] + descendants(in: $0) }
     }

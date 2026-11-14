@@ -339,12 +339,38 @@ extension ShuttleDisplayLogic {
         let body: String
     }
 
-    static func emptyText(destination: String, departureTimes: [String], isWeekend: Bool) -> EmptyText {
-        let firstDeparture = departureTimes.compactMap { time -> (Int, String)? in
+    static func nextServiceDate(after now: Date, calendar: Calendar) -> Date {
+        let startOfToday = calendar.startOfDay(for: now)
+        if calendar.component(.hour, from: now) < 4 {
+            return startOfToday
+        }
+        return calendar.date(byAdding: .day, value: 1, to: startOfToday) ?? startOfToday
+    }
+
+    static func serviceDateString(_ date: Date, calendar: Calendar) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+    private static func firstDepartureClock(_ times: [String]) -> String? {
+        times.compactMap { time -> (Int, String)? in
             guard let minutes = serviceMinutes(time: time), let clock = clock(time: time) else { return nil }
             return (minutes, clock)
-        }.min { $0.0 < $1.0 }
-        guard let firstDeparture else {
+        }.min { $0.0 < $1.0 }?.1
+    }
+
+    static func emptyText(
+        destination: String,
+        departureTimes: [String],
+        isWeekend: Bool,
+        nextDayDepartureTimes: [String]? = nil,
+        isNextDayWeekend: Bool? = nil
+    ) -> EmptyText {
+        guard let todayFirst = firstDepartureClock(departureTimes) else {
             return EmptyText(
                 title: isWeekend
                     ? String(localized: "shuttle.realtime.empty.weekend.title")
@@ -352,9 +378,21 @@ extension ShuttleDisplayLogic {
                 body: String(localized: "shuttle.realtime.empty.not_operating.body")
             )
         }
+        let body: String
+        if let nextDayDepartureTimes {
+            if let nextFirst = firstDepartureClock(nextDayDepartureTimes) {
+                body = String(format: String(localized: "shuttle.realtime.empty.ended.body"), nextFirst)
+            } else {
+                body = String(localized: "shuttle.realtime.empty.ended.body.no_service_next_day")
+            }
+        } else if isNextDayWeekend == nil || isNextDayWeekend == isWeekend {
+            body = String(format: String(localized: "shuttle.realtime.empty.ended.body"), todayFirst)
+        } else {
+            body = String(localized: "shuttle.realtime.empty.ended.body.check_timetable")
+        }
         return EmptyText(
             title: String(format: String(localized: "shuttle.realtime.empty.ended.title"), destination),
-            body: String(format: String(localized: "shuttle.realtime.empty.ended.body"), firstDeparture.1)
+            body: body
         )
     }
 }
