@@ -16,6 +16,56 @@ struct BusArrivalRowInput: Equatable {
     var destinationName: String?
 }
 
+/// Arrival logs from different reference dates (or duplicate records) that are closer than `sameVehicleWindow` describe the same vehicle run.
+enum BusLogMerging {
+    static let sameVehicleWindow: TimeInterval = 15 * 60
+
+    static func merged<S: Sequence>(
+        _ items: S,
+        time: (S.Element) -> Foundation.Date,
+        window: TimeInterval = sameVehicleWindow
+    ) -> [S.Element] {
+        var result: [S.Element] = []
+        var clusterStart: Foundation.Date?
+        for item in items.sorted(by: { time($0) < time($1) }) {
+            let itemTime = time(item)
+            if let clusterStart, itemTime.timeIntervalSince(clusterStart) < window {
+                continue
+            }
+            clusterStart = itemTime
+            result.append(item)
+        }
+        return result
+    }
+
+    static func realtimeTabLogs<T>(
+        candidates: [T], serviceDate: (T) -> Foundation.Date,
+        dispatchMinutes: Int, lastLiveArrival: Foundation.Date?, now: Foundation.Date
+    ) -> [T] {
+        let gap = max(TimeInterval(dispatchMinutes * 60), sameVehicleWindow)
+        var lastShown = lastLiveArrival
+        var result: [T] = []
+        for candidate in candidates.filter({ serviceDate($0) > now }).sorted(by: { serviceDate($0) < serviceDate($1) }) {
+            let date = serviceDate(candidate)
+            if let lastShown, date.timeIntervalSince(lastShown) < gap { continue }
+            result.append(candidate)
+            lastShown = date
+        }
+        return result
+    }
+
+    static func upcomingTransferLogs(
+        logTimes: [Foundation.Date], now: Foundation.Date, earliestArrival: Foundation.Date?,
+        lastRealtimeArrival: Foundation.Date?, limit: Int = 2
+    ) -> [Foundation.Date] {
+        let eligible = logTimes.filter { logDate in
+            logDate >= now && (earliestArrival.map { logDate >= $0 } ?? true) &&
+                (lastRealtimeArrival.map { logDate.timeIntervalSince($0) >= sameVehicleWindow } ?? true)
+        }
+        return Array(merged(eligible, time: { $0 }).prefix(limit))
+    }
+}
+
 struct BusArrivalRowModel: Equatable {
     enum Primary: Equatable { case stopsBefore(Int), waitingAtOrigin }
     enum Remaining: Equatable { case soon, minutes(Int) }

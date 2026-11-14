@@ -10,6 +10,62 @@ import XCTest
 @testable import hyuabot
 
 final class BusDisplayLogicTests: XCTestCase {
+    func testBusLogMergingUsesClusterStartAndSortsAcrossReferenceDates() throws {
+        let base = try date(7, 10, 0)
+        let times = [
+            base.addingTimeInterval(29 * 60),
+            base.addingTimeInterval(14 * 60),
+            base,
+            base.addingTimeInterval(15 * 60)
+        ]
+
+        XCTAssertEqual(
+            BusLogMerging.merged(times, time: { $0 }),
+            [base, base.addingTimeInterval(15 * 60)]
+        )
+    }
+
+    func testRealtimeTabLogsRespectPastTimesLiveWindowAndDispatchInterval() throws {
+        let now = try date(7, 10, 0)
+        let lastLive = now.addingTimeInterval(60 * 60)
+        let candidates = [
+            now.addingTimeInterval(-60),
+            lastLive.addingTimeInterval(14 * 60),
+            lastLive.addingTimeInterval(15 * 60),
+            lastLive.addingTimeInterval(34 * 60),
+            lastLive.addingTimeInterval(35 * 60)
+        ]
+
+        XCTAssertEqual(
+            BusLogMerging.realtimeTabLogs(
+                candidates: candidates, serviceDate: { $0 }, dispatchMinutes: 20,
+                lastLiveArrival: lastLive, now: now
+            ),
+            [lastLive.addingTimeInterval(34 * 60)]
+        )
+    }
+
+    func testUpcomingTransferLogsFilterBeforeMergingAndApplyDefaultLimit() throws {
+        let now = try date(7, 10, 0)
+        let lastRealtime = now.addingTimeInterval(30 * 60)
+        let logs = [
+            now.addingTimeInterval(-60),
+            now.addingTimeInterval(5 * 60),
+            lastRealtime.addingTimeInterval(14 * 60),
+            lastRealtime.addingTimeInterval(15 * 60),
+            lastRealtime.addingTimeInterval(29 * 60),
+            lastRealtime.addingTimeInterval(30 * 60)
+        ]
+
+        XCTAssertEqual(
+            BusLogMerging.upcomingTransferLogs(
+                logTimes: logs, now: now, earliestArrival: nil,
+                lastRealtimeArrival: lastRealtime
+            ),
+            [lastRealtime.addingTimeInterval(15 * 60), lastRealtime.addingTimeInterval(30 * 60)]
+        )
+    }
+
     func testMergedTimetableShowsRouteBadgeOnEveryRowAndChipsOnlyAtUnionEndpoints() throws {
         let entries = BusDisplayLogic.entries(items: [
             try item("A", "weekdays", 5, 0), try item("A", "weekdays", 8, 0),
