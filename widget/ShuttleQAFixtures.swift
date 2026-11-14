@@ -30,6 +30,12 @@ import Foundation
                     group("중앙역", "JUNGANG", ["14:10", "14:25", "14:50"]),
                     group("기숙사", "DORMITORY", ["14:05", "14:05", "14:30"])
                 ])
+            case "shuttle-circular":
+                shuttle(stop: "셔틀콕", id: "shuttlecock_o", groups: [
+                    group("한대앞", "STATION", ["14:02", "14:10", "14:20"], busIDs: ["DH|DH", "C|C", "DH|DH"]),
+                    group("예술인", "TERMINAL", ["14:07", "14:10", "14:30"], busIDs: ["DY|DY", "C|C", "DY|DY"]),
+                    group("중앙역", "JUNGANG", ["14:15"], busIDs: ["DJ|DJ"])
+                ])
             case "shuttle-expired":
                 shuttle(stop: "한대앞", id: "station", groups: [
                     group("기숙사", "DORMITORY", ["13:40", "13:55"])
@@ -72,8 +78,13 @@ import Foundation
 
         private static let expiredGroups = [group("한대앞", "STATION", ["13:40", "13:55"])]
 
-        private static func group(_ destination: String, _ key: String, _ times: [String]) -> ShuttleDestinationGroup {
-            ShuttleDestinationGroup(destination: destination, times: times, destinationKey: key, serviceDate: ref)
+        private static func group(
+            _ destination: String,
+            _ key: String,
+            _ times: [String],
+            busIDs: [String] = []
+        ) -> ShuttleDestinationGroup {
+            ShuttleDestinationGroup(destination: destination, times: times, destinationKey: key, serviceDate: ref, busIDs: busIDs)
         }
 
         private static func shuttle(
