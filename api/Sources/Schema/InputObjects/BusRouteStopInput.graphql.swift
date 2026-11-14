@@ -17,6 +17,8 @@ nonisolated public struct BusRouteStopInput: InputObject {
     destinationStops: GraphQLNullable<[Int32]> = nil,
     after: GraphQLNullable<LocalTime> = nil,
     limit: GraphQLNullable<Int32> = nil,
+    logLimit: GraphQLNullable<Int32> = nil,
+    logAfter: GraphQLNullable<LocalTime> = nil,
     dates: GraphQLNullable<[Date]> = nil,
     weekdays: GraphQLNullable<[String]> = nil
   ) {
@@ -26,6 +28,8 @@ nonisolated public struct BusRouteStopInput: InputObject {
       "destinationStops": destinationStops,
       "after": after,
       "limit": limit,
+      "logLimit": logLimit,
+      "logAfter": logAfter,
       "dates": dates,
       "weekdays": weekdays
     ])
@@ -54,6 +58,16 @@ nonisolated public struct BusRouteStopInput: InputObject {
   public var limit: GraphQLNullable<Int32> {
     get { __data["limit"] }
     set { __data["limit"] = newValue }
+  }
+
+  public var logLimit: GraphQLNullable<Int32> {
+    get { __data["logLimit"] }
+    set { __data["logLimit"] = newValue }
+  }
+
+  public var logAfter: GraphQLNullable<LocalTime> {
+    get { __data["logAfter"] }
+    set { __data["logAfter"] = newValue }
   }
 
   public var dates: GraphQLNullable<[Date]> {

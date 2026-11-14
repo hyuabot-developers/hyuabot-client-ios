@@ -188,6 +188,8 @@ input BusRouteStopInput {
   destinationStops: [Int!]
   after: LocalTime
   limit: Int
+  logLimit: Int
+  logAfter: LocalTime
   dates: [Date!]
   weekdays: [String!]
 }

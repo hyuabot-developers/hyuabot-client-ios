@@ -27,6 +27,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private var latestRequestGeneration = 0
     private var lastAppliedBusInput: [BusRouteStopInput]?
     private var lastAppliedNoticeLanguage: String?
+    /// False once the backend rejected logLimit/logAfter as unknown input fields; never reset for this controller.
+    private var serverSupportsLogWindow = true
     private var selectedTab: BusRealtimeType = .city
     private let contentView = BusRealtimeContentView()
     private var subscription: Disposable?
@@ -583,17 +585,24 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         if lastAppliedBusInput != busInput || lastAppliedNoticeLanguage != noticeLanguage {
             BusRealtimeData.shared.isLoading.onNext(true)
         }
+        let logAfter = BusRealtimeLogRequest.logAfter(now: Foundation.Date())
         Task {
-            let response = try? await Network.shared.client.fetch(
-                query: BusRealtimePageQuery(language: noticeLanguage, busInput: busInput),
-                cachePolicy: .networkOnly
-            )
+            let outcome = await BusRealtimeLogRequest.fetch(
+                input: busInput,
+                logAfter: logAfter,
+                supportsLogWindow: serverSupportsLogWindow
+            ) { input in
+                await self.fetchBusRealtimePage(input: input, language: noticeLanguage)
+            }
             await MainActor.run {
+                if !outcome.supportsLogWindow {
+                    serverSupportsLogWindow = false
+                }
                 // Timer ticks issue newer requests with identical inputs; keep applying a slow response unless the
                 // selected stops changed or a newer response was already rendered.
                 guard requestGeneration > lastAppliedRequestGeneration,
                       busInput == busRealtimeInput(dates: dates) else { return }
-                if let data = response?.data {
+                if let data = outcome.data {
                     lastAppliedRequestGeneration = requestGeneration
                     lastAppliedBusInput = busInput
                     lastAppliedNoticeLanguage = noticeLanguage
@@ -608,6 +617,26 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                     BusRealtimeData.shared.isLoading.onNext(false)
                 }
             }
+        }
+    }
+
+    private func fetchBusRealtimePage(
+        input: [BusRouteStopInput], language: String
+    ) async -> BusRealtimeLogRequest.Attempt<BusRealtimePageQuery.Data> {
+        do {
+            let response = try await Network.shared.client.fetch(
+                query: BusRealtimePageQuery(language: language, busInput: input),
+                cachePolicy: .networkOnly
+            )
+            return BusRealtimeLogRequest.Attempt(
+                data: response.data,
+                errorMessages: response.errors?.compactMap(\.message) ?? []
+            )
+        } catch {
+            return BusRealtimeLogRequest.Attempt(
+                data: nil,
+                errorMessages: BusRealtimeLogRequest.graphQLErrorMessages(in: error)
+            )
         }
     }
 
