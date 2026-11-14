@@ -234,7 +234,7 @@ private struct TransferMediumShuttleFallback: View {
                 Spacer()
                 WidgetRefreshStamp(date: entry.date, intent: RefreshTransferIntent())
             }.frame(minHeight: 18)
-            ShuttleBoardContent(groups: entry.shuttleGroups, now: entry.date)
+            ShuttleBoardContent(groups: entry.shuttleGroups, now: entry.date, mergesCircularRuns: true)
         }
     }
 }

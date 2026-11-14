@@ -117,9 +117,14 @@ private struct ShuttleSmallRows: View {
 struct ShuttleBoardContent: View {
     let groups: [ShuttleDestinationGroup]
     let now: Date
+    /// Not direction specific: circular runs form one 순환 column instead of appearing under 한대앞 and 예술인.
+    var mergesCircularRuns = false
 
     private var columns: [[ShuttleDeparture]] {
-        Array(ShuttleDepartureMath.upcomingByGroup(in: groups, now: now).prefix(4))
+        let departures = mergesCircularRuns
+            ? ShuttleDepartureMath.upcomingByLabel(in: groups, now: now)
+            : ShuttleDepartureMath.upcomingByGroup(in: groups, now: now)
+        return Array(departures.prefix(4))
     }
 
     var body: some View {
