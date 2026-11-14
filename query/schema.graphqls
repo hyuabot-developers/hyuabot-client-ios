@@ -671,6 +671,7 @@ type Query {
   subway(input: SubwayInput!): [SubwayStation!]!
   shuttle(input: ShuttleInput!): Shuttle!
   _service: _Service!
+  publicHolidays(start: Date!, end: Date!): [Date!]!
 }
 
 """ 열람실 정보와 열람실 좌석 정보를 반환하는 쿼리입니다."""
