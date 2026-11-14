@@ -389,6 +389,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         showSecondary: Bool
     ) -> [BusArrivalItem] {
         let now = Foundation.Date.now
+        let holidays = BusHolidayCalendar.shared.holidays
         // Scheduled arrivals can carry an arrivalTime while marked non-realtime.
         // Keep them so the next scheduled bus is shown instead of a much later log.
         let liveArrivals = bus.arrival
@@ -405,10 +406,16 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 destinationStopID: destinationStop
             )
         }
-        // Parse each log time once and reuse it for both dispatch-interval detection and
-        // the future-log candidate list below.
+        // Logs from another service-day type (holiday-aware) are dropped here, so both
+        // dispatch-interval detection and future candidates use only comparable days.
         let parsedLogs: [(BusRealtimePageQuery.Data.Bus.Log, Foundation.Date)] = bus.log.compactMap { log in
             guard let time = log.time.toLocalTimeOrNil() else { return nil }
+            guard BusRecentDates.isLogInCurrentServiceDayType(
+                logDate: log.date,
+                logHour: Calendar.current.component(.hour, from: time),
+                now: now,
+                holidays: holidays
+            ) else { return nil }
             return (log, time)
         }
         let logTimesByDate = Dictionary(grouping: parsedLogs, by: { $0.0.date })
@@ -423,22 +430,20 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             .compactMap { $0 }
             .min()
             .map { Int($0 / 60) }
-        let currentWeekday = switch Calendar.current.component(.weekday, from: now) {
-        case 1: "sunday"
-        case 7: "saturday"
-        default: "weekdays"
-        }
-        let dispatchMinutes = bus.minimumDispatchIntervals
-            .first(where: { $0.weekday == currentWeekday })?.minutes
-            ?? logDerivedDispatchMinutes
-            ?? 0
+        let dispatchMinutes = BusLogMerging.realtimeDispatchMinutes(
+            intervals: bus.minimumDispatchIntervals.map { (weekday: $0.weekday, minutes: $0.minutes) },
+            logDerivedMinutes: logDerivedDispatchMinutes,
+            now: now,
+            holidays: holidays
+        )
         let lastLiveArrivalDate = liveArrivals.compactMap { arrival -> Foundation.Date? in
             estimatedArrivalTime(for: arrival)?.toLocalTimeOrNil()
         }.max()
         var seenLogTimes = Set(liveArrivals.compactMap { estimatedArrivalTime(for: $0)?.toLocalTimeOrNil() })
         let futureLogCandidates: [FutureLogCandidate] = parsedLogs
             .compactMap { log, time in
-                guard let serviceDate = self.serviceDate(for: time, now: now), serviceDate > now else { return nil }
+                guard let serviceDate = BusLogMerging.realtimeServiceDate(for: time, now: now) else { return nil }
+                guard serviceDate > now else { return nil }
                 return FutureLogCandidate(log: log, time: time, serviceDate: serviceDate)
             }
         let selectedLogs = BusLogMerging.realtimeTabLogs(
@@ -535,20 +540,6 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         return inputs
     }
 
-    private func serviceDate(for time: Foundation.Date, now: Foundation.Date) -> Foundation.Date? {
-        var calendar = Calendar.current
-        calendar.timeZone = .current
-        let today = calendar.date(
-            bySettingHour: calendar.component(.hour, from: time),
-            minute: calendar.component(.minute, from: time),
-            second: 0,
-            of: now
-        ) ?? time
-        if today > now { return today }
-        guard calendar.component(.hour, from: time) < 4 else { return nil }
-        return calendar.date(byAdding: .day, value: 1, to: today)
-    }
-
     private func fetchBusStopCoordinates() {
         guard !isFetchingCoordinates,
               ((try? BusRealtimeData.shared.busStopCoordinatesData.value()) ?? []).isEmpty else { return }
@@ -580,7 +571,10 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 "ENGLISH"
             }
         }
-        let dates = BusRecentDates.sameWeekdayType(count: 4)
+        // Refresh holidays in the background; until then the empty set gives the
+        // existing weekday/Saturday/Sunday classification without delaying this poll.
+        BusHolidayCalendar.shared.refreshIfNeeded { [weak self] in self?.fetchBusRealtimeData() }
+        let dates = BusRecentDates.logRequestDates(holidays: BusHolidayCalendar.shared.holidays)
         let busInput = busRealtimeInput(dates: dates)
         if lastAppliedBusInput != busInput || lastAppliedNoticeLanguage != noticeLanguage {
             BusRealtimeData.shared.isLoading.onNext(true)
