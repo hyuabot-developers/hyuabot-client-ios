@@ -1166,14 +1166,12 @@ final class ShuttleTransferInfoView: UIView {
         let logTimes = Set(matchingBuses
             .flatMap(\.log)
             .compactMap { $0.time.toLocalTimeOrNil(on: now) })
-        let logTimeline = logTimes
-            .filter { logDate in
-                logDate >= now &&
-                    (earliestArrival.map { logDate >= $0 } ?? true) &&
-                    (lastRealtimeArrival.map { logDate > $0 } ?? true)
-            }
-            .sorted()
-            .prefix(2)
+        let logTimeline = BusLogMerging.upcomingTransferLogs(
+            logTimes: Array(logTimes),
+            now: now,
+            earliestArrival: earliestArrival,
+            lastRealtimeArrival: lastRealtimeArrival
+        )
             .map {
                 TransferTimelineEntry(
                     destination: destinationLabel,
