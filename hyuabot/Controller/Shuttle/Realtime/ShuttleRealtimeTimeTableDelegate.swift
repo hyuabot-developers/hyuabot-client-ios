@@ -8,7 +8,27 @@ import UIKit
 
 @MainActor
 class ShuttleRealtimeTimeTableDelegate: NSObject {
-    static func emptyText(stopID: ShuttleStopEnum, section: Int?) -> ShuttleDisplayLogic.EmptyText {
+    nonisolated static func nextDayInputs(
+        table: ShuttleNextDayTimetable?,
+        boardingStop: String,
+        destinationKey: String?,
+        now: Foundation.Date,
+        calendar: Calendar
+    ) -> (departureTimes: [String]?, isWeekend: Bool) {
+        let expected = ShuttleDisplayLogic.nextServiceDate(after: now, calendar: calendar)
+        let isWeekend = calendar.isDateInWeekend(expected)
+        // A cached table of another date (stale cache, failed or pending replacement) is treated as not loaded.
+        guard let table, table.date == ShuttleDisplayLogic.serviceDateString(expected, calendar: calendar) else {
+            return (nil, isWeekend)
+        }
+        let groups = table.departures[boardingStop] ?? [:]
+        if let destinationKey {
+            return (groups[destinationKey] ?? [], isWeekend)
+        }
+        return (groups.values.flatMap { $0 }, isWeekend)
+    }
+
+    static func emptyText(stopID: ShuttleStopEnum, section: Int?, now: Foundation.Date = Foundation.Date()) -> ShuttleDisplayLogic.EmptyText {
         let boardingStop = ShuttleDisplayLogic.stopKey(stopID)
         let stops = (try? ShuttleRealtimeData.shared.arrival.value()) ?? []
         let timetable = stops.first { $0.name == boardingStop }?.timetable
@@ -28,12 +48,21 @@ class ShuttleRealtimeTimeTableDelegate: NSObject {
         }
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
+        let nextDay = nextDayInputs(
+            table: try? ShuttleRealtimeData.shared.nextDayTimetable.value(),
+            boardingStop: boardingStop,
+            destinationKey: destinationKey,
+            now: now,
+            calendar: calendar
+        )
         return ShuttleDisplayLogic.emptyText(
             destination: destinationStop == "dormitory_i"
                 ? String(localized: "shuttle.realtime.empty.destination.campus")
                 : ShuttleDisplayLogic.stopShortName(destinationStop) ?? "",
             departureTimes: times,
-            isWeekend: calendar.isDateInWeekend(Date())
+            isWeekend: calendar.isDateInWeekend(now),
+            nextDayDepartureTimes: nextDay.departureTimes,
+            isNextDayWeekend: nextDay.isWeekend
         )
     }
 

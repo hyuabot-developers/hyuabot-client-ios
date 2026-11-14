@@ -195,6 +195,14 @@ class ShuttleRealtimeTabVC: UIViewController {
                 }
             }).disposed(by: disposeBag)
 
+        ShuttleRealtimeData.shared.nextDayTimetable.skip(1).subscribe(onNext: { [weak self] _ in
+            guard let self else { return }
+            UIView.performWithoutAnimation {
+                self.shuttleRealtimeTableView.reloadData()
+                self.shuttleRealtimeTableTimeView.reloadData()
+            }
+        }).disposed(by: disposeBag)
+
         ShuttleRealtimeData.shared.busAlternatives
             .subscribe(onNext: { [weak self] alternatives in
                 self?.updateBusAlternatives(alternatives)

@@ -90,6 +90,68 @@ final class EmptyCellViewConfigureTests: XCTestCase {
         XCTAssertEqual(ShuttleDisplayLogic.serviceDateString(sunday, calendar: calendar), "2026-11-15")
     }
 
+    func testNextDayInputsRejectsTimetableOfAnotherDate() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Seoul"))
+        let now = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 11, day: 15, hour: 20)))
+        let sundayTable = ShuttleNextDayTimetable(
+            date: "2026-11-15", isWeekend: true,
+            departures: ["dormitory_o": ["STATION": ["09:00:00"], "TERMINAL": ["09:10:00"]]]
+        )
+
+        for destinationKey in [String?.some("STATION"), .none] {
+            let result = ShuttleRealtimeTimeTableDelegate.nextDayInputs(
+                table: sundayTable, boardingStop: "dormitory_o", destinationKey: destinationKey,
+                now: now, calendar: calendar
+            )
+            XCTAssertNil(result.departureTimes)
+            XCTAssertFalse(result.isWeekend)
+            let text = ShuttleDisplayLogic.emptyText(
+                destination: "한대앞", departureTimes: ["08:00:00"], isWeekend: true,
+                nextDayDepartureTimes: result.departureTimes, isNextDayWeekend: result.isWeekend
+            )
+            XCTAssertEqual(text.body, String(localized: "shuttle.realtime.empty.ended.body.check_timetable"))
+        }
+
+        let absent = ShuttleRealtimeTimeTableDelegate.nextDayInputs(
+            table: nil, boardingStop: "dormitory_o", destinationKey: "STATION", now: now, calendar: calendar
+        )
+        XCTAssertNil(absent.departureTimes)
+        XCTAssertFalse(absent.isWeekend)
+    }
+
+    func testNextDayInputsUsesMatchingTimetable() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Seoul"))
+        func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int, _ minute: Int) throws -> Foundation.Date {
+            try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute)))
+        }
+        let saturdayTable = ShuttleNextDayTimetable(
+            date: "2026-11-14", isWeekend: true,
+            departures: ["dormitory_o": ["STATION": ["09:30:00"], "TERMINAL": ["09:10:00"]]]
+        )
+
+        for now in [try date(2026, 11, 13, 23, 0), try date(2026, 11, 14, 1, 30)] {
+            let station = ShuttleRealtimeTimeTableDelegate.nextDayInputs(
+                table: saturdayTable, boardingStop: "dormitory_o", destinationKey: "STATION", now: now, calendar: calendar
+            )
+            XCTAssertEqual(station.departureTimes, ["09:30:00"])
+            XCTAssertTrue(station.isWeekend)
+
+            let allDestinations = ShuttleRealtimeTimeTableDelegate.nextDayInputs(
+                table: saturdayTable, boardingStop: "dormitory_o", destinationKey: nil, now: now, calendar: calendar
+            )
+            XCTAssertEqual(allDestinations.departureTimes?.sorted(), ["09:10:00", "09:30:00"])
+            XCTAssertTrue(allDestinations.isWeekend)
+        }
+
+        let missingStop = ShuttleRealtimeTimeTableDelegate.nextDayInputs(
+            table: saturdayTable, boardingStop: "station", destinationKey: nil,
+            now: try date(2026, 11, 13, 23, 0), calendar: calendar
+        )
+        XCTAssertEqual(missingStop.departureTimes, [])
+    }
+
     private func descendants(in view: UIView) -> [UIView] {
         view.subviews.flatMap { [$0] + descendants(in: $0) }
     }
