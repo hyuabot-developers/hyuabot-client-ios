@@ -13,12 +13,16 @@ import XCTest
 final class EmptyCellViewConfigureTests: XCTestCase {
     private let message = "다른 조건으로 검색해 보세요."
 
-    func testShuttleRealtimeEmptyCellShowsTitleAndBody() {
+    func testShuttleRealtimeEmptyCellShowsTitleAndBody() throws {
         let cell = ShuttleRealtimeEmptyCellView(style: .default, reuseIdentifier: nil)
         cell.configure(title: "운행 종료", body: "내일 첫차 08:00")
         let labels = descendants(in: cell).compactMap { $0 as? UILabel }
         XCTAssertEqual(labels.map(\.text), ["운행 종료", "내일 첫차 08:00"])
         XCTAssertEqual(labels.map { $0.font.pointSize }, [15, 13])
+        let godoBold = try XCTUnwrap(UIFont(name: "GodoB", size: 15))
+        let godoMedium = try XCTUnwrap(UIFont(name: "GodoM", size: 13))
+        XCTAssertEqual(labels.map(\.font.fontName), [godoBold.fontName, godoMedium.fontName])
+        XCTAssertTrue(labels.allSatisfy(\.adjustsFontForContentSizeCategory))
         XCTAssertTrue(labels.allSatisfy { $0.textAlignment == .center && $0.numberOfLines == 0 })
         XCTAssertEqual(labels.last?.textColor, .secondaryLabel)
         cell.configure(title: "운행 없음", body: "평일 시간표")
