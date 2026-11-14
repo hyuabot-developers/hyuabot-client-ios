@@ -57,6 +57,8 @@ import Foundation
                 transfer(stop: "예술인", id: "terminal", groups: activeGroups, transit: [bus])
             case "transfer-station":
                 transfer(stop: "한대앞", id: "station", groups: activeGroups, transit: [])
+            case "transfer-circular":
+                transfer(stop: "기숙사", id: "dormitory_o", groups: circularGroups, transit: fullTransit)
             case "transfer-shuttles-exhausted":
                 transfer(stop: "기숙사", id: "dormitory_o", groups: expiredGroups, transit: subway)
             case "transfer-expired":
@@ -77,6 +79,11 @@ import Foundation
         ]
 
         private static let expiredGroups = [group("한대앞", "STATION", ["13:40", "13:55"])]
+
+        private static let circularGroups = [
+            group("한대앞", "STATION", ["14:02", "14:10", "14:20"], busIDs: ["DH|DH", "C|C", "DH|DH"]),
+            group("예술인", "TERMINAL", ["14:07", "14:10", "14:30"], busIDs: ["DY|DY", "C|C", "DY|DY"])
+        ]
 
         private static func group(
             _ destination: String,
