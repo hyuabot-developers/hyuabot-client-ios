@@ -73,22 +73,55 @@ enum ShuttleDepartureMath {
         }.filter { !$0.isEmpty }
     }
 
+    /// Circular runs (route tag C) are listed under both 한대앞 and 예술인 at the dormitory and shuttlecock stops.
+    /// Outside the per-direction board they are one bus, so relabel them as 순환.
+    static func circularLabeled(_ departure: ShuttleDeparture) -> ShuttleDeparture {
+        guard departure.busID.hasPrefix("C|"),
+              departure.destinationKey == "STATION" || departure.destinationKey == "TERMINAL"
+        else { return departure }
+        return ShuttleDeparture(
+            destination: destinationDisplayName(for: "CIRCULAR"),
+            destinationKey: "CIRCULAR",
+            time: departure.time,
+            departure: departure.departure,
+            minutes: departure.minutes,
+            busID: departure.busID
+        )
+    }
+
     static func upcoming(in groups: [ShuttleDestinationGroup], now: Date) -> [ShuttleDeparture] {
         // The same bus can be listed under several destinations (e.g. circular, or a Jungang run that
         // also stops at 한대앞), so keep one row per bus and departure time, labeled by the first group.
         // Different buses leaving at the same minute (e.g. 한대앞행 and 예술인행) stay separate.
+        // Circular buses are relabelled 순환 first, so their 한대앞 and 예술인 copies collapse into one row.
         struct BusKey: Hashable {
             let departure: Date
             let busID: String
         }
         var seen = Set<BusKey>()
-        return upcomingByGroup(in: groups, now: now).flatMap { $0 }
+        return upcomingByGroup(in: groups, now: now).flatMap { $0 }.map(circularLabeled)
             .filter { seen.insert(BusKey(departure: $0.departure, busID: $0.busID)).inserted }
             .sorted { ($0.departure, $0.destination) < ($1.departure, $1.destination) }
     }
 
     static func nextPerGroup(in groups: [ShuttleDestinationGroup], now: Date) -> [ShuttleDeparture] {
-        groups.compactMap { upcoming(in: $0, now: now).first }.sorted { $0.departure < $1.departure }
+        // Circular buses form their own 순환 group here, so the same bus is not shown under both 한대앞 and 예술인.
+        var nextByLabel: [String: ShuttleDeparture] = [:]
+        var labelOrder: [String] = []
+        for group in groups {
+            for departure in upcoming(in: group, now: now).map(circularLabeled) {
+                let label = departure.destinationKey + "|" + departure.destination
+                if let current = nextByLabel[label] {
+                    if departure.departure < current.departure {
+                        nextByLabel[label] = departure
+                    }
+                } else {
+                    nextByLabel[label] = departure
+                    labelOrder.append(label)
+                }
+            }
+        }
+        return labelOrder.compactMap { nextByLabel[$0] }.sorted { $0.departure < $1.departure }
     }
 
     static func transferHasContent(groups: [ShuttleDestinationGroup], transitArrivalCount: Int, now: Date) -> Bool {
