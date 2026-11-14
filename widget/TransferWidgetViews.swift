@@ -90,24 +90,19 @@ private struct TransferLargeHeader: View {
 private struct TransferShuttleList: View {
     let groups: [ShuttleDestinationGroup]
     let now: Date
-    private var departures: [(ShuttleDestinationGroup, [ShuttleDeparture])] {
-        let lists = ShuttleDepartureMath.upcomingByGroup(in: groups, now: now)
-        return Array(lists.compactMap { items in
-            groups.first { $0.destinationKey == items[0].destinationKey && $0.destination == items[0].destination }.map { ($0, items) }
-        }.prefix(3))
+    private var rows: [[ShuttleDeparture]] {
+        Array(ShuttleDepartureMath.upcomingByLabel(in: groups, now: now).prefix(3))
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("shuttle.title").font(.godo(size: 11, weight: .bold)).foregroundStyle(HYUWidgetColor.brand).padding(.top, 12)
-            if departures.isEmpty {
+            if rows.isEmpty {
                 Text("shuttle.state.ended").font(.godo(size: 11, weight: .regular)).foregroundStyle(HYUWidgetColor.muted).padding(.top, 7)
             } else {
                 Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
-                    ForEach(departures.map(\.0)) { group in
-                        if let items = departures.first(where: { $0.0.id == group.id })?.1 {
-                            TransferShuttleRow(group: group, departures: items)
-                        }
+                    ForEach(rows.indices, id: \.self) { index in
+                        TransferShuttleRow(departures: rows[index])
                     }
                 }.padding(.top, 7)
             }
@@ -116,13 +111,12 @@ private struct TransferShuttleList: View {
 }
 
 private struct TransferShuttleRow: View {
-    let group: ShuttleDestinationGroup
     let departures: [ShuttleDeparture]
 
     var body: some View {
         let first = departures[0]
         GridRow {
-            DestinationDot(color: HYUWidgetColor.destination(forKey: group.destinationKey))
+            DestinationDot(color: HYUWidgetColor.destination(forKey: first.destinationKey))
             Text(verbatim: first.destination).font(.godo(size: 13, weight: .semibold)).lineLimit(1).gridColumnAlignment(.leading).frame(
                 maxWidth: .infinity,
                 alignment: .leading

@@ -124,6 +124,27 @@ enum ShuttleDepartureMath {
         return labelOrder.compactMap { nextByLabel[$0] }.sorted { $0.departure < $1.departure }
     }
 
+    /// Upcoming departures per destination label, for lists that are not direction specific.
+    /// Circular runs are relabelled 순환 first, so they form one row instead of appearing under 한대앞 and 예술인.
+    static func upcomingByLabel(in groups: [ShuttleDestinationGroup], now: Date) -> [[ShuttleDeparture]] {
+        var departuresByLabel: [String: [ShuttleDeparture]] = [:]
+        var seenByLabel: [String: Set<Date>] = [:]
+        var labelOrder: [String] = []
+        for group in groups {
+            for departure in upcoming(in: group, now: now).map(circularLabeled) {
+                let label = departure.destinationKey + "|" + departure.destination
+                if departuresByLabel[label] == nil {
+                    departuresByLabel[label] = []
+                    labelOrder.append(label)
+                }
+                guard seenByLabel[label, default: []].insert(departure.departure).inserted else { continue }
+                departuresByLabel[label, default: []].append(departure)
+            }
+        }
+        return labelOrder.compactMap { label in departuresByLabel[label]?.sorted { $0.departure < $1.departure } }
+            .filter { !$0.isEmpty }
+    }
+
     static func transferHasContent(groups: [ShuttleDestinationGroup], transitArrivalCount: Int, now: Date) -> Bool {
         !upcoming(in: groups, now: now).isEmpty || transitArrivalCount > 0
     }
