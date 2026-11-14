@@ -59,6 +59,13 @@ import Foundation
                 transfer(stop: "한대앞", id: "station", groups: activeGroups, transit: [])
             case "transfer-circular":
                 transfer(stop: "기숙사", id: "dormitory_o", groups: circularGroups, transit: fullTransit)
+            case "transfer-circular-fallback":
+                transfer(stop: "기숙사", id: "dormitory_o", groups: circularGroups, transit: [])
+            case "transfer-circular-fallback-full":
+                transfer(
+                    stop: "셔틀콕", id: "shuttlecock_o",
+                    groups: circularGroups + [group("중앙역", "JUNGANG", ["14:15"], busIDs: ["DJ|DJ"])], transit: []
+                )
             case "transfer-shuttles-exhausted":
                 transfer(stop: "기숙사", id: "dormitory_o", groups: expiredGroups, transit: subway)
             case "transfer-expired":
