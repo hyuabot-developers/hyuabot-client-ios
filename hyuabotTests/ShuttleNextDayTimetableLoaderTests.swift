@@ -1,9 +1,15 @@
+//
+//  ShuttleNextDayTimetableLoaderTests.swift
+//  hyuabotTests
+//
+
 import XCTest
 @testable import hyuabot
 
 @MainActor
 final class ShuttleNextDayTimetableLoaderTests: XCTestCase {
-    @MainActor private final class Harness {
+    @MainActor
+    private final class Harness {
         var stored: ShuttleNextDayTimetable?
         var published: [ShuttleNextDayTimetable?] = []
         var requests: [(date: String, completion: (ShuttleNextDayTimetableLoader.Departures?) -> Void)] = []
@@ -49,7 +55,7 @@ final class ShuttleNextDayTimetableLoaderTests: XCTestCase {
 
         harness.loader.load(date: "2026-11-16", isWeekend: false)
         XCTAssertNil(harness.stored)
-        XCTAssertNil(harness.published.last ?? nil)
+        XCTAssertEqual(harness.published.last, .some(nil))
         XCTAssertEqual(harness.requests.count, 2)
 
         harness.requests[1].completion(nil)

@@ -59,7 +59,8 @@ struct ShuttleNextDayTimetable: Equatable {
 }
 
 /// Use this loader only on the main actor. A completion for a date that is no longer in flight is discarded, so an older request can never overwrite a newer date.
-@MainActor final class ShuttleNextDayTimetableLoader {
+@MainActor
+final class ShuttleNextDayTimetableLoader {
     typealias Departures = [String: [String: [String]]]
     typealias Fetch = @MainActor (_ date: String, _ completion: @escaping @MainActor (Departures?) -> Void) -> Void
 
