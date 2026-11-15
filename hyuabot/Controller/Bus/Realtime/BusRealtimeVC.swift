@@ -558,6 +558,12 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func fetchBusRealtimeData() {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-UIDebugBusLoading") {
+            BusRealtimeData.shared.isLoading.onNext(true)
+            return
+        }
+        #endif
         fetchBusStopCoordinates()
         latestRequestGeneration += 1
         let requestGeneration = latestRequestGeneration

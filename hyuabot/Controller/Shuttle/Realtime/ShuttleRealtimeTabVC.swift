@@ -185,8 +185,12 @@ class ShuttleRealtimeTabVC: UIViewController {
 
         ShuttleRealtimeData.shared.isLoading
             .distinctUntilChanged()
-            .subscribe(onNext: { [weak self] isLoading in
+            .subscribe(onNext: { [weak self] loading in
                 guard let self else { return }
+                var isLoading = loading
+                #if DEBUG
+                if ProcessInfo.processInfo.arguments.contains("-UIDebugForceLoading") { isLoading = true }
+                #endif
                 showsInitialSkeleton = isLoading
                 timetableDelegate.showsInitialSkeleton = isLoading
                 UIView.performWithoutAnimation {

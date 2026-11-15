@@ -203,7 +203,11 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
     }
 
     private func observeSubjects() {
-        isLoading.subscribe(onNext: { isLoading in
+        isLoading.subscribe(onNext: { loading in
+            var isLoading = loading
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-UIDebugForceLoading") { isLoading = true }
+            #endif
             self.showsSkeleton = isLoading
             self.updateStatusRow()
             self.readingRoomView.reloadData()

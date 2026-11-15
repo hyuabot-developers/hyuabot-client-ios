@@ -64,6 +64,7 @@ final class SubwayRealtimeSkeletonListView: UIView {
         let heading = UIStackView(arrangedSubviews: [bar(width: 0, height: 14, radius: 7), bar(width: 0, height: 12, radius: 6)])
         heading.axis = .vertical
         heading.spacing = 6
+        heading.alignment = .leading
         header.addSubview(heading)
         heading.snp
             .makeConstraints {
@@ -89,6 +90,7 @@ final class SubwayRealtimeSkeletonListView: UIView {
             let labels = UIStackView(arrangedSubviews: [bar(width: 0, height: 16, radius: 8), bar(width: 0, height: 12, radius: 6)])
             labels.axis = .vertical
             labels.spacing = 8
+            labels.alignment = .leading
             row.addSubview(labels)
             labels.snp
                 .makeConstraints {

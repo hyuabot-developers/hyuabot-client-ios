@@ -136,7 +136,12 @@ final class BusSectionCardView: UIView {
     private func addSeparator(to row: UIView) {
         let line = UIView().then { $0.backgroundColor = SettingsStyle.Color.separator }
         row.addSubview(line)
-        line.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview().inset(16); $0.height.equalTo(1) }
+        line.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview().inset(16)
+            $0.trailing.equalToSuperview()
+            $0.height.equalTo(1)
+        }
     }
 
     private func emptyState() -> UIView {
