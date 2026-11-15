@@ -5,6 +5,7 @@ require "json"
 
 ROOT = File.expand_path("..", __dir__)
 REQUIRED_LANGUAGES = ["ko", "en", "ja", "zh-Hans"].freeze
+APP_KEY_PATTERN = /\A[a-z][A-Za-z0-9_]*(\.[A-Za-z0-9_%]+)+\z/
 CATALOGS = [
   "hyuabot/Localization/Localizable.xcstrings",
   "hyuabot/Localization/InfoPlist.xcstrings",
@@ -23,6 +24,10 @@ CATALOGS.each do |relative_path|
   strings = catalog.fetch("strings", {})
   strings.each do |key, value|
     next if value["shouldTranslate"] == false
+    if key.match?(APP_KEY_PATTERN) && value["extractionState"] != "stale" && (value["localizations"] || {}).empty?
+      failures << "#{relative_path}: #{key.inspect} has no localizations"
+      next
+    end
     next unless value["extractionState"] == "manual"
 
     localizations = value["localizations"]
