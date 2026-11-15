@@ -5,13 +5,14 @@
 
 import Api
 import MapKit
+import RxRelay
 import RxSwift
 import UIKit
 
 class BusStopInfoVC: UIViewController {
     private let input: [BusRouteStopInput]
     private let disposeBag = DisposeBag()
-    private let routeStops = BehaviorSubject<[BusStopDialogQuery.Data.Bus]>(value: [])
+    private let routeStops = BehaviorRelay<[BusStopDialogQuery.Data.Bus]>(value: [])
     private let stopMapView = MKMapView().then {
         $0.isScrollEnabled = false
         $0.isZoomEnabled = false
@@ -126,7 +127,7 @@ class BusStopInfoVC: UIViewController {
         Task {
             let response = try? await Network.shared.client.fetch(query: BusStopDialogQuery(routeStops: input))
             if let data = response?.data {
-                routeStops.onNext(data.bus.sorted(by: { $0.route.name < $1.route.name }))
+                routeStops.accept(data.bus.sorted(by: { $0.route.name < $1.route.name }))
             }
         }
     }
@@ -159,12 +160,12 @@ extension BusStopInfoVC: MKMapViewDelegate {
 
 extension BusStopInfoVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        (try? routeStops.value().count) ?? 0
+        routeStops.value.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let stops = try? routeStops.value(),
-              let cell = tableView.dequeueReusableCell(withIdentifier: BusFirstLastCellView.reuseIdentifier,
+        let stops = routeStops.value
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: BusFirstLastCellView.reuseIdentifier,
                                                        for: indexPath) as? BusFirstLastCellView else { return UITableViewCell() }
         cell.setupUI(item: stops[indexPath.row])
         return cell
