@@ -324,23 +324,6 @@ class SubwayRealtimeVC: UIViewController {
         }
     }
 
-    private func startPolling() {
-        stopPolling()
-        #if DEBUG
-            guard SubwayDebugFixture.activeMode == nil else { return }
-        #endif
-        fetchSubwayRealtimeData()
-        subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] _ in
-                self?.fetchSubwayRealtimeData()
-            })
-    }
-
-    private func stopPolling() {
-        subscription?.dispose()
-        subscription = nil
-    }
-
     @objc
     func appDidEnterBackground() {
         stopPolling()
@@ -357,6 +340,23 @@ extension SubwayRealtimeVC {
         super.viewIsAppearing(animated)
         // Pushed screens (e.g. the timetable) show only the back chevron.
         navigationItem.backButtonDisplayMode = .minimal
+    }
+
+    private func startPolling() {
+        stopPolling()
+        #if DEBUG
+            guard SubwayDebugFixture.activeMode == nil else { return }
+        #endif
+        fetchSubwayRealtimeData()
+        subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                self?.fetchSubwayRealtimeData()
+            })
+    }
+
+    private func stopPolling() {
+        subscription?.dispose()
+        subscription = nil
     }
 }
 
