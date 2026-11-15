@@ -23,6 +23,8 @@ private struct ShuttleBusRouteOption {
 
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeVC: UIViewController {
+    private static let arrivalTimeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
+
     private static let presenceStopIds = [
         "dormitory_o",
         "shuttlecock_o",
@@ -76,63 +78,63 @@ class ShuttleRealtimeVC: UIViewController {
 
     private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(
         stopID: .dormiotryOut,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
@@ -617,9 +619,9 @@ class ShuttleRealtimeVC: UIViewController {
 
     // swiftlint:disable:next function_body_length
     private func observeSubjects() {
-        ShuttleRealtimeData.shared.arrival.subscribe(onNext: { data in
-            let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
-            let currentTime = timeFormatter.string(from: Date.now)
+        ShuttleRealtimeData.shared.arrival.subscribe(onNext: { [weak self] data in
+            guard let self else { return }
+            let currentTime = Self.arrivalTimeFormatter.string(from: Date.now)
             let shared = ShuttleRealtimeData.shared
             typealias Entry = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
             typealias Order = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
@@ -670,7 +672,8 @@ class ShuttleRealtimeVC: UIViewController {
             self.jungangStationTabVC.reload()
             self.shuttlecockInTabVC.reload()
         }).disposed(by: disposeBag)
-        ShuttleRealtimeData.shared.notices.subscribe(onNext: { notices in
+        ShuttleRealtimeData.shared.notices.subscribe(onNext: { [weak self] notices in
+            guard let self else { return }
             if !self.hasLoadedInitialNotices, notices.isEmpty {
                 self.listHeader.setNoticeHidden(false)
                 self.noticeView.setLoading(true)
@@ -685,15 +688,15 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func startPolling() {
+        stopPolling()
         fetchShuttleRealtimeData()
         subscription = Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { _ in
-                self.fetchShuttleRealtimeData()
-            })
+            .subscribe(onNext: { [weak self] _ in self?.fetchShuttleRealtimeData() })
     }
 
     private func stopPolling() {
         subscription?.dispose()
+        subscription = nil
     }
 
     private func currentPayloadSelection() -> ShuttlePayloadSelection {
