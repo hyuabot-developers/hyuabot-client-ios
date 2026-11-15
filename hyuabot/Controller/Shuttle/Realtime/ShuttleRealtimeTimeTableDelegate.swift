@@ -30,7 +30,7 @@ class ShuttleRealtimeTimeTableDelegate: NSObject {
 
     static func emptyText(stopID: ShuttleStopEnum, section: Int?, now: Foundation.Date = Foundation.Date()) -> ShuttleDisplayLogic.EmptyText {
         let boardingStop = ShuttleDisplayLogic.stopKey(stopID)
-        let stops = (try? ShuttleRealtimeData.shared.arrival.value()) ?? []
+        let stops = ShuttleRealtimeData.shared.arrival.value
         let timetable = stops.first { $0.name == boardingStop }?.timetable
         let destinationKey = section.flatMap { ShuttleDisplayLogic.destinationKey(stopID: boardingStop, section: $0) }
         let times: [String]
@@ -49,7 +49,7 @@ class ShuttleRealtimeTimeTableDelegate: NSObject {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul") ?? .current
         let nextDay = nextDayInputs(
-            table: try? ShuttleRealtimeData.shared.nextDayTimetable.value(),
+            table: ShuttleRealtimeData.shared.nextDayTimetable.value,
             boardingStop: boardingStop,
             destinationKey: destinationKey,
             now: now,
@@ -90,12 +90,12 @@ extension ShuttleRealtimeTimeTableDelegate: UITableViewDelegate, UITableViewData
     private var timetableData: [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]? {
         let shuttle = ShuttleRealtimeData.shared
         return switch stopID {
-        case .dormiotryOut: try? shuttle.shuttleDormitoryData.value()
-        case .shuttlecockOut: try? shuttle.shuttleShuttlecockData.value()
-        case .station: try? shuttle.shuttleStationData.value()
-        case .terminal: try? shuttle.shuttleTerminalData.value()
-        case .jungangStation: try? shuttle.shuttleJungangStationData.value()
-        case .shuttlecockIn: try? shuttle.shuttleShuttlecockInData.value()
+        case .dormiotryOut: shuttle.shuttleDormitoryData.value
+        case .shuttlecockOut: shuttle.shuttleShuttlecockData.value
+        case .station: shuttle.shuttleStationData.value
+        case .terminal: shuttle.shuttleTerminalData.value
+        case .jungangStation: shuttle.shuttleJungangStationData.value
+        case .shuttlecockIn: shuttle.shuttleShuttlecockInData.value
         default: nil
         }
     }

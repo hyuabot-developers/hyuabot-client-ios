@@ -5,6 +5,7 @@
 
 import Api
 import RxSwift
+import RxRelay
 import UIKit
 
 struct ShuttleBusAlternativeDisplayData: Equatable {
@@ -99,49 +100,49 @@ class ShuttleRealtimeData {
     static let shared = ShuttleRealtimeData()
     private init() {}
     var loadedSubwayLanguage: String?
-    let isLoading = BehaviorSubject<Bool>(value: true)
+    let isLoading = BehaviorRelay<Bool>(value: true)
     // Realtime Query
-    let arrival = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop]>(value: [])
-    let nextDayTimetable = BehaviorSubject<ShuttleNextDayTimetable?>(value: nil)
-    let notices = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Notice.Notice]>(value: [])
-    let shuttleDormitoryData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
-    let shuttleDormitoryToStationData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let arrival = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop]>(value: [])
+    let nextDayTimetable = BehaviorRelay<ShuttleNextDayTimetable?>(value: nil)
+    let notices = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Notice.Notice]>(value: [])
+    let shuttleDormitoryData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
+    let shuttleDormitoryToStationData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleDormitoryToTerminalData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleDormitoryToJungangStationData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let shuttleShuttlecockData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let shuttleShuttlecockData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
     let shuttleShuttlecockToStationData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleShuttlecockToTerminalData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleShuttlecockToJungangStationData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let shuttleStationData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
-    let shuttleStationToCampusData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let shuttleStationToTerminalData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let shuttleStationData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
+    let shuttleStationToCampusData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let shuttleStationToTerminalData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
     let shuttleStationToJungangStationData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let shuttleTerminalData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
-    let shuttleTerminalToCampusData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let shuttleJungangStationData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let shuttleTerminalData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
+    let shuttleTerminalToCampusData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let shuttleJungangStationData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
     let shuttleJungangStationToCampusData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let shuttleShuttlecockInData = BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let shuttleShuttlecockInData = BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]>(value: [])
     let shuttleShuttlecockInToDormitoryData =
-        BehaviorSubject<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
-    let transferData = BehaviorSubject<ShuttleRealtimePageQuery.Data?>(value: nil)
+        BehaviorRelay<[ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]>(value: [])
+    let transferData = BehaviorRelay<ShuttleRealtimePageQuery.Data?>(value: nil)
     /// Bus alternative data
-    let busAlternatives = BehaviorSubject<[String: [ShuttleBusAlternativeDisplayData]]>(value: [:])
+    let busAlternatives = BehaviorRelay<[String: [ShuttleBusAlternativeDisplayData]]>(value: [:])
     /// Show Remaining Time
     /// Show arrival by time
-    let showRemainingTime = BehaviorSubject<Bool>(value: true)
-    let showArrivalByTime = BehaviorSubject<Bool>(value: true)
+    let showRemainingTime = BehaviorRelay<Bool>(value: true)
+    let showArrivalByTime = BehaviorRelay<Bool>(value: true)
 
     func prepareForSubwayLanguage(_ language: String) {
         guard loadedSubwayLanguage != language else { return }
         loadedSubwayLanguage = language
-        transferData.onNext(nil)
-        isLoading.onNext(true)
+        transferData.accept(nil)
+        isLoading.accept(true)
     }
 }

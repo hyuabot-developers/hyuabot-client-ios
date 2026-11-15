@@ -355,29 +355,29 @@ class ShuttleRealtimeTabVC: UIViewController {
     ) -> [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry] {
         switch (stopID, section) {
         case (.dormiotryOut, 0):
-            (try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value
         case (.dormiotryOut, 1):
-            (try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value
         case (.dormiotryOut, 2):
-            (try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value
         case (.shuttlecockOut, 0):
-            (try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value
         case (.shuttlecockOut, 1):
-            (try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value
         case (.shuttlecockOut, 2):
-            (try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value
         case (.station, 0):
-            (try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleStationToCampusData.value
         case (.station, 1):
-            (try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleStationToTerminalData.value
         case (.station, 2):
-            (try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value
         case (.terminal, 0):
-            (try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value
         case (.jungangStation, 0):
-            (try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value
         case (.shuttlecockIn, 0):
-            (try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value()) ?? []
+            ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value
         default:
             []
         }
@@ -829,7 +829,7 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     private static func shuttleAlarmLocation(for stopID: String) -> (latitude: Double, longitude: Double)? {
         let locationStopID = stopID == "dormitory_i" ? "dormitory_o" : stopID
-        if let stop = (try? ShuttleRealtimeData.shared.arrival.value())?.first(where: { $0.name == locationStopID }) {
+        if let stop = ShuttleRealtimeData.shared.arrival.value.first(where: { $0.name == locationStopID }) {
             return (stop.latitude, stop.longitude)
         }
         return shuttleAlarmFallbackLocation(for: locationStopID)
@@ -981,31 +981,31 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     private func realtimeOutboundDataCount(for source: RealtimeDataSource) -> (Int, Int)? {
         switch source {
         case .dormitoryToStation:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value
             return (data.count, 3)
         case .dormitoryToTerminal:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value
             return (data.count, 3)
         case .dormitoryToJungangStation:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value
             return (data.count, 3)
         case .shuttlecockToStation:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value
             return (data.count, 3)
         case .shuttlecockToTerminal:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value
             return (data.count, 3)
         case .shuttlecockToJungangStation:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value
             return (data.count, 3)
         case .stationToCampus:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleStationToCampusData.value
             return (data.count, 3)
         case .stationToTerminal:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleStationToTerminalData.value
             return (data.count, 3)
         case .stationToJungangStation:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value
             return (data.count, 3)
         default: return nil
         }
@@ -1014,13 +1014,13 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
     private func realtimeInboundDataCount(for source: RealtimeDataSource) -> (Int, Int)? {
         switch source {
         case .terminalToCampus:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value
             return (data.count, 7)
         case .jungangStationToCampus:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value
             return (data.count, 7)
         case .shuttlecockInToDormitory:
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value() else { return nil }
+            let data = ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value
             return (data.count, 7)
         default: return nil
         }
@@ -1074,7 +1074,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
         guard let indexPath = dataIndexPath(for: displayedIndexPath) else { return UITableViewCell() }
         if stopID == .dormiotryOut {
             if indexPath.section == 0 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value() else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1092,7 +1092,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     return cell
                 }
             } else if indexPath.section == 1 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value() else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1110,8 +1110,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     return cell
                 }
             } else if indexPath.section == 2 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value()
-                else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1131,7 +1130,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if stopID == .shuttlecockOut {
             if indexPath.section == 0 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value() else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1149,7 +1148,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     return cell
                 }
             } else if indexPath.section == 1 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value() else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1167,8 +1166,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     return cell
                 }
             } else if indexPath.section == 2 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value()
-                else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1188,7 +1186,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             }
         } else if stopID == .station {
             if indexPath.section == 0 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value() else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleStationToCampusData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1206,7 +1204,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     return cell
                 }
             } else if indexPath.section == 1 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value() else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleStationToTerminalData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1224,8 +1222,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                     return cell
                 }
             } else if indexPath.section == 2 {
-                guard let data = try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value()
-                else { return UITableViewCell() }
+                let data = ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value
                 if data.indices.contains(indexPath.row) {
                     let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                     let item = data[indexPath.row]
@@ -1244,7 +1241,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 }
             }
         } else if stopID == .terminal {
-            guard let data = try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value() else { return UITableViewCell() }
+            let data = ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value
             if data.indices.contains(indexPath.row) {
                 let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                 let item = data[indexPath.row]
@@ -1258,7 +1255,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 return cell
             }
         } else if stopID == .jungangStation {
-            guard let data = try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value() else { return UITableViewCell() }
+            let data = ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value
             if data.indices.contains(indexPath.row) {
                 let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                 let item = data[indexPath.row]
@@ -1276,7 +1273,7 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
                 return cell
             }
         } else if stopID == .shuttlecockIn {
-            guard let data = try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value() else { return UITableViewCell() }
+            let data = ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value
             if data.indices.contains(indexPath.row) {
                 let cell = dequeueRealtimeCell(tableView, for: displayedIndexPath)
                 let item = data[indexPath.row]

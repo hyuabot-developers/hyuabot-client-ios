@@ -6,6 +6,7 @@
 import Api
 import CoreLocation
 import RxSwift
+import RxRelay
 import SnapKit
 import UIKit
 
@@ -166,8 +167,8 @@ class ShuttleRealtimeVC: UIViewController {
         selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
         super.init(nibName: nil, bundle: nil)
         nextDayTimetableLoader = ShuttleNextDayTimetableLoader(
-            current: { try? ShuttleRealtimeData.shared.nextDayTimetable.value() },
-            publish: { ShuttleRealtimeData.shared.nextDayTimetable.onNext($0) },
+            current: { ShuttleRealtimeData.shared.nextDayTimetable.value },
+            publish: { ShuttleRealtimeData.shared.nextDayTimetable.accept($0) },
             fetch: { date, completion in
                 Task { @MainActor in
                     var departures: ShuttleNextDayTimetableLoader.Departures = [:]
@@ -233,7 +234,7 @@ class ShuttleRealtimeVC: UIViewController {
     @MainActor
     private func markInitialShuttlePageDataLoaded() {
         hasLoadedInitialShuttlePageData = true
-        ShuttleRealtimeData.shared.isLoading.onNext(false)
+        ShuttleRealtimeData.shared.isLoading.accept(false)
         scheduleCoachMarksIfNeeded()
     }
 
@@ -331,7 +332,7 @@ class ShuttleRealtimeVC: UIViewController {
                 self?.presentFooterCoachMarks()
             }
         }
-        let isLoaded = (try? ShuttleRealtimeData.shared.arrival.value())?.isEmpty == false
+        let isLoaded = ShuttleRealtimeData.shared.arrival.value.isEmpty == false
         if isLoaded {
             scroll()
         } else {
@@ -551,7 +552,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func nextRouteStopIDs(for stopID: String) -> [String]? {
-        guard let stop = try? ShuttleRealtimeData.shared.arrival.value().first(where: { $0.name == stopID }) else { return nil }
+        guard let stop = ShuttleRealtimeData.shared.arrival.value.first(where: { $0.name == stopID }) else { return nil }
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
         let now = timeFormatter.string(from: .now)
         return stop.timetable.order.first(where: { $0.time > now })?.stops.map(\.stop)
@@ -612,9 +613,9 @@ class ShuttleRealtimeVC: UIViewController {
         }
         updatePresenceStatus(viewerCount: nil)
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
-        ShuttleRealtimeData.shared.showRemainingTime.onNext(showRemainingTime)
+        ShuttleRealtimeData.shared.showRemainingTime.accept(showRemainingTime)
         let showArrivalByTime = UserDefaults.standard.bool(forKey: "showArrivalByTime")
-        ShuttleRealtimeData.shared.showArrivalByTime.onNext(showArrivalByTime)
+        ShuttleRealtimeData.shared.showArrivalByTime.accept(showArrivalByTime)
     }
 
     // swiftlint:disable:next function_body_length
@@ -628,14 +629,14 @@ class ShuttleRealtimeVC: UIViewController {
             // Publish every stop from the shared response and omit destination departures that have already passed.
             func publish(
                 _ stopName: String,
-                order: BehaviorSubject<[Order]>,
-                destinations: [(String, BehaviorSubject<[Entry]>)]
+                order: BehaviorRelay<[Order]>,
+                destinations: [(String, BehaviorRelay<[Entry]>)]
             ) {
                 let stop = data.first(where: { $0.name == stopName })
                 // The query fetches the full day; hide departures before the current minute.
-                order.onNext(stop?.timetable.order.filter { $0.time >= String(currentTime.prefix(5)) } ?? [])
+                order.accept(stop?.timetable.order.filter { $0.time >= String(currentTime.prefix(5)) } ?? [])
                 for (destination, subject) in destinations {
-                    subject.onNext(
+                    subject.accept(
                         stop?.timetable.destination.first(where: { $0.destination == destination })?.entries
                             .filter { $0.time > currentTime } ?? []
                     )
@@ -724,7 +725,7 @@ class ShuttleRealtimeVC: UIViewController {
         let noticeLanguageChanged = lastAppliedNoticeLanguage != noticeLanguage
         let subwayLanguageChanged = lastAppliedSubwayLanguage != currentLanguage
         if selectionChanged || noticeLanguageChanged || subwayLanguageChanged {
-            dataDelegate.isLoading.onNext(true)
+            dataDelegate.isLoading.accept(true)
         }
         Task {
             let response = try? await Network.shared.client.fetch(
@@ -773,11 +774,11 @@ class ShuttleRealtimeVC: UIViewController {
                     lastAppliedPayloadSelection = selection
                     lastAppliedNoticeLanguage = noticeLanguage
                     lastAppliedSubwayLanguage = currentLanguage
-                    dataDelegate.transferData.onNext(data)
+                    dataDelegate.transferData.accept(data)
                     self.hasLoadedInitialNotices = true
-                    dataDelegate.notices.onNext(data.notices.flatMap(\.notices))
-                    dataDelegate.arrival.onNext(data.shuttle.stops)
-                    dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(data.alternativeBus))
+                    dataDelegate.notices.accept(data.notices.flatMap(\.notices))
+                    dataDelegate.arrival.accept(data.shuttle.stops)
+                    dataDelegate.busAlternatives.accept(Self.buildBusAlternatives(data.alternativeBus))
                 }
                 markInitialShuttlePageDataLoaded()
                 markInitialBusAlternativeDataLoaded()
@@ -994,8 +995,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> ShuttleStopPoint? {
         let name = String(localized: String.LocalizationValue(shuttleStopLocalizationKey(stop)))
-        let stops = try? ShuttleRealtimeData.shared.arrival.value()
-        if let stops, let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
+        let stops = ShuttleRealtimeData.shared.arrival.value
+        if let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
             return ShuttleStopPoint(name: name, latitude: shuttleStop.latitude, longitude: shuttleStop.longitude)
         }
 
@@ -1187,13 +1188,13 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func applyShowDepartureTime(_ isOn: Bool) {
         AnalyticsManager.logSelect(.shuttleDepartureSwitch, type: .toggle)
-        ShuttleRealtimeData.shared.showRemainingTime.onNext(!isOn)
+        ShuttleRealtimeData.shared.showRemainingTime.accept(!isOn)
         UserDefaults.standard.set(!isOn, forKey: "showRemainingTime")
     }
 
     private func applyShowArrivalByTime(_ isOn: Bool) {
         AnalyticsManager.logSelect(.shuttleArrivalByTimeSwitch, type: .toggle)
-        ShuttleRealtimeData.shared.showArrivalByTime.onNext(isOn)
+        ShuttleRealtimeData.shared.showArrivalByTime.accept(isOn)
         UserDefaults.standard.set(isOn, forKey: "showArrivalByTime")
         fetchShuttleRealtimeData()
     }
