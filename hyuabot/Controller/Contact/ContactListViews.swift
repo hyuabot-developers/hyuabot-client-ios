@@ -36,9 +36,13 @@ final class ContactSectionHeaderView: UITableViewHeaderFooterView {
     private func configureLabels() {
         departmentLabel.font = SettingsStyle.font(13, bold: true)
         departmentLabel.textColor = SettingsStyle.Color.secondaryText
+        departmentLabel.numberOfLines = 0
+        departmentLabel.lineBreakStrategy = .hangulWordPriority
         countLabel.font = SettingsStyle.font(13)
         countLabel.textColor = SettingsStyle.Color.secondaryText
         countLabel.textAlignment = .right
+        countLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        countLabel.setContentHuggingPriority(.required, for: .horizontal)
         isAccessibilityElement = true
         accessibilityTraits = .header
     }

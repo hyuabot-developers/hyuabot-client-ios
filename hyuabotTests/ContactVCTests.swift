@@ -101,6 +101,47 @@ final class ContactVCTests: XCTestCase {
         XCTAssertEqual(controller.tableView.numberOfSections, 2)
     }
 
+    func testLongContactNameWrapsAndGrowsRow() {
+        let longCell = ContactSearchResultCellView(
+            style: .default,
+            reuseIdentifier: ContactSearchResultCellView.reuseIdentifier
+        )
+        longCell.configure(
+            entry: ContactEntry(
+                id: 9,
+                department: "수업",
+                name: "수업(SW학부)/국제화/학생/취업/시설 담당 행정 직원 대표 전화",
+                phoneNumber: "031-400-4103"
+            ),
+            query: "",
+            isFirst: true,
+            isLast: true
+        )
+
+        let shortCell = ContactSearchResultCellView(
+            style: .default,
+            reuseIdentifier: ContactSearchResultCellView.reuseIdentifier
+        )
+        shortCell.configure(
+            entry: ContactEntry(id: 10, department: "수업", name: "가", phoneNumber: "031-400-4103"),
+            query: "",
+            isFirst: true,
+            isLast: true
+        )
+
+        func fittedHeight(of cell: ContactSearchResultCellView) -> CGFloat {
+            cell.frame = CGRect(x: 0, y: 0, width: 390, height: 64)
+            cell.layoutIfNeeded()
+            return cell.contentView.systemLayoutSizeFitting(
+                CGSize(width: 390, height: UIView.layoutFittingCompressedSize.height),
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            ).height
+        }
+
+        XCTAssertGreaterThan(fittedHeight(of: longCell), fittedHeight(of: shortCell))
+    }
+
     func testDashlessPhoneQueryFindsEntry() {
         let controller = makeController()
         injectFixture(into: controller)
