@@ -4,6 +4,7 @@
 //
 
 import Api
+import RxRelay
 import RxSwift
 import SnapKit
 import UIKit
@@ -56,10 +57,10 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         applyInitialMealSelectionIfNeeded()
         #if DEBUG
             if let mode = CafeteriaDebugFixture.activeMode {
-                CafeteriaData.shared.feedDate.onNext(CafeteriaDebugFixture.today)
+                CafeteriaData.shared.feedDate.accept(CafeteriaDebugFixture.today)
                 isLoading = mode == .loading
                 sources = CafeteriaDebugFixture.sources(for: mode)
-                CafeteriaData.shared.isLoading.onNext(isLoading)
+                CafeteriaData.shared.isLoading.accept(isLoading)
                 render()
             }
         #endif
@@ -178,7 +179,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
                     render(); return
                 }
             #endif
-            CafeteriaData.shared.isLoading.onNext(true)
+            CafeteriaData.shared.isLoading.accept(true)
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
             let date = formatter.string(from: feedDate)
@@ -188,7 +189,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
                 guard !Task.isCancelled else { return }
                 await MainActor.run {
                     self.sources = response?.data?.cafeteria.map(CafeteriaSource.init) ?? []
-                    CafeteriaData.shared.isLoading.onNext(false)
+                    CafeteriaData.shared.isLoading.accept(false)
                     self.isLoading = false
                     self.render()
                 }
@@ -202,7 +203,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
     }
 
     private func render() {
-        let selectedDate = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        let selectedDate = CafeteriaData.shared.feedDate.value
         let isToday = Calendar.current.isDate(selectedDate, inSameDayAs: today)
         let cards = CafeteriaDisplayLogic.cards(from: sources, meal: selectedMeal, showsStatus: isToday, now: now)
         let campusID = UserDefaults.standard.integer(forKey: "campusID") == 0 ? 2 : UserDefaults.standard.integer(forKey: "campusID")
@@ -270,7 +271,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
             emptyCard.onAction = { [weak self] in
                 guard let next = Calendar.current.date(byAdding: .day, value: 1, to: date) else { return }
                 AnalyticsManager.logSelect(.cafeteriaNextDate, type: .dateControl)
-                CafeteriaData.shared.feedDate.onNext(next)
+                CafeteriaData.shared.feedDate.accept(next)
             }
         case let .noMenusForMeal(alternative):
             emptyCard.configure(
@@ -305,7 +306,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         didApplyInitialMealSelection = true
         loadViewIfNeeded()
         selectedMeal = CafeteriaMeal(rawValue: mealIndex) ?? .breakfast
-        CafeteriaData.shared.feedDate.onNext(date)
+        CafeteriaData.shared.feedDate.accept(date)
     }
 
     func applyInitialMealSelectionIfNeeded() {
@@ -313,9 +314,9 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         didApplyInitialMealSelection = true
         let selection = CafeteriaData.automaticMealSelection(at: now)
         selectedMeal = CafeteriaMeal(rawValue: selection.mealIndex) ?? .breakfast
-        let current = (try? CafeteriaData.shared.feedDate.value()) ?? selection.date
+        let current = CafeteriaData.shared.feedDate.value
         if !Calendar.current.isDate(current, inSameDayAs: selection.date) {
-            CafeteriaData.shared.feedDate.onNext(selection.date)
+            CafeteriaData.shared.feedDate.accept(selection.date)
         } else {
             render()
         }
@@ -337,41 +338,42 @@ extension CafeteriaVC {
     private func selectDate(_ date: Foundation.Date) {
         AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
         selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
-        CafeteriaData.shared.feedDate.onNext(date)
+        CafeteriaData.shared.feedDate.accept(date)
     }
 
     private func shiftWeek(_ direction: Int) {
         AnalyticsManager.logSelect(direction < 0 ? .cafeteriaPreviousDate : .cafeteriaNextDate, type: .dateControl)
-        let current = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        let current = CafeteriaData.shared.feedDate.value
         guard let date = Calendar.current.date(byAdding: .day, value: direction * 7, to: current) else { return }
         lastWeekShift = direction
         selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
-        CafeteriaData.shared.feedDate.onNext(date)
+        CafeteriaData.shared.feedDate.accept(date)
     }
 
     private func selectToday() {
         AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
-        let current = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        let current = CafeteriaData.shared.feedDate.value
         if !Calendar.current.isDate(current, equalTo: today, toGranularity: .weekOfYear) {
             lastWeekShift = current > today ? -1 : 1
         }
         selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
-        CafeteriaData.shared.feedDate.onNext(today)
+        CafeteriaData.shared.feedDate.accept(today)
     }
 
     private func presentDatePicker() {
-        let date = (try? CafeteriaData.shared.feedDate.value()) ?? today
+        let date = CafeteriaData.shared.feedDate.value
         let picker = CafeteriaDatePickerVC(selectedDate: date) { [weak self] date in
             guard let self else { return }
             AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
             selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
-            CafeteriaData.shared.feedDate.onNext(date)
+            CafeteriaData.shared.feedDate.accept(date)
         }
         present(picker, animated: true)
     }
 
     private func share() {
-        guard let date = try? CafeteriaData.shared.feedDate.value(), let text = CafeteriaDisplayLogic.shareText(
+        let date = CafeteriaData.shared.feedDate.value
+        guard let text = CafeteriaDisplayLogic.shareText(
             sources: sources,
             meal: selectedMeal,
             date: date

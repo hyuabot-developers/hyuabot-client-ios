@@ -293,18 +293,18 @@ final class BusComponentTests: XCTestCase {
     }
 
     @MainActor
-    func testTimetablePublishEndsLoading() throws {
+    func testTimetablePublishEndsLoading() {
         let data = BusTimetableData.shared
-        data.isLoading.onNext(true)
+        data.isLoading.accept(true)
         data.publish([])
-        XCTAssertEqual(try data.isLoading.value(), false)
-        XCTAssertTrue(try data.timetable.value().isEmpty)
+        XCTAssertEqual(data.isLoading.value, false)
+        XCTAssertTrue(data.timetable.value.isEmpty)
 
-        data.isLoading.onNext(true)
+        data.isLoading.accept(true)
         let item = BusTimetableItem(route: "3100N", weekdays: "weekdays", time: Date())
         data.publish([item])
-        XCTAssertEqual(try data.isLoading.value(), false)
-        XCTAssertEqual(try data.timetable.value().count, 1)
+        XCTAssertEqual(data.isLoading.value, false)
+        XCTAssertEqual(data.timetable.value.count, 1)
         data.publish([])
     }
 

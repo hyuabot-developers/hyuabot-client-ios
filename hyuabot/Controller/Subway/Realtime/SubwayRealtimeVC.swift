@@ -5,6 +5,7 @@
 
 import Api
 import ApolloAPI
+import RxRelay
 import RxSwift
 import UIKit
 
@@ -123,11 +124,11 @@ class SubwayRealtimeVC: UIViewController {
         #if DEBUG
             let fixtureMode = SubwayDebugFixture.activeMode
             let isLoading = fixtureMode == .loading ? true : (fixtureMode != nil ? false : (
-                (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
+                SubwayRealtimeData.shared.isLoading.value
             ))
             let now = fixtureMode != nil ? SubwayDebugFixture.now : Date.now
         #else
-            let isLoading = (try? SubwayRealtimeData.shared.isLoading.value()) ?? true
+            let isLoading = SubwayRealtimeData.shared.isLoading.value
             let now = Date.now
         #endif
         let sections: [SubwaySectionContent]
@@ -152,18 +153,18 @@ class SubwayRealtimeVC: UIViewController {
                     toIncheon = SubwayDebugFixture.transferRoutes(toIncheon: true, mode: fixtureMode)
                     toHanyang = SubwayDebugFixture.transferRoutes(toIncheon: false, mode: fixtureMode)
                 } else {
-                    toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
+                    toIncheon = SubwayRealtimeData.shared.transferUp.value.map {
                         SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
                     }
-                    toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
+                    toHanyang = SubwayRealtimeData.shared.transferDown.value.map {
                         SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
                     }
                 }
             #else
-                toIncheon = ((try? SubwayRealtimeData.shared.transferUp.value()) ?? []).map {
+                toIncheon = SubwayRealtimeData.shared.transferUp.value.map {
                     SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: false)
                 }
-                toHanyang = ((try? SubwayRealtimeData.shared.transferDown.value()) ?? []).map {
+                toHanyang = SubwayRealtimeData.shared.transferDown.value.map {
                     SubwayTransferRouteInfo(item: $0, transferStation: String(localized: "subway.station.k258"), showsPosition: true)
                 }
             #endif
@@ -179,8 +180,8 @@ class SubwayRealtimeVC: UIViewController {
             }
         #endif
         let subway: SubwayRealtimePageQuery.Data.Subway? = switch line {
-        case .line4: try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusBlue
-        case .suin: try? SubwayRealtimeData.shared.combinedRealtimeData.value()?.campusYellow
+        case .line4: SubwayRealtimeData.shared.combinedRealtimeData.value?.campusBlue
+        case .suin: SubwayRealtimeData.shared.combinedRealtimeData.value?.campusYellow
         }
         let direction = heading == .up ? "up" : "down"
         return subway?.arrival.first(where: { $0.direction == direction })?.entries.map(SubwayArrivalInfo.init(entry:)) ?? []
@@ -189,7 +190,7 @@ class SubwayRealtimeVC: UIViewController {
     private func observeSubjects() {
         SubwayRealtimeData.shared.realtimeData.subscribe(onNext: { data in
             // Update Realtime Data
-            SubwayRealtimeData.shared.combinedRealtimeData.onNext(SubwayCombinedRealtimeData(
+            SubwayRealtimeData.shared.combinedRealtimeData.accept(SubwayCombinedRealtimeData(
                 campusBlue: data.first(where: { $0.stationID == "K449" }),
                 campusYellow: data.first(where: { $0.stationID == "K251" }),
                 oidoBlue: data.first(where: { $0.stationID == "K456" }),
@@ -203,17 +204,17 @@ class SubwayRealtimeVC: UIViewController {
                 let campusYellow = data.campusYellow,
                 let oidoYellow = data.oidoYellow
             else {
-                SubwayRealtimeData.shared.transferUp.onNext([])
-                SubwayRealtimeData.shared.transferDown.onNext([])
+                SubwayRealtimeData.shared.transferUp.accept([])
+                SubwayRealtimeData.shared.transferDown.accept([])
                 return
             }
             guard let self else { return }
-            SubwayRealtimeData.shared.transferUp.onNext(processIncheonDirection(
+            SubwayRealtimeData.shared.transferUp.accept(processIncheonDirection(
                 campusBlue: campusBlue,
                 campusYellow: campusYellow,
                 oidoYellow: oidoYellow
             ))
-            SubwayRealtimeData.shared.transferDown.onNext(processHanyangDirection(oidoBlue: data.oidoBlue, oidoYellow: oidoYellow))
+            SubwayRealtimeData.shared.transferDown.accept(processHanyangDirection(oidoBlue: data.oidoBlue, oidoYellow: oidoYellow))
         }).disposed(by: disposeBag)
     }
 
@@ -311,31 +312,16 @@ class SubwayRealtimeVC: UIViewController {
                       language == LanguageManager.shared.apiLanguageTag else { return }
                 if let data = response?.data {
                     self.lastAppliedGeneration = generation
-                    SubwayRealtimeData.shared.realtimeData.onNext(data.subway)
-                    SubwayRealtimeData.shared.isLoading.onNext(false)
+                    SubwayRealtimeData.shared.realtimeData.accept(data.subway)
+                    SubwayRealtimeData.shared.isLoading.accept(false)
                     self.render()
                     self.contentView.endRefreshing()
                 } else {
-                    SubwayRealtimeData.shared.isLoading.onNext(false)
+                    SubwayRealtimeData.shared.isLoading.accept(false)
                     self.contentView.endRefreshing()
                 }
             }
         }
-    }
-
-    private func startPolling() {
-        #if DEBUG
-            guard SubwayDebugFixture.activeMode == nil else { return }
-        #endif
-        fetchSubwayRealtimeData()
-        subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] _ in
-                self?.fetchSubwayRealtimeData()
-            })
-    }
-
-    private func stopPolling() {
-        subscription?.dispose()
     }
 
     @objc
@@ -354,6 +340,23 @@ extension SubwayRealtimeVC {
         super.viewIsAppearing(animated)
         // Pushed screens (e.g. the timetable) show only the back chevron.
         navigationItem.backButtonDisplayMode = .minimal
+    }
+
+    private func startPolling() {
+        stopPolling()
+        #if DEBUG
+            guard SubwayDebugFixture.activeMode == nil else { return }
+        #endif
+        fetchSubwayRealtimeData()
+        subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                self?.fetchSubwayRealtimeData()
+            })
+    }
+
+    private func stopPolling() {
+        subscription?.dispose()
+        subscription = nil
     }
 }
 

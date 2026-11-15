@@ -6,6 +6,7 @@
 import Api
 import CoreLocation
 import RxSwift
+import RxRelay
 import SnapKit
 import UIKit
 
@@ -23,6 +24,8 @@ private struct ShuttleBusRouteOption {
 
 // swiftlint:disable:next type_body_length
 class ShuttleRealtimeVC: UIViewController {
+    private static let arrivalTimeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
+
     private static let presenceStopIds = [
         "dormitory_o",
         "shuttlecock_o",
@@ -76,63 +79,63 @@ class ShuttleRealtimeVC: UIViewController {
 
     private lazy var dormitoryOutTabVC = ShuttleRealtimeTabVC(
         stopID: .dormiotryOut,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var shuttlecockOutTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockOut,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var stationTabVC = ShuttleRealtimeTabVC(
         stopID: .station,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var terminalTabVC = ShuttleRealtimeTabVC(
         stopID: .terminal,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var jungangStationTabVC = ShuttleRealtimeTabVC(
         stopID: .jungangStation,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private lazy var shuttlecockInTabVC = ShuttleRealtimeTabVC(
         stopID: .shuttlecockIn,
-        refreshMethod: fetchShuttleRealtimeData,
-        showEntireTimetable: moveToEntireTimetable,
-        showViaVCByOrder: openShuttleViaVCByOrder,
-        showViaVCByDestination: openShuttleViaVCByDestination,
-        showStopVC: openShuttleStopVC,
-        showBusAlternativeStop: openBusAlternativeStopVC,
-        showAlarmVC: openShuttleAlarmVC
+        refreshMethod: { [weak self] in self?.fetchShuttleRealtimeData() },
+        showEntireTimetable: { [weak self] stop, section in self?.moveToEntireTimetable(stop, section) },
+        showViaVCByOrder: { [weak self] item in self?.openShuttleViaVCByOrder(item) },
+        showViaVCByDestination: { [weak self] item in self?.openShuttleViaVCByDestination(item) },
+        showStopVC: { [weak self] stop in self?.openShuttleStopVC(stop) },
+        showBusAlternativeStop: { [weak self] stop, alternative in self?.openBusAlternativeStopVC(stop, alternative) },
+        showAlarmVC: { [weak self] stop, context in self?.openShuttleAlarmVC(stop, context) }
     )
     private var isShowingCoachMarks = false
     private var coachMarkRetryWorkItem: DispatchWorkItem?
@@ -164,8 +167,8 @@ class ShuttleRealtimeVC: UIViewController {
         selectedPresenceIndex = Self.presenceStopIds.firstIndex(of: initialStopID ?? "") ?? 0
         super.init(nibName: nil, bundle: nil)
         nextDayTimetableLoader = ShuttleNextDayTimetableLoader(
-            current: { try? ShuttleRealtimeData.shared.nextDayTimetable.value() },
-            publish: { ShuttleRealtimeData.shared.nextDayTimetable.onNext($0) },
+            current: { ShuttleRealtimeData.shared.nextDayTimetable.value },
+            publish: { ShuttleRealtimeData.shared.nextDayTimetable.accept($0) },
             fetch: { date, completion in
                 Task { @MainActor in
                     var departures: ShuttleNextDayTimetableLoader.Departures = [:]
@@ -231,7 +234,7 @@ class ShuttleRealtimeVC: UIViewController {
     @MainActor
     private func markInitialShuttlePageDataLoaded() {
         hasLoadedInitialShuttlePageData = true
-        ShuttleRealtimeData.shared.isLoading.onNext(false)
+        ShuttleRealtimeData.shared.isLoading.accept(false)
         scheduleCoachMarksIfNeeded()
     }
 
@@ -329,7 +332,7 @@ class ShuttleRealtimeVC: UIViewController {
                 self?.presentFooterCoachMarks()
             }
         }
-        let isLoaded = (try? ShuttleRealtimeData.shared.arrival.value())?.isEmpty == false
+        let isLoaded = ShuttleRealtimeData.shared.arrival.value.isEmpty == false
         if isLoaded {
             scroll()
         } else {
@@ -549,7 +552,7 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func nextRouteStopIDs(for stopID: String) -> [String]? {
-        guard let stop = try? ShuttleRealtimeData.shared.arrival.value().first(where: { $0.name == stopID }) else { return nil }
+        guard let stop = ShuttleRealtimeData.shared.arrival.value.first(where: { $0.name == stopID }) else { return nil }
         let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
         let now = timeFormatter.string(from: .now)
         return stop.timetable.order.first(where: { $0.time > now })?.stops.map(\.stop)
@@ -610,30 +613,30 @@ class ShuttleRealtimeVC: UIViewController {
         }
         updatePresenceStatus(viewerCount: nil)
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
-        ShuttleRealtimeData.shared.showRemainingTime.onNext(showRemainingTime)
+        ShuttleRealtimeData.shared.showRemainingTime.accept(showRemainingTime)
         let showArrivalByTime = UserDefaults.standard.bool(forKey: "showArrivalByTime")
-        ShuttleRealtimeData.shared.showArrivalByTime.onNext(showArrivalByTime)
+        ShuttleRealtimeData.shared.showArrivalByTime.accept(showArrivalByTime)
     }
 
     // swiftlint:disable:next function_body_length
     private func observeSubjects() {
-        ShuttleRealtimeData.shared.arrival.subscribe(onNext: { data in
-            let timeFormatter = DateFormatter().then { $0.dateFormat = "HH:mm:ss" }
-            let currentTime = timeFormatter.string(from: Date.now)
+        ShuttleRealtimeData.shared.arrival.subscribe(onNext: { [weak self] data in
+            guard let self else { return }
+            let currentTime = Self.arrivalTimeFormatter.string(from: Date.now)
             let shared = ShuttleRealtimeData.shared
             typealias Entry = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
             typealias Order = ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order
             // Publish every stop from the shared response and omit destination departures that have already passed.
             func publish(
                 _ stopName: String,
-                order: BehaviorSubject<[Order]>,
-                destinations: [(String, BehaviorSubject<[Entry]>)]
+                order: BehaviorRelay<[Order]>,
+                destinations: [(String, BehaviorRelay<[Entry]>)]
             ) {
                 let stop = data.first(where: { $0.name == stopName })
                 // The query fetches the full day; hide departures before the current minute.
-                order.onNext(stop?.timetable.order.filter { $0.time >= String(currentTime.prefix(5)) } ?? [])
+                order.accept(stop?.timetable.order.filter { $0.time >= String(currentTime.prefix(5)) } ?? [])
                 for (destination, subject) in destinations {
-                    subject.onNext(
+                    subject.accept(
                         stop?.timetable.destination.first(where: { $0.destination == destination })?.entries
                             .filter { $0.time > currentTime } ?? []
                     )
@@ -670,7 +673,8 @@ class ShuttleRealtimeVC: UIViewController {
             self.jungangStationTabVC.reload()
             self.shuttlecockInTabVC.reload()
         }).disposed(by: disposeBag)
-        ShuttleRealtimeData.shared.notices.subscribe(onNext: { notices in
+        ShuttleRealtimeData.shared.notices.subscribe(onNext: { [weak self] notices in
+            guard let self else { return }
             if !self.hasLoadedInitialNotices, notices.isEmpty {
                 self.listHeader.setNoticeHidden(false)
                 self.noticeView.setLoading(true)
@@ -685,15 +689,15 @@ class ShuttleRealtimeVC: UIViewController {
     }
 
     private func startPolling() {
+        stopPolling()
         fetchShuttleRealtimeData()
         subscription = Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { _ in
-                self.fetchShuttleRealtimeData()
-            })
+            .subscribe(onNext: { [weak self] _ in self?.fetchShuttleRealtimeData() })
     }
 
     private func stopPolling() {
         subscription?.dispose()
+        subscription = nil
     }
 
     private func currentPayloadSelection() -> ShuttlePayloadSelection {
@@ -721,7 +725,7 @@ class ShuttleRealtimeVC: UIViewController {
         let noticeLanguageChanged = lastAppliedNoticeLanguage != noticeLanguage
         let subwayLanguageChanged = lastAppliedSubwayLanguage != currentLanguage
         if selectionChanged || noticeLanguageChanged || subwayLanguageChanged {
-            dataDelegate.isLoading.onNext(true)
+            dataDelegate.isLoading.accept(true)
         }
         Task {
             let response = try? await Network.shared.client.fetch(
@@ -770,11 +774,11 @@ class ShuttleRealtimeVC: UIViewController {
                     lastAppliedPayloadSelection = selection
                     lastAppliedNoticeLanguage = noticeLanguage
                     lastAppliedSubwayLanguage = currentLanguage
-                    dataDelegate.transferData.onNext(data)
+                    dataDelegate.transferData.accept(data)
                     self.hasLoadedInitialNotices = true
-                    dataDelegate.notices.onNext(data.notices.flatMap(\.notices))
-                    dataDelegate.arrival.onNext(data.shuttle.stops)
-                    dataDelegate.busAlternatives.onNext(Self.buildBusAlternatives(data.alternativeBus))
+                    dataDelegate.notices.accept(data.notices.flatMap(\.notices))
+                    dataDelegate.arrival.accept(data.shuttle.stops)
+                    dataDelegate.busAlternatives.accept(Self.buildBusAlternatives(data.alternativeBus))
                 }
                 markInitialShuttlePageDataLoaded()
                 markInitialBusAlternativeDataLoaded()
@@ -991,8 +995,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> ShuttleStopPoint? {
         let name = String(localized: String.LocalizationValue(shuttleStopLocalizationKey(stop)))
-        let stops = try? ShuttleRealtimeData.shared.arrival.value()
-        if let stops, let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
+        let stops = ShuttleRealtimeData.shared.arrival.value
+        if let shuttleStop = stops.first(where: { $0.name == shuttleStopAPIName(stop) }) {
             return ShuttleStopPoint(name: name, latitude: shuttleStop.latitude, longitude: shuttleStop.longitude)
         }
 
@@ -1184,13 +1188,13 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func applyShowDepartureTime(_ isOn: Bool) {
         AnalyticsManager.logSelect(.shuttleDepartureSwitch, type: .toggle)
-        ShuttleRealtimeData.shared.showRemainingTime.onNext(!isOn)
+        ShuttleRealtimeData.shared.showRemainingTime.accept(!isOn)
         UserDefaults.standard.set(!isOn, forKey: "showRemainingTime")
     }
 
     private func applyShowArrivalByTime(_ isOn: Bool) {
         AnalyticsManager.logSelect(.shuttleArrivalByTimeSwitch, type: .toggle)
-        ShuttleRealtimeData.shared.showArrivalByTime.onNext(isOn)
+        ShuttleRealtimeData.shared.showArrivalByTime.accept(isOn)
         UserDefaults.standard.set(isOn, forKey: "showArrivalByTime")
         fetchShuttleRealtimeData()
     }

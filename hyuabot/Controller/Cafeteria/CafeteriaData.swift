@@ -5,6 +5,7 @@
 
 import Api
 import Foundation
+import RxRelay
 import RxSwift
 
 @MainActor
@@ -12,8 +13,8 @@ class CafeteriaData {
     static let shared = CafeteriaData()
     private init() {}
 
-    let isLoading = BehaviorSubject<Bool>(value: true)
-    let feedDate = BehaviorSubject(value: Date.now)
+    let isLoading = BehaviorRelay<Bool>(value: true)
+    let feedDate = BehaviorRelay(value: Date.now)
 }
 
 extension CafeteriaData {

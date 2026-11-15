@@ -4,6 +4,7 @@
 //
 
 import Api
+import RxRelay
 import RxSwift
 import UIKit
 
@@ -138,7 +139,7 @@ final class BusTimetableVC: UIViewController {
     }
 
     private func fetchBusTimetable() {
-        BusTimetableData.shared.isLoading.onNext(true)
+        BusTimetableData.shared.isLoading.accept(true)
         Task {
             let response = try? await Network.shared.client.fetch(query: BusTimetablePageQuery(routeStops: self.routes.map {
                 BusRouteStopInput(route: $0, stop: self.stopID)
@@ -151,7 +152,7 @@ final class BusTimetableVC: UIViewController {
                         }
                     })
                 } else {
-                    BusTimetableData.shared.isLoading.onNext(false)
+                    BusTimetableData.shared.isLoading.accept(false)
                 }
             }
         }

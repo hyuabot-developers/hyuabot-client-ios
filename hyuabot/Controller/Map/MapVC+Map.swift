@@ -5,6 +5,8 @@
 
 import Api
 import MapKit
+import RxRelay
+import RxSwift
 import UIKit
 
 private struct MapBuildingIdentity: Hashable {
@@ -31,7 +33,7 @@ private final class MapBuildingAnnotation: MKPointAnnotation {
 }
 
 extension MapVC: MKMapViewDelegate {
-    var cachedBuildings: [MapPageQuery.Data.Building] { (try? MapData.shared.buildingResult.value()) ?? [] }
+    var cachedBuildings: [MapPageQuery.Data.Building] { MapData.shared.buildingResult.value }
 
     func reloadBuildings() {
         let northWest = mapView.northWestCoordinate
@@ -52,7 +54,7 @@ extension MapVC: MKMapViewDelegate {
             guard buildingGate.isCurrent(token) else { return }
             isLoadingBuildings = false
             if let data = response?.data {
-                MapData.shared.buildingResult.onNext(data.building)
+                MapData.shared.buildingResult.accept(data.building)
             } else if !isResultMode {
                 statusPill.apply(.count(cachedBuildings.count))
             }
@@ -110,14 +112,14 @@ extension MapVC: MKMapViewDelegate {
 
     func refreshBuildingsForVisibleRegion() {
         guard !mapView.bounds.isEmpty,
-              (try? MapData.shared.searchMode.value()) == false,
+              MapData.shared.searchMode.value == false,
               !isResultMode, !isSearchMode else { return }
         reloadBuildings()
     }
 
     func reloadBuildingsIfNeeded() {
         guard !mapView.bounds.isEmpty,
-              (try? MapData.shared.searchMode.value()) == false,
+              MapData.shared.searchMode.value == false,
               !isResultMode, !isSearchMode,
               cachedBuildings.isEmpty, !isLoadingBuildings else { return }
         reloadBuildings()
@@ -210,11 +212,11 @@ extension MapVC: MKMapViewDelegate {
     func showAllBuildings() {
         searchFieldTextGate.invalidate()
         searchBarView.text = ""
-        MapData.shared.searchKeyword.onNext(nil)
+        MapData.shared.searchKeyword.accept(nil)
         mode = .browse
         hideCard()
         applyBuildings(cachedBuildings)
-        MapData.shared.searchMode.onNext(false)
+        MapData.shared.searchMode.accept(false)
     }
 
     func openGuide() {

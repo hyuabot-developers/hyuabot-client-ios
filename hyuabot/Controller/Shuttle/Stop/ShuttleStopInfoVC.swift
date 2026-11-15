@@ -5,6 +5,7 @@
 
 import Api
 import MapKit
+import RxRelay
 import RxSwift
 import SnapKit
 import UIKit
@@ -14,8 +15,8 @@ class ShuttleStopInfoVC: UIViewController {
     private typealias StopTimetableEntry = ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination.Entry
 
     private let stop: ShuttleStopEnum
-    private let stopInfo: BehaviorSubject<ShuttleStopDialogQuery.Data.Shuttle.Stop?> = BehaviorSubject(value: nil)
-    private let timetable: BehaviorSubject<[ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]> = BehaviorSubject(value: [])
+    private let stopInfo: BehaviorRelay<ShuttleStopDialogQuery.Data.Shuttle.Stop?> = BehaviorRelay(value: nil)
+    private let timetable: BehaviorRelay<[ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]> = BehaviorRelay(value: [])
     private let disposeBag = DisposeBag()
     private let titleLabel = UILabel().then {
         $0.font = SettingsStyle.font(20, bold: true)
@@ -139,7 +140,7 @@ class ShuttleStopInfoVC: UIViewController {
         let dateFormatter = DateFormatter().then {
             $0.dateFormat = "yyyy-MM-dd"
         }
-        ShuttleTimetableData.shared.isLoading.onNext(true)
+        ShuttleTimetableData.shared.isLoading.accept(true)
         Task {
             var stop: ShuttleStopDialogQuery.Data.Shuttle.Stop?
             var merged: [StopTimetableDestination] = []
@@ -180,8 +181,8 @@ class ShuttleStopInfoVC: UIViewController {
         timetable: [ShuttleStopDialogQuery.Data.Shuttle.Stop.Timetable.Destination]
     ) {
         DispatchQueue.main.async { [weak self] in
-            self?.stopInfo.onNext(stop)
-            self?.timetable.onNext(timetable)
+            self?.stopInfo.accept(stop)
+            self?.timetable.accept(timetable)
         }
     }
 

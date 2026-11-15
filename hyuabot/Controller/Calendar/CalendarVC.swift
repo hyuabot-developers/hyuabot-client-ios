@@ -7,6 +7,7 @@
 
 import Api
 import RealmSwift
+import RxRelay
 import RxSwift
 import SnapKit
 import UIKit
@@ -16,8 +17,8 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
     // MARK: - State
 
     private let disposeBag = DisposeBag()
-    private let isLoading = BehaviorSubject<Bool>(value: false)
-    private let eventSubject = BehaviorSubject<[Event]>(value: [])
+    private let isLoading = BehaviorRelay<Bool>(value: false)
+    private let eventSubject = BehaviorRelay<[Event]>(value: [])
     private var notificationToken: NotificationToken?
 
     private var currentMonth: Foundation.Date = {
@@ -400,7 +401,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
 
     // MARK: - Event layout
 
-    private var events: [Event] { (try? eventSubject.value()) ?? [] }
+    private var events: [Event] { eventSubject.value }
 
     private var filteredEvents: [Event] {
         events.filter { !hiddenCategoryIDs.contains($0.categoryID) }
@@ -429,7 +430,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
             CalendarLayoutLogic.weekLayout(weekDays: Array(days[start..<start + 7]), monthKey: monthKey, spans: spans)
         }
         let empty = !CalendarLayoutLogic.monthHasEvents(monthKey: monthKey, spans: spans)
-        applyMonthEmptyVisibility(empty: empty, loading: (try? isLoading.value()) == true)
+        applyMonthEmptyVisibility(empty: empty, loading: isLoading.value)
     }
 
     private func applyMonthEmptyVisibility(empty: Bool, loading: Bool) {
@@ -463,7 +464,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
     }
 
     private func updateSelectedDatePanel() {
-        guard (try? isLoading.value()) != true else { return }
+        guard !isLoading.value else { return }
         let items = visibleEvents
         let title = selectedDate.map { selectedDateFormatter.string(from: $0) } ?? String(localized: "calendar.section.upcoming")
         panelHeaderView.configure(title: title, count: items.isEmpty ? nil : items.count, showsClear: selectedDate != nil)
@@ -596,10 +597,10 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         notificationToken = Database.shared.database.objects(Event.self).observe { [weak self] changes in
             switch changes {
             case let .initial(results):
-                self?.eventSubject.onNext(Array(results))
+                self?.eventSubject.accept(Array(results))
             case let .update(_, deletions, insertions, modifications):
                 if !deletions.isEmpty || !insertions.isEmpty || !modifications.isEmpty {
-                    self?.eventSubject.onNext(Array(Database.shared.database.objects(Event.self)))
+                    self?.eventSubject.accept(Array(Database.shared.database.objects(Event.self)))
                 }
             default: break
             }
@@ -608,13 +609,13 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
 
     #if DEBUG
     private func applyDebugFixture(_ mode: CalendarDebugFixture.Mode) {
-        eventSubject.onNext(CalendarDebugFixture.events(mode: mode, today: Date()))
-        isLoading.onNext(mode == .loading)
+        eventSubject.accept(CalendarDebugFixture.events(mode: mode, today: Date()))
+        isLoading.accept(mode == .loading)
     }
     #endif
 
     private func updateEventVersion() {
-        isLoading.onNext(true)
+        isLoading.accept(true)
         Task {
             let response = try? await Network.shared.client.fetch(query: CalendarPageVersionQuery())
             if let data = response?.data {
@@ -623,10 +624,10 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
                 if data.calendar.version != prev || isEmpty {
                     updateEvent()
                 } else {
-                    isLoading.onNext(false)
+                    isLoading.accept(false)
                 }
             } else {
-                isLoading.onNext(false)
+                isLoading.accept(false)
             }
         }
     }
@@ -639,7 +640,7 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
                 await Event.replaceAll(with: events)
                 UserDefaults.standard.set(data.calendar.version, forKey: "calendarVersion")
             }
-            isLoading.onNext(false)
+            isLoading.accept(false)
         }
     }
 

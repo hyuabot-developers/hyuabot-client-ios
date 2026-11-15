@@ -22,6 +22,7 @@
 		C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */; };
 		C7BAB03E2D294AE400BBE940 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB03D2D294AE400BBE940 /* Apollo */; };
 		C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0462D294FEB00BBE940 /* RxSwift */; };
+		C7BAB0F12D294FEB00BBE940 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0F02D294FEB00BBE940 /* RxRelay */; };
 		C7BAB04A2D2951B500BBE940 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = C7BAB0492D2951B500BBE940 /* Then */; };
 		C7C51A772F8D02550002329A /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = C7C51A762F8D02550002329A /* Api */; };
 		C7CBC01C2F91E85A00010444 /* Api in Frameworks */ = {isa = PBXBuildFile; productRef = C7CBC01B2F91E85A00010444 /* Api */; };
@@ -278,6 +279,7 @@
 			files = (
 				C73CB62E2D4100F3005E9731 /* RealmSwift in Frameworks */,
 				C7BAB0472D294FEB00BBE940 /* RxSwift in Frameworks */,
+				C7BAB0F12D294FEB00BBE940 /* RxRelay in Frameworks */,
 				C7BAB03A2D28092A00BBE940 /* FirebaseCrashlytics in Frameworks */,
 				C7BAB04A2D2951B500BBE940 /* Then in Frameworks */,
 				C7C51A772F8D02550002329A /* Api in Frameworks */,
@@ -434,6 +436,7 @@
 				C7BAB0392D28092A00BBE940 /* FirebaseCrashlytics */,
 				C7BAB03D2D294AE400BBE940 /* Apollo */,
 				C7BAB0462D294FEB00BBE940 /* RxSwift */,
+				C7BAB0F02D294FEB00BBE940 /* RxRelay */,
 				C7BAB0492D2951B500BBE940 /* Then */,
 				C70119622D2954670077A1A5 /* SnapKit */,
 				C73CB62D2D4100F3005E9731 /* RealmSwift */,
@@ -1403,6 +1406,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
+		};
+		C7BAB0F02D294FEB00BBE940 /* RxRelay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C7BAB0452D294FEB00BBE940 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxRelay;
 		};
 		C7BAB0492D2951B500BBE940 /* Then */ = {
 			isa = XCSwiftPackageProductDependency;

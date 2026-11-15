@@ -71,7 +71,8 @@ extension ReadingRoomVC {
 
     func showCoachMarksIfNeeded() {
         guard CoachMarkManager.shared.shouldShowPage("readingroom") else { return }
-        if let items = try? roomSubject.value(), !items.isEmpty {
+        let items = roomSubject.value
+        if !items.isEmpty {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                 self?.presentListCoachMark()
             }

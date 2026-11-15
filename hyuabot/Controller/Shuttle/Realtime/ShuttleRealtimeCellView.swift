@@ -515,17 +515,17 @@ extension ShuttleRealtimeCellView {
     ) -> Bool {
         let data: [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Order]? = switch stopID {
         case .dormiotryOut:
-            try? ShuttleRealtimeData.shared.shuttleDormitoryData.value()
+            ShuttleRealtimeData.shared.shuttleDormitoryData.value
         case .shuttlecockOut:
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockData.value()
+            ShuttleRealtimeData.shared.shuttleShuttlecockData.value
         case .station:
-            try? ShuttleRealtimeData.shared.shuttleStationData.value()
+            ShuttleRealtimeData.shared.shuttleStationData.value
         case .terminal:
-            try? ShuttleRealtimeData.shared.shuttleTerminalData.value()
+            ShuttleRealtimeData.shared.shuttleTerminalData.value
         case .jungangStation:
-            try? ShuttleRealtimeData.shared.shuttleJungangStationData.value()
+            ShuttleRealtimeData.shared.shuttleJungangStationData.value
         case .shuttlecockIn:
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockInData.value()
+            ShuttleRealtimeData.shared.shuttleShuttlecockInData.value
         }
         return data?.last?.seq == item.seq
     }
@@ -537,29 +537,29 @@ extension ShuttleRealtimeCellView {
     ) -> Bool {
         let data: [ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry]? = switch (stopID, indexPath.section) {
         case (.dormiotryOut, 0):
-            try? ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value()
+            ShuttleRealtimeData.shared.shuttleDormitoryToStationData.value
         case (.dormiotryOut, 1):
-            try? ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value()
+            ShuttleRealtimeData.shared.shuttleDormitoryToTerminalData.value
         case (.dormiotryOut, 2):
-            try? ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value()
+            ShuttleRealtimeData.shared.shuttleDormitoryToJungangStationData.value
         case (.shuttlecockOut, 0):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value()
+            ShuttleRealtimeData.shared.shuttleShuttlecockToStationData.value
         case (.shuttlecockOut, 1):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value()
+            ShuttleRealtimeData.shared.shuttleShuttlecockToTerminalData.value
         case (.shuttlecockOut, 2):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value()
+            ShuttleRealtimeData.shared.shuttleShuttlecockToJungangStationData.value
         case (.station, 0):
-            try? ShuttleRealtimeData.shared.shuttleStationToCampusData.value()
+            ShuttleRealtimeData.shared.shuttleStationToCampusData.value
         case (.station, 1):
-            try? ShuttleRealtimeData.shared.shuttleStationToTerminalData.value()
+            ShuttleRealtimeData.shared.shuttleStationToTerminalData.value
         case (.station, 2):
-            try? ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value()
+            ShuttleRealtimeData.shared.shuttleStationToJungangStationData.value
         case (.terminal, 0):
-            try? ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value()
+            ShuttleRealtimeData.shared.shuttleTerminalToCampusData.value
         case (.jungangStation, 0):
-            try? ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value()
+            ShuttleRealtimeData.shared.shuttleJungangStationToCampusData.value
         case (.shuttlecockIn, 0):
-            try? ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value()
+            ShuttleRealtimeData.shared.shuttleShuttlecockInToDormitoryData.value
         default:
             nil
         }

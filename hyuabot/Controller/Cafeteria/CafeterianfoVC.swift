@@ -5,6 +5,7 @@
 
 import Api
 import MapKit
+import RxRelay
 import RxSwift
 import SnapKit
 import UIKit
@@ -17,7 +18,7 @@ class CafeteriaInfoVC: UIViewController {
     }
 
     private let cafeteriaID: Int
-    private let cafeteriaInfo: BehaviorSubject<CafeteriaInfoQuery.Data.Cafeterium?> = BehaviorSubject(value: nil)
+    private let cafeteriaInfo: BehaviorRelay<CafeteriaInfoQuery.Data.Cafeterium?> = BehaviorRelay(value: nil)
     private let disposeBag = DisposeBag()
     private var cafeteriaCoordinate: CLLocationCoordinate2D?
     private var hourTitleLabels: [UILabel] = []
@@ -184,7 +185,7 @@ class CafeteriaInfoVC: UIViewController {
                 campusID: Int32(campusID), date: Foundation.Date.now.toLocalDateString()
             ))
             if let data = response?.data {
-                self.cafeteriaInfo.onNext(data.cafeteria.first(where: { $0.seq == self.cafeteriaID }))
+                self.cafeteriaInfo.accept(data.cafeteria.first(where: { $0.seq == self.cafeteriaID }))
             }
         }
     }
