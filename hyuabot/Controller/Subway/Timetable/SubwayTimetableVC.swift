@@ -4,7 +4,6 @@
 //
 
 import Api
-import RxSwift
 import SnapKit
 import UIKit
 
@@ -12,7 +11,6 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
     private let line: SubwayLine
     private let heading: SubwayHeadingEnum
     private let merged: Bool
-    private let disposeBag = DisposeBag()
     private let now: Foundation.Date
     private var today: SubwayDayType
     private var day: SubwayDayType
@@ -146,8 +144,6 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
                 return
             }
         #endif
-        SubwayTimetableData.shared.isLoading.onNext(true)
-        SubwayTimetableData.shared.timetable.onNext([])
         let station = line == .line4 ? "K449" : "K251"
         let direction = heading == .up ? "up" : "down"
         Task {
@@ -155,8 +151,6 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
             async let suin = merged ? fetchTimetable(station: "K251", direction: "down") : []
             let (primaryRows, suinRows) = await (primary, suin)
             await MainActor.run {
-                SubwayTimetableData.shared.timetable.onNext(primaryRows)
-                SubwayTimetableData.shared.isLoading.onNext(false)
                 weekdays = self.departures(primaryRows, suinRows: suinRows, day: .weekdays)
                 weekends = self.departures(primaryRows, suinRows: suinRows, day: .weekends)
                 isLoading = false
