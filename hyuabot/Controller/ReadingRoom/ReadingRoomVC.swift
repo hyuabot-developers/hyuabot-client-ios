@@ -4,6 +4,7 @@
 //
 
 import Api
+import RxRelay
 import RxSwift
 import UIKit
 import UserNotifications
@@ -11,10 +12,10 @@ import UserNotifications
 class ReadingRoomVC: UIViewController, SettingsStyledScreen {
     let disposeBag = DisposeBag()
     private var subscription: Disposable?
-    private let isLoading = BehaviorSubject<Bool>(value: false)
+    private let isLoading = BehaviorRelay<Bool>(value: false)
     private var showsSkeleton = false
     private let refreshControl = UIRefreshControl()
-    let roomSubject = BehaviorSubject<[ReadingRoomPageQuery.Data.ReadingRoom]>(value: [])
+    let roomSubject = BehaviorRelay<[ReadingRoomPageQuery.Data.ReadingRoom]>(value: [])
     let campusPill = ContactCampusPillView()
     let statusRow = ReadingRoomStatusRowView()
     let alarmCard = ReadingRoomAlarmCardView()
@@ -168,17 +169,19 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
     }
 
     private func startPolling() {
-        let hasRooms = (try? roomSubject.value().isEmpty == false) ?? false
-        isLoading.onNext(!hasRooms)
+        stopPolling()
+        let hasRooms = !roomSubject.value.isEmpty
+        isLoading.accept(!hasRooms)
         fetchReadingRoomData()
         subscription = Observable<Int>.interval(.seconds(15), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { _ in
-                self.fetchReadingRoomData()
+            .subscribe(onNext: { [weak self] _ in
+                self?.fetchReadingRoomData()
             })
     }
 
     private func stopPolling() {
         subscription?.dispose()
+        subscription = nil
     }
 
     private func fetchReadingRoomData() {
@@ -187,7 +190,7 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
                 Task { @MainActor in
                     self.refreshControl.endRefreshing()
                     self.isRefreshing = false
-                    self.isLoading.onNext(false)
+                    self.isLoading.accept(false)
                     self.updateStatusRow()
                 }
             }
@@ -196,14 +199,15 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
                 await MainActor.run {
                     let filtered = data.readingRoom.filter { $0.campus == self.campusID }
                     self.lastUpdatedAt = filtered.compactMap { $0.updatedAt.toZonedDateTimeOrNil() }.max() ?? Foundation.Date()
-                    self.roomSubject.onNext(filtered)
+                    self.roomSubject.accept(filtered)
                 }
             }
         }
     }
 
     private func observeSubjects() {
-        isLoading.subscribe(onNext: { loading in
+        isLoading.subscribe(onNext: { [weak self] loading in
+            guard let self else { return }
             var isLoading = loading
             #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-UIDebugForceLoading") { isLoading = true }
@@ -211,16 +215,17 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
             self.showsSkeleton = isLoading
             self.updateStatusRow()
             self.readingRoomView.reloadData()
-            self.footerView.isHidden = isLoading || ((try? self.roomSubject.value().isEmpty) ?? true)
+            self.footerView.isHidden = isLoading || self.roomSubject.value.isEmpty
         }).disposed(by: disposeBag)
         roomSubject.subscribe(onNext: { [weak self] _ in
             self?.readingRoomView.reloadData()
-            self?.footerView.isHidden = self?.showsSkeleton == true || ((try? self?.roomSubject.value().isEmpty) ?? true)
+            self?.footerView.isHidden = self?.showsSkeleton == true || self?.roomSubject.value.isEmpty == true
         }).disposed(by: disposeBag)
         observeUserDefaultsStringArray(forKey: "readingRoomNotificationArray")
-            .subscribe(onNext: { _ in
+            .subscribe(onNext: { [weak self] _ in
+                guard let self else { return }
                 self.readingRoomView.reloadData()
-                self.footerView.isHidden = self.showsSkeleton || ((try? self.roomSubject.value().isEmpty) ?? true)
+                self.footerView.isHidden = self.showsSkeleton || self.roomSubject.value.isEmpty
             })
             .disposed(by: disposeBag)
     }
@@ -235,7 +240,7 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
         if showsSkeleton {
             return ReadingRoomSkeletonCellView.rowCount
         }
-        guard let items = try? roomSubject.value() else { return 0 }
+        let items = roomSubject.value
         return items.count
     }
 
@@ -249,7 +254,7 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
             cell.configure(index: indexPath.row, isFirst: indexPath.row == 0, isLast: indexPath.row == count - 1)
             return cell
         }
-        guard let items = try? roomSubject.value() else { return UITableViewCell() }
+        let items = roomSubject.value
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: ReadingRoomCellView.reuseIdentifier,
             for: indexPath
@@ -258,14 +263,16 @@ extension ReadingRoomVC: UITableViewDelegate, UITableViewDataSource {
             item: items[indexPath.row],
             isFirst: indexPath.row == 0,
             isLast: indexPath.row == items.count - 1,
-            showSubscribeToastMessage: { name in
+            showSubscribeToastMessage: { [weak self] name in
+                guard let self else { return }
                 let message = String(
                     format: String(localized: "toast.readingroom.notification.subscribed.%@"),
                     name
                 )
                 SettingsToastView.show(message: message, in: self.toastContainer, icon: .bell)
             },
-            showUnsubscribeToastMessage: { name in
+            showUnsubscribeToastMessage: { [weak self] name in
+                guard let self else { return }
                 let message = String(
                     format: String(localized: "toast.readingroom.notification.unsubscribed.%@"),
                     name
