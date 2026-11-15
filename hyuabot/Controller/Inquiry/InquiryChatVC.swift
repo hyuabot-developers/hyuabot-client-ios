@@ -18,6 +18,7 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
     private var renderedContent: InquiryConversationContent?
     private var pollingTimer: Timer?
     private var streamTask: Task<Void, Never>?
+    private var isScreenVisible = false
     private var didBecomeActiveObserver: NSObjectProtocol?
     private let entryScreen: String
     private let entryScreenName: String
@@ -62,11 +63,13 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         InquiryPush.isChatVisible = true
+        isScreenVisible = true
         clearDeliveredInquiryNotifications()
         observeDidBecomeActive()
         navigationController?.setNavigationBarHidden(false, animated: false)
         SettingsNavigationStyle.screenWillAppear(self)
         loadInitialIfNeeded()
+        resumeStreamIfNeeded()
         startPolling()
     }
 
@@ -76,6 +79,7 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
         navigationController?.navigationBar.prefersLargeTitles = true
         SettingsNavigationStyle.screenWillDisappear(self)
         InquiryPush.isChatVisible = false
+        isScreenVisible = false
         removeDidBecomeActiveObserver()
         stopPolling()
         streamTask?.cancel()
@@ -127,7 +131,24 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
         thread = resolved
         preparePushNotifications()
         await refreshMessages(scrollToBottom: true)
+        guard InquiryStreamPolicy.shouldStartStream(
+            isVisible: isScreenVisible,
+            hasThread: true,
+            isStreamRunning: streamTask != nil
+        ) else { return }
         startStream(threadId: resolved.id)
+    }
+
+    private func resumeStreamIfNeeded() {
+        guard InquiryStreamPolicy.shouldStartStream(
+            isVisible: isScreenVisible,
+            hasThread: thread != nil,
+            isStreamRunning: streamTask != nil
+        ), let threadId = thread?.id else { return }
+        Task { [weak self] in
+            await self?.refreshMessages(scrollToBottom: false)
+        }
+        startStream(threadId: threadId)
     }
 
     private func startStream(threadId: String) {
