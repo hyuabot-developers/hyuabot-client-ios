@@ -5,6 +5,7 @@
 //  Created by hyuabot on 2026/11/10.
 //
 
+import RxRelay
 import RxSwift
 
 struct BusRealtimeSectionSpec: Equatable {
@@ -19,21 +20,21 @@ enum BusRealtimeSections {
     static func specs(for tab: BusRealtimeType) -> [BusRealtimeSectionSpec] {
         switch tab {
         case .city:
-            let stopID = (try? BusRealtimeData.shared.selectedBusStopID.value()) ?? 216_000_379
+            let stopID = BusRealtimeData.shared.selectedBusStopID.value
             return [spec(stopID, [216_000_068], ["10-1"]), spec(216_000_138, [216_000_068], ["10-1"])]
         case .seoul:
-            let first = (try? BusRealtimeData.shared.seoulFirstSelectedStopID.value()) ?? 216_000_379
-            let second = (try? BusRealtimeData.shared.seoulSecondSelectedStopID.value()) ?? 216_000_719
+            let first = BusRealtimeData.shared.seoulFirstSelectedStopID.value
+            let second = BusRealtimeData.shared.seoulSecondSelectedStopID.value
             return [spec(first, [216_000_061], ["3102"]), spec(second, [216_000_026, 216_000_043, 216_000_096], ["3100", "3101", "3100N"])]
         case .suwon:
-            let stopID = (try? BusRealtimeData.shared.suwonSelectedStopID.value()) ?? 216_000_070
+            let stopID = BusRealtimeData.shared.suwonSelectedStopID.value
             return [spec(stopID, [216_000_104, 200_000_015], ["7070", "9090"])]
         default:
             return [spec(216_000_759, [216_000_075], ["50"]), spec(213_000_487, [216_000_075], ["50"])]
         }
     }
 
-    static func subject(for tab: BusRealtimeType, index: Int) -> BehaviorSubject<[BusArrivalItem]>? {
+    static func subject(for tab: BusRealtimeType, index: Int) -> BehaviorRelay<[BusArrivalItem]>? {
         switch (tab, index) {
         case (.city, 0): return BusRealtimeData.shared.busRealtimeCityFromCampus
         case (.city, 1): return BusRealtimeData.shared.busRealtimeCityFromStation
