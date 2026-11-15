@@ -21178,6 +21178,34 @@
         }
       }
     },
+    "reading_room.seats_left_format.%lld.%lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld석 중 %2$lld석 남음"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$lld of %1$lld seats left"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld席中 %2$lld席 空き"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共 %1$lld 座，剩余 %2$lld 座"
+          }
+        }
+      }
+    },
     "reading_room.total_seat_format.%lld" : {
       "localizations" : {
         "ko" : {

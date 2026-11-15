@@ -100,16 +100,23 @@ final class DomainLogicTests: XCTestCase {
         XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 6, active: 96), .busy)
     }
 
-    func testReadingRoomUsedRatio() {
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 0, active: 0), 0)
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 100, active: 100), 0)
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 0, active: 100), 1)
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: -5, active: 100), 1)
+    func testReadingRoomOccupiedRatio() {
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 0, active: 0), 0)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 100, active: 100), 0)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 0, active: 100), 1)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: -5, active: 100), 1)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 150, active: 100), 0)
         XCTAssertEqual(
-            ReadingRoomDisplayLogic.usedRatio(available: 128, active: 312),
+            ReadingRoomDisplayLogic.occupiedRatio(available: 277, active: 320),
+            43.0 / 320.0,
+            accuracy: 0.0001
+        )
+        XCTAssertEqual(
+            ReadingRoomDisplayLogic.occupiedRatio(available: 128, active: 312),
             184.0 / 312.0,
             accuracy: 0.0001
         )
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 277, active: 320), .good)
     }
 
     func testReadingRoomSplitDisplayName() {

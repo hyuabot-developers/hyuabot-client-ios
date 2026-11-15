@@ -13,7 +13,7 @@ class ReadingRoomCellView: UITableViewCell {
 
     private var item: ReadingRoomPageQuery.Data.ReadingRoom?
     private var fullName = ""
-    private var usedRatio: CGFloat = 0
+    private var occupiedRatio: CGFloat = 0
     private var showSubscribeToastMessage: (@MainActor @Sendable (String) -> Void)?
     private var showUnsubscribeToastMessage: (@MainActor @Sendable (String) -> Void)?
 
@@ -50,16 +50,10 @@ class ReadingRoomCellView: UITableViewCell {
         $0.setContentHuggingPriority(.required, for: .horizontal)
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
-    private let captionLabel = UILabel().then { $0.adjustsFontForContentSizeCategory = true }
     private let numberLabel = UILabel().then {
         $0.numberOfLines = 1
         $0.adjustsFontForContentSizeCategory = true
-    }
-    private let tagPill = UIView()
-    private let tagLabel = UILabel().then {
-        $0.font = SettingsStyle.font(11, bold: true)
-        $0.numberOfLines = 1
-        $0.adjustsFontForContentSizeCategory = true
+        $0.textAlignment = .right
     }
     let alarmButton = UIButton(type: .system).then { $0.backgroundColor = .clear }
     private let bellCircle = UIView()
@@ -116,35 +110,28 @@ class ReadingRoomCellView: UITableViewCell {
             make.top.equalToSuperview().offset(14)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(0).priority(250)
+            make.height.greaterThanOrEqualTo(44)
         }
         nameRow.addArrangedSubview(nameLabel)
         nameRow.addArrangedSubview(floorLabel)
         leftStack.addArrangedSubview(nameRow)
-        leftStack.addArrangedSubview(captionLabel)
         rightStack.addArrangedSubview(numberLabel)
-        rightStack.addArrangedSubview(tagPill)
-        tagPill.addSubview(tagLabel)
-        tagLabel.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(7)
-            make.centerY.equalToSuperview()
-        }
         infoContainer.addSubview(leftStack)
         infoContainer.addSubview(rightStack)
         leftStack.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.top.greaterThanOrEqualToSuperview()
-            make.bottom.equalToSuperview()
+            make.bottom.lessThanOrEqualToSuperview()
+            make.centerY.equalToSuperview()
             make.trailing.lessThanOrEqualTo(rightStack.snp.leading).offset(-12)
         }
         rightStack.snp.makeConstraints { make in
             make.trailing.equalTo(alarmButton.snp.leading).offset(-8)
             make.top.greaterThanOrEqualToSuperview()
-            make.bottom.equalToSuperview()
+            make.bottom.lessThanOrEqualToSuperview()
+            make.centerY.equalToSuperview()
             make.width.greaterThanOrEqualTo(40)
         }
-        tagPill.snp.makeConstraints { make in make.height.equalTo(18) }
-        tagPill.layer.cornerRadius = 9
-
     }
 
     private func setupBellLayout() {
@@ -196,7 +183,7 @@ class ReadingRoomCellView: UITableViewCell {
         fullName = String(localized: ReadingRoomDisplayLogic.localizationKey(for: item.seq))
         let displayName = ReadingRoomDisplayLogic.splitDisplayName(fullName)
         let level = ReadingRoomDisplayLogic.occupancyLevel(available: item.seats.available, active: item.seats.active)
-        usedRatio = ReadingRoomDisplayLogic.usedRatio(available: item.seats.available, active: item.seats.active)
+        occupiedRatio = ReadingRoomDisplayLogic.occupiedRatio(available: item.seats.available, active: item.seats.active)
 
         nameLabel.attributedText = SettingsStyle.attributedText(
             displayName.name,
@@ -207,22 +194,18 @@ class ReadingRoomCellView: UITableViewCell {
         )
         floorLabel.text = displayName.floor
         floorLabel.isHidden = displayName.floor == nil
-        captionLabel.attributedText = SettingsStyle.attributedText(
-            String(format: String(localized: "reading_room.total_seat_format.%lld"), item.seats.active),
-            font: SettingsStyle.monospacedDigitFont(13),
-            color: SettingsStyle.Color.secondaryText,
-            lineHeight: 20
-        )
         numberLabel.attributedText = SettingsStyle.attributedText(
-            String(max(item.seats.available, 0)),
-            font: SettingsStyle.monospacedDigitFont(21, bold: true),
+            "\(max(item.seats.available, 0))/\(item.seats.active)",
+            font: SettingsStyle.monospacedDigitFont(19, bold: true),
             color: level.color,
-            lineHeight: 26,
+            lineHeight: 24,
             alignment: .right
         )
-        tagLabel.text = level.localizedTitle
-        tagLabel.textColor = level.color
-        tagPill.backgroundColor = level.fillColor
+        let seatsLeftText = String(
+            format: String(localized: "reading_room.seats_left_format.%lld.%lld"),
+            item.seats.active,
+            max(item.seats.available, 0)
+        )
         barFill.backgroundColor = level.color
         let corners = corners(isFirst: isFirst, isLast: isLast)
         cardView.layer.maskedCorners = corners
@@ -233,13 +216,7 @@ class ReadingRoomCellView: UITableViewCell {
         let subscribed = (UserDefaults.standard.stringArray(forKey: "readingRoomNotificationArray") ?? []).contains(key)
         updateBell(isOn: subscribed)
         infoContainer.isAccessibilityElement = true
-        infoContainer.accessibilityLabel = String(
-            format: String(localized: "reading_room.row.accessibility.%@.%lld.%lld.%@"),
-            fullName,
-            max(item.seats.available, 0),
-            item.seats.active,
-            level.localizedTitle
-        )
+        infoContainer.accessibilityLabel = "\(fullName), \(seatsLeftText)"
         isAccessibilityElement = false
         accessibilityElements = [infoContainer, alarmButton]
         setNeedsLayout()
@@ -247,7 +224,7 @@ class ReadingRoomCellView: UITableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        barFill.frame = CGRect(x: 0, y: 0, width: barTrack.bounds.width * usedRatio, height: barTrack.bounds.height)
+        barFill.frame = CGRect(x: 0, y: 0, width: barTrack.bounds.width * occupiedRatio, height: barTrack.bounds.height)
     }
 
     private func updateBell(isOn: Bool) {
