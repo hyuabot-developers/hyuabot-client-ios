@@ -18,6 +18,55 @@ struct BusArrivalRowInput: Equatable {
 
 /// Arrival logs from different reference dates (or duplicate records) that are closer than `sameVehicleWindow` describe the same vehicle run.
 enum BusLogMerging {
+    static func realtimeServiceDate(
+        for time: Foundation.Date,
+        now: Foundation.Date,
+        calendar: Calendar = .current
+    ) -> Foundation.Date? {
+        let hour = calendar.component(.hour, from: time)
+        let minute = calendar.component(.minute, from: time)
+        let serviceDate = calendar.date(
+            bySettingHour: hour,
+            minute: minute,
+            second: 0,
+            of: now
+        ) ?? time
+        if serviceDate > now { return serviceDate }
+        guard hour < 4 else { return nil }
+        return calendar.date(byAdding: .day, value: 1, to: serviceDate)
+    }
+
+    /// Route buses run the Sunday timetable on public holidays, and before 04:00
+    /// the visible tail belongs to yesterday's service day, so its interval is used.
+    static func realtimeDispatchWeekday(
+        now: Foundation.Date,
+        holidays: Set<String>,
+        calendar: Calendar = Calendar(identifier: .gregorian)
+    ) -> String {
+        var seoul = calendar
+        seoul.timeZone = TimeZone(identifier: "Asia/Seoul") ?? calendar.timeZone
+        let today = seoul.startOfDay(for: now)
+        let serviceDay = seoul.component(.hour, from: now) < 4
+            ? (seoul.date(byAdding: .day, value: -1, to: today) ?? today)
+            : today
+        switch BusRecentDates.dayType(of: serviceDay, holidays: holidays, calendar: calendar) {
+        case .sunday: return "sunday"
+        case .saturday: return "saturday"
+        case .weekdays: return "weekdays"
+        }
+    }
+
+    static func realtimeDispatchMinutes(
+        intervals: [(weekday: String, minutes: Int)],
+        logDerivedMinutes: Int?,
+        now: Foundation.Date,
+        holidays: Set<String>,
+        calendar: Calendar = Calendar(identifier: .gregorian)
+    ) -> Int {
+        let weekday = realtimeDispatchWeekday(now: now, holidays: holidays, calendar: calendar)
+        return intervals.first(where: { $0.weekday == weekday })?.minutes ?? logDerivedMinutes ?? 0
+    }
+
     static let sameVehicleWindow: TimeInterval = 15 * 60
 
     static func merged<S: Sequence>(

@@ -1,0 +1,3 @@
+query PublicHolidayQuery($start: Date!, $end: Date!) {
+    publicHolidays(start: $start, end: $end)
+}
