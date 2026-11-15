@@ -4,6 +4,7 @@
 //
 
 import Api
+import RxRelay
 import RxSwift
 
 struct SubwayCombinedRealtimeData {
@@ -18,20 +19,20 @@ class SubwayRealtimeData {
     static let shared = SubwayRealtimeData()
     var loadedLanguage: String?
     // Subway Realtime Data
-    let realtimeData = BehaviorSubject<[SubwayRealtimePageQuery.Data.Subway]>(value: [])
-    let combinedRealtimeData = BehaviorSubject<SubwayCombinedRealtimeData?>(value: nil)
-    let transferUp = BehaviorSubject<[SubwayTransferItem]>(value: [])
-    let transferDown = BehaviorSubject<[SubwayTransferItem]>(value: [])
+    let realtimeData = BehaviorRelay<[SubwayRealtimePageQuery.Data.Subway]>(value: [])
+    let combinedRealtimeData = BehaviorRelay<SubwayCombinedRealtimeData?>(value: nil)
+    let transferUp = BehaviorRelay<[SubwayTransferItem]>(value: [])
+    let transferDown = BehaviorRelay<[SubwayTransferItem]>(value: [])
     /// Loading State
-    let isLoading = BehaviorSubject<Bool>(value: true)
+    let isLoading = BehaviorRelay<Bool>(value: true)
 
     func prepareForLanguage(_ language: String) {
         guard loadedLanguage != language else { return }
         loadedLanguage = language
-        realtimeData.onNext([])
-        combinedRealtimeData.onNext(nil)
-        transferUp.onNext([])
-        transferDown.onNext([])
-        isLoading.onNext(true)
+        realtimeData.accept([])
+        combinedRealtimeData.accept(nil)
+        transferUp.accept([])
+        transferDown.accept([])
+        isLoading.accept(true)
     }
 }
