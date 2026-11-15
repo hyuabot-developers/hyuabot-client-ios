@@ -83,8 +83,9 @@ final class ContactSearchResultCellView: UITableViewCell {
 
         titleLabel.font = SettingsStyle.font(16, bold: true)
         titleLabel.textColor = SettingsStyle.Color.text
-        titleLabel.numberOfLines = 1
-        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.numberOfLines = 0
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.lineBreakStrategy = .hangulWordPriority
         titleLabel.adjustsFontForContentSizeCategory = true
         phoneLabel.font = SettingsStyle.monospacedDigitFont(15)
         phoneLabel.textColor = SettingsStyle.Color.secondaryText
@@ -96,6 +97,8 @@ final class ContactSearchResultCellView: UITableViewCell {
 
         callBadge.backgroundColor = SettingsStyle.Color.accentFill
         callBadge.layer.cornerRadius = 20
+        callBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
+        callBadge.setContentHuggingPriority(.required, for: .horizontal)
         callBadge.addSubview(callIcon)
         callIcon.tintColor = SettingsStyle.Color.link
         callIcon.contentMode = .center
@@ -117,13 +120,12 @@ final class ContactSearchResultCellView: UITableViewCell {
         }
         labelStack.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
-            make.trailing.lessThanOrEqualTo(callBadge.snp.leading).offset(-12)
+            make.trailing.equalTo(callBadge.snp.leading).offset(-12)
             make.centerY.equalToSuperview()
             make.top.greaterThanOrEqualToSuperview().inset(10)
             make.bottom.lessThanOrEqualToSuperview().inset(10)
         }
         callBadge.snp.makeConstraints { make in
-            make.leading.greaterThanOrEqualTo(labelStack.snp.trailing).offset(12)
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
             make.size.equalTo(40)

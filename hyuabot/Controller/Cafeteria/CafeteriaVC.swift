@@ -47,7 +47,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
     private let compactBar = UIView()
     private let compactTitle = UILabel()
     private let compactSeparator = UIView()
-    private var pendingInfoCoachMark = false
+    private let coachMarkFlow = CafeteriaCoachMarkFlow()
     private var fetchTask: Task<Void, Never>?
 
     override func viewDidLoad() {
@@ -84,6 +84,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         super.viewDidAppear(animated)
         logScreenView(.cafeteria)
         showCoachMarksIfNeeded()
+        presentPendingInfoCoachMarkIfPossible()
     }
 
     private func setupUI() {
@@ -287,6 +288,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         let vc = CafeteriaInfoVC(cafeteriaID: cafeteriaID)
         vc.onOpenMap = { [weak self] in (self?.tabBarController as? RootVC)?.openCampus(.map, animated: true) }
         vc.configureSheetPresentation()
+        dismissActiveCoachMarks()
         present(vc, animated: true)
     }
 
@@ -396,7 +398,7 @@ extension CafeteriaVC {
             guard CafeteriaDebugFixture.activeMode == nil else { return }
         #endif
         guard CoachMarkManager.shared.shouldShowPage("cafeteria") else { return }
-        presentCoachMarks(pageId: "cafeteria", items: [
+        coachMarkFlow.presentFirstStage(on: self, items: [
             CoachMarkItem(
                 id: "cafeteria.date",
                 targetView: weekStrip,
@@ -409,32 +411,26 @@ extension CafeteriaVC {
                 title: String(localized: "coach.cafeteria.tabs.title"),
                 message: String(localized: "coach.cafeteria.tabs.message")
             )
-        ], shouldMarkAsShown: false) { [weak self] in self?.showInfoCoachMarkWhenReady() }
+        ]) { [weak self] in self?.showInfoCoachMarkWhenReady() }
     }
 
     private func showInfoCoachMarkWhenReady() {
         #if DEBUG
             guard CafeteriaDebugFixture.activeMode == nil else { return }
         #endif
-        pendingInfoCoachMark = true
         presentPendingInfoCoachMarkIfPossible()
     }
 
     func presentPendingInfoCoachMarkIfPossible() {
-        guard pendingInfoCoachMark, view.window != nil, !cardsStack.isHidden,
+        guard coachMarkFlow.isInfoPending, view.window != nil, !cardsStack.isHidden,
               let card = cardsStack.arrangedSubviews.first as? CafeteriaMenuCardView else { return }
-        pendingInfoCoachMark = false
-        presentCoachMarks(
-            pageId: "cafeteria",
-            items: [CoachMarkItem(
+        coachMarkFlow.presentPendingInfo(on: self, items: [
+            CoachMarkItem(
                 id: "cafeteria.header.info",
                 targetViewProvider: { card.infoButton },
                 title: String(localized: "coach.cafeteria.header.info.title"),
                 message: String(localized: "coach.cafeteria.header.info.message")
-            )],
-            shouldMarkAsShown: false
-        ) {
-            CoachMarkManager.shared.markPageShown("cafeteria")
-        }
+            )
+        ])
     }
 }

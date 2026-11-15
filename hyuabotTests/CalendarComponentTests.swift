@@ -24,6 +24,33 @@ final class CalendarComponentTests: XCTestCase {
         XCTAssertEqual(blue, 0xFF / 255, accuracy: 0.01)
     }
 
+    func testCalendarEventBarColorsUseCategoryColorsUnlessDimmed() {
+        let light = UITraitCollection(userInterfaceStyle: .light)
+        let standard = SettingsStyle.Color.calendarEventBarColors(categoryID: 2, dimmed: false)
+        XCTAssertEqual(standard.fill.resolvedColor(with: light), SettingsStyle.Color.calendarCategoryFill(2).resolvedColor(with: light))
+        XCTAssertEqual(standard.text.resolvedColor(with: light), SettingsStyle.Color.calendarCategoryStrong(2).resolvedColor(with: light))
+
+        let dimmed = SettingsStyle.Color.calendarEventBarColors(categoryID: 2, dimmed: true)
+        XCTAssertEqual(dimmed.fill.resolvedColor(with: light), SettingsStyle.Color.calendarDimmedBarFill.resolvedColor(with: light))
+        XCTAssertEqual(dimmed.text.resolvedColor(with: light), SettingsStyle.Color.calendarDimmedBarText.resolvedColor(with: light))
+    }
+
+    func testCalendarEventBarColorsMeetContrast() {
+        for categoryID in 1...4 {
+            for dimmed in [false, true] {
+                for style in [UIUserInterfaceStyle.light, .dark] {
+                    let traits = UITraitCollection(userInterfaceStyle: style)
+                    let colors = SettingsStyle.Color.calendarEventBarColors(categoryID: categoryID, dimmed: dimmed)
+                    let contrast = contrastRatio(colors.text, colors.fill, traits: traits)
+                    XCTAssertGreaterThanOrEqual(
+                        contrast, 4.5,
+                        "Category \(categoryID), dimmed \(dimmed), style \(style) contrast was \(contrast)"
+                    )
+                }
+            }
+        }
+    }
+
     func testCalendarHeaderAccessibilityAndFilterSelection() {
         let today = CalendarTodayPillView()
         XCTAssertEqual(today.accessibilityIdentifier, "calendar.today_button")
@@ -86,5 +113,25 @@ final class CalendarComponentTests: XCTestCase {
 
     private func labels(in view: UIView) -> [UILabel] {
         descendants(of: view).compactMap { $0 as? UILabel }
+    }
+
+    private func contrastRatio(_ first: UIColor, _ second: UIColor, traits: UITraitCollection) -> CGFloat {
+        let firstLuminance = relativeLuminance(first.resolvedColor(with: traits))
+        let secondLuminance = relativeLuminance(second.resolvedColor(with: traits))
+        let lighter = max(firstLuminance, secondLuminance)
+        let darker = min(firstLuminance, secondLuminance)
+        return (lighter + 0.05) / (darker + 0.05)
+    }
+
+    private func relativeLuminance(_ color: UIColor) -> CGFloat {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        XCTAssertTrue(color.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+        let components = [red, green, blue].map { component -> CGFloat in
+            component <= 0.04045 ? component / 12.92 : pow((component + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * components[0] + 0.7152 * components[1] + 0.0722 * components[2]
     }
 }

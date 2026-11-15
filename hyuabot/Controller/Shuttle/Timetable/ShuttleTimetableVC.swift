@@ -16,6 +16,7 @@ class ShuttleTimetableVC: UIViewController {
     private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false, showViaVC: { [weak self] item in self?.openShuttleViaVC(item) })
     private let header = ShuttleTimetableHeaderView()
     private let pager = ContentView()
+    private var defaultTabState = ShuttleTimetableDefaultTabState()
 
     init(stopID: String.LocalizationValue, destination: String.LocalizationValue) {
         self.stopID = stopID
@@ -30,12 +31,14 @@ class ShuttleTimetableVC: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        let now = Date.now
+        if let index = defaultTabState.initialTabIndex(date: now) { selectDayTab(index) }
         navigationController?.setNavigationBarHidden(false, animated: false)
         configureNavigationBar()
         ShuttleTimetableData.shared.options.accept(ShuttleTimetableOptions(
             start: stopID,
             end: destination,
-            date: Date.now,
+            date: now,
             period: nil
         ))
     }
@@ -111,7 +114,9 @@ class ShuttleTimetableVC: UIViewController {
         pager.delegate = self
         header.onRouteTap = { [weak self] in self?.openFilterVC() }
         header.onSelectDay = { [weak self] isWeekdays in
-            self?.pager.moveToPage(index: isWeekdays ? 0 : 1)
+            guard let self else { return }
+            self.defaultTabState.markUserSelected()
+            self.pager.moveToPage(index: isWeekdays ? 0 : 1)
         }
         header.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
@@ -172,16 +177,23 @@ class ShuttleTimetableVC: UIViewController {
     }
 
     private func fetchTimetable(options: ShuttleTimetableOptions, stopID: String, destinations: [String]) {
+        let generation = defaultTabState.beginRequest()
         if options.period == nil {
             guard let date = options.date else { return }
-            let dateFormatter = DateFormatter().then {
-                $0.dateFormat = "yyyy-MM-dd"
-            }
             ShuttleTimetableData.shared.isLoading.accept(true)
             Task {
                 let periodResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(
-                    date: dateFormatter.string(from: date)
+                    date: ShuttleDisplayLogic.timetableQueryDateString(date)
                 ))
+                if !Task.isCancelled,
+                   let data = periodResponse?.data,
+                   let index = defaultTabState.tabIndexForResponse(
+                       generation: generation,
+                       date: date,
+                       holidayType: data.shuttle.holiday?.type
+                   ) {
+                    selectDayTab(index)
+                }
                 guard let period = periodResponse?.data?.shuttle.period?.type else {
                     publishTimetable([])
                     return
@@ -212,6 +224,11 @@ class ShuttleTimetableVC: UIViewController {
                 publishTimetable(timetableResponse?.data?.shuttle.stops.first?.timetable.order ?? [])
             }
         }
+    }
+
+    private func selectDayTab(_ index: Int) {
+        pager.moveToPage(index: index, animated: false)
+        header.daySegment.setSelected(index)
     }
 
     private func resolvedPeriod(_ period: String.LocalizationValue?) -> String? {
@@ -259,6 +276,7 @@ class ShuttleTimetableVC: UIViewController {
 
 extension ShuttleTimetableVC: ContentViewDelegate {
     func didMoveToPage(index: Int) {
+        defaultTabState.markUserSelected()
         header.daySegment.setSelected(index)
     }
 }

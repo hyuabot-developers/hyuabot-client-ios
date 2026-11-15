@@ -3,5 +3,8 @@ query ShuttleTimetablePeriodQuery($date: Date!) {
         period {
             type
         }
+        holiday {
+            type
+        }
     }
 }

@@ -80,9 +80,10 @@ enum ReadingRoomDisplayLogic {
         return .good
     }
 
-    static func usedRatio(available: Int, active: Int) -> CGFloat {
+    static func occupiedRatio(available: Int, active: Int) -> CGFloat {
         guard active > 0 else { return 0 }
-        return CGFloat(min(max(Double(active - max(available, 0)) / Double(active), 0), 1))
+        let occupied = active - max(available, 0)
+        return CGFloat(min(max(Double(occupied) / Double(active), 0), 1))
     }
 
     static func splitDisplayName(_ localizedName: String) -> (name: String, floor: String?) {

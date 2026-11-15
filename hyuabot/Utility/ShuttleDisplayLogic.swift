@@ -334,6 +334,53 @@ enum ShuttleDisplayLogic {
 }
 
 extension ShuttleDisplayLogic {
+    private static var seoulTimeZone: TimeZone {
+        TimeZone(identifier: "Asia/Seoul") ?? .current
+    }
+
+    static func timetableQueryDateString(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = seoulTimeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+    static func isWeekendTimetableDay(_ date: Date, holidayType: String?) -> Bool {
+        if let holidayType, !holidayType.isEmpty {
+            return true
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = seoulTimeZone
+        let weekday = calendar.component(.weekday, from: date)
+        return weekday == 1 || weekday == 7
+    }
+}
+
+struct ShuttleTimetableDefaultTabState {
+    private(set) var generation = 0
+    private(set) var userSelectedDay = false
+
+    mutating func beginRequest() -> Int {
+        generation += 1
+        return generation
+    }
+
+    mutating func markUserSelected() { userSelectedDay = true }
+
+    func initialTabIndex(date: Date) -> Int? {
+        guard !userSelectedDay else { return nil }
+        return ShuttleDisplayLogic.isWeekendTimetableDay(date, holidayType: nil) ? 1 : 0
+    }
+
+    func tabIndexForResponse(generation: Int, date: Date, holidayType: String?) -> Int? {
+        guard generation == self.generation, !userSelectedDay else { return nil }
+        return ShuttleDisplayLogic.isWeekendTimetableDay(date, holidayType: holidayType) ? 1 : 0
+    }
+}
+
+extension ShuttleDisplayLogic {
     struct EmptyText: Equatable {
         let title: String
         let body: String

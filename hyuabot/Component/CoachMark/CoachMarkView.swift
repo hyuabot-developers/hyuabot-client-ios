@@ -133,6 +133,8 @@ class CoachMarkView: UIView {
     private var currentIndex = 0
     private var didShowItem = false
     private var skippedByUser = false
+    weak var passthroughView: UIView?
+    private var isDismissing = false
 
     init() {
         super.init(frame: .zero)
@@ -143,10 +145,7 @@ class CoachMarkView: UIView {
         addSubview(tooltip)
         tooltip.onNext = { [weak self] in self?.advance() }
         tooltip.onPrev = { [weak self] in self?.goBack() }
-        tooltip.onSkip = { [weak self] in
-            self?.skippedByUser = true
-            self?.dismiss()
-        }
+        tooltip.onSkip = { [weak self] in self?.skip() }
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tap.cancelsTouchesInView = false
@@ -237,7 +236,7 @@ class CoachMarkView: UIView {
         UIView.animate(withDuration: 0.2) { self.tooltip.alpha = 1 }
     }
 
-    private func advance() {
+    func advance() {
         UIView.animate(withDuration: 0.15, animations: {
             self.tooltip.alpha = 0
         }, completion: { _ in
@@ -255,6 +254,9 @@ class CoachMarkView: UIView {
     }
 
     private func dismiss() {
+        guard !isDismissing else { return }
+        isDismissing = true
+        isUserInteractionEnabled = false
         UIView.animate(withDuration: 0.25, animations: {
             self.alpha = 0
         }, completion: { _ in
@@ -268,6 +270,45 @@ class CoachMarkView: UIView {
         })
     }
 
+    func skip() {
+        guard !isDismissing else { return }
+        skippedByUser = true
+        dismiss()
+    }
+
+    func cancel() {
+        isDismissing = true
+        onSkip = nil
+        onComplete = nil
+        layer.removeAllAnimations()
+        removeFromSuperview()
+    }
+
+    func passthroughContains(_ point: CGPoint) -> Bool {
+        guard let passthroughView,
+              let window,
+              passthroughView.window === window,
+              !passthroughView.isHidden,
+              passthroughView.alpha > 0.01 else { return false }
+        return passthroughView.convert(passthroughView.bounds, to: self).contains(point)
+    }
+
+    @discardableResult
+    func handlePassthrough(at point: CGPoint, eventType: UIEvent.EventType?) -> Bool {
+        guard passthroughContains(point) else { return false }
+        if eventType == .touches {
+            skip()
+        }
+        return true
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if handlePassthrough(at: point, eventType: event?.type) {
+            return nil
+        }
+        return super.hitTest(point, with: event)
+    }
+
     @objc
     private func handleTap(_ gesture: UITapGestureRecognizer) {
         guard !tooltip.frame.contains(gesture.location(in: self)) else { return }
@@ -278,6 +319,26 @@ class CoachMarkView: UIView {
 // MARK: - UIViewController extension
 
 extension UIViewController {
+    var isTopmostForCoachMarks: Bool {
+        guard let root = view.window?.rootViewController else { return false }
+        var top = root
+        while let presented = top.presentedViewController, !presented.isBeingDismissed {
+            top = presented
+        }
+        var current: UIViewController? = self
+        while let controller = current {
+            if controller === top {
+                return true
+            }
+            current = controller.parent
+        }
+        return false
+    }
+
+    func dismissActiveCoachMarks() {
+        view.window?.subviews.compactMap { $0 as? CoachMarkView }.forEach { $0.cancel() }
+    }
+
     @discardableResult
     func presentCoachMarks(
         pageId: String,
@@ -295,10 +356,14 @@ extension UIViewController {
         guard !validItems.isEmpty else { return false }
         guard let window = view.window,
               !window.subviews.contains(where: { $0 is CoachMarkView }) else { return false }
+        guard isTopmostForCoachMarks else { return false }
 
         let overlay = CoachMarkView()
         overlay.frame = window.bounds
         window.addSubview(overlay)
+        if let navigationController, !navigationController.isNavigationBarHidden {
+            overlay.passthroughView = navigationController.navigationBar
+        }
         overlay.onComplete = {
             if shouldMarkAsShown {
                 CoachMarkManager.shared.markPageShown(pageId, version: version)

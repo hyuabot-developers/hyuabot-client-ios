@@ -134,10 +134,15 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
         streamTask?.cancel()
         streamTask = Task { [weak self] in
             while !Task.isCancelled {
-                await InquiryService.shared.streamEvents { [weak self] event in
-                    guard event.threadId == threadId else { return }
-                    await self?.refreshMessages(scrollToBottom: true)
-                }
+                await InquiryService.shared.streamEvents(
+                    onOpen: { [weak self] in
+                        await self?.refreshMessages(scrollToBottom: false)
+                    },
+                    onEvent: { [weak self] event in
+                        guard event.threadId == threadId else { return }
+                        await self?.refreshMessages(scrollToBottom: true)
+                    }
+                )
                 try? await Task.sleep(for: .seconds(1))
             }
         }

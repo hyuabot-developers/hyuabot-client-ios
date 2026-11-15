@@ -8,7 +8,7 @@ nonisolated public struct ShuttleTimetablePeriodQuery: GraphQLQuery {
   public static let operationName: String = "ShuttleTimetablePeriodQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ShuttleTimetablePeriodQuery($date: Date!) { shuttle(input: { date: $date }) { __typename period { __typename type } } }"#
+      #"query ShuttleTimetablePeriodQuery($date: Date!) { shuttle(input: { date: $date }) { __typename period { __typename type } holiday { __typename type } } }"#
     ))
 
   public var date: Date
@@ -44,12 +44,14 @@ nonisolated public struct ShuttleTimetablePeriodQuery: GraphQLQuery {
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
         .field("period", Period?.self),
+        .field("holiday", Holiday?.self),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         ShuttleTimetablePeriodQuery.Data.Shuttle.self
       ] }
 
       public var period: Period? { __data["period"] }
+      public var holiday: Holiday? { __data["holiday"] }
 
       /// Shuttle.Period
       ///
@@ -65,6 +67,25 @@ nonisolated public struct ShuttleTimetablePeriodQuery: GraphQLQuery {
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           ShuttleTimetablePeriodQuery.Data.Shuttle.Period.self
+        ] }
+
+        public var type: String { __data["type"] }
+      }
+
+      /// Shuttle.Holiday
+      ///
+      /// Parent Type: `ShuttleHoliday`
+      nonisolated public struct Holiday: Api.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { Api.Objects.ShuttleHoliday }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("type", String.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          ShuttleTimetablePeriodQuery.Data.Shuttle.Holiday.self
         ] }
 
         public var type: String { __data["type"] }

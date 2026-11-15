@@ -65,6 +65,13 @@ private struct PushTokenBody: Encodable {
 
 actor InquiryService {
     static let shared = InquiryService()
+    static let defaultRequestTimeout: TimeInterval = 10
+    static let streamRequestTimeout: TimeInterval = 600
+    static let streamPath = "/api/v1/inquiry/stream"
+
+    static func requestTimeout(forPath path: String) -> TimeInterval {
+        path == streamPath ? streamRequestTimeout : defaultRequestTimeout
+    }
 
     private let baseURL = "https://backend.hyuabot.app"
     private let installationId: String = {
@@ -96,7 +103,7 @@ actor InquiryService {
         guard let url = components.url else { return nil }
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.timeoutInterval = 10
+        request.timeoutInterval = Self.requestTimeout(forPath: path)
         request.setValue(installationId, forHTTPHeaderField: "X-Installation-Id")
         request.setValue("ios", forHTTPHeaderField: "X-App-Platform")
         request.setValue(appVersion, forHTTPHeaderField: "X-App-Version")
@@ -188,11 +195,16 @@ actor InquiryService {
         return true
     }
 
-    func streamEvents(onEvent: @escaping @Sendable (InquiryStreamEvent) async -> Void) async {
-        guard let request = makeRequest(path: "/api/v1/inquiry/stream", method: "GET"),
+    func streamEvents(
+        onOpen: @escaping @Sendable () async -> Void = {},
+        onEvent: @escaping @Sendable (InquiryStreamEvent) async -> Void
+    ) async {
+        guard let request = makeRequest(path: Self.streamPath, method: "GET"),
               let (bytes, response) = try? await URLSession.shared.bytes(for: request),
               let http = response as? HTTPURLResponse,
               (200 ..< 300).contains(http.statusCode) else { return }
+
+        await onOpen()
 
         var eventType: String?
         var data: String?

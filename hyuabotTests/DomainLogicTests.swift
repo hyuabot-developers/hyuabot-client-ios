@@ -7,6 +7,54 @@
 import XCTest
 
 final class DomainLogicTests: XCTestCase {
+    func testShuttleTimetableQueryDateAndWeekendUseSeoulDate() throws {
+        let originalTimeZone = NSTimeZone.default
+        NSTimeZone.default = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        defer { NSTimeZone.default = originalTimeZone }
+
+        let iso = ISO8601DateFormatter()
+        let mondaySeoul = try XCTUnwrap(iso.date(from: "2026-11-15T15:30:00Z"))
+        XCTAssertEqual(ShuttleDisplayLogic.timetableQueryDateString(mondaySeoul), "2026-11-16")
+        XCTAssertFalse(ShuttleDisplayLogic.isWeekendTimetableDay(mondaySeoul, holidayType: nil))
+
+        let saturdaySeoul = try XCTUnwrap(iso.date(from: "2026-11-13T15:30:00Z"))
+        XCTAssertEqual(ShuttleDisplayLogic.timetableQueryDateString(saturdaySeoul), "2026-11-14")
+        XCTAssertTrue(ShuttleDisplayLogic.isWeekendTimetableDay(saturdaySeoul, holidayType: nil))
+    }
+
+    func testShuttleTimetableWeekendTabDecision() throws {
+        let iso = ISO8601DateFormatter()
+        let sunday = try XCTUnwrap(iso.date(from: "2026-11-15T03:00:00Z"))
+        let saturday = try XCTUnwrap(iso.date(from: "2026-11-14T03:00:00Z"))
+        let monday = try XCTUnwrap(iso.date(from: "2026-11-16T03:00:00Z"))
+
+        XCTAssertTrue(ShuttleDisplayLogic.isWeekendTimetableDay(sunday, holidayType: nil))
+        XCTAssertTrue(ShuttleDisplayLogic.isWeekendTimetableDay(saturday, holidayType: nil))
+        XCTAssertFalse(ShuttleDisplayLogic.isWeekendTimetableDay(monday, holidayType: nil))
+        XCTAssertTrue(ShuttleDisplayLogic.isWeekendTimetableDay(monday, holidayType: "weekends"))
+        XCTAssertTrue(ShuttleDisplayLogic.isWeekendTimetableDay(monday, holidayType: "halt"))
+        XCTAssertFalse(ShuttleDisplayLogic.isWeekendTimetableDay(monday, holidayType: ""))
+    }
+
+    func testShuttleTimetableDefaultTabIgnoresStaleResponses() throws {
+        var state = ShuttleTimetableDefaultTabState()
+        let iso = ISO8601DateFormatter()
+        let monday = try XCTUnwrap(iso.date(from: "2026-11-16T03:00:00Z"))
+        let sunday = try XCTUnwrap(iso.date(from: "2026-11-15T03:00:00Z"))
+
+        let holidayRequest = state.beginRequest()
+        let ordinaryRequest = state.beginRequest()
+        XCTAssertNil(state.tabIndexForResponse(generation: holidayRequest, date: monday, holidayType: "weekends"))
+        XCTAssertEqual(state.tabIndexForResponse(generation: ordinaryRequest, date: monday, holidayType: nil), 0)
+        _ = state.beginRequest()
+        XCTAssertNil(state.tabIndexForResponse(generation: ordinaryRequest, date: sunday, holidayType: nil))
+        let latest = state.beginRequest()
+        XCTAssertEqual(state.initialTabIndex(date: sunday), 1)
+        state.markUserSelected()
+        XCTAssertNil(state.tabIndexForResponse(generation: latest, date: sunday, holidayType: "weekends"))
+        XCTAssertNil(state.initialTabIndex(date: sunday))
+    }
+
     func testLogBusArrivalAddsMinutesFromStart() throws {
         let now = Date(timeIntervalSince1970: 1_800_000_000)
         let arrival = try XCTUnwrap(ShuttleDisplayLogic.logArrivalDate(
@@ -100,16 +148,23 @@ final class DomainLogicTests: XCTestCase {
         XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 6, active: 96), .busy)
     }
 
-    func testReadingRoomUsedRatio() {
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 0, active: 0), 0)
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 100, active: 100), 0)
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: 0, active: 100), 1)
-        XCTAssertEqual(ReadingRoomDisplayLogic.usedRatio(available: -5, active: 100), 1)
+    func testReadingRoomOccupiedRatio() {
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 0, active: 0), 0)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 100, active: 100), 0)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 0, active: 100), 1)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: -5, active: 100), 1)
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupiedRatio(available: 150, active: 100), 0)
         XCTAssertEqual(
-            ReadingRoomDisplayLogic.usedRatio(available: 128, active: 312),
+            ReadingRoomDisplayLogic.occupiedRatio(available: 277, active: 320),
+            43.0 / 320.0,
+            accuracy: 0.0001
+        )
+        XCTAssertEqual(
+            ReadingRoomDisplayLogic.occupiedRatio(available: 128, active: 312),
             184.0 / 312.0,
             accuracy: 0.0001
         )
+        XCTAssertEqual(ReadingRoomDisplayLogic.occupancyLevel(available: 277, active: 320), .good)
     }
 
     func testReadingRoomSplitDisplayName() {

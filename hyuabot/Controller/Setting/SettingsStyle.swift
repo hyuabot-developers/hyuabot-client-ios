@@ -109,6 +109,16 @@ enum SettingsStyle {
             calendarCategoryFillColors[((categoryID - 1) % 4 + 4) % 4]
         }
 
+        static let calendarDimmedBarFill = adaptive(light: 0xEEF1F5, dark: 0x262D36)
+        static let calendarDimmedBarText = adaptive(light: 0x5B6472, dark: 0xB4BDC9)
+
+        static func calendarEventBarColors(categoryID: Int, dimmed: Bool) -> (fill: UIColor, text: UIColor) {
+            if dimmed {
+                return (calendarDimmedBarFill, calendarDimmedBarText)
+            }
+            return (calendarCategoryFill(categoryID), calendarCategoryStrong(categoryID))
+        }
+
         static let busLowFloorFill = adaptive(light: 0xDCFCE7, dark: 0x12301F)
         static let busLowFloorText = adaptive(light: 0x15803D, dark: 0x86EFAC)
         static let busChipLine = adaptive(light: 0xD5DBE2, dark: 0x3A4450)

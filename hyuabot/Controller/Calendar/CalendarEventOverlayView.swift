@@ -41,6 +41,7 @@ final class CalendarEventOverlayView: UIView {
     }
 
     private func makeBar(_ segment: CalendarBarSegment, title: String, columnWidth: CGFloat, row: Int) -> UIView {
+        let colors = SettingsStyle.Color.calendarEventBarColors(categoryID: segment.categoryID, dimmed: segment.dimmed)
         let left: CGFloat = segment.roundLeft ? 2 : 0
         let right: CGFloat = segment.roundRight ? 2 : 0
         let width = CGFloat(segment.endCol - segment.startCol + 1) * columnWidth - left - right
@@ -49,8 +50,7 @@ final class CalendarEventOverlayView: UIView {
             y: CGFloat(row) * CalendarGridCell.rowHeight + 33 + CGFloat(segment.slot) * 17,
             width: width, height: 15
         ))
-        bar.backgroundColor = SettingsStyle.Color.calendarCategoryFill(segment.categoryID)
-        bar.alpha = segment.dimmed ? 0.45 : 1
+        bar.backgroundColor = colors.fill
         bar.clipsToBounds = true
         bar.isAccessibilityElement = false
         bar.accessibilityElementsHidden = true
@@ -63,7 +63,7 @@ final class CalendarEventOverlayView: UIView {
             let label = UILabel(frame: CGRect(x: 4, y: 0, width: max(0, width - 8), height: 15))
             label.text = title
             label.font = SettingsStyle.font(10, bold: true)
-            label.textColor = SettingsStyle.Color.calendarCategoryStrong(segment.categoryID)
+            label.textColor = colors.text
             label.numberOfLines = 1
             label.lineBreakMode = .byTruncatingTail
             label.isAccessibilityElement = false
