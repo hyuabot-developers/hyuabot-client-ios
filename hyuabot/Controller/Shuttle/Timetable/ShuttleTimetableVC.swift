@@ -4,6 +4,7 @@
 //
 
 import Api
+import RxRelay
 import RxSwift
 import UIKit
 
@@ -11,8 +12,8 @@ class ShuttleTimetableVC: UIViewController {
     private let stopID: String.LocalizationValue
     private let destination: String.LocalizationValue
     private let disposeBag = DisposeBag()
-    private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true, showViaVC: openShuttleViaVC)
-    private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false, showViaVC: openShuttleViaVC)
+    private lazy var weekdaysVC = ShuttleTimetableTabVC(isWeekdays: true, showViaVC: { [weak self] item in self?.openShuttleViaVC(item) })
+    private lazy var weekendsVC = ShuttleTimetableTabVC(isWeekdays: false, showViaVC: { [weak self] item in self?.openShuttleViaVC(item) })
     private let header = ShuttleTimetableHeaderView()
     private let pager = ContentView()
 
@@ -31,7 +32,7 @@ class ShuttleTimetableVC: UIViewController {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: false)
         configureNavigationBar()
-        ShuttleTimetableData.shared.options.onNext(ShuttleTimetableOptions(
+        ShuttleTimetableData.shared.options.accept(ShuttleTimetableOptions(
             start: stopID,
             end: destination,
             date: Date.now,
@@ -47,7 +48,7 @@ class ShuttleTimetableVC: UIViewController {
 
     private func showCoachMarksIfNeeded() {
         guard CoachMarkManager.shared.shouldShowPage("shuttle.timetable") else { return }
-        let isLoaded = (try? ShuttleTimetableData.shared.weekdays.value())?.isEmpty == false
+        let isLoaded = !ShuttleTimetableData.shared.weekdays.value.isEmpty
         if isLoaded {
             presentTimetableCoachMarks()
         } else {
@@ -96,10 +97,10 @@ class ShuttleTimetableVC: UIViewController {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        ShuttleTimetableData.shared.options.onNext(nil)
-        ShuttleTimetableData.shared.timetable.onNext([])
-        ShuttleTimetableData.shared.weekdays.onNext([])
-        ShuttleTimetableData.shared.weekends.onNext([])
+        ShuttleTimetableData.shared.options.accept(nil)
+        ShuttleTimetableData.shared.timetable.accept([])
+        ShuttleTimetableData.shared.weekdays.accept([])
+        ShuttleTimetableData.shared.weekends.accept([])
     }
 
     private func setupUI() {
@@ -128,7 +129,8 @@ class ShuttleTimetableVC: UIViewController {
     }
 
     private func observeSubjects() {
-        ShuttleTimetableData.shared.options.subscribe(onNext: { options in
+        ShuttleTimetableData.shared.options.subscribe(onNext: { [weak self] options in
+            guard let self else { return }
             guard let options else { return }
             let period: String?
             if let date = options.date {
@@ -150,14 +152,16 @@ class ShuttleTimetableVC: UIViewController {
             self.fetchTimetable(options: options, stopID: stopID, destinations: destinations)
         }).disposed(by: disposeBag)
         ShuttleTimetableData.shared.timetable.subscribe(onNext: { timetable in
-            ShuttleTimetableData.shared.weekdays.onNext(timetable.filter(\.weekday))
-            ShuttleTimetableData.shared.weekends.onNext(timetable.filter { !$0.weekday })
-            ShuttleTimetableData.shared.isLoading.onNext(false)
+            ShuttleTimetableData.shared.weekdays.accept(timetable.filter(\.weekday))
+            ShuttleTimetableData.shared.weekends.accept(timetable.filter { !$0.weekday })
+            ShuttleTimetableData.shared.isLoading.accept(false)
         }).disposed(by: disposeBag)
-        ShuttleTimetableData.shared.weekdays.subscribe(onNext: { _ in
+        ShuttleTimetableData.shared.weekdays.subscribe(onNext: { [weak self] _ in
+            guard let self else { return }
             self.weekdaysVC.reload()
         }).disposed(by: disposeBag)
-        ShuttleTimetableData.shared.weekends.subscribe(onNext: { _ in
+        ShuttleTimetableData.shared.weekends.subscribe(onNext: { [weak self] _ in
+            guard let self else { return }
             self.weekendsVC.reload()
         }).disposed(by: disposeBag)
     }
@@ -173,7 +177,7 @@ class ShuttleTimetableVC: UIViewController {
             let dateFormatter = DateFormatter().then {
                 $0.dateFormat = "yyyy-MM-dd"
             }
-            ShuttleTimetableData.shared.isLoading.onNext(true)
+            ShuttleTimetableData.shared.isLoading.accept(true)
             Task {
                 let periodResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePeriodQuery(
                     date: dateFormatter.string(from: date)
@@ -196,7 +200,7 @@ class ShuttleTimetableVC: UIViewController {
                 publishTimetable([])
                 return
             }
-            ShuttleTimetableData.shared.isLoading.onNext(true)
+            ShuttleTimetableData.shared.isLoading.accept(true)
             Task {
                 let timetableResponse = try? await Network.shared.client.fetch(query: ShuttleTimetablePageQuery(
                     date: .none,
@@ -223,7 +227,7 @@ class ShuttleTimetableVC: UIViewController {
 
     private func publishTimetable(_ timetable: [ShuttleTimetablePageQuery.Data.Shuttle.Stop.Timetable.Order]) {
         DispatchQueue.main.async {
-            ShuttleTimetableData.shared.timetable.onNext(timetable)
+            ShuttleTimetableData.shared.timetable.accept(timetable)
         }
     }
 

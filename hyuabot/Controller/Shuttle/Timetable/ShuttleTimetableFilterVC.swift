@@ -3,6 +3,7 @@
 //  hyuabot
 //
 
+import RxRelay
 import RxSwift
 import SnapKit
 import UIKit
@@ -200,14 +201,14 @@ final class ShuttleTimetableFilterVC: UIViewController {
         AnalyticsManager.logSelect(.shuttleFilterConfirm)
         guard let selectedStartStop, let selectedEndStop else { return }
         if selectedPeriod == "shuttle.period.custom" {
-            ShuttleTimetableData.shared.options.onNext(ShuttleTimetableOptions(
+            ShuttleTimetableData.shared.options.accept(ShuttleTimetableOptions(
                 start: selectedStartStop,
                 end: selectedEndStop,
                 date: datePicker.date,
                 period: nil
             ))
         } else {
-            ShuttleTimetableData.shared.options.onNext(ShuttleTimetableOptions(
+            ShuttleTimetableData.shared.options.accept(ShuttleTimetableOptions(
                 start: selectedStartStop,
                 end: selectedEndStop,
                 date: nil,

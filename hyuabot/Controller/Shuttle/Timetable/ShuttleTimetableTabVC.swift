@@ -4,6 +4,7 @@
 //
 
 import Api
+import RxRelay
 import RxSwift
 import UIKit
 
@@ -77,11 +78,11 @@ class ShuttleTimetableTabVC: UIViewController {
     }
 
     private func rebuildProjection() {
-        items = (try? (isWeekdays ? ShuttleTimetableData.shared.weekdays.value() : ShuttleTimetableData.shared.weekends.value())) ?? []
+        items = isWeekdays ? ShuttleTimetableData.shared.weekdays.value : ShuttleTimetableData.shared.weekends.value
         let now = Date.now
         let comps = Calendar.current.dateComponents([.hour, .minute], from: now)
         let nowService = ShuttleDisplayLogic.serviceMinutes(hour: comps.hour ?? 0, minute: comps.minute ?? 0)
-        let selectedDate = (try? ShuttleTimetableData.shared.options.value())?.date
+        let selectedDate = ShuttleTimetableData.shared.options.value?.date
         let nowMinutes = ShuttleDisplayLogic.isServiceDayMatch(
             isWeekdays: isWeekdays,
             selectedDate: selectedDate,
@@ -228,7 +229,7 @@ extension ShuttleTimetableTabVC: UITableViewDelegate, UITableViewDataSource {
             return tableView.dequeueReusableCell(withIdentifier: ShuttleTimetableEmptyCellView.reuseIdentifier, for: indexPath)
         }
         guard let itemIndex = projection.itemIndex(at: indexPath), items.indices.contains(itemIndex),
-              let options = try? ShuttleTimetableData.shared.options.value(),
+              let options = ShuttleTimetableData.shared.options.value,
               let cell = tableView
               .dequeueReusableCell(withIdentifier: ShuttleTimetableCellView.reuseIdentifier, for: indexPath) as? ShuttleTimetableCellView
         else {
