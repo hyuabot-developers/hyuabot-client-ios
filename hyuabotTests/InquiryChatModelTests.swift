@@ -3,8 +3,8 @@
 //  hyuabotTests
 //
 
-import XCTest
 @testable import hyuabot
+import XCTest
 
 final class InquiryChatModelTests: XCTestCase {
     private var calendar: Calendar {
@@ -13,7 +13,10 @@ final class InquiryChatModelTests: XCTestCase {
         return value
     }
 
-    private var locale: Locale { Locale(identifier: "ko_KR") }
+    private var locale: Locale {
+        Locale(identifier: "ko_KR")
+    }
+
     private var now: Date {
         InquiryChatModel.messageDate(from: "2026-11-09T10:00:00+09:00") ?? Date(timeIntervalSince1970: 0)
     }
@@ -72,6 +75,14 @@ final class InquiryChatModelTests: XCTestCase {
         XCTAssertEqual(InquiryQuickReply.allCases, [.lostItem, .timetable])
         XCTAssertEqual(InquiryQuickReply.lostItem.iconName, "bag")
         XCTAssertEqual(InquiryQuickReply.timetable.iconName, "clock")
+    }
+
+    func testStreamStartPolicy() {
+        XCTAssertTrue(InquiryStreamPolicy.shouldStartStream(isVisible: true, hasThread: true, isStreamRunning: false))
+        XCTAssertFalse(InquiryStreamPolicy.shouldStartStream(isVisible: false, hasThread: true, isStreamRunning: false))
+        XCTAssertFalse(InquiryStreamPolicy.shouldStartStream(isVisible: true, hasThread: false, isStreamRunning: false))
+        XCTAssertFalse(InquiryStreamPolicy.shouldStartStream(isVisible: true, hasThread: true, isStreamRunning: true))
+        XCTAssertFalse(InquiryStreamPolicy.shouldStartStream(isVisible: false, hasThread: false, isStreamRunning: true))
     }
 
     private func message(_ id: Int, _ sender: String, _ body: String, _ createdAt: String, readAt: String? = nil) -> InquiryMessageDTO {

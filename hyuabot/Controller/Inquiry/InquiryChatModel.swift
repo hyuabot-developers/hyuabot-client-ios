@@ -75,8 +75,10 @@ enum InquiryChatModel {
         for message in messages {
             let date = messageDate(from: message.createdAt) ?? now
             if shouldAddDateRow(date, previousDate: previousMessageDate, calendar: calendar) {
-                rows.append(InquiryChatRow(kind: .date(dateTitle(date, now: now, calendar: calendar, locale: locale)),
-                                           topSpacing: rows.isEmpty ? 0 : 24))
+                rows.append(InquiryChatRow(
+                    kind: .date(dateTitle(date, now: now, calendar: calendar, locale: locale)),
+                    topSpacing: rows.isEmpty ? 0 : 24
+                ))
             }
             rows.append(messageRow(message, date: date, previous: rows.last, calendar: calendar, locale: locale))
             previousMessageDate = date
@@ -140,7 +142,9 @@ enum InquiryChatModel {
     }
 
     private static func dateTitle(_ date: Date, now: Date, calendar: Calendar, locale: Locale) -> String {
-        if calendar.isDate(date, inSameDayAs: now) { return String(localized: "inquiry.date.today") }
+        if calendar.isDate(date, inSameDayAs: now) {
+            return String(localized: "inquiry.date.today")
+        }
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.calendar = calendar
@@ -157,5 +161,12 @@ enum InquiryChatModel {
         formatter.dateStyle = .none
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+enum InquiryStreamPolicy {
+    /// The chat keeps an SSE stream only while it is on screen and its thread is resolved.
+    static func shouldStartStream(isVisible: Bool, hasThread: Bool, isStreamRunning: Bool) -> Bool {
+        isVisible && hasThread && !isStreamRunning
     }
 }

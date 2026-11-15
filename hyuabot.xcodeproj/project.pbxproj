@@ -783,7 +783,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp.watchwidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -815,7 +815,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp.watchwidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -851,7 +851,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -884,7 +884,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -914,7 +914,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -945,7 +945,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -983,7 +983,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1018,7 +1018,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.10.14;
+				MARKETING_VERSION = 26.11.14;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = net.jaram.hyuabot;
 				PRODUCT_NAME = "$(TARGET_NAME)";
