@@ -5,6 +5,7 @@
 
 import Api
 import MapKit
+import RxRelay
 import RxSwift
 import SnapKit
 import UIKit
@@ -218,7 +219,7 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
         searchFieldTextGate.invalidate()
         if isResultMode {
             searchBarView.text = ""
-            MapData.shared.searchKeyword.onNext(nil)
+            MapData.shared.searchKeyword.accept(nil)
         }
         mapView.selectedAnnotations.forEach { mapView.deselectAnnotation($0, animated: false) }
         mode = .searching
@@ -234,12 +235,12 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
         searchBarView.text = ""
         searchBarView.textField.resignFirstResponder()
         resultsContainer.isHidden = true
-        MapData.shared.searchKeyword.onNext(nil)
+        MapData.shared.searchKeyword.accept(nil)
         mode = .browse
         searchBarView.setSearching(false)
         statusPill.isHidden = false
         recenterButton.isHidden = false
-        MapData.shared.searchMode.onNext(false)
+        MapData.shared.searchMode.accept(false)
     }
 
     func showCard(_ content: MapBuildingCardView.Content) {

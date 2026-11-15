@@ -5,23 +5,24 @@
 
 import Api
 import MapKit
+import RxRelay
 import RxSwift
 import UIKit
 
 extension MapVC: UITableViewDataSource, UITableViewDelegate {
-    var searchItems: [RoomItem] { (try? MapData.shared.searchResult.value()) ?? [] }
+    var searchItems: [RoomItem] { MapData.shared.searchResult.value }
 
     func onTextChange(_ keyword: String) {
         searchFieldTextGate.invalidate()
         let isVisible = MapSearchLogic.isSearchResultVisible(keyword: keyword)
         resultsContainer.isHidden = !isVisible
-        MapData.shared.searchKeyword.onNext(isVisible ? keyword : nil)
+        MapData.shared.searchKeyword.accept(isVisible ? keyword : nil)
     }
 
     func onClear() {
         searchFieldTextGate.invalidate()
         resultsContainer.isHidden = true
-        MapData.shared.searchKeyword.onNext(nil)
+        MapData.shared.searchKeyword.accept(nil)
         if isResultMode { showAllBuildings() }
     }
 
@@ -54,11 +55,11 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
                     }
                     self.searchFailed = false
                     self.isLoadingSearch = false
-                    MapData.shared.searchResult.onNext(items)
+                    MapData.shared.searchResult.accept(items)
                 } else {
                     self.searchFailed = true
                     self.isLoadingSearch = false
-                    MapData.shared.searchResult.onNext([])
+                    MapData.shared.searchResult.accept([])
                 }
             }
         }).disposed(by: disposeBag)
@@ -108,7 +109,7 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
         guard !isLoadingSearch, !searchFailed, searchItems.indices.contains(indexPath.row) else { return }
         let item = searchItems[indexPath.row]
         AnalyticsManager.logSelect(.mapSelectSearchResult, type: .listItem, name: item.name)
-        MapData.shared.searchMode.onNext(true)
+        MapData.shared.searchMode.accept(true)
         selectResult(item)
     }
 
@@ -155,7 +156,7 @@ extension MapVC: UITableViewDataSource, UITableViewDelegate {
     }
 
     func resultGuideURL(_ item: RoomItem) -> URL? {
-        let buildings = (try? MapData.shared.buildingResult.value())?.map { ($0.name, $0.url) } ?? []
+        let buildings = MapData.shared.buildingResult.value.map { ($0.name, $0.url) }
         return MapSearchLogic.guideURL(forBuildingNamed: item.building, in: buildings)
     }
 }
