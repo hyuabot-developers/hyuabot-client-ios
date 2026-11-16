@@ -12,7 +12,16 @@ final class BusQuickSettingsVC: UIViewController {
     var openInquiry: (() -> Void)?
     var updateShowSecondaryEta: ((Bool) -> Void)?
     var updateSeoulTarget: ((BusSeoulTargetStop) -> Void)?
+#if DEBUG
+    var updateDebugGroup: ((BusLocationGroup?) -> Void)?
+    private let debugGroupButton = UIButton(type: .system)
+    var debugGroup: BusLocationGroup?
+#endif
+#if DEBUG
+    let preferredSheetHeight: CGFloat = 340
+#else
     let preferredSheetHeight: CGFloat = 284
+#endif
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -157,6 +166,15 @@ extension BusQuickSettingsVC {
             control: seoulTargetButton,
             identifier: "bus.quick_settings.seoul_target_row"
         ))
+#if DEBUG
+        card.addArrangedSubview(separator())
+        card.addArrangedSubview(valueSettingRow(
+            title: "[DEBUG] 위치 그룹",
+            detail: "GPS 대신 선택한 그룹으로 고정합니다",
+            control: debugGroupButton,
+            identifier: "bus.quick_settings.debug_group_row"
+        ))
+#endif
         return card
     }
 
@@ -164,6 +182,9 @@ extension BusQuickSettingsVC {
         showSecondaryEtaSwitch.onTintColor = SettingsStyle.Color.accent
         showSecondaryEtaSwitch.addTarget(self, action: #selector(onChangeShowSecondaryEta), for: .valueChanged)
         configureMenuButton(seoulTargetButton)
+#if DEBUG
+        configureMenuButton(debugGroupButton)
+#endif
     }
 
     private func configureMenuButton(_ button: UIButton) {
@@ -258,7 +279,27 @@ extension BusQuickSettingsVC {
             }
         })
         updateMenuButtonTitle(seoulTargetButton, title: seoulTarget.title)
+#if DEBUG
+        let autoAction = UIAction(title: "자동 (GPS)", state: debugGroup == nil ? .on : .off) { [weak self] _ in
+            self?.selectDebugGroup(nil)
+        }
+        let groupActions = BusLocationGroup.allCases.map { group in
+            UIAction(title: group.rawValue, state: group == debugGroup ? .on : .off) { [weak self] _ in
+                self?.selectDebugGroup(group)
+            }
+        }
+        debugGroupButton.menu = UIMenu(children: [autoAction] + groupActions)
+        updateMenuButtonTitle(debugGroupButton, title: debugGroup?.rawValue ?? "자동 (GPS)")
+#endif
     }
+
+#if DEBUG
+    private func selectDebugGroup(_ group: BusLocationGroup?) {
+        debugGroup = group
+        updateSelectionMenu()
+        updateDebugGroup?(group)
+    }
+#endif
 
     private func updateMenuButtonTitle(_ button: UIButton, title: String) {
         var config = button.configuration

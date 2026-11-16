@@ -4,24 +4,9 @@
 //
 
 import Api
-import CoreLocation
 import Foundation
 import RxRelay
 import RxSwift
-
-/// Canonical stop coordinates used when a stop is missing from the realtime payload
-/// (e.g. neither of its routes has a live vehicle) but we still need to compute
-/// GPS-based selection or containment.
-enum BusStopFallbackCoordinate {
-    static let suwonStation = CLLocationCoordinate2D(latitude: 37.2678485, longitude: 127.0001900)
-
-    static func coordinate(for stopSeq: Int32) -> (lat: Double, lng: Double)? {
-        switch stopSeq {
-        case 202_000_106: (suwonStation.latitude, suwonStation.longitude)
-        default: nil
-        }
-    }
-}
 
 @MainActor
 class BusRealtimeData {
@@ -29,58 +14,15 @@ class BusRealtimeData {
     private init() {}
     /// Realtime Query
     let busRealtimeData = BehaviorRelay<[BusRealtimePageQuery.Data.Bus]>(value: [])
-    let busStopCoordinatesData = BehaviorRelay<[BusStopCoordinatesQuery.Data.Bus]>(value: [])
-    let busRealtimeCityFromCampus = BehaviorRelay<[BusArrivalItem]>(value: [])
-    let busRealtimeCityFromStation = BehaviorRelay<[BusArrivalItem]>(value: [])
-    let busRealtimeSeoulFromCampus = BehaviorRelay<[BusArrivalItem]>(value: [])
-    let busRealtimeGunpoFromCampus = BehaviorRelay<[BusArrivalItem]>(value: [])
-    let busRealtimeSuwonFromCampus = BehaviorRelay<[BusArrivalItem]>(value: [])
-    let busRealtimeKTXFromCampus = BehaviorRelay<[BusArrivalItem]>(value: [])
-    let busRealtimeKTXFromStation = BehaviorRelay<[BusArrivalItem]>(value: [])
+    let busLocationGroup = BehaviorRelay<BusLocationGroup?>(value: nil)
+    let busRealtimeSectionItems = BehaviorRelay<[BusRealtimeSectionSpec: [BusArrivalItem]]>(value: [:])
     let notices = BehaviorRelay<[BusRealtimePageQuery.Data.Notice.Notice]>(value: [])
     /// Loading State
     let isLoading = BehaviorRelay<Bool>(value: true)
-    /// Selected Bus Stop (GPS-based, City tab only)
-    let selectedBusStopID: BehaviorRelay<Int32> = {
-        let savedID = UserDefaults.standard.integer(forKey: "busStopID")
-        return BehaviorRelay(value: savedID == 0 ? 216_000_379 : Int32(savedID))
-    }()
-
-    /// Seoul tab section 1 (3102) selected stop — campus stops or one of the 5 remote Seoul-bound stops
-    let seoulFirstSelectedStopID: BehaviorRelay<Int32> = {
-        let savedID = UserDefaults.standard.integer(forKey: "bus.seoulFirstStopID")
-        return BehaviorRelay(value: savedID == 0 ? 216_000_379 : Int32(savedID))
-    }()
-
-    /// Seoul tab section 2 (3100/3101/3100N) selected stop — main gate or one of the 5 remote Seoul-bound stops
-    let seoulSecondSelectedStopID: BehaviorRelay<Int32> = {
-        let savedID = UserDefaults.standard.integer(forKey: "bus.seoulSecondStopID")
-        return BehaviorRelay(value: savedID == 0 ? 216_000_719 : Int32(savedID))
-    }()
-
-    /// Suwon tab selected stop — campus entrance or Suwon station
-    let suwonSelectedStopID: BehaviorRelay<Int32> = {
-        let savedID = UserDefaults.standard.integer(forKey: "bus.suwonStopID")
-        return BehaviorRelay(value: savedID == 0 ? 216_000_070 : Int32(savedID))
-    }()
-
     /// Whether to show the secondary arrival-time suffix ("▶ HH:mm 도착 예정")
     let showSecondaryEta = BehaviorRelay<Bool>(value: BusRealtimeDisplaySettings.showsSecondaryEta)
     /// Seoul-bound destination used for the secondary ETA when the primary section is on campus
     let seoulTargetStop = BehaviorRelay<BusSeoulTargetStop>(value: BusRealtimeDisplaySettings.seoulTargetStop)
-}
-
-/// Coordinate probes remain independent of the currently displayed arrival routes.
-enum BusLocationInputs {
-    static var inputs: [BusRouteStopInput] {
-        let pairs: [(Int32, Int32)] = [
-            (216_000_068, 216_000_379), (216_000_068, 216_000_381), (216_000_068, 216_000_383),
-            (216_000_096, 216_000_719), (216_000_104, 216_000_070), (216_000_104, 202_000_106),
-            (216_000_061, 121_000_060), (216_000_061, 121_000_929), (216_000_061, 121_000_974),
-            (216_000_061, 121_000_970), (216_000_061, 121_000_220)
-        ]
-        return pairs.map { BusRouteStopInput(route: $0.0, stop: $0.1) }
-    }
 }
 
 /// Keep one row per route and arrival minute, preferring API arrivals to historical templates.

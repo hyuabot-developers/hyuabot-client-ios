@@ -207,7 +207,9 @@ enum BusDisplayLogic {
     }
 
     static func routeColor(_ route: String) -> UIColor {
-        ["10-1", "50"].contains(route) ? .busGreen : .busRed
+        // 광역/직행 노선(3100·3101·3102·7070·9090 계열)은 빨강, 그 외 시내버스는 초록
+        let intercityRoutes: Set<String> = ["3100", "3100N", "3101", "3102", "7070", "9090"]
+        return intercityRoutes.contains(route) ? .busRed : .busGreen
     }
 
     static func arrivalRow(_ input: BusArrivalRowInput) -> BusArrivalRowModel? {
