@@ -44,15 +44,18 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
     private let footnote = UILabel()
     private let footnoteContainer = UIView()
     private let bottomFade = CafeteriaBottomFadeView()
-    private let compactBar = UIView()
-    private let compactTitle = UILabel()
-    private let compactSeparator = UIView()
     private let coachMarkFlow = CafeteriaCoachMarkFlow()
     private var fetchTask: Task<Void, Never>?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
+        navigationItem.title = String(localized: "tabbar.cafeteria")
+        let shareItem = UIBarButtonItem(customView: headerBar.shareButton)
+        if #available(iOS 26.0, *) { shareItem.hidesSharedBackground = true }
+        navigationItem.rightBarButtonItem = shareItem
         setupUI()
+        setContentScrollView(scrollView, for: .top)
         bindInteractions()
         applyInitialMealSelectionIfNeeded()
         #if DEBUG
@@ -69,8 +72,13 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
-        tabBarController?.setNeedsStatusBarAppearanceUpdate()
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        SettingsNavigationStyle.screenWillAppear(self)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        SettingsNavigationStyle.screenWillDisappear(self)
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -118,44 +126,15 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
         view.addSubview(bottomFade)
-        setupCompactBar()
-        headerBar.accessory.install(in: view)
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
         contentStack.snp.makeConstraints { make in
-            make.top.equalTo(scrollView.contentLayoutGuide).offset(45)
+            make.top.equalTo(scrollView.contentLayoutGuide).offset(8)
             make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
         bottomFade.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(120)
-        }
-    }
-
-    private func setupCompactBar() {
-        compactBar.backgroundColor = SettingsStyle.Color.background
-        compactBar.alpha = 0
-        compactBar.isUserInteractionEnabled = true
-        compactTitle.attributedText = SettingsStyle.attributedText(
-            String(localized: "tabbar.cafeteria"), font: SettingsStyle.font(17, bold: true),
-            color: SettingsStyle.Color.text, lineHeight: 22
-        )
-        compactTitle.accessibilityElementsHidden = true
-        compactSeparator.backgroundColor = SettingsStyle.Color.separator
-        view.addSubview(compactBar)
-        compactBar.addSubview(compactTitle)
-        compactBar.addSubview(compactSeparator)
-        compactBar.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.top).offset(44)
-        }
-        compactTitle.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.bottom.equalToSuperview().inset(11)
-        }
-        compactSeparator.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview()
-            make.height.equalTo(1 / UIScreen.main.scale)
         }
     }
 
@@ -326,17 +305,6 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
 }
 
 extension CafeteriaVC {
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        headerBar.accessory.update(layoutNow: false)
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
-        compactBar.alpha = min(max((offset - 36) / 16, 0), 1)
-        headerBar.accessory.update()
-    }
-
     private func selectDate(_ date: Foundation.Date) {
         AnalyticsManager.logSelect(.cafeteriaDateChanged, type: .dateControl)
         selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast

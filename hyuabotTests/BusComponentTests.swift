@@ -83,6 +83,12 @@ final class BusComponentTests: XCTestCase {
         view.frame = CGRect(x: 0, y: 0, width: 320, height: 640)
         view.layoutIfNeeded()
         let button = view.settingsButton
+        // The pill lives in the navigation bar, so host it the way a bar item would.
+        let host = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 44))
+        host.addSubview(button)
+        let size = button.intrinsicContentSize
+        button.frame = CGRect(x: 320 - size.width - 16, y: 0, width: size.width, height: size.height)
+        host.layoutIfNeeded()
         let label = try XCTUnwrap(allLabels(in: button).first)
         let capsule = try XCTUnwrap(button.subviews.first { $0.layer.cornerRadius == 18 })
         XCTAssertEqual(button.accessibilityIdentifier, "bus.settings")
@@ -90,9 +96,6 @@ final class BusComponentTests: XCTestCase {
         XCTAssertEqual(capsule.bounds.height, 36, accuracy: 0.5)
         XCTAssertGreaterThan(button.bounds.width, 44)
         XCTAssertEqual(label.bounds.width, label.intrinsicContentSize.width, accuracy: 0.5)
-        let title = try XCTUnwrap(allLabels(in: view).first { $0.accessibilityIdentifier == "bus.title" })
-        XCTAssertEqual(title.convert(title.bounds, to: view).midY, button.convert(button.bounds, to: view).midY, accuracy: 0.5)
-        XCTAssertLessThanOrEqual(title.convert(title.bounds, to: view).maxX, button.convert(button.bounds, to: view).minX - 12)
         var didTap = false
         view.onSettingsTap = { didTap = true }
         button.sendActions(for: .touchUpInside)

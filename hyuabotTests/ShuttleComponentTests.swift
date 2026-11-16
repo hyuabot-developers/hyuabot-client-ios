@@ -8,13 +8,6 @@ import XCTest
 
 @MainActor
 final class ShuttleComponentTests: XCTestCase {
-    func testShuttleRealtimeTitleBarIdentifiersAndHeight() {
-        let titleBar = ShuttleRealtimeTitleBar()
-        XCTAssertEqual(titleBar.settingsButton.accessibilityIdentifier, "shuttle.quick_settings")
-        titleBar.layoutIfNeeded()
-        XCTAssertEqual(titleBar.constraints.first { $0.firstAttribute == .height }?.constant, 56)
-    }
-
     func testShuttleRealtimeHeaderIdentifiersAndPresenceState() throws {
         let header = ShuttleRealtimeListHeaderView(stopTitles: ["North", "South", "West"])
         XCTAssertEqual(header.noticeBar.accessibilityIdentifier, "shuttle.notice.bar")

@@ -63,7 +63,11 @@ class ShuttleRealtimeVC: UIViewController {
         "shuttle.stop.shuttlecock.in"
     ]
     private lazy var stopTitles = stopTitleKeys.map { String(localized: $0) }
-    private lazy var titleBar = ShuttleRealtimeTitleBar()
+    private let settingsButton = HYUHeaderButton(
+        style: .capsule,
+        symbolName: "slider.horizontal.3",
+        title: String(localized: "tabbar.setting")
+    )
     private lazy var listHeader = ShuttleRealtimeListHeaderView(stopTitles: stopTitles)
     private let pager = ContentView()
     private let headerContainer = UIView()
@@ -269,7 +273,7 @@ class ShuttleRealtimeVC: UIViewController {
             ),
             CoachMarkItem(
                 id: "shuttle.quickSettings",
-                targetView: titleBar.settingsButton,
+                targetView: settingsButton,
                 title: String(localized: "shuttle.quick_settings.button"),
                 message: String(localized: "coach.shuttle.quick_settings.message")
             ),
@@ -414,6 +418,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
+        navigationItem.title = String(localized: "tabbar.shuttle")
         setupUI()
         observeSubjects()
         checkBirthdayDialog()
@@ -424,7 +430,8 @@ class ShuttleRealtimeVC: UIViewController {
         startPolling()
         startPresenceUpdates()
         noticeView.resumeAutoScroll()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        SettingsNavigationStyle.screenWillAppear(self)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -449,6 +456,7 @@ class ShuttleRealtimeVC: UIViewController {
         stopPolling()
         stopPresenceUpdates()
         noticeView.stopAutoScroll()
+        SettingsNavigationStyle.screenWillDisappear(self)
     }
 
     @objc
@@ -567,13 +575,17 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = SettingsStyle.Color.background
-        view.addSubview(titleBar)
         view.addSubview(listHeader)
         view.addSubview(pager)
         pager.pages = tabVCs.map(\.view)
         pager.delegate = self
         listHeader.setLocationSource(isManual: initialStopID != nil)
-        titleBar.onSettingsTap = { [weak self] in self?.openQuickSettings() }
+        settingsButton.accessibilityLabel = String(localized: "shuttle.quick_settings.title")
+        settingsButton.accessibilityIdentifier = "shuttle.quick_settings"
+        settingsButton.addAction(UIAction { [weak self] _ in self?.openQuickSettings() }, for: .touchUpInside)
+        let settingsItem = UIBarButtonItem(customView: settingsButton)
+        if #available(iOS 26.0, *) { settingsItem.hidesSharedBackground = true }
+        navigationItem.rightBarButtonItem = settingsItem
         listHeader.onSelectStop = { [weak self] index in
             self?.handleUserStopSelection(index, fromSwipe: false)
         }
@@ -585,13 +597,9 @@ class ShuttleRealtimeVC: UIViewController {
         // Title bar and list header stay pinned above the pager; only the lists scroll.
         view.sendSubviewToBack(pager)
         view.addSubview(headerContainer)
-        headerContainer.addSubview(titleBar)
         headerContainer.addSubview(listHeader)
-        titleBar.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-        }
         listHeader.snp.makeConstraints { make in
-            make.top.equalTo(titleBar.snp.bottom)
+            make.top.equalToSuperview()
             make.leading.trailing.bottom.equalToSuperview()
         }
         headerContainer.snp.makeConstraints { make in

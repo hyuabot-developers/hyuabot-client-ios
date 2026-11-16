@@ -10,16 +10,13 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
     var onRefresh: (() -> Void)?
     var onTimetableTap: ((SubwayTimetableTarget) -> Void)?
 
-    private let scrollView = UIScrollView()
+    let scrollView = UIScrollView()
     private let contentStack = UIStackView()
-    private let titleContainer = UIView()
-    private let titleLabel = UILabel()
     let segmentView = SubwaySegmentView(buttonIdentifierPrefix: "viewpager.tab")
     private let skeletonList = SubwayRealtimeSkeletonListView()
     private let cardsStack = UIStackView()
     private let footnoteContainer = UIView()
     private let footnoteLabel = UILabel()
-    private let compactBar = SubwayCompactBarView(maxTitleWidth: nil)
     private let refreshControl = UIRefreshControl()
 
     override init(frame: CGRect) {
@@ -59,13 +56,6 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         refreshControl.endRefreshing()
     }
 
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        compactBar.setRevealProgress(SubwayCompactBarView.revealProgress(
-            contentOffsetY: scrollView.contentOffset.y,
-            adjustedTopInset: scrollView.adjustedContentInset.top
-        ))
-    }
-
     private var segmentItems: [SubwaySegmentView.Item] {
         [
             .init(title: String(localized: "subway.tab.blue"), dotColors: [SubwayRouteLine.line4.color], count: nil),
@@ -91,21 +81,10 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         contentStack.axis = .vertical
         scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints {
-            $0.top.equalTo(scrollView.contentLayoutGuide).offset(45)
+            $0.top.equalTo(scrollView.contentLayoutGuide).offset(8)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
-        titleLabel.attributedText = SettingsStyle.attributedText(
-            String(localized: "tabbar.subway"), font: SettingsStyle.font(32, bold: true),
-            color: SettingsStyle.Color.text, lineHeight: 40
-        ).withKern(-0.5)
-        titleLabel.accessibilityTraits = .header
-        titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.accessibilityIdentifier = "subway.title"
-        titleContainer.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { $0.leading.trailing.equalToSuperview().inset(4); $0.top.bottom.equalToSuperview() }
-        contentStack.addArrangedSubview(titleContainer)
-        contentStack.setCustomSpacing(HYUMetrics.Layout.titleToControl, after: titleContainer)
         contentStack.addArrangedSubview(segmentView)
         contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: segmentView)
         contentStack.addArrangedSubview(skeletonList)
@@ -128,10 +107,6 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         let fade = CafeteriaBottomFadeView()
         addSubview(fade)
         fade.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(120) }
-        compactBar.setTitle(String(localized: "tabbar.subway"))
-        addSubview(compactBar)
-        compactBar.snp
-            .makeConstraints { $0.leading.trailing.top.equalToSuperview(); $0.bottom.equalTo(safeAreaLayoutGuide.snp.top).offset(44) }
         segmentView.configure(items: segmentItems, selected: 0)
         segmentView.onSelect = { [weak self] index in
             guard let self else { return }
