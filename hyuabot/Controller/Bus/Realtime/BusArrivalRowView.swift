@@ -9,7 +9,6 @@ import UIKit
 final class BusArrivalRowView: UIView {
     private let routeBadge = BusRouteBadgeView(size: .small)
     private let primaryLabel = UILabel()
-    private let lowFloorLabel = HYUPaddedLabel()
     private let detailLabel = UILabel()
     private let minutesLabel = UILabel()
     private let separator = UIView()
@@ -26,7 +25,6 @@ final class BusArrivalRowView: UIView {
             routeBadge.configure(route: model.route)
         }
         configurePrimary(model)
-        configureLowFloor(model.isLowFloor)
         let details = detailParts(model)
         configureDetail(details, model: model)
         configureMinutes(model.remaining, isRealtime: model.isRealtime)
@@ -37,9 +35,6 @@ final class BusArrivalRowView: UIView {
         }
         accessibilityParts.append(minutesLabel.text ?? "")
         accessibilityParts.append(primaryLabel.text ?? "")
-        if model.isLowFloor {
-            accessibilityParts.append(String(localized: "bus.realtime.low.floor"))
-        }
         accessibilityParts.append(contentsOf: details)
         accessibilityLabel = accessibilityParts.filter { !$0.isEmpty }.joined(separator: ", ")
     }
@@ -59,11 +54,6 @@ final class BusArrivalRowView: UIView {
             lineBreakMode: .byTruncatingTail
         )
         primaryLabel.adjustsFontForContentSizeCategory = true
-    }
-
-    private func configureLowFloor(_ isLowFloor: Bool) {
-        lowFloorLabel.text = String(localized: "bus.realtime.low.floor")
-        lowFloorLabel.isHidden = !isLowFloor
     }
 
     private func detailParts(_ model: BusArrivalRowModel) -> [String] {
@@ -121,18 +111,8 @@ final class BusArrivalRowView: UIView {
         primaryLabel.textAlignment = .right
         detailLabel.numberOfLines = 1
         detailLabel.lineBreakMode = .byTruncatingTail
-        lowFloorLabel.textColor = SettingsStyle.Color.busLowFloorText
-        lowFloorLabel.backgroundColor = SettingsStyle.Color.busLowFloorFill
-        lowFloorLabel.padding = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
-        lowFloorLabel.font = SettingsStyle.font(12, bold: true)
-        lowFloorLabel.layer.cornerRadius = 6
-        lowFloorLabel.clipsToBounds = true
-        lowFloorLabel.adjustsFontForContentSizeCategory = true
-        lowFloorLabel.snp.makeConstraints { $0.height.equalTo(20) }
-        lowFloorLabel.setContentHuggingPriority(.required, for: .horizontal)
-        lowFloorLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let titleLine = UIStackView(arrangedSubviews: [routeBadge, lowFloorLabel])
+        let titleLine = UIStackView(arrangedSubviews: [routeBadge])
         titleLine.axis = .horizontal
         titleLine.alignment = .center
         titleLine.spacing = 6
