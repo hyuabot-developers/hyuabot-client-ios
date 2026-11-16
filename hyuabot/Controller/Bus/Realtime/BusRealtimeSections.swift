@@ -37,6 +37,6 @@ enum BusRealtimeSections {
     }
 
     static func rowLimit(for tab: BusRealtimeType) -> Int {
-        tab == .suwon ? 10 : 5
+        tab == .suwon ? 7 : 3
     }
 }
