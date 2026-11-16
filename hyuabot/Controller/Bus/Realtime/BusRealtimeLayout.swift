@@ -95,9 +95,7 @@ extension BusRealtimeLayout {
         let targetStopID = target
         let defaultCity = [
             section(216_000_379, [(route10dash1, "10-1")], destination: 216_000_138),
-            section(216_000_138, [(route10dash1, "10-1")], destination: 216_000_378),
-            section(216_000_759, [(route50, "50")], destination: 213_000_487),
-            section(213_000_487, [(route50, "50")], destination: 216_000_117)
+            section(216_000_138, [(route10dash1, "10-1")], destination: 216_000_378)
         ]
         let defaultSeoul = [
             section(216_000_379, [(route3102, "3102")], destination: targetStopID),

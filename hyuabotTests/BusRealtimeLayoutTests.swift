@@ -99,9 +99,7 @@ final class BusRealtimeLayoutTests: XCTestCase {
         XCTAssertEqual(layout.defaultTab, .city)
         XCTAssertEqual(expectations(layout.city), [
             sectionExpectation(216_000_379, [216_000_068], 216_000_138),
-            sectionExpectation(216_000_138, [216_000_068], 216_000_378),
-            sectionExpectation(216_000_759, [216_000_075], 213_000_487),
-            sectionExpectation(213_000_487, [216_000_075], 216_000_117)
+            sectionExpectation(216_000_138, [216_000_068], 216_000_378)
         ])
         XCTAssertEqual(expectations(layout.seoul), [
             sectionExpectation(216_000_379, [216_000_061], 121_000_974),
