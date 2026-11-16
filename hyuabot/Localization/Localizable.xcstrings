@@ -10,16 +10,16 @@
             "value" : "First and last bus by route"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "노선별 첫차 · 막차"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "路線別の始発・終発"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노선별 첫차 · 막차"
           }
         },
         "zh-Hans" : {
@@ -39,16 +39,16 @@
             "value" : "Toward %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 방면"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@方面"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 방면"
           }
         },
         "zh-Hans" : {
@@ -68,16 +68,16 @@
             "value" : "Timetable unavailable for this route"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시간표가 제공되지 않는 노선이에요"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "この路線の時刻表は提供されていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간표가 제공되지 않는 노선이에요"
           }
         },
         "zh-Hans" : {
@@ -97,16 +97,16 @@
             "value" : "Next departure at %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음 출발 %@"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "次の出発 %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 출발 %@"
           }
         },
         "zh-Hans" : {
@@ -126,16 +126,16 @@
             "value" : "Showing all departure records"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 출발 기록을 보고 있어요"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "すべての出発記録を表示中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 출발 기록을 보고 있어요"
           }
         },
         "zh-Hans" : {
@@ -155,16 +155,16 @@
             "value" : "%lld older records hidden"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지난 기록 %lld개 접힘"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "過去の記録%lld件を非表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난 기록 %lld개 접힘"
           }
         },
         "zh-Hans" : {
@@ -184,16 +184,16 @@
             "value" : "Collapse"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "접기"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "折りたたむ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "접기"
           }
         },
         "zh-Hans" : {
@@ -213,16 +213,16 @@
             "value" : "Show all"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 보기"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "すべて表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 보기"
           }
         },
         "zh-Hans" : {
@@ -242,16 +242,16 @@
             "value" : "Loading…"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "불러오는 중…"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "読み込み中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "불러오는 중…"
           }
         },
         "zh-Hans" : {
@@ -271,16 +271,16 @@
             "value" : "No records"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기록 없음"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "記録なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기록 없음"
           }
         },
         "zh-Hans" : {
@@ -300,16 +300,16 @@
             "value" : "%@ departure records"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 출발 기록"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@の出発記録"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 출발 기록"
           }
         },
         "zh-Hans" : {
@@ -337,7 +337,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "올해는 다시 보지 않기"
+            "value" : "올해는 다시보지 않기"
           }
         },
         "zh-Hans" : {
@@ -800,12 +800,6 @@
     "bus.realtime.arriving_soon" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "곧 도착"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -816,6 +810,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "まもなく到着"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "곧 도착"
           }
         },
         "zh-Hans" : {
@@ -855,6 +855,7 @@
       }
     },
     "bus.realtime.empty.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -883,6 +884,7 @@
       }
     },
     "bus.realtime.empty.detail" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -941,12 +943,6 @@
     "bus.realtime.eta.%@.%@" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ %2$@ 도착"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -957,6 +953,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$@到着"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ 도착"
           }
         },
         "zh-Hans" : {
@@ -998,12 +1000,6 @@
     "bus.realtime.minutes.%lld" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld분"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1014,6 +1010,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld分"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld분"
           }
         },
         "zh-Hans" : {
@@ -1027,12 +1029,6 @@
     "bus.realtime.no_seats" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "좌석 없음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1043,6 +1039,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "空席なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좌석 없음"
           }
         },
         "zh-Hans" : {
@@ -1056,12 +1058,6 @@
     "bus.realtime.route.%@" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@번"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1072,6 +1068,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@番"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@번"
           }
         },
         "zh-Hans" : {
@@ -1085,12 +1087,6 @@
     "bus.realtime.seats_left.%lld" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "잔여 %lld석"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1101,6 +1097,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "残り%lld席"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잔여 %lld석"
           }
         },
         "zh-Hans" : {
@@ -1114,12 +1116,6 @@
     "bus.realtime.stops_before.%lld" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld정류장 전"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1130,6 +1126,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "あと%lld停留所"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld정류장 전"
           }
         },
         "zh-Hans" : {
@@ -1143,12 +1145,6 @@
     "bus.realtime.waiting_at_origin" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "출발지 대기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1159,6 +1155,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "始発地で待機中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출발지 대기"
           }
         },
         "zh-Hans" : {
@@ -1842,6 +1844,7 @@
       }
     },
     "cafeteria.menu.price.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1926,6 +1929,7 @@
       }
     },
     "cafeteria.running.time.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1954,6 +1958,7 @@
       }
     },
     "cafeteria.running.time.status.%@.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1982,6 +1987,7 @@
       }
     },
     "cafeteria.share" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2010,6 +2016,7 @@
       }
     },
     "cafeteria.share.format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2038,6 +2045,7 @@
       }
     },
     "cafeteria.share.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2262,6 +2270,7 @@
       }
     },
     "cafeteria.tab.tomorrow.format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2600,12 +2609,6 @@
     "calendar.clear_selection" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택 해제"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2616,6 +2619,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選択解除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택 해제"
           }
         },
         "zh-Hans" : {
@@ -2629,12 +2638,6 @@
     "calendar.count" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld건"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2645,6 +2648,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld件"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld건"
           }
         },
         "zh-Hans" : {
@@ -2658,12 +2667,6 @@
     "calendar.day.events_count" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "일정 %lld개"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2674,6 +2677,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日程%lld件"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일정 %lld개"
           }
         },
         "zh-Hans" : {
@@ -2687,12 +2696,6 @@
     "calendar.day.no_events" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "일정 없음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2703,6 +2706,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日程なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일정 없음"
           }
         },
         "zh-Hans" : {
@@ -2716,12 +2725,6 @@
     "calendar.empty.hidden.caption" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "숨긴 분류가 있어요. 필터를 확인해 보세요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2732,6 +2735,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "非表示のカテゴリがあります。フィルターを確認してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "숨긴 분류가 있어요. 필터를 확인해 보세요"
           }
         },
         "zh-Hans" : {
@@ -2745,12 +2754,6 @@
     "calendar.empty.selected.caption" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다른 날짜를 탭하거나 선택을 해제해 보세요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2761,6 +2764,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "別の日付をタップするか、選択を解除してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 날짜를 탭하거나 선택을 해제해 보세요"
           }
         },
         "zh-Hans" : {
@@ -2774,12 +2783,6 @@
     "calendar.empty.selected.title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 날은 학사일정이 없어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2790,6 +2793,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "この日の学事日程はありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 날은 학사일정이 없어요"
           }
         },
         "zh-Hans" : {
@@ -2803,12 +2812,6 @@
     "calendar.empty.upcoming.caption" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "새 학사일정이 등록되면 여기에 표시돼요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2819,6 +2822,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新しい学事日程が登録されるとここに表示されます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 학사일정이 등록되면 여기에 표시돼요"
           }
         },
         "zh-Hans" : {
@@ -2861,12 +2870,6 @@
     "calendar.filter.accessibility" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "일정 분류 필터"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2877,6 +2880,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日程カテゴリフィルター"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일정 분류 필터"
           }
         },
         "zh-Hans" : {
@@ -2890,12 +2899,6 @@
     "calendar.loading" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "학사일정을 불러오는 중…"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2906,6 +2909,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "学事日程を読み込み中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학사일정을 불러오는 중…"
           }
         },
         "zh-Hans" : {
@@ -2919,12 +2928,6 @@
     "calendar.next_month.accessibility" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음 달"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2935,6 +2938,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "次の月"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 달"
           }
         },
         "zh-Hans" : {
@@ -2977,12 +2986,6 @@
     "calendar.previous_month.accessibility" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이전 달"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2993,6 +2996,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "前の月"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 달"
           }
         },
         "zh-Hans" : {
@@ -3063,12 +3072,6 @@
     "calendar.swipe.hint" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜를 탭해 그날 일정을 확인하세요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3079,6 +3082,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日付をタップして日程を確認します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜를 탭해 그날 일정을 확인하세요."
           }
         },
         "zh-Hans" : {
@@ -3092,12 +3101,6 @@
     "calendar.today" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3108,6 +3111,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘"
           }
         },
         "zh-Hans" : {
@@ -3121,12 +3130,6 @@
     "calendar.today.accessibility" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘로 이동"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3137,6 +3140,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日へ移動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘로 이동"
           }
         },
         "zh-Hans" : {
@@ -5908,6 +5917,7 @@
       }
     },
     "common.share" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6608,6 +6618,7 @@
       }
     },
     "commuter.off.halt" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6692,6 +6703,7 @@
       }
     },
     "commuter.off.vacation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6720,6 +6732,7 @@
       }
     },
     "commuter.off.vacation_session" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6748,6 +6761,7 @@
       }
     },
     "commuter.off.weekend" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6776,6 +6790,7 @@
       }
     },
     "commuter.partial_notice" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6860,6 +6875,7 @@
       }
     },
     "commuter.route.accessibility" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6944,6 +6960,7 @@
       }
     },
     "commuter.status.before" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6972,6 +6989,7 @@
       }
     },
     "commuter.status.finished" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7000,6 +7018,7 @@
       }
     },
     "commuter.status.off" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7028,6 +7047,7 @@
       }
     },
     "commuter.status.running" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7056,6 +7076,7 @@
       }
     },
     "commuter.summary.from.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7112,6 +7133,7 @@
       }
     },
     "commuter.summary.to.%@.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7140,6 +7162,7 @@
       }
     },
     "commuter.tag.arrival" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7168,6 +7191,7 @@
       }
     },
     "commuter.tag.departure" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8120,6 +8144,7 @@
       }
     },
     "event.database.loading" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8148,6 +8173,7 @@
       }
     },
     "event.version.loading" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10726,6 +10752,7 @@
       }
     },
     "intent.cafeteria.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10755,12 +10782,6 @@
     },
     "intent.entity.cafeteria.type" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "학식 메뉴"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10773,6 +10794,12 @@
             "value" : "学食メニュー"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학식 메뉴"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10783,12 +10810,6 @@
     },
     "intent.entity.shuttle.type" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "셔틀 도착 정보"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10801,6 +10822,12 @@
             "value" : "シャトル到着情報"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셔틀 도착 정보"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10811,12 +10838,6 @@
     },
     "intent.entity.subway.type" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지하철 도착 정보"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10829,6 +10850,12 @@
             "value" : "地下鉄到着情報"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지하철 도착 정보"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10839,12 +10866,6 @@
     },
     "intent.entity.bus.type" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "버스 도착 정보"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10855,6 +10876,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "バス到着情報"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버스 도착 정보"
           }
         },
         "zh-Hans" : {
@@ -11090,13 +11117,8 @@
       }
     },
     "intent.search.title" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색 결과"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11107,6 +11129,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "検索結果"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 결과"
           }
         },
         "zh-Hans" : {
@@ -12243,12 +12271,6 @@
     },
     "licenses.back" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "라이선스"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12259,6 +12281,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ライセンス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라이선스"
           }
         },
         "zh-Hans" : {
@@ -12300,12 +12328,6 @@
     },
     "licenses.full_text" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "라이선스 전문"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12318,6 +12340,12 @@
             "value" : "ライセンス全文"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라이선스 전문"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12328,12 +12356,6 @@
     },
     "licenses.group.count.%lld" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld개"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12346,6 +12368,12 @@
             "value" : "%lld件"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld개"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12356,12 +12384,6 @@
     },
     "licenses.group.other" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기타"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12374,6 +12396,12 @@
             "value" : "その他"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기타"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12384,12 +12412,6 @@
     },
     "licenses.intro.%lld" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "휴아봇은 아래 오픈소스 소프트웨어 %lld개를 사용해요. 항목을 누르면 라이선스 전문을 볼 수 있어요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12400,6 +12422,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "HYUabotは以下の%lld個のオープンソースソフトウェアを使用しています。項目をタップするとライセンス全文を表示できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "휴아봇은 아래 오픈소스 소프트웨어 %lld개를 사용해요. 항목을 누르면 라이선스 전문을 볼 수 있어요."
           }
         },
         "zh-Hans" : {
@@ -12470,12 +12498,6 @@
     "map.cluster.accessibility.%lld" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건물 %lld개"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12488,6 +12510,12 @@
             "value" : "%lld件の建物"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건물 %lld개"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12498,12 +12526,6 @@
     },
     "map.building.search.placeholder" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건물명, 강의실, 호수로 검색"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12514,6 +12536,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "建物名・講義室・号室で検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건물명, 강의실, 호수로 검색"
           }
         },
         "zh-Hans" : {
@@ -12973,6 +13001,7 @@
       }
     },
     "reading_room.alarm.running_format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13001,6 +13030,7 @@
       }
     },
     "reading_room.available_seat_format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13029,6 +13059,7 @@
       }
     },
     "reading_room.full_seat_format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13142,12 +13173,6 @@
     },
     "setting.analytics.subtitle" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "익명 통계로 앱을 개선해요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13158,6 +13183,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "匿名の統計でアプリを改善します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "익명 통계로 앱을 개선해요."
           }
         },
         "zh-Hans" : {
@@ -13198,12 +13229,6 @@
     },
     "setting.campus.caption" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "학식·열람실·연락처·위젯에 적용돼요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13216,6 +13241,12 @@
             "value" : "学食・閲覧室・連絡先・ウィジェットに適用されます。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "학식·열람실·연락처·위젯에 적용돼요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13226,12 +13257,6 @@
     },
     "setting.campus.current.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 캠퍼스"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13244,6 +13269,12 @@
             "value" : "%@キャンパス"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 캠퍼스"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13253,6 +13284,7 @@
       }
     },
     "setting.coachmark.reset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13282,12 +13314,6 @@
     },
     "setting.coachmark.reset.action" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "초기화"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13298,6 +13324,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "リセット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초기화"
           }
         },
         "zh-Hans" : {
@@ -13365,6 +13397,7 @@
       }
     },
     "setting.help" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13422,12 +13455,6 @@
     },
     "setting.language.footer" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "언어는 iOS 설정 › 휴아봇에서 바꿀 수 있어요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13440,6 +13467,12 @@
             "value" : "言語はiOSの設定 › HYUabotで変更できます。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언어는 iOS 설정 › 휴아봇에서 바꿀 수 있어요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13450,12 +13483,6 @@
     },
     "setting.language.open_settings" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iOS 설정에서 열기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13466,6 +13493,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "iOSの設定で開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS 설정에서 열기"
           }
         },
         "zh-Hans" : {
@@ -13505,6 +13538,7 @@
       }
     },
     "setting.privacy_policy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13534,12 +13568,6 @@
     },
     "setting.section.display" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "화면"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13552,6 +13580,12 @@
             "value" : "表示"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13562,12 +13596,6 @@
     },
     "setting.section.privacy" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "개인정보"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13580,6 +13608,12 @@
             "value" : "プライバシー"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개인정보"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13590,12 +13624,6 @@
     },
     "setting.section.support" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "도움 및 정보"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13606,6 +13634,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ヘルプと情報"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도움 및 정보"
           }
         },
         "zh-Hans" : {
@@ -13703,12 +13737,6 @@
     "shuttle.quick_settings.emphasis.departure" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "출발 시각"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13719,6 +13747,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "出発時刻"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출발 시각"
           }
         },
         "zh-Hans" : {
@@ -13732,12 +13766,6 @@
     "shuttle.quick_settings.emphasis.remaining" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "남은 시간"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13748,6 +13776,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "残り時間"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "남은 시간"
           }
         },
         "zh-Hans" : {
@@ -13761,12 +13795,6 @@
     "shuttle.quick_settings.emphasis.title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "크게 보여 줄 시간"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13777,6 +13805,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "大きく表示する時間"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "크게 보여 줄 시간"
           }
         },
         "zh-Hans" : {
@@ -13790,12 +13824,6 @@
     "shuttle.quick_settings.section.alternative" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다른 교통편"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13806,6 +13834,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "他の交通手段"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 교통편"
           }
         },
         "zh-Hans" : {
@@ -13819,12 +13853,6 @@
     "shuttle.quick_settings.sort.destination" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "방면별"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13835,6 +13863,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "方面別"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "방면별"
           }
         },
         "zh-Hans" : {
@@ -13848,12 +13882,6 @@
     "shuttle.quick_settings.sort.time" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "출발 순서"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13864,6 +13892,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "出発順"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출발 순서"
           }
         },
         "zh-Hans" : {
@@ -13877,12 +13911,6 @@
     "shuttle.quick_settings.sort.title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "정렬"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13893,6 +13921,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "並び順"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정렬"
           }
         },
         "zh-Hans" : {
@@ -13932,6 +13966,7 @@
       }
     },
     "shuttle.realtime.location.manual" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13960,6 +13995,7 @@
       }
     },
     "shuttle.realtime.location.nearest" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14352,6 +14388,7 @@
       }
     },
     "shuttle.alarm.alighting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14380,6 +14417,7 @@
       }
     },
     "shuttle.alarm.alighting.alert.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14408,6 +14446,7 @@
       }
     },
     "shuttle.alarm.alighting.alert.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14577,6 +14616,7 @@
       }
     },
     "shuttle.alarm.alighting.notification.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14605,6 +14645,7 @@
       }
     },
     "shuttle.alarm.alighting.notification.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14745,6 +14786,7 @@
       }
     },
     "shuttle.alarm.boarding.initial" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14886,6 +14928,7 @@
       }
     },
     "shuttle.alarm.boarding.notification.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14914,6 +14957,7 @@
       }
     },
     "shuttle.alarm.boarding.notification.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14942,6 +14986,7 @@
       }
     },
     "shuttle.alarm.button.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14970,6 +15015,7 @@
       }
     },
     "shuttle.alarm.cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15139,6 +15185,7 @@
       }
     },
     "shuttle.alarm.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15504,6 +15551,7 @@
       }
     },
     "shuttle.bus.alternative.time.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15532,6 +15580,7 @@
       }
     },
     "shuttle.connection.transfer.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15841,6 +15890,7 @@
       }
     },
     "shuttle.first.last.weekdays.na" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15898,6 +15948,7 @@
       }
     },
     "shuttle.first.last.weekends.na" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15926,6 +15977,7 @@
       }
     },
     "shuttle.first.time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16290,6 +16342,7 @@
       }
     },
     "shuttle.last.time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16795,12 +16848,6 @@
     },
     "shuttle.realtime.arrives_at.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 도착"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16813,6 +16860,12 @@
             "value" : "%@ 着"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 도착"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16823,12 +16876,6 @@
     },
     "shuttle.realtime.arrives_at_stop.%@.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ %2$@ 도착"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16839,6 +16886,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$@ 着"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ 도착"
           }
         },
         "zh-Hans" : {
@@ -17384,6 +17437,7 @@
       }
     },
     "shuttle.share.journey" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17496,6 +17550,7 @@
       }
     },
     "shuttle.show.entire.timetable.campus" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17524,6 +17579,7 @@
       }
     },
     "shuttle.show.entire.timetable.jungang_stn" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17552,6 +17608,7 @@
       }
     },
     "shuttle.show.entire.timetable.station" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17580,6 +17637,7 @@
       }
     },
     "shuttle.show.entire.timetable.terminal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17664,6 +17722,7 @@
       }
     },
     "shuttle.stop.first.last" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17832,6 +17891,7 @@
       }
     },
     "shuttle.time.%lld.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17860,6 +17920,7 @@
       }
     },
     "shuttle.time.remaining.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18756,6 +18817,7 @@
       }
     },
     "subway.realtime.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18784,6 +18846,7 @@
       }
     },
     "subway.realtime.almost.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18812,6 +18875,7 @@
       }
     },
     "subway.realtime.arrived.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18840,6 +18904,7 @@
       }
     },
     "subway.realtime.departed.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18896,6 +18961,7 @@
       }
     },
     "subway.realtime.entering.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18924,6 +18990,7 @@
       }
     },
     "subway.realtime.last.almost.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18952,6 +19019,7 @@
       }
     },
     "subway.realtime.last.arrived.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18980,6 +19048,7 @@
       }
     },
     "subway.realtime.last.departed.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19008,6 +19077,7 @@
       }
     },
     "subway.realtime.last.entering.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19036,6 +19106,7 @@
       }
     },
     "subway.realtime.now" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19064,6 +19135,7 @@
       }
     },
     "subway.realtime.section.4.down" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19092,6 +19164,7 @@
       }
     },
     "subway.realtime.section.4.up" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19120,6 +19193,7 @@
       }
     },
     "subway.realtime.section.suin.down" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19148,6 +19222,7 @@
       }
     },
     "subway.realtime.section.suin.up" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19176,6 +19251,7 @@
       }
     },
     "subway.realtime.section.transfer.down" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19204,6 +19280,7 @@
       }
     },
     "subway.realtime.section.transfer.up" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19232,6 +19309,7 @@
       }
     },
     "subway.realtime.stops.suffix.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19260,6 +19338,7 @@
       }
     },
     "subway.show.entire.timetable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19288,6 +19367,7 @@
       }
     },
     "subway.station.choji" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19316,6 +19396,7 @@
       }
     },
     "subway.station.k209" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19344,6 +19425,7 @@
       }
     },
     "subway.station.k210" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19372,6 +19454,7 @@
       }
     },
     "subway.station.k233" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19400,6 +19483,7 @@
       }
     },
     "subway.station.k246" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19456,6 +19540,7 @@
       }
     },
     "subway.station.k272" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19484,6 +19569,7 @@
       }
     },
     "subway.station.k405" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19512,6 +19598,7 @@
       }
     },
     "subway.station.k409" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19540,6 +19627,7 @@
       }
     },
     "subway.station.k411" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19568,6 +19656,7 @@
       }
     },
     "subway.station.k419" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19596,6 +19685,7 @@
       }
     },
     "subway.station.k433" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19624,6 +19714,7 @@
       }
     },
     "subway.station.k443" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19652,6 +19743,7 @@
       }
     },
     "subway.station.k444" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19680,6 +19772,7 @@
       }
     },
     "subway.station.k453" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19708,6 +19801,7 @@
       }
     },
     "subway.station.k456" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19993,6 +20087,7 @@
       }
     },
     "subway.time.%lld.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20049,6 +20144,7 @@
       }
     },
     "subway.timetable.weekends" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20105,6 +20201,7 @@
       }
     },
     "subway.transfer.minutes.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20133,6 +20230,7 @@
       }
     },
     "subway.transfer.station.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20161,6 +20259,7 @@
       }
     },
     "subway.transfer.wait.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20301,6 +20400,7 @@
       }
     },
     "tabbar.contact" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20582,12 +20682,6 @@
     },
     "toast.campus.changed.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 캠퍼스로 바꿨어요. 학식 위젯도 함께 바뀌어요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20598,6 +20692,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@キャンパスに切り替えました。学食ウィジェットも変わります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 캠퍼스로 바꿨어요. 학식 위젯도 함께 바뀌어요."
           }
         },
         "zh-Hans" : {
@@ -20862,12 +20962,6 @@
     },
     "reading_room.status.updated.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 기준 · 자동 갱신 중"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20880,6 +20974,12 @@
             "value" : "%@ 時点 · 自動更新中"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 기준 · 자동 갱신 중"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20890,12 +20990,6 @@
     },
     "reading_room.status.loading" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "좌석 현황을 불러오는 중…"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20908,6 +21002,12 @@
             "value" : "座席状況を読み込み中…"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좌석 현황을 불러오는 중…"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20918,12 +21018,6 @@
     },
     "reading_room.refresh.accessibility" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "좌석 현황 새로고침"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20936,6 +21030,12 @@
             "value" : "座席状況を更新"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좌석 현황 새로고침"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20946,12 +21046,6 @@
     },
     "reading_room.alarm.title" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이용 종료 알림"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20964,6 +21058,12 @@
             "value" : "利用終了通知"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이용 종료 알림"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20974,12 +21074,6 @@
     },
     "reading_room.alarm.caption" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이용 종료 10분 전에 알려드려요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20992,6 +21086,12 @@
             "value" : "利用終了の10分前にお知らせします"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이용 종료 10분 전에 알려드려요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21002,12 +21102,6 @@
     },
     "reading_room.alarm.scheduled_time.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 에 알림"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21020,6 +21114,12 @@
             "value" : "%@ に通知"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 에 알림"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21030,12 +21130,6 @@
     },
     "reading_room.alarm.detail.%lld.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld시간 이용 · %2$@ 종료 예정"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21048,6 +21142,12 @@
             "value" : "%1$lld時間利用 · %2$@ 終了予定"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld시간 이용 · %2$@ 종료 예정"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21058,12 +21158,6 @@
     },
     "reading_room.alarm.detail_end.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 종료 예정"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21076,6 +21170,12 @@
             "value" : "%@ 終了予定"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 종료 예정"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21086,12 +21186,6 @@
     },
     "reading_room.level.good" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "여유"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21104,6 +21198,12 @@
             "value" : "空きあり"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여유"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21114,12 +21214,6 @@
     },
     "reading_room.level.mid" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "보통"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21132,6 +21226,12 @@
             "value" : "普通"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보통"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21142,12 +21242,6 @@
     },
     "reading_room.level.busy" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "혼잡"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21160,6 +21254,12 @@
             "value" : "混雑"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "혼잡"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21170,12 +21270,6 @@
     },
     "reading_room.level.full" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "만석"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21188,6 +21282,12 @@
             "value" : "満席"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "만석"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21198,12 +21298,6 @@
     },
     "reading_room.seats_left_format.%lld.%lld" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld석 중 %2$lld석 남음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21216,6 +21310,12 @@
             "value" : "%1$lld席中 %2$lld席 空き"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld석 중 %2$lld석 남음"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21225,13 +21325,8 @@
       }
     },
     "reading_room.total_seat_format.%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 %lld석"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21244,6 +21339,12 @@
             "value" : "全 %lld 席"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 %lld석"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21253,13 +21354,8 @@
       }
     },
     "reading_room.row.accessibility.%@.%lld.%lld.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, 잔여 %2$lld석, 전체 %3$lld석, %4$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21272,6 +21368,12 @@
             "value" : "%1$@、残り%2$lld席、全%3$lld席、%4$@"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, 잔여 %2$lld석, 전체 %3$lld석, %4$@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21281,13 +21383,8 @@
       }
     },
     "reading_room.bell.subscribe.accessibility.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 빈자리 알림 받기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21300,6 +21397,12 @@
             "value" : "%@の空席通知を受け取る"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 빈자리 알림 받기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21309,13 +21412,8 @@
       }
     },
     "reading_room.bell.unsubscribe.accessibility.%@" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 빈자리 알림 해제"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21328,6 +21426,12 @@
             "value" : "%@の空席通知を解除"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 빈자리 알림 해제"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21338,12 +21442,6 @@
     },
     "reading_room.footer.bell_hint" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "벨을 누르면 빈자리가 생길 때 알려드려요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21356,6 +21454,12 @@
             "value" : "ベルをタップすると空席が出たときにお知らせします。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "벨을 누르면 빈자리가 생길 때 알려드려요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21366,12 +21470,6 @@
     },
     "toast.readingroom.alarm.scheduled.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@에 이용 종료 알림을 보내드려요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21384,6 +21482,12 @@
             "value" : "%@に利用終了通知をお送りします。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에 이용 종료 알림을 보내드려요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21394,12 +21498,6 @@
     },
     "toast.readingroom.alarm.cancelled" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이용 종료 알림을 취소했어요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21412,6 +21510,12 @@
             "value" : "利用終了通知をキャンセルしました。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이용 종료 알림을 취소했어요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21422,12 +21526,6 @@
     },
     "map.search.close" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색 닫기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21440,6 +21538,12 @@
             "value" : "検索を閉じる"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 닫기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21450,12 +21554,6 @@
     },
     "map.search.clear" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색어 지우기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21468,6 +21566,12 @@
             "value" : "検索語を消去"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색어 지우기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21478,12 +21582,6 @@
     },
     "map.status.count" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ERICA 캠퍼스 · 건물 %lld곳"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21496,6 +21594,12 @@
             "value" : "ERICAキャンパス · 建物%lld件"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA 캠퍼스 · 건물 %lld곳"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21506,12 +21610,6 @@
     },
     "map.status.loading" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건물 정보를 불러오는 중…"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21524,6 +21622,12 @@
             "value" : "建物情報を読み込み中…"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건물 정보를 불러오는 중…"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21534,12 +21638,6 @@
     },
     "map.status.result" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색 결과 1곳 표시 중"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21552,6 +21650,12 @@
             "value" : "検索結果1件を表示中"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 결과 1곳 표시 중"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21562,12 +21666,6 @@
     },
     "map.recenter" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ERICA 캠퍼스 중심으로 이동"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21580,6 +21678,12 @@
             "value" : "ERICAキャンパスの中心へ移動"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA 캠퍼스 중심으로 이동"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21590,12 +21694,6 @@
     },
     "map.building.caption.available" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ERICA 캠퍼스 · 건물 안내 페이지 제공"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21608,6 +21706,12 @@
             "value" : "ERICAキャンパス · 建物案内ページあり"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA 캠퍼스 · 건물 안내 페이지 제공"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21618,12 +21722,6 @@
     },
     "map.building.caption.unavailable" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ERICA 캠퍼스 · 안내 페이지가 없는 건물이에요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21636,6 +21734,12 @@
             "value" : "ERICAキャンパス · 案内ページのない建物です"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERICA 캠퍼스 · 안내 페이지가 없는 건물이에요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21646,12 +21750,6 @@
     },
     "map.building.deselect" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택 해제"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21664,6 +21762,12 @@
             "value" : "選択解除"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택 해제"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21674,12 +21778,6 @@
     },
     "map.building.show_all" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 건물 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21692,6 +21790,12 @@
             "value" : "すべての建物を表示"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 건물 보기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21702,12 +21806,6 @@
     },
     "map.building.open_guide" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건물 안내 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21720,6 +21818,12 @@
             "value" : "建物案内を見る"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건물 안내 보기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21729,13 +21833,8 @@
       }
     },
     "map.building.no_guide" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "안내 페이지 없음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21748,6 +21847,12 @@
             "value" : "案内ページなし"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안내 페이지 없음"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21758,12 +21863,6 @@
     },
     "map.search.count" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "강의실 %lld곳"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21776,6 +21875,12 @@
             "value" : "講義室%lld件"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "강의실 %lld곳"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21786,12 +21891,6 @@
     },
     "map.search.loading" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색 중…"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21804,6 +21903,12 @@
             "value" : "検索中…"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 중…"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21814,12 +21919,6 @@
     },
     "map.search.empty.title" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색된 강의실이 없어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21832,6 +21931,12 @@
             "value" : "講義室が見つかりません"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색된 강의실이 없어요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21842,12 +21947,6 @@
     },
     "map.search.empty.message" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "‘%@’와 일치하는 강의실이 없습니다.\n건물명이나 호수(예: 304)로 검색해 보세요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21860,6 +21959,12 @@
             "value" : "「%@」に一致する講義室はありません。\n建物名や号室（例: 304）で検索してください。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’와 일치하는 강의실이 없습니다.\n건물명이나 호수(예: 304)로 검색해 보세요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21870,12 +21975,6 @@
     },
     "map.room.number_format" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@호"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21888,6 +21987,12 @@
             "value" : "%@号室"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@호"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21898,12 +22003,6 @@
     },
     "map.room.show_on_map" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지도에서 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21916,6 +22015,12 @@
             "value" : "地図で見る"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도에서 보기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21926,12 +22031,6 @@
     },
     "map.sheet.caption" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건물 안내"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21944,6 +22043,12 @@
             "value" : "建物案内"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건물 안내"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21953,13 +22058,8 @@
       }
     },
     "map.sheet.close" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "닫기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21972,6 +22072,12 @@
             "value" : "閉じる"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닫기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21982,12 +22088,6 @@
     },
     "map.sheet.error.title" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "안내 페이지를 불러오지 못했어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22000,6 +22100,12 @@
             "value" : "案内ページを読み込めませんでした"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안내 페이지를 불러오지 못했어요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22010,12 +22116,6 @@
     },
     "map.sheet.error.message" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "네트워크 연결을 확인한 뒤 다시 시도해 주세요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22028,6 +22128,12 @@
             "value" : "ネットワーク接続を確認してから、もう一度お試しください。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크 연결을 확인한 뒤 다시 시도해 주세요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22038,12 +22144,6 @@
     },
     "map.sheet.retry" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다시 시도"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22056,6 +22156,12 @@
             "value" : "再試行"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22066,12 +22172,6 @@
     },
     "map.back_to_campus" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "캠퍼스로 돌아가기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22084,6 +22184,12 @@
             "value" : "キャンパスに戻る"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캠퍼스로 돌아가기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22094,12 +22200,6 @@
     },
     "map.search.error.title" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검색하지 못했어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22112,6 +22212,12 @@
             "value" : "検索できませんでした"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색하지 못했어요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22122,12 +22228,6 @@
     },
     "map.search.error.message" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "네트워크 연결을 확인한 뒤 다시 검색해 보세요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22138,6 +22238,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "接続を確認してもう一度検索してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크 연결을 확인한 뒤 다시 검색해 보세요."
           }
         },
         "zh-Hans" : {
@@ -22151,12 +22257,6 @@
     "cafeteria.date.picker.title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜 선택"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22167,6 +22267,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日付を選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 선택"
           }
         },
         "zh-Hans" : {
@@ -22180,12 +22286,6 @@
     "cafeteria.day.today.a11y.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, 오늘"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22196,6 +22296,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@、今日"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, 오늘"
           }
         },
         "zh-Hans" : {
@@ -22209,12 +22315,6 @@
     "cafeteria.empty.day.action" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음 날 메뉴 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22225,6 +22325,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "翌日のメニューを見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 날 메뉴 보기"
           }
         },
         "zh-Hans" : {
@@ -22238,12 +22344,6 @@
     "cafeteria.empty.day.message.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@에는 식당에서 올린 메뉴가 없어요. 주말·공휴일에는 일부 식당만 운영해요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22254,6 +22354,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@のメニューはまだ登録されていません。週末・祝日は一部の食堂のみ営業します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에는 식당에서 올린 메뉴가 없어요. 주말·공휴일에는 일부 식당만 운영해요."
           }
         },
         "zh-Hans" : {
@@ -22267,12 +22373,6 @@
     "cafeteria.empty.day.title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "등록된 메뉴가 없어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22283,6 +22383,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メニューが登録されていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "등록된 메뉴가 없어요"
           }
         },
         "zh-Hans" : {
@@ -22296,12 +22402,6 @@
     "cafeteria.empty.meal.action.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 메뉴 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22312,6 +22412,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@のメニューを見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 메뉴 보기"
           }
         },
         "zh-Hans" : {
@@ -22325,12 +22431,6 @@
     "cafeteria.empty.meal.message.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 날 %@을 운영하는 식당이 없어요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22341,6 +22441,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "この日に%@を提供する食堂はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 날 %@을 운영하는 식당이 없어요."
           }
         },
         "zh-Hans" : {
@@ -22354,12 +22460,6 @@
     "cafeteria.empty.meal.title.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 메뉴가 없어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22370,6 +22470,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@のメニューはありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 메뉴가 없어요"
           }
         },
         "zh-Hans" : {
@@ -22383,12 +22489,6 @@
     "cafeteria.footnote" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "메뉴와 가격은 식당 사정에 따라 바뀔 수 있어요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22399,6 +22499,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メニューと価格は食堂の都合により変更される場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴와 가격은 식당 사정에 따라 바뀔 수 있어요"
           }
         },
         "zh-Hans" : {
@@ -22412,12 +22518,6 @@
     "cafeteria.header.campus.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 캠퍼스 ·"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22428,6 +22528,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@キャンパス ·"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 캠퍼스 ·"
           }
         },
         "zh-Hans" : {
@@ -22441,12 +22547,6 @@
     "cafeteria.info.a11y.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 운영 시간·위치 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22457,6 +22557,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@の営業時間と場所を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 운영 시간·위치 보기"
           }
         },
         "zh-Hans" : {
@@ -22470,12 +22576,6 @@
     "cafeteria.info.a11y.title.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 정보"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22486,6 +22586,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@の情報"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 정보"
           }
         },
         "zh-Hans" : {
@@ -22499,12 +22605,6 @@
     "cafeteria.info.caption.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 캠퍼스 · 오늘 기준"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22515,6 +22615,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@キャンパス · 今日"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 캠퍼스 · 오늘 기준"
           }
         },
         "zh-Hans" : {
@@ -22528,12 +22634,6 @@
     "cafeteria.info.closed" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "운영 안 함"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22544,6 +22644,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "休業"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "운영 안 함"
           }
         },
         "zh-Hans" : {
@@ -22557,12 +22663,6 @@
     "cafeteria.info.map.action" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지도 탭에서 위치 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22573,6 +22673,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地図タブで場所を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도 탭에서 위치 보기"
           }
         },
         "zh-Hans" : {
@@ -22586,12 +22692,6 @@
     "cafeteria.loading.a11y" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "메뉴 불러오는 중"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22602,6 +22702,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メニューを読み込み中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 불러오는 중"
           }
         },
         "zh-Hans" : {
@@ -22615,12 +22721,6 @@
     "cafeteria.meal.count.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld곳"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22631,6 +22731,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lldか所"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld곳"
           }
         },
         "zh-Hans" : {
@@ -22644,12 +22750,6 @@
     "cafeteria.meal.count.none" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "없음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22660,6 +22760,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "없음"
           }
         },
         "zh-Hans" : {
@@ -22673,12 +22779,6 @@
     "cafeteria.meal.segment.a11y" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "식사 시간"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22689,6 +22789,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "食事時間"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "식사 시간"
           }
         },
         "zh-Hans" : {
@@ -22702,12 +22808,6 @@
     "cafeteria.month.a11y.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜 직접 선택, 현재 %@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22718,6 +22818,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日付を選択、現在 %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 직접 선택, 현재 %@"
           }
         },
         "zh-Hans" : {
@@ -22731,12 +22837,6 @@
     "cafeteria.price.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@원"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22747,6 +22847,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ウォン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@원"
           }
         },
         "zh-Hans" : {
@@ -22760,12 +22866,6 @@
     "cafeteria.running.time.unknown" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "운영 시간 정보 없음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22776,6 +22876,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "営業時間の情報なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "운영 시간 정보 없음"
           }
         },
         "zh-Hans" : {
@@ -22789,12 +22895,6 @@
     "cafeteria.share.a11y.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ %2$@ 메뉴 공유"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22805,6 +22905,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$@のメニューを共有"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ 메뉴 공유"
           }
         },
         "zh-Hans" : {
@@ -22818,12 +22924,6 @@
     "cafeteria.status.closing.soon" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "곧 마감"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22834,6 +22934,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "まもなく終了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "곧 마감"
           }
         },
         "zh-Hans" : {
@@ -22847,12 +22953,6 @@
     "cafeteria.today" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22863,6 +22963,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘"
           }
         },
         "zh-Hans" : {
@@ -22876,12 +22982,6 @@
     "cafeteria.today.a11y" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘 메뉴로 이동"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22892,6 +22992,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日のメニューへ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 메뉴로 이동"
           }
         },
         "zh-Hans" : {
@@ -22905,12 +23011,6 @@
     "cafeteria.week.a11y.format" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@부터 %2$@까지. 좌우로 밀어 다른 주 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22921,6 +23021,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@から%2$@まで。左右にスワイプして別の週を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@부터 %2$@까지. 좌우로 밀어 다른 주 보기"
           }
         },
         "zh-Hans" : {
@@ -22934,12 +23040,6 @@
     "cafeteria.week.next" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음 주"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22950,6 +23050,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "次の週"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 주"
           }
         },
         "zh-Hans" : {
@@ -22963,12 +23069,6 @@
     "cafeteria.week.previous" : {
       "extractionState" : "manual",
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이전 주"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22979,6 +23079,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "前の週"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 주"
           }
         },
         "zh-Hans" : {
@@ -24325,12 +24431,6 @@
     },
     "bus.stop.sangnoksu_exit3" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "상록수역3번출구건너편"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24343,6 +24443,12 @@
             "value" : "常緑樹駅3番出口"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상록수역3번출구건너편"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24353,12 +24459,6 @@
     },
     "bus.stop.ansan_park_prugio" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "안산파크푸르지오"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24371,6 +24471,12 @@
             "value" : "終点"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안산파크푸르지오"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24381,12 +24487,6 @@
     },
     "bus.stop.ktx_gwangmyeong_exit1" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KTX광명역1번출구"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24399,6 +24499,12 @@
             "value" : "KTX光明駅"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KTX광명역1번출구"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24409,12 +24515,6 @@
     },
     "bus.realtime.footnote" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "회색 시간은 시간표 기준이에요 · 15초마다 갱신돼요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24427,6 +24527,12 @@
             "value" : "グレーの時刻は時刻表に基づいています · 15秒ごとに更新"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "회색 시간은 시간표 기준이에요 · 15초마다 갱신돼요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24437,12 +24543,6 @@
     },
     "bus.timetable.chip.soon" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "곧 출발"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24455,6 +24555,12 @@
             "value" : "まもなく発車"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "곧 출발"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24465,12 +24571,6 @@
     },
     "bus.timetable.chip.minutes.%lld" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld분 후"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24483,6 +24583,12 @@
             "value" : "%lld分後"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld분 후"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24493,12 +24599,6 @@
     },
     "bus.timetable.chip.first" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "첫차"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24511,6 +24611,12 @@
             "value" : "始発"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫차"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24521,12 +24627,6 @@
     },
     "bus.timetable.chip.last" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "막차"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24539,6 +24639,12 @@
             "value" : "終電"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "막차"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24549,12 +24655,6 @@
     },
     "bus.timetable.a11y.past" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지난 버스"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24567,6 +24667,12 @@
             "value" : "過去のバス"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난 버스"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24577,12 +24683,6 @@
     },
     "bus.timetable.weekends" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "주말·공휴일"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24595,6 +24695,12 @@
             "value" : "土日・祝日"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말·공휴일"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24605,12 +24711,6 @@
     },
     "bus.timetable.count.%lld" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld회"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24623,6 +24723,12 @@
             "value" : "%lld便"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld회"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24633,12 +24739,6 @@
     },
     "bus.timetable.count.none" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "없음"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24651,6 +24751,12 @@
             "value" : "なし"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "없음"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24661,12 +24767,6 @@
     },
     "bus.timetable.filter.all" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24679,6 +24779,12 @@
             "value" : "すべて"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24689,12 +24795,6 @@
     },
     "bus.timetable.fold.%lld" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지난 버스 %lld회 보기"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24707,6 +24807,12 @@
             "value" : "過去のバス%lld便を表示"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난 버스 %lld회 보기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24717,12 +24823,6 @@
     },
     "bus.timetable.hour.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@시"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24735,6 +24835,12 @@
             "value" : "%@時"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@시"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24745,12 +24851,6 @@
     },
     "bus.timetable.hour.after_midnight.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@시 · 자정 이후"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24763,6 +24863,12 @@
             "value" : "%@時・深夜"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@시 · 자정 이후"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24773,12 +24879,6 @@
     },
     "bus.timetable.footnote" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기점 출발 기준이며, 도착 시각은 달라질 수 있어요."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24791,6 +24891,12 @@
             "value" : "起点出発の時刻で、到着時刻は変動します。"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기점 출발 기준이며, 도착 시각은 달라질 수 있어요."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24801,12 +24907,6 @@
     },
     "bus.timetable.empty.title.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@에는 운행하지 않아요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24819,6 +24919,12 @@
             "value" : "%@は運行していません"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에는 운행하지 않아요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24829,12 +24935,6 @@
     },
     "bus.timetable.empty.detail" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다른 요일 탭에서 확인하세요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24847,6 +24947,12 @@
             "value" : "別の曜日を確認してください"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 요일 탭에서 확인하세요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24857,12 +24963,6 @@
     },
     "bus.timetable.empty.nodata.title.%@" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@은 시간표가 제공되지 않아요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24875,6 +24975,12 @@
             "value" : "%@の時刻表はありません"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@은 시간표가 제공되지 않아요"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24885,12 +24991,6 @@
     },
     "bus.timetable.empty.nodata.detail" : {
       "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "실시간 도착 정보로 확인하세요"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24901,6 +25001,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "リアルタイム到着情報をご確認ください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "실시간 도착 정보로 확인하세요"
           }
         },
         "zh-Hans" : {
@@ -26546,6 +26652,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "京畿科技园"
+          }
+        }
+      }
+    },
+    "%@" : {},
+    "birthday.content.%lld.%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today (December 12th) is the developer's birthday.\n\nIt has already been %1$llu years since we launched HYUabot, and we will continue to strive to provide you with even better service in the future. We wish you all the best as you wrap up the rest of %2$@, and please always stay healthy.\n\nThank you."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日(12/12)は開発者の誕生日です。\n\nHYUabotを運営してから早くも%1$llu年が経ちました。今後もより良いサービスを提供できるよう努力します。残りの%2$@年も良い締めくくりをし、いつも健康でいてください。\n\nありがとうございます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘(12/12)은 개발자의 생일입니다.\n\n벌써 휴아봇을 운영한지 %1$llu년이 되었고 앞으로도 더 좋은 서비스를 제공할 수 있도록 노력하겠습니다. 남은 %2$@년 잘 마무리하시고 항상 건강하시길 바랍니다.\n\n감사합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天（12/12）是开发者的生日。\n\n运营HYUabot已经%1$llu年了，我们将继续努力为您提供更好的服务。祝您%2$@年顺利收尾，身体健康。\n\n谢谢。"
           }
         }
       }
