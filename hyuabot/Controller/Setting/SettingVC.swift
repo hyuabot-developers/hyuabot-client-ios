@@ -76,6 +76,9 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
         buildDisplaySection()
         buildPrivacySection()
         buildSupportSection()
+        #if DEBUG
+        buildDebugSection()
+        #endif
         buildFooter()
     }
 
@@ -186,6 +189,16 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
         })
         contentStack.addArrangedSubview(SettingsSectionView(header: String(localized: "setting.section.support"), content: card))
     }
+
+    #if DEBUG
+    private func buildDebugSection() {
+        let card = SettingsCardView()
+        card.addRow(makeActionRow(
+            "birthday.cake.fill", SettingsStyle.Tile.blue, "setting.debug.birthday", .chevron, "setting.debug.birthday"
+        ) { BirthdayVC.present(from: $0, ignoreHideFlag: true) })
+        contentStack.addArrangedSubview(SettingsSectionView(header: String(localized: "setting.section.debug"), content: card))
+    }
+    #endif
 
     private func buildFooter() {
         let info = Bundle.main.infoDictionary

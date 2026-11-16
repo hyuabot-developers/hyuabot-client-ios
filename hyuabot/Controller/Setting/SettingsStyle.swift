@@ -16,6 +16,12 @@ enum SettingsStyle {
         static let accent = HYUColor.Brand.primary
         static let accentFill = HYUColor.Brand.primaryFill
         static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x0B0F14)
+        static let checkboxBorder = adaptive(light: 0xC9CFD7, dark: 0x4A5463)
+        static let dialogScrim = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(white: 0, alpha: 0.5)
+                : UIColor(red: 17 / 255, green: 24 / 255, blue: 39 / 255, alpha: 0.32)
+        }
         static let switchOff = adaptive(light: 0xD1D5DB, dark: 0x3A434E)
         static let link = HYUColor.Brand.primary
         static let body = adaptive(light: 0x374151, dark: 0xC9D1DC)
