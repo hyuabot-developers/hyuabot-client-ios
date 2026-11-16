@@ -23,6 +23,15 @@ enum BusStopName {
         case BusSeoulTargetStop.gangnam.stopID: String(localized: "bus.stop.gangnam")
         case BusSeoulTargetStop.yangjae.stopID: String(localized: "bus.stop.yangjae")
         case BusSeoulTargetStop.yangjaeForest.stopID: String(localized: "bus.stop.yangjae_forest")
+        case 226_000_038: String(localized: "bus.stop.uiwang_tollgate")
+        case 216_000_074: String(localized: "bus.stop.seongeo_park_terminal")
+        case 216_000_077: String(localized: "bus.stop.ansan_bus_terminal")
+        case 217_000_264: String(localized: "bus.stop.jungang_exit2")
+        case 217_000_140: String(localized: "bus.stop.jungang_exit1")
+        case 216_000_152: String(localized: "bus.stop.seongan_gil")
+        case 216_000_722: String(localized: "bus.stop.handae_exit2")
+        case 216_000_690: String(localized: "bus.stop.daengigol")
+        case 216_000_028: String(localized: "bus.stop.gyeonggi_technopark")
         default: ""
         }
     }
