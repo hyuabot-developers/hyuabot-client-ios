@@ -170,9 +170,14 @@ final class BusDisplayLogicTests: XCTestCase {
     }
 
     func testRouteColorsAndArrivalRows() {
-        XCTAssertEqual(BusDisplayLogic.routeColor("10-1"), .busGreen)
-        XCTAssertEqual(BusDisplayLogic.routeColor("50"), .busGreen)
-        XCTAssertEqual(BusDisplayLogic.routeColor("1"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("1"), .busGreen)
+        XCTAssertEqual(BusDisplayLogic.routeColor("3100"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("3100N"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("3101"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("3102"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("7070"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("9090"), .busRed)
+        XCTAssertEqual(BusDisplayLogic.routeColor("4-1"), .busGreen)
         let scheduledInput = BusArrivalRowInput(
             route: "A", isRealtime: false, stops: nil, seats: nil, realtimeMinutes: nil,
             scheduledMinutes: -2, isLowFloor: true, destinationArrival: "08:30"

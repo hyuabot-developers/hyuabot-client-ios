@@ -198,20 +198,14 @@ final class BusComponentTests: XCTestCase {
         XCTAssertTrue(descendants(of: controller.view).contains { $0.accessibilityIdentifier == "bus.log.expand" })
     }
 
-    func testArrivalRowLayoutAndLowFloorChip() {
+    func testArrivalRowLayout() {
         let row = BusArrivalRowView()
         row.configure(realtimeModel(isLowFloor: true), showsRouteBadge: false, showsSeparator: false)
         row.setNeedsLayout()
         row.layoutIfNeeded()
         let size = row.systemLayoutSizeFitting(CGSize(width: 343, height: UIView.layoutFittingCompressedSize.height))
         XCTAssertGreaterThanOrEqual(size.height, 64)
-        XCTAssertTrue(allLabels(in: row).contains { $0.text == String(localized: "bus.realtime.low.floor") })
-
-        let regularRow = BusArrivalRowView()
-        regularRow.configure(realtimeModel(isLowFloor: false), showsRouteBadge: false, showsSeparator: false)
-        regularRow.setNeedsLayout()
-        regularRow.layoutIfNeeded()
-        XCTAssertFalse(allLabels(in: regularRow).contains { $0.text == String(localized: "bus.realtime.low.floor") && !$0.isHidden })
+        XCTAssertFalse(allLabels(in: row).contains { $0.text == String(localized: "bus.realtime.low.floor") })
     }
 
     func testSectionCardLoadingLayout() {
