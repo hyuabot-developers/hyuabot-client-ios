@@ -21,7 +21,7 @@ enum BusRealtimeSections {
         switch tab {
         case .city:
             let stopID = BusRealtimeData.shared.selectedBusStopID.value
-            return [spec(stopID, [216_000_068], ["10-1"]), spec(216_000_138, [216_000_068], ["10-1"])]
+            return [spec(stopID, [216_000_068], ["10-1"]), spec(216_000_138, [216_000_068], ["10-1"]), spec(216_000_759, [216_000_075], ["50"]), spec(213_000_487, [216_000_075], ["50"])]
         case .seoul:
             let first = BusRealtimeData.shared.seoulFirstSelectedStopID.value
             let second = BusRealtimeData.shared.seoulSecondSelectedStopID.value
@@ -29,8 +29,6 @@ enum BusRealtimeSections {
         case .suwon:
             let stopID = BusRealtimeData.shared.suwonSelectedStopID.value
             return [spec(stopID, [216_000_104, 200_000_015], ["7070", "9090"])]
-        default:
-            return [spec(216_000_759, [216_000_075], ["50"]), spec(213_000_487, [216_000_075], ["50"])]
         }
     }
 
@@ -38,11 +36,11 @@ enum BusRealtimeSections {
         switch (tab, index) {
         case (.city, 0): return BusRealtimeData.shared.busRealtimeCityFromCampus
         case (.city, 1): return BusRealtimeData.shared.busRealtimeCityFromStation
+        case (.city, 2): return BusRealtimeData.shared.busRealtimeKTXFromCampus
+        case (.city, 3): return BusRealtimeData.shared.busRealtimeKTXFromStation
         case (.seoul, 0): return BusRealtimeData.shared.busRealtimeSeoulFromCampus
         case (.seoul, 1): return BusRealtimeData.shared.busRealtimeGunpoFromCampus
         case (.suwon, 0): return BusRealtimeData.shared.busRealtimeSuwonFromCampus
-        case (.other, 0): return BusRealtimeData.shared.busRealtimeKTXFromCampus
-        case (.other, 1): return BusRealtimeData.shared.busRealtimeKTXFromStation
         default: return nil
         }
     }

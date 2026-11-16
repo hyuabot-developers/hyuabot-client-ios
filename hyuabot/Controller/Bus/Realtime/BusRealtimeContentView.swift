@@ -45,7 +45,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         setupCompactBar()
         settingsAccessory.install(in: self)
         segmentView.onSelect = { [weak self] index in
-            let tab: BusRealtimeType = [.city, .seoul, .suwon, .other][index]
+            let tab: BusRealtimeType = [.city, .seoul, .suwon][index]
             self?.onSelectTab?(tab)
         }
     }
@@ -61,7 +61,6 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         case .city: selected = 0
         case .seoul: selected = 1
         case .suwon: selected = 2
-        case .other: selected = 3
         }
         segmentView.configure(items: segmentItems, selected: selected)
         cardsStack.arrangedSubviews.forEach { view in
@@ -96,7 +95,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
     }
 
     private var segmentItems: [SubwaySegmentView.Item] {
-        ["bus.tab.city", "bus.tab.seoul", "bus.tab.suwon", "bus.tab.other"].map {
+        ["bus.tab.city", "bus.tab.seoul", "bus.tab.suwon"].map {
             .init(title: String(localized: $0), dotColors: [], count: nil)
         }
     }
