@@ -7,7 +7,14 @@ import SnapKit
 import UIKit
 
 final class SettingsIconTileView: UIView {
-    init(symbolName: String, color: UIColor, size: CGFloat = 30, radius: CGFloat = 8, glyphPointSize: CGFloat = 16) {
+    init(
+        symbolName: String,
+        color: UIColor,
+        size: CGFloat = 30,
+        radius: CGFloat = 8,
+        glyphPointSize: CGFloat = 16,
+        glyphColor: UIColor = .white
+    ) {
         super.init(frame: .zero)
         backgroundColor = color
         layer.cornerRadius = radius
@@ -18,7 +25,7 @@ final class SettingsIconTileView: UIView {
             systemName: symbolName,
             withConfiguration: UIImage.SymbolConfiguration(pointSize: glyphPointSize, weight: .semibold)
         ))
-        image.tintColor = .white
+        image.tintColor = glyphColor
         image.contentMode = .scaleAspectFit
         image.isUserInteractionEnabled = false
         addSubview(image)

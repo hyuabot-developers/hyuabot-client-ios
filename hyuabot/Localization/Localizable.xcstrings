@@ -320,35 +320,6 @@
         }
       }
     },
-    "birthday.content.%lld.%@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today (December 12th) is the developer's birthday.\n\nIt has already been %1$llu years since we launched HYUabot, and we will continue to strive to provide you with even better service in the future. We wish you all the best as you wrap up the rest of %2$@, and please always stay healthy.\n\nThank you."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日(12/12)は開発者の誕生日です。\n\nHYUabotを運営してから早くも%1$llu年が経ちました。今後もより良いサービスを提供できるよう努力します。残りの%2$@年も良い締めくくりをし、いつも健康でいてください。\n\nありがとうございます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘(12/12)은 개발자의 생일입니다.\n\n벌써 휴아봇을 운영한지 %1$llu년이 되었고 앞으로도 더 좋은 서비스를 제공할 수 있도록 노력하겠습니다. 남은 %2$@년 잘 마무리하시고 항상 건강하시길 바랍니다.\n\n감사합니다."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天（12/12）是开发者的生日。\n\n运营HYUabot已经%1$llu年了，我们将继续努力为您提供更好的服务。祝您%2$@年顺利收尾，身体健康。\n\n谢谢。"
-          }
-        }
-      }
-    },
     "birthday.dont.show.again" : {
       "localizations" : {
         "en" : {
@@ -366,7 +337,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "올해는 다시보지 않기"
+            "value" : "올해는 다시 보지 않기"
           }
         },
         "zh-Hans" : {
@@ -13647,10 +13618,30 @@
     },
     "setting.start_screen" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Screen" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "起動画面" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "첫 화면" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "启动页面" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Screen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "起動画面"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫 화면"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启动页面"
+          }
+        }
       }
     },
     "setting.theme" : {
@@ -26163,6 +26154,146 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "步行至站台%lld分钟"
+          }
+        }
+      }
+    },
+    "birthday.body.today" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘(12/12)은 개발자의 생일입니다."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today (December 12th) is the developer's birthday."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日(12/12)は開発者の誕生日です。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天（12/12）是开发者的生日。"
+          }
+        }
+      }
+    },
+    "birthday.body.thanks" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "20대의 첫 생일에 시작한 휴아봇이\n30대를 앞둔 지금도 사랑받고 있어\n정말 행복합니다."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot began on my first birthday in my twenties,\nand I'm so happy it is still loved\nas I approach my thirties."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "20代の最初の誕生日に始めたHYUabotが、\n30代を目前にした今も愛されていて、\n本当に幸せです。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HYUabot始于我二十几岁的第一个生日，\n如今即将迈入三十岁，\n它依然深受喜爱，我非常幸福。"
+          }
+        }
+      }
+    },
+    "birthday.body.wish.%@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "남은 %@년 잘 마무리하시고\n늘 건강하세요. 감사합니다."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wishing you a great finish to the rest of %@\nand good health always. Thank you."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残りの%@年も良い締めくくりを、\nいつもお元気でお過ごしください。ありがとうございます。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "祝您%@年顺利收尾，\n身体健康。谢谢。"
+          }
+        }
+      }
+    },
+    "setting.section.debug" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디버그"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバッグ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调试"
+          }
+        }
+      }
+    },
+    "setting.debug.birthday" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "생일 다이얼로그 보기"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show birthday dialog"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "誕生日ダイアログを表示"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看生日对话框"
           }
         }
       }
