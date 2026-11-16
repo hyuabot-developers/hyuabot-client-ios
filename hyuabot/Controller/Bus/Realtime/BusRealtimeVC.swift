@@ -9,28 +9,24 @@ import RxRelay
 import RxSwift
 import UIKit
 
-private struct BusStopCoordinate {
-    let seq: Int32
-    let latitude: Double
-    let longitude: Double
-}
-
 // swiftlint:disable:next type_body_length
 class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate {
     private let disposeBag = DisposeBag()
     private let locationManager = CLLocationManager()
-    private var lastLocation: CLLocation?
-    private var lastNearestSelectionLocation: CLLocation?
-    private let nearestStopReselectDistance: CLLocationDistance = 75
     private var lastAppliedRequestGeneration = 0
     private var hasLoadedInitialNotices = false
-    private var isFetchingCoordinates = false
     private var latestRequestGeneration = 0
     private var lastAppliedBusInput: [BusRouteStopInput]?
     private var lastAppliedNoticeLanguage: String?
     /// False once the backend rejected logLimit/logAfter as unknown input fields; never reset for this controller.
     private var serverSupportsLogWindow = true
     private var selectedTab: BusRealtimeType = .city
+    private var layout: BusRealtimeLayout {
+        BusRealtimeLayout.layout(
+            for: BusRealtimeData.shared.busLocationGroup.value,
+            seoulTarget: BusRealtimeData.shared.seoulTargetStop.value
+        )
+    }
     private let contentView = BusRealtimeContentView()
     private var subscription: Disposable?
     private var noticeView: NoticeCarouselView { contentView.noticeBar.carousel }
@@ -105,6 +101,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         BusRealtimeData.shared.isLoading.distinctUntilChanged().observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in self?.render() })
             .disposed(by: disposeBag)
+        selectedTab = layout.defaultTab
         render()
         navigationItem.backButtonTitle = String(localized: "tabbar.bus")
         // Pushed screens (e.g. the timetable) show only the back chevron.
@@ -169,13 +166,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     private func render() {
         let isLoading = BusRealtimeData.shared.isLoading.value
-        let specs = BusRealtimeSections.specs(for: selectedTab)
+        let specs = layout.sections(for: selectedTab)
         let showSecondary = BusRealtimeDisplaySettings.showsSecondaryEta
-        let contents = specs.enumerated().map { index, spec in
+        let contents = specs.map { spec in
             BusSectionContent(
                 routeNames: spec.routeNames,
                 stopName: spec.stopName,
-                rows: isLoading ? [] : Array((BusRealtimeSections.subject(for: selectedTab, index: index)?.value ?? [])
+                rows: isLoading ? [] : Array((BusRealtimeData.shared.busRealtimeSectionItems.value[spec] ?? [])
                     .compactMap { $0.rowModel(showSecondary: showSecondary) }
                     .prefix(BusRealtimeSections.rowLimit(for: selectedTab))),
                 isLoading: isLoading
@@ -194,6 +191,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             locationManager.requestLocation()
         } else if status == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
+        } else if status == .denied || status == .restricted {
+            handleLocationEvent(.authorizationUnavailable)
         }
     }
 
@@ -201,142 +200,55 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             locationManager.startUpdatingLocation()
             locationManager.requestLocation()
+        } else if status == .denied || status == .restricted {
+            handleLocationEvent(.authorizationUnavailable)
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        lastLocation = location
-        attemptNearestStopSelection()
+        handleLocationEvent(.located(BusLocationGroup.resolve(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        )))
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // Use default stop (216000379) on location failure
+        // locationUnknown is transient (Core Location keeps trying), so keep the last group; other errors use the default layout.
+        let isTransient = (error as? CLError)?.code == .locationUnknown
+        handleLocationEvent(.locationFailed(isTransient: isTransient))
     }
 
-    /// Picks the nearest stop per tab group (city / seoul-3102 / seoul-3100-family / suwon) from the
-    /// coordinates returned by the bus API. Retried both when a new location arrives and when new bus
-    /// data arrives, since either one may be the last piece needed.
-    private func attemptNearestStopSelection() {
-        guard let location = lastLocation else { return }
-        let allBuses = BusRealtimeData.shared.busStopCoordinatesData.value
-        guard !allBuses.isEmpty else { return }
-        let movedDistance = lastNearestSelectionLocation.map { location.distance(from: $0) } ?? .infinity
-        if movedDistance < nearestStopReselectDistance { return }
-        lastNearestSelectionLocation = location
-
-        func coordinate(_ seq: Int32) -> (lat: Double, lng: Double)? {
-            if let match = allBuses.first(where: { $0.stop.seq == seq }) {
-                return (match.stop.latitude, match.stop.longitude)
-            }
-            return BusStopFallbackCoordinate.coordinate(for: seq)
-        }
-
-        func nearest(_ candidates: [Int32]) -> Int32? {
-            let withCoords = candidates.compactMap { seq -> BusStopCoordinate? in
-                guard let coord = coordinate(seq) else { return nil }
-                return BusStopCoordinate(seq: seq, latitude: coord.lat, longitude: coord.lng)
-            }
-            return withCoords.min {
-                let d1 = pow(location.coordinate.latitude - $0.latitude, 2) + pow(location.coordinate.longitude - $0.longitude, 2)
-                let d2 = pow(location.coordinate.latitude - $1.latitude, 2) + pow(location.coordinate.longitude - $1.longitude, 2)
-                return d1 < d2
-            }?.seq
-        }
-
-        let campusStops: [Int32] = [216_000_379, 216_000_381, 216_000_383]
-        let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
-
-        var selectionChanged = false
-        func emitIfChanged(_ subject: BehaviorRelay<Int32>, defaultsKey: String, value: Int32) {
-            guard subject.value != value else { return }
-            selectionChanged = true
-            UserDefaults.standard.set(value, forKey: defaultsKey)
-            subject.accept(value)
-        }
-
-        guard let cityStop = nearest(campusStops) else { return }
-        emitIfChanged(BusRealtimeData.shared.selectedBusStopID, defaultsKey: "busStopID", value: cityStop)
-
-        if let seoulFirst = nearest(campusStops + seoulRemoteStops) {
-            emitIfChanged(BusRealtimeData.shared.seoulFirstSelectedStopID, defaultsKey: "bus.seoulFirstStopID", value: seoulFirst)
-        }
-        if let seoulSecond = nearest([216_000_719] + seoulRemoteStops) {
-            emitIfChanged(BusRealtimeData.shared.seoulSecondSelectedStopID, defaultsKey: "bus.seoulSecondStopID", value: seoulSecond)
-        }
-        if let suwon = nearest([216_000_070, 202_000_106]) {
-            emitIfChanged(BusRealtimeData.shared.suwonSelectedStopID, defaultsKey: "bus.suwonStopID", value: suwon)
-        }
-        if selectionChanged { fetchBusRealtimeData() }
+    private func applyLocationGroup(_ group: BusLocationGroup?) {
+        guard group != BusRealtimeData.shared.busLocationGroup.value else { return }
+        BusRealtimeData.shared.busLocationGroup.accept(group)
+        selectedTab = layout.defaultTab
+        render()
+        fetchBusRealtimeData()
     }
 
-    // swiftlint:disable:next function_body_length
+    private func handleLocationEvent(_ event: BusLocationGroupEvent) {
+        applyLocationGroup(event.nextGroup(current: BusRealtimeData.shared.busLocationGroup.value))
+    }
+
     private func observeSubjects() {
         BusRealtimeData.shared.busRealtimeData.subscribe(onNext: { [weak self] result in
             guard let self else { return }
-            attemptNearestStopSelection()
             let isLoading = BusRealtimeData.shared.isLoading.value
             if isLoading, result.isEmpty {
                 return
             }
             let showSecondary = BusRealtimeData.shared.showSecondaryEta.value
-            let seoulTarget = BusRealtimeData.shared.seoulTargetStop.value
-            let seoulRemoteStops: Set<Int32> = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
-
-            let selectedStopID = Int32(UserDefaults.standard.integer(forKey: "busStopID") == 0 ? 216_000_379 : UserDefaults.standard
-                .integer(forKey: "busStopID"))
-            // City bus (10-1) — always update regardless of Seoul bus availability
-            let cityFromCampus = result.first(where: { $0.stop.seq == selectedStopID && $0.route.seq == 216_000_068 })
-            BusRealtimeData.shared.busRealtimeCityFromCampus.accept(
-                cityFromCampus.map { arrivalItems(for: $0, destinationStop: 216_000_138, showSecondary: showSecondary) } ?? []
-            )
-            let cityFromStation = result.first(where: { $0.stop.seq == 216_000_138 && $0.route.seq == 216_000_068 })
-            BusRealtimeData.shared.busRealtimeCityFromStation.accept(
-                cityFromStation.map { arrivalItems(for: $0, destinationStop: 216_000_378, showSecondary: showSecondary) } ?? []
-            )
-            // Seoul bus section 1 (3102) — primary stop widened to campus or one of 5 Seoul-bound stops
-            let seoulFirstStopID = BusRealtimeData.shared.seoulFirstSelectedStopID.value
-            let seoulFirstSecondaryStop: Int32 = seoulRemoteStops.contains(seoulFirstStopID) ? 216_000_378 : seoulTarget.stopID
-            let seoulFromCampus = result.first(where: { $0.stop.seq == seoulFirstStopID && $0.route.seq == 216_000_061 })
-            BusRealtimeData.shared.busRealtimeSeoulFromCampus.accept(
-                seoulFromCampus.map {
-                    arrivalItems(for: $0, destinationStop: seoulFirstSecondaryStop, showSecondary: showSecondary)
-                } ?? []
-            )
-            // Seoul bus section 2 (3100/3101/3100N) — primary stop widened to main gate or Seoul-bound stops
-            let seoulSecondStopID = BusRealtimeData.shared.seoulSecondSelectedStopID.value
-            let seoulSecondSecondaryStop: Int32 = seoulRemoteStops.contains(seoulSecondStopID) ? 216_000_048 : seoulTarget.stopID
-            let gunpoFromCampus = result
-                .filter {
-                    $0.stop
-                        .seq == seoulSecondStopID &&
-                        ($0.route.seq == 216_000_096 || $0.route.seq == 216_000_026 || $0.route.seq == 216_000_043)
+            var sectionItems: [BusRealtimeSectionSpec: [BusArrivalItem]] = [:]
+            for spec in layout.allSections {
+                let items = result.filter { bus in
+                    bus.stop.seq == spec.stopID && spec.routes.contains(Int32(bus.route.seq))
+                }.flatMap {
+                    arrivalItems(for: $0, destinationStop: spec.destinationStopID, showSecondary: showSecondary)
                 }
-            BusRealtimeData.shared.busRealtimeGunpoFromCampus.accept(
-                Array(
-                    BusArrivalDeduplication.uniqueItems(gunpoFromCampus.flatMap { route in
-                        arrivalItems(for: route, destinationStop: seoulSecondSecondaryStop, showSecondary: showSecondary)
-                    }).sorted().prefix(4)
-                )
-            )
-            // Suwon bus (7070/9090) — primary stop widened to campus entrance or Suwon station
-            let suwonStopID = BusRealtimeData.shared.suwonSelectedStopID.value
-            let suwonSecondaryStop: Int32 = suwonStopID == 202_000_106 ? 216_000_141 : 202_000_208
-            let suwonFromCampus = result
-                .filter { $0.stop.seq == suwonStopID && ($0.route.seq == 216_000_104 || $0.route.seq == 200_000_015) }
-            BusRealtimeData.shared.busRealtimeSuwonFromCampus.accept(
-                BusArrivalDeduplication.uniqueItems(suwonFromCampus.flatMap { route in
-                    arrivalItems(for: route, destinationStop: suwonSecondaryStop, showSecondary: showSecondary)
-                }).sorted()
-            )
-            let ktxFromCampus = result.first(where: { $0.stop.seq == 216_000_759 && $0.route.seq == 216_000_075 })
-            BusRealtimeData.shared.busRealtimeKTXFromCampus.accept(
-                ktxFromCampus.map { arrivalItems(for: $0, destinationStop: 213_000_487, showSecondary: showSecondary) } ?? []
-            )
-            let ktxFromStation = result.first(where: { $0.stop.seq == 213_000_487 && $0.route.seq == 216_000_075 })
-            BusRealtimeData.shared.busRealtimeKTXFromStation.accept(
-                ktxFromStation.map { arrivalItems(for: $0, destinationStop: 216_000_117, showSecondary: showSecondary) } ?? []
-            )
+                sectionItems[spec] = spec.routes.count > 1 ? BusArrivalDeduplication.uniqueItems(items).sorted() : items
+            }
+            BusRealtimeData.shared.busRealtimeSectionItems.accept(sectionItems)
             render()
             // Set the loading state to false
             BusRealtimeData.shared.isLoading.accept(false)
@@ -364,10 +276,11 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     private func secondaryArrivalTime(
         primaryArrivalTime: Api.LocalTime?,
         arrival: BusRealtimePageQuery.Data.Bus.Arrival?,
-        destinationStop: Int32,
+        destinationStop: Int32?,
         showSecondary: Bool
     ) -> Api.LocalTime? {
         guard showSecondary,
+              let destinationStop,
               let primaryArrivalTime,
               let primaryDate = primaryArrivalTime.toLocalTimeOrNil(),
               let arrival,
@@ -387,7 +300,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     // swiftlint:disable:next function_body_length
     private func arrivalItems(
         for bus: BusRealtimePageQuery.Data.Bus,
-        destinationStop: Int32,
+        destinationStop: Int32?,
         showSecondary: Bool
     ) -> [BusArrivalItem] {
         let now = Foundation.Date.now
@@ -465,8 +378,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             // remains the source of truth for this row's ETA.
             guard let arrival = bus.arrival.first(where: {
                 $0.time?.toLocalTimeOrNil() == time || $0.arrivalTime?.toLocalTimeOrNil() == time
-            }) ?? bus.arrival.first(where: {
-                $0.destinationTravelMinutes.contains { $0.destinationStopId == destinationStop }
+            }) ?? destinationStop.flatMap({ stop in
+                bus.arrival.first(where: { $0.destinationTravelMinutes.contains { $0.destinationStopId == stop } })
             }) ?? bus.arrival.first else { return nil }
             let item = BusArrivalItem(
                 route: bus.route.name,
@@ -489,74 +402,23 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func busRealtimeInput(dates: [Api.Date]) -> [BusRouteStopInput] {
-        let seoulRemoteStops: [Int32] = [121_000_060, 121_000_929, 121_000_974, 121_000_970, 121_000_220]
         let showSecondary = BusRealtimeData.shared.showSecondaryEta.value
-        let seoulTarget = BusRealtimeData.shared.seoulTargetStop.value
-        let selectedCityStop = BusRealtimeData.shared.selectedBusStopID.value
-        let seoulFirstStop = BusRealtimeData.shared.seoulFirstSelectedStopID.value
-        let seoulSecondStop = BusRealtimeData.shared.seoulSecondSelectedStopID.value
-        let suwonStop = BusRealtimeData.shared.suwonSelectedStopID.value
-
-        func input(_ route: Int32, _ stop: Int32, _ destinations: [Int32] = []) -> BusRouteStopInput {
-            BusRouteStopInput(
-                route: route,
-                stop: stop,
-                destinationStops: showSecondary && !destinations.isEmpty ? .some(destinations) : .none,
-                limit: .some(3),
-                dates: .some(dates)
-            )
-        }
-
-        // Request only the stops used by the current selections. The log field is still
-        // requested for the selected stops because it is used as the fallback ETA source.
-        var inputs: [BusRouteStopInput] = [
-            input(216_000_068, selectedCityStop, [216_000_138]),
-            input(216_000_068, 216_000_138, [216_000_378]),
-            input(
-                216_000_061,
-                seoulFirstStop,
-                [seoulRemoteStops.contains(seoulFirstStop) ? 216_000_378 : seoulTarget.stopID]
-            ),
-            input(
-                216_000_104,
-                suwonStop,
-                [suwonStop == 202_000_106 ? 216_000_141 : 202_000_208]
-            ),
-            input(
-                200_000_015,
-                suwonStop,
-                [suwonStop == 202_000_106 ? 216_000_141 : 202_000_208]
-            ),
-            input(216_000_075, 216_000_759, [213_000_487]),
-            input(216_000_075, 213_000_487, [216_000_117])
-        ]
-
-        // The second Seoul section contains three routes but shares one selected stop.
-        inputs += [216_000_043, 216_000_026, 216_000_096].map {
-            input(
-                $0,
-                seoulSecondStop,
-                [seoulRemoteStops.contains(seoulSecondStop) ? 216_000_048 : seoulTarget.stopID]
-            )
-        }
-        return inputs
-    }
-
-    private func fetchBusStopCoordinates() {
-        guard !isFetchingCoordinates,
-              BusRealtimeData.shared.busStopCoordinatesData.value.isEmpty else { return }
-        isFetchingCoordinates = true
-        Task {
-            let response = try? await Network.shared.client.fetch(
-                query: BusStopCoordinatesQuery(busInput: BusLocationInputs.inputs), cachePolicy: .networkOnly
-            )
-            await MainActor.run {
-                isFetchingCoordinates = false
-                guard let coordinates = response?.data?.bus, !coordinates.isEmpty else { return }
-                BusRealtimeData.shared.busStopCoordinatesData.accept(coordinates)
-                attemptNearestStopSelection()
+        var seen = Set<[Int32]>()
+        var inputs: [BusRouteStopInput] = []
+        // The log field is still requested for selected stops because it is used as the fallback ETA source.
+        for spec in layout.allSections {
+            let destinations = spec.destinationStopID.map { [$0] } ?? []
+            for route in spec.routes where seen.insert([route, spec.stopID]).inserted {
+                inputs.append(BusRouteStopInput(
+                    route: route,
+                    stop: spec.stopID,
+                    destinationStops: showSecondary && !destinations.isEmpty ? .some(destinations) : .none,
+                    limit: .some(3),
+                    dates: .some(dates)
+                ))
             }
         }
+        return inputs
     }
 
     private func fetchBusRealtimeData() {
@@ -566,7 +428,6 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             return
         }
         #endif
-        fetchBusStopCoordinates()
         latestRequestGeneration += 1
         let requestGeneration = latestRequestGeneration
         var currentLanguage: String {
@@ -664,7 +525,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func openDepartureLogSheet(_ stopID: Int32, _ routes: [Int32]) {
-        let spec = BusRealtimeSections.specs(for: selectedTab).first { $0.stopID == stopID && $0.routes == routes }
+        let spec = layout.sections(for: selectedTab).first { $0.stopID == stopID && $0.routes == routes }
         let vc = BusLogVC(stopID: stopID, routes: routes, routeNames: spec?.routeNames ?? [], stopName: spec?.stopName ?? "")
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.large()]
@@ -710,6 +571,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             BusRealtimeDisplaySettings.seoulTargetStop = target
             self.render()
             BusRealtimeData.shared.seoulTargetStop.accept(target)
+            BusRealtimeData.shared.busRealtimeData.accept(BusRealtimeData.shared.busRealtimeData.value)
             self.fetchBusRealtimeData()
         }
         vc.openHelp = { [weak self] in self?.openHelpVC() }

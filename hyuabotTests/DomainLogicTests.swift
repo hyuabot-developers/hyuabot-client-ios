@@ -335,7 +335,6 @@ extension DomainLogicTests {
         XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_068 && $0.1 == 216_000_138 })
         XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_049 && $0.1 == 216_000_722 })
         XCTAssertTrue(selection.alternativePairs.contains { $0.0 == 216_000_068 && $0.1 == 216_000_379 })
-        XCTAssertEqual(Set(BusLocationInputs.inputs.map(\.stop)).count, 11)
     }
 }
 

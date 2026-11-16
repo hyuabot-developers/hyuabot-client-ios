@@ -5,46 +5,24 @@
 //  Created by hyuabot on 2026/11/10.
 //
 
-import RxRelay
-import RxSwift
-
-struct BusRealtimeSectionSpec: Equatable {
+struct BusRealtimeSectionSpec: Hashable {
     let stopID: Int32
     let routes: [Int32]
     let routeNames: [String]
     let stopName: String
+    let destinationStopID: Int32?
+
+    init(stopID: Int32, routes: [Int32], routeNames: [String], stopName: String, destinationStopID: Int32? = nil) {
+        self.stopID = stopID
+        self.routes = routes
+        self.routeNames = routeNames
+        self.stopName = stopName
+        self.destinationStopID = destinationStopID
+    }
 }
 
 @MainActor
 enum BusRealtimeSections {
-    static func specs(for tab: BusRealtimeType) -> [BusRealtimeSectionSpec] {
-        switch tab {
-        case .city:
-            let stopID = BusRealtimeData.shared.selectedBusStopID.value
-            return [spec(stopID, [216_000_068], ["10-1"]), spec(216_000_138, [216_000_068], ["10-1"]), spec(216_000_759, [216_000_075], ["50"]), spec(213_000_487, [216_000_075], ["50"])]
-        case .seoul:
-            let first = BusRealtimeData.shared.seoulFirstSelectedStopID.value
-            let second = BusRealtimeData.shared.seoulSecondSelectedStopID.value
-            return [spec(first, [216_000_061], ["3102"]), spec(second, [216_000_026, 216_000_043, 216_000_096], ["3100", "3101", "3100N"])]
-        case .suwon:
-            let stopID = BusRealtimeData.shared.suwonSelectedStopID.value
-            return [spec(stopID, [216_000_104, 200_000_015], ["7070", "9090"])]
-        }
-    }
-
-    static func subject(for tab: BusRealtimeType, index: Int) -> BehaviorRelay<[BusArrivalItem]>? {
-        switch (tab, index) {
-        case (.city, 0): return BusRealtimeData.shared.busRealtimeCityFromCampus
-        case (.city, 1): return BusRealtimeData.shared.busRealtimeCityFromStation
-        case (.city, 2): return BusRealtimeData.shared.busRealtimeKTXFromCampus
-        case (.city, 3): return BusRealtimeData.shared.busRealtimeKTXFromStation
-        case (.seoul, 0): return BusRealtimeData.shared.busRealtimeSeoulFromCampus
-        case (.seoul, 1): return BusRealtimeData.shared.busRealtimeGunpoFromCampus
-        case (.suwon, 0): return BusRealtimeData.shared.busRealtimeSuwonFromCampus
-        default: return nil
-        }
-    }
-
     nonisolated static func destinationName(for stopID: Int32) -> String {
         switch stopID {
         case 216_000_138: String(localized: "bus.realtime.destination.sangnoksu")
@@ -60,9 +38,5 @@ enum BusRealtimeSections {
 
     static func rowLimit(for tab: BusRealtimeType) -> Int {
         tab == .suwon ? 10 : 5
-    }
-
-    private static func spec(_ stopID: Int32, _ routes: [Int32], _ routeNames: [String]) -> BusRealtimeSectionSpec {
-        BusRealtimeSectionSpec(stopID: stopID, routes: routes, routeNames: routeNames, stopName: BusStopName.title(for: stopID))
     }
 }

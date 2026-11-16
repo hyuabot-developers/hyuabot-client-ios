@@ -30,7 +30,7 @@ enum BusStopName {
         case 217_000_140: String(localized: "bus.stop.jungang_exit1")
         case 216_000_152: String(localized: "bus.stop.seongan_gil")
         case 216_000_722: String(localized: "bus.stop.handae_exit2")
-        case 216_000_690: String(localized: "bus.stop.daengigol")
+        case 216_000_690, 216_000_691: String(localized: "bus.stop.daengigol")
         case 216_000_028: String(localized: "bus.stop.gyeonggi_technopark")
         default: ""
         }
