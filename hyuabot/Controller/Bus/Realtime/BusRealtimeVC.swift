@@ -96,7 +96,13 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
+        navigationItem.title = String(localized: "tabbar.bus")
+        let settingsItem = UIBarButtonItem(customView: contentView.settingsButton)
+        if #available(iOS 26.0, *) { settingsItem.hidesSharedBackground = true }
+        navigationItem.rightBarButtonItem = settingsItem
         setupUI()
+        setContentScrollView(contentView.scrollView, for: .top)
         observeSubjects()
         BusRealtimeData.shared.isLoading.distinctUntilChanged().observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in self?.render() })
@@ -113,7 +119,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         startPolling()
 
         selectNearestBusStop()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        SettingsNavigationStyle.screenWillAppear(self)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -135,7 +142,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         locationManager.stopUpdatingLocation()
         stopPolling()
-
+        SettingsNavigationStyle.screenWillDisappear(self)
     }
 
     private func setupUI() {

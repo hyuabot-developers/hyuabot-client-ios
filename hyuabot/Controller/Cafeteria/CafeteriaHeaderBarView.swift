@@ -9,17 +9,13 @@ import UIKit
 final class CafeteriaHeaderBarView: UIView {
     let monthButton = UIButton(configuration: .plain())
     let todayButton = HYUHeaderButton(style: .capsule, symbolName: nil, title: String(localized: "cafeteria.today"))
-    let shareButton = HYUHeaderButton(style: .circle, symbolName: "square.and.arrow.up", title: nil)
+    let shareButton = HYUHeaderButton(style: .capsule, symbolName: "square.and.arrow.up", title: String(localized: "common.share"))
     var onMonthTap: (() -> Void)?
     var onTodayTap: (() -> Void)?
     var onShareTap: (() -> Void)?
 
-    private let titleLabel = UILabel()
     private let campusLabel = UILabel()
     private let subtitleRow = HYUOverflowHitStackView()
-    private let leftColumn = HYUOverflowHitStackView()
-    private let rightGroup = UIStackView()
-    private(set) lazy var accessory = HYUPinnedAccessory(content: rightGroup)
     private var shareEnabled = false
 
     override init(frame: CGRect) {
@@ -36,13 +32,6 @@ final class CafeteriaHeaderBarView: UIView {
     }
 
     private func setupViews() {
-        titleLabel.attributedText = SettingsStyle.attributedText(
-            String(localized: "tabbar.cafeteria"), font: SettingsStyle.font(32, bold: true),
-            color: SettingsStyle.Color.text, lineHeight: 40
-        ).withKern(-0.5)
-        titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.accessibilityTraits = .header
-        titleLabel.accessibilityIdentifier = "cafeteria.title"
         campusLabel.adjustsFontForContentSizeCategory = true
         subtitleRow.axis = .horizontal
         subtitleRow.alignment = .center
@@ -52,43 +41,32 @@ final class CafeteriaHeaderBarView: UIView {
         monthButton.accessibilityIdentifier = "cafeteria.month_button"
         monthButton.addTarget(self, action: #selector(monthTapped), for: .touchUpInside)
         subtitleRow.addArrangedSubview(monthButton)
-        leftColumn.axis = .vertical
-        leftColumn.alignment = .leading
-        leftColumn.spacing = 2
-        leftColumn.addArrangedSubview(titleLabel)
-        leftColumn.addArrangedSubview(subtitleRow)
-        addSubview(leftColumn)
+        addSubview(subtitleRow)
 
         todayButton.accessibilityIdentifier = "cafeteria.today_button"
         todayButton.addTarget(self, action: #selector(todayTapped), for: .touchUpInside)
 
         shareButton.accessibilityIdentifier = "cafeteria_share_button"
         shareButton.addTarget(self, action: #selector(shareTapped), for: .touchUpInside)
-        rightGroup.axis = .horizontal
-        rightGroup.alignment = .center
-        rightGroup.spacing = 4
-        rightGroup.addArrangedSubview(todayButton)
-        rightGroup.addArrangedSubview(shareButton)
-        addSubview(accessory.placeholder)
+        addSubview(todayButton)
     }
 
     private func setupConstraints() {
-        leftColumn.snp.makeConstraints { make in
+        subtitleRow.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(4)
-            make.top.bottom.equalToSuperview()
-            make.trailing.lessThanOrEqualTo(accessory.placeholder.snp.leading).offset(-12)
+            make.centerY.equalToSuperview()
+            make.height.equalTo(20)
+            make.trailing.lessThanOrEqualTo(todayButton.snp.leading).offset(-12)
         }
-        accessory.placeholder.snp.makeConstraints { make in
+        todayButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-4)
-            make.top.equalToSuperview().offset(-2)
+            make.top.bottom.equalToSuperview()
+            make.height.equalTo(44)
         }
-        subtitleRow.snp.makeConstraints { $0.height.equalTo(20) }
         monthButton.snp.makeConstraints { make in
             make.height.equalTo(44)
             make.centerY.equalTo(subtitleRow.snp.centerY)
         }
-        todayButton.snp.makeConstraints { $0.height.equalTo(44) }
-        shareButton.snp.makeConstraints { $0.size.equalTo(44) }
     }
 
     func configure(

@@ -59,7 +59,10 @@ class SubwayRealtimeVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        SettingsNavigationStyle.apply(to: self, largeTitle: true)
+        navigationItem.title = String(localized: "tabbar.subway")
         setupUI()
+        setContentScrollView(contentView.scrollView, for: .top)
         observeSubjects()
         SubwayRealtimeData.shared.isLoading.distinctUntilChanged().observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in self?.render() }).disposed(by: disposeBag)
@@ -77,7 +80,8 @@ class SubwayRealtimeVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         startPolling()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        SettingsNavigationStyle.screenWillAppear(self)
         // Detect if the app is in the background
         NotificationCenter.default.addObserver(
             self,
@@ -98,6 +102,7 @@ class SubwayRealtimeVC: UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         stopPolling()
+        SettingsNavigationStyle.screenWillDisappear(self)
     }
 
     private func setupUI() {

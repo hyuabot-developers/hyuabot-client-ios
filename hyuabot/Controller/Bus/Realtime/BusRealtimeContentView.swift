@@ -22,11 +22,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         title: String(localized: "bus.quick_settings.title")
     )
 
-    private let titleContainer = UIView()
-    private lazy var settingsAccessory = HYUPinnedAccessory(content: settingsButton)
-    private let titleLabel = UILabel()
-    private let compactBar = SubwayCompactBarView(maxTitleWidth: nil)
-    private let scrollView = UIScrollView()
+    let scrollView = UIScrollView()
     private let contentStack = UIStackView()
     private let cardsStack = UIStackView()
     private let footnoteContainer = UIView()
@@ -39,11 +35,9 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         super.init(frame: frame)
         backgroundColor = SettingsStyle.Color.background
         setupScrollView()
-        setupTitleRow()
+        setupSettingsButton()
         setupContent()
         setupFade()
-        setupCompactBar()
-        settingsAccessory.install(in: self)
         segmentView.onSelect = { [weak self] index in
             let tab: BusRealtimeType = [.city, .seoul, .suwon][index]
             self?.onSelectTab?(tab)
@@ -81,49 +75,16 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         refreshControl.endRefreshing()
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        settingsAccessory.update(layoutNow: false)
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        settingsAccessory.update()
-        compactBar.setRevealProgress(SubwayCompactBarView.revealProgress(
-            contentOffsetY: scrollView.contentOffset.y,
-            adjustedTopInset: scrollView.adjustedContentInset.top
-        ))
-    }
-
     private var segmentItems: [SubwaySegmentView.Item] {
         ["bus.tab.city", "bus.tab.seoul", "bus.tab.suwon"].map {
             .init(title: String(localized: $0), dotColors: [], count: nil)
         }
     }
 
-    private func setupTitleRow() {
-        titleLabel.attributedText = SettingsStyle.attributedText(
-            String(localized: "tabbar.bus"), font: SettingsStyle.font(32, bold: true),
-            color: SettingsStyle.Color.text, lineHeight: 40
-        ).withKern(-0.5)
-        titleLabel.accessibilityTraits = .header
-        titleLabel.accessibilityIdentifier = "bus.title"
-        titleLabel.adjustsFontForContentSizeCategory = true
-        titleContainer.addSubview(titleLabel)
+    private func setupSettingsButton() {
         settingsButton.accessibilityLabel = String(localized: "bus.quick_settings.title")
         settingsButton.accessibilityIdentifier = "bus.settings"
         settingsButton.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
-        titleContainer.addSubview(settingsAccessory.placeholder)
-        titleLabel.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(4)
-            $0.trailing.equalTo(settingsAccessory.placeholder.snp.leading).offset(-12)
-            $0.centerY.equalTo(settingsAccessory.placeholder)
-        }
-        settingsAccessory.placeholder.snp.makeConstraints {
-            $0.trailing.top.bottom.equalToSuperview()
-        }
-        settingsButton.snp.makeConstraints { $0.height.equalTo(44) }
-        contentStack.addArrangedSubview(titleContainer)
-        contentStack.setCustomSpacing(HYUMetrics.Layout.titleToControl, after: titleContainer)
     }
 
     private func setupScrollView() {
@@ -139,7 +100,7 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         contentStack.axis = .vertical
         scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints {
-            $0.top.equalTo(scrollView.contentLayoutGuide).offset(45)
+            $0.top.equalTo(scrollView.contentLayoutGuide).offset(8)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
@@ -173,16 +134,6 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         fade.isUserInteractionEnabled = false
         addSubview(fade)
         fade.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(120) }
-    }
-
-    private func setupCompactBar() {
-        compactBar.setTitle(String(localized: "tabbar.bus"))
-        compactBar.accessibilityIdentifier = "bus.compactBar"
-        addSubview(compactBar)
-        compactBar.snp.makeConstraints {
-            $0.leading.trailing.top.equalToSuperview()
-            $0.bottom.equalTo(safeAreaLayoutGuide.snp.top).offset(44)
-        }
     }
 
     @objc
