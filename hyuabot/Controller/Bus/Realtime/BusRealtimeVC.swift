@@ -227,7 +227,14 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
         fetchBusRealtimeData()
     }
 
+#if DEBUG
+    private var debugGroupOverride: BusLocationGroup?
+#endif
+
     private func handleLocationEvent(_ event: BusLocationGroupEvent) {
+#if DEBUG
+        if debugGroupOverride != nil { return }
+#endif
         applyLocationGroup(event.nextGroup(current: BusRealtimeData.shared.busLocationGroup.value))
     }
 
@@ -559,6 +566,17 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             showSecondaryEta: BusRealtimeDisplaySettings.showsSecondaryEta,
             seoulTarget: BusRealtimeDisplaySettings.seoulTargetStop
         )
+#if DEBUG
+        vc.debugGroup = debugGroupOverride
+        vc.updateDebugGroup = { [weak self] group in
+            self?.debugGroupOverride = group
+            if let group {
+                self?.applyLocationGroup(group)
+            } else {
+                self?.locationManager.requestLocation()
+            }
+        }
+#endif
         vc.updateShowSecondaryEta = { isOn in
             BusRealtimeDisplaySettings.showsSecondaryEta = isOn
             self.render()
