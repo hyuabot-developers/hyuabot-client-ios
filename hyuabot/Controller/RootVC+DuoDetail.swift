@@ -48,6 +48,7 @@ final class DuoDetailPaneView: UIView {
     private let placeholder = UILabel()
     private let divider = UIView()
     private(set) weak var current: UIViewController?
+    var promptsSelection = true { didSet { placeholder.isHidden = current != nil || !promptsSelection } }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -86,7 +87,7 @@ final class DuoDetailPaneView: UIView {
             old.endAppearanceTransition()
         }
         current = vc
-        placeholder.isHidden = vc != nil
+        placeholder.isHidden = vc != nil || !promptsSelection
         guard let vc else { return }
         parent.addChild(vc)
         vc.beginAppearanceTransition(true, animated: false)

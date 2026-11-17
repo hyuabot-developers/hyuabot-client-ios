@@ -304,6 +304,8 @@ extension RootVC {
     private func syncFloatingTabBar() {
         floatingTabBar.selectedIndex = selectedIndex
         duoRail.selectedIndex = selectedIndex
+        // Subway (2) and cafeteria (3) never open a detail, so the "select on the left" prompt would be false there.
+        duoDetailHost.promptsSelection = ![2, 3].contains(selectedIndex)
         if let nav = selectedViewController as? UINavigationController, let top = nav.topViewController {
             updateFloatingTabBarVisibility(for: nav, showing: top, animated: false)
         }
