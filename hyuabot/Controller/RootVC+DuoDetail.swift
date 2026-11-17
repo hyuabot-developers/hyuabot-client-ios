@@ -38,6 +38,19 @@ final class DuoDetailNC: UINavigationController, UINavigationControllerDelegate 
         navigationBar.tintColor = SettingsStyle.Color.link
     }
 
+    /// A plain custom-view close item; the system close item can fail to render in the embedded bar on the Duo inner display.
+    static func makeCloseItem(_ action: @escaping () -> Void) -> UIBarButtonItem {
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = SettingsStyle.Color.tabGlass
+        config.baseForegroundColor = SettingsStyle.Color.link
+        config.cornerStyle = .capsule
+        config.image = UIImage(systemName: "xmark")
+        let button = UIButton(configuration: config, primaryAction: UIAction { _ in action() })
+        button.accessibilityIdentifier = "duo.detail.close"
+        button.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
+        return UIBarButtonItem(customView: button)
+    }
+
     private lazy var fallbackButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = SettingsStyle.Color.tabGlass
@@ -178,9 +191,7 @@ extension UINavigationController {
     func pushOrShowDuoDetail(_ viewController: UIViewController, animated: Bool = true) {
         if let root = duoWideRoot {
             if viewController.navigationItem.leftBarButtonItem == nil {
-                viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(
-                    systemItem: .close, primaryAction: UIAction { [weak root] _ in root?.clearDuoDetail() }
-                )
+                viewController.navigationItem.leftBarButtonItem = DuoDetailNC.makeCloseItem { [weak root] in root?.clearDuoDetail() }
             }
             root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
         } else {
@@ -196,9 +207,7 @@ extension UIViewController {
             present(viewController, animated: animated, completion: nil)
             return
         }
-        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(
-            systemItem: .close, primaryAction: UIAction { [weak root] _ in root?.clearDuoDetail() }
-        )
+        viewController.navigationItem.leftBarButtonItem = DuoDetailNC.makeCloseItem { [weak root] in root?.clearDuoDetail() }
         root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
     }
 }
