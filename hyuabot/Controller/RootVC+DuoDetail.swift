@@ -78,14 +78,18 @@ final class DuoDetailPaneView: UIView {
 
     func show(_ vc: UIViewController?, in parent: UIViewController) {
         if let old = current {
+            // The host is added after the parent has already appeared, so UIKit won't forward appearance callbacks.
+            old.beginAppearanceTransition(false, animated: false)
             old.willMove(toParent: nil)
             old.view.removeFromSuperview()
             old.removeFromParent()
+            old.endAppearanceTransition()
         }
         current = vc
         placeholder.isHidden = vc != nil
         guard let vc else { return }
         parent.addChild(vc)
+        vc.beginAppearanceTransition(true, animated: false)
         insertSubview(vc.view, belowSubview: divider)
         vc.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -95,6 +99,7 @@ final class DuoDetailPaneView: UIView {
             vc.view.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
         vc.didMove(toParent: parent)
+        vc.endAppearanceTransition()
     }
 }
 
