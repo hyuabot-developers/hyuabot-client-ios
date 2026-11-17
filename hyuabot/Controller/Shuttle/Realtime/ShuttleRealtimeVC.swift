@@ -613,7 +613,7 @@ class ShuttleRealtimeVC: UIViewController {
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
-            self?.present(vc, animated: true, completion: nil)
+            self?.presentOrShowDuoDetail(vc)
         }
         updatePresenceStatus(viewerCount: nil)
         let showRemainingTime = UserDefaults.standard.bool(forKey: "showRemainingTime")
@@ -919,7 +919,7 @@ class ShuttleRealtimeVC: UIViewController {
             root.showDuoDetail(vc)
             return
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func openShuttleViaVCByDestination(_ item: ShuttleRealtimePageQuery.Data.Shuttle.Stop.Timetable.Destination.Entry) {
@@ -934,7 +934,7 @@ class ShuttleRealtimeVC: UIViewController {
             root.showDuoDetail(vc)
             return
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func openShuttleAlarmVC(_ stop: ShuttleStopEnum, _ context: ShuttleAlarmContext) {
@@ -948,7 +948,7 @@ class ShuttleRealtimeVC: UIViewController {
             })]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func presentJourneyShare(_ text: String, dismissing vc: UIViewController?) {
@@ -984,7 +984,7 @@ class ShuttleRealtimeVC: UIViewController {
         HYUSheet.configure(vc, detents: [.custom(resolver: { context in
             min(vc.sheetHeight, context.maximumDetentValue)
         })])
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func openBusAlternativeStopVC(_ stop: ShuttleStopEnum, _ alternative: ShuttleBusAlternativeDisplayData) {
@@ -1003,7 +1003,7 @@ class ShuttleRealtimeVC: UIViewController {
             })]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func shuttleStopPoint(_ stop: ShuttleStopEnum) -> ShuttleStopPoint? {
@@ -1125,7 +1125,7 @@ class ShuttleRealtimeVC: UIViewController {
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     @objc
@@ -1176,7 +1176,7 @@ class ShuttleRealtimeVC: UIViewController {
             }]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true)
+        presentOrShowDuoDetail(vc)
     }
 
     @objc

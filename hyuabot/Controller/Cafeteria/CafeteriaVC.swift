@@ -273,7 +273,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         vc.onOpenMap = { [weak self] in (self?.tabBarController as? RootVC)?.openCampus(.map, animated: true) }
         vc.configureSheetPresentation()
         dismissActiveCoachMarks()
-        present(vc, animated: true)
+        presentOrShowDuoDetail(vc)
     }
 
     #if DEBUG

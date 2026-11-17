@@ -48,7 +48,6 @@ final class DuoDetailPaneView: UIView {
     private let placeholder = UILabel()
     private let divider = UIView()
     private(set) weak var current: UIViewController?
-    var promptsSelection = true { didSet { placeholder.isHidden = current != nil || !promptsSelection } }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -87,7 +86,7 @@ final class DuoDetailPaneView: UIView {
             old.endAppearanceTransition()
         }
         current = vc
-        placeholder.isHidden = vc != nil || !promptsSelection
+        placeholder.isHidden = vc != nil
         guard let vc else { return }
         parent.addChild(vc)
         vc.beginAppearanceTransition(true, animated: false)
@@ -112,5 +111,19 @@ extension UINavigationController {
         } else {
             pushViewController(viewController, animated: animated)
         }
+    }
+}
+
+extension UIViewController {
+    /// Presents a sheet on phones; in the unfolded Duo layout shows it in the right-hand pane so nothing covers the fold.
+    func presentOrShowDuoDetail(_ viewController: UIViewController, animated: Bool = true) {
+        guard let root = duoWideRoot else {
+            present(viewController, animated: animated, completion: nil)
+            return
+        }
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            systemItem: .close, primaryAction: UIAction { [weak root] _ in root?.clearDuoDetail() }
+        )
+        root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
     }
 }
