@@ -134,6 +134,11 @@ extension UINavigationController {
     /// Pushes on phones; in the unfolded Duo layout opens the screen in the right-hand detail pane instead.
     func pushOrShowDuoDetail(_ viewController: UIViewController, animated: Bool = true) {
         if let root = duoWideRoot {
+            if viewController.navigationItem.leftBarButtonItem == nil {
+                viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(
+                    systemItem: .close, primaryAction: UIAction { [weak root] _ in root?.clearDuoDetail() }
+                )
+            }
             root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
         } else {
             pushViewController(viewController, animated: animated)
