@@ -43,7 +43,7 @@ class BusHelpVC: UIViewController {
         view.addSubview(titleLabel)
         view.addSubview(helpTableView)
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(10)
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(50)
         }
