@@ -62,7 +62,9 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
     /// Aligns the right-hand card with the first card on the left.
     func updateDuoTopInset() {
         guard !cardsStack.isHidden else { return }
-        duoColumn.setTopInset(scrollView.adjustedContentInset.top + 8 + cardsStack.frame.minY)
+        // Derived from the segment (always first) rather than cardsStack.frame, which is stale while the skeleton collapses.
+        let firstCardY = segmentView.frame.maxY + HYUMetrics.Layout.controlToContent
+        duoColumn.setTopInset(scrollView.adjustedContentInset.top + 8 + firstCardY)
     }
 
     func endRefreshing() {
