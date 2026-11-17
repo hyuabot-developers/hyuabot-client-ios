@@ -86,6 +86,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
+    /// Landscape is allowed in Info.plist only for the Duo inner display; every other phone stays portrait,
+    /// including full-screen modals that report their own orientation mask.
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        guard UIDevice.current.userInterfaceIdiom == .phone else { return .portrait }
+        let size = window?.screen.bounds.size ?? UIScreen.main.bounds.size
+        return min(size.width, size.height) >= DuoLayout.innerDisplayMinSide ? .allButUpsideDown : .portrait
+    }
+
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
         // Called when the user discards a scene session.
         // If any sessions were discarded while the application was not running, this will be called shortly after
