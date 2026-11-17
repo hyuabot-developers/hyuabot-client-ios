@@ -246,15 +246,18 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         splitWide = syncDuoSecondary(duoColumn)
         if !isLoading, !cards.isEmpty {
             // Balance the two columns; the left one already holds the date and meal pickers (~2.2 cards of height).
-            var leftWeight = 2.2, rightWeight = 0.0
-            for card in cards {
+            // Order-preserving: fill the left column first, then the rest continue on the right.
+            let weights = cards.map { 0.6 + Double(max(1, $0.rows.count)) }
+            let half = (2.2 + weights.reduce(0, +)) / 2
+            var leftWeight = 2.2
+            var spilled = false
+            for (card, weight) in zip(cards, weights) {
                 let view = CafeteriaMenuCardView()
                 view.configure(card)
                 view.onInfoTap = { [weak self] id in self?.openCafeteriaInfoVC(cafeteriaID: id) }
-                let weight = 0.6 + Double(max(1, card.rows.count))
-                if splitWide, leftWeight > rightWeight {
+                if splitWide, !cardsStack.arrangedSubviews.isEmpty, spilled || leftWeight + weight / 2 > half {
+                    spilled = true
                     duoColumn.stack.addArrangedSubview(view)
-                    rightWeight += weight
                 } else {
                     cardsStack.addArrangedSubview(view)
                     leftWeight += weight
