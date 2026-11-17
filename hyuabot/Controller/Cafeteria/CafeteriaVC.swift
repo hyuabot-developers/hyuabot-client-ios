@@ -366,7 +366,7 @@ extension CafeteriaVC {
             selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
             CafeteriaData.shared.feedDate.accept(date)
         }
-        present(picker, animated: true)
+        presentOrShowDuoDetail(picker)
     }
 
     private func share() {
