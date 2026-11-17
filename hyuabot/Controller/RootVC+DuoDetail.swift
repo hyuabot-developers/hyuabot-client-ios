@@ -175,9 +175,13 @@ final class DuoDetailPaneView: UIView {
         vc.beginAppearanceTransition(true, animated: false)
         insertSubview(vc.view, belowSubview: divider)
         vc.view.translatesAutoresizingMaskIntoConstraints = false
+        // Stay clear of the system strip, and of the rail even when the strip is on the other side (flipped landscape).
+        let toSafeArea = vc.view.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor)
+        toSafeArea.priority = .defaultHigh
         NSLayoutConstraint.activate([
+            toSafeArea,
+            vc.view.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -DuoLayout.railClearance),
             vc.view.leadingAnchor.constraint(equalTo: leadingAnchor),
-            vc.view.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
             vc.view.topAnchor.constraint(equalTo: topAnchor),
             vc.view.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
@@ -230,14 +234,17 @@ final class DuoSecondaryColumnView: UIView {
         addSubview(scroll)
         scroll.addSubview(stack)
         topConstraint = stack.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor, constant: 8)
+        let toSafeArea = stack.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -24)
+        toSafeArea.priority = .defaultHigh
         NSLayoutConstraint.activate([
+            toSafeArea,
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -(DuoLayout.railClearance + 16)),
             scroll.leadingAnchor.constraint(equalTo: leadingAnchor),
             scroll.trailingAnchor.constraint(equalTo: trailingAnchor),
             scroll.topAnchor.constraint(equalTo: topAnchor),
             scroll.bottomAnchor.constraint(equalTo: bottomAnchor),
             topConstraint,
             stack.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -24),
             stack.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -HYUMetrics.Layout.screenBottom)
         ])
     }

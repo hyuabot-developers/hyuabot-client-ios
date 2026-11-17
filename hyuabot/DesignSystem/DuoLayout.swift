@@ -17,6 +17,8 @@ enum DuoLayout {
     static let railTrailing: CGFloat = 6
     /// Estimated bottom of the system clock / Wi-Fi block on the inner display (measured from screenshots; no API reports it).
     static let railTop: CGFloat = 108
+    /// Space the rail occupies from the trailing edge; right-hand content stays clear of it in either landscape direction.
+    static let railClearance: CGFloat = railWidth + railTrailing
     /// Gutter between the left column's content and the fold.
     static let foldGutter: CGFloat = 24
 
