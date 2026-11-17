@@ -100,6 +100,11 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
         case .donate:
             viewController = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
         }
+        if let root = duoWideRoot {
+            // Unfolded Duo layout: the tool opens in the right-hand detail pane instead of pushing full width.
+            root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
+            return
+        }
         navigationController?.pushViewController(viewController, animated: animated)
     }
 
@@ -122,8 +127,9 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            // Horizontal safe-area is 0 on phones; in the Duo wide layout it carries the rail / detail pane.
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 2),
             contentStack.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),

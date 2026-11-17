@@ -126,14 +126,19 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
         view.addSubview(bottomFade)
-        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scrollView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            // Horizontal safe-area is 0 on phones; in the Duo wide layout it carries the rail / detail pane.
+            $0.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+        }
         contentStack.snp.makeConstraints { make in
             make.top.equalTo(scrollView.contentLayoutGuide).offset(8)
             make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
         bottomFade.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide)
             make.height.equalTo(120)
         }
     }

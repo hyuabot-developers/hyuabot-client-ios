@@ -77,7 +77,11 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
         addSubview(scrollView)
-        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scrollView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            // Horizontal safe-area is 0 on phones; in the Duo wide layout it carries the rail / detail pane.
+            $0.leading.trailing.equalTo(safeAreaLayoutGuide)
+        }
         contentStack.axis = .vertical
         scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints {
@@ -106,7 +110,7 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         contentStack.addArrangedSubview(footnoteContainer)
         let fade = CafeteriaBottomFadeView()
         addSubview(fade)
-        fade.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(120) }
+        fade.snp.makeConstraints { $0.bottom.equalToSuperview(); $0.leading.trailing.equalTo(safeAreaLayoutGuide); $0.height.equalTo(120) }
         segmentView.configure(items: segmentItems, selected: 0)
         segmentView.onSelect = { [weak self] index in
             guard let self else { return }

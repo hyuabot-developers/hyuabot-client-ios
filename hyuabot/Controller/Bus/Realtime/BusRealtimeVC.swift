@@ -621,9 +621,8 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
     }
 
     private func openInquiry() {
-        navigationController?.pushViewController(
-            InquiryChatVC(entryScreen: "bus", entryScreenName: "버스"),
-            animated: true
+        navigationController?.pushOrShowDuoDetail(
+            InquiryChatVC(entryScreen: "bus", entryScreenName: "버스")
         )
     }
 

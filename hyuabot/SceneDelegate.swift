@@ -30,7 +30,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         CoachMarkManager.shared.initialize()
         let vc = RootVC()
-        window.rootViewController = vc
+        window.rootViewController = DuoLayout.simulatedSize.map { DuoSimulationContainerVC(root: vc, size: $0) } ?? vc
         window.makeKeyAndVisible()
         self.window = window
         handleUITestInitialRouteIfNeeded()

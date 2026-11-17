@@ -915,6 +915,10 @@ class ShuttleRealtimeVC: UIViewController {
             })]
             sheet.prefersGrabberVisible = true
         }
+        if let root = duoWideRoot {
+            root.showDuoDetail(vc)
+            return
+        }
         present(vc, animated: true, completion: nil)
     }
 
@@ -925,6 +929,10 @@ class ShuttleRealtimeVC: UIViewController {
                 min(vc.sheetHeight, context.maximumDetentValue)
             })]
             sheet.prefersGrabberVisible = true
+        }
+        if let root = duoWideRoot {
+            root.showDuoDetail(vc)
+            return
         }
         present(vc, animated: true, completion: nil)
     }
@@ -1173,9 +1181,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     @objc
     private func openInquiry() {
-        navigationController?.pushViewController(
-            InquiryChatVC(entryScreen: "shuttle", entryScreenName: "셔틀"),
-            animated: true
+        navigationController?.pushOrShowDuoDetail(
+            InquiryChatVC(entryScreen: "shuttle", entryScreenName: "셔틀")
         )
     }
 

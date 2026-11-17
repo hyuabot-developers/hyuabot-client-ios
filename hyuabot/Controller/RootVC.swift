@@ -16,6 +16,9 @@ class RootVC: UITabBarController {
     private var translationPreparationHost: UIViewController?
     private var isWaitingForShuttleCoachMarksAfterReset = false
     let floatingTabBar = FloatingTabBar()
+    private let duoRail = DuoRailView()
+    let duoDetailHost = DuoDetailPaneView()
+    private(set) var isWideLayout = false
 
     override var selectedIndex: Int {
         didSet { syncFloatingTabBar() }
@@ -176,6 +179,7 @@ class RootVC: UITabBarController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        updateWideLayoutIfNeeded()
         hideSystemTabBar()
         view.bringSubviewToFront(floatingTabBar)
         updateChildBottomInset()
@@ -200,6 +204,11 @@ extension RootVC: UITabBarControllerDelegate {
             AnalyticsManager.logSelect(item, type: .tab)
         }
         setNeedsStatusBarAppearanceUpdate()
+        if isWideLayout {
+            clearDuoDetail()
+            updateChildBottomInset()
+            view.setNeedsLayout()
+        }
         if viewController === shuttleNC {
             retryShuttleCoachMarksIfNeeded()
         }
@@ -215,6 +224,49 @@ extension RootVC {
         installFloatingTabBar()
         for case let navigationController as UINavigationController in viewControllers ?? [] {
             navigationController.delegate = self
+        }
+    }
+
+    private func updateWideLayoutIfNeeded() {
+        let wide = DuoLayout.isWide(width: view.bounds.width, idiom: traitCollection.userInterfaceIdiom)
+        guard wide != isWideLayout else { return }
+        isWideLayout = wide
+        if duoRail.superview == nil {
+            duoRail.setItems((viewControllers ?? []).map(\.tabBarItem))
+            duoRail.onSelect = { [weak self] index in self?.selectTab(at: index) }
+            duoRail.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(duoRail)
+            NSLayoutConstraint.activate([
+                duoRail.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                duoRail.topAnchor.constraint(equalTo: view.topAnchor),
+                duoRail.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                duoRail.widthAnchor.constraint(equalToConstant: DuoLayout.railWidth)
+            ])
+        }
+        if duoDetailHost.superview == nil {
+            duoDetailHost.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(duoDetailHost)
+            NSLayoutConstraint.activate([
+                duoDetailHost.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: DuoLayout.railWidth + DuoLayout.primaryColumnWidth),
+                duoDetailHost.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                duoDetailHost.topAnchor.constraint(equalTo: view.topAnchor),
+                duoDetailHost.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        }
+        duoDetailHost.isHidden = !wide
+        if !wide { clearDuoDetail() }
+        duoRail.selectedIndex = selectedIndex
+        duoRail.isHidden = !wide
+        view.bringSubviewToFront(duoDetailHost)
+        view.bringSubviewToFront(duoRail)
+        syncFloatingTabBar()
+        for child in viewControllers ?? [] where !wide { child.additionalSafeAreaInsets.left = 0; child.additionalSafeAreaInsets.right = 0 }
+    }
+
+    fileprivate func applyDuoScreenInset(_ screen: UIViewController) {
+        let wanted: CGFloat = isWideLayout ? -HYUMetrics.Space.large : 0
+        if screen.additionalSafeAreaInsets.left != wanted {
+            screen.additionalSafeAreaInsets.left = wanted
         }
     }
 
@@ -250,6 +302,7 @@ extension RootVC {
 
     private func syncFloatingTabBar() {
         floatingTabBar.selectedIndex = selectedIndex
+        duoRail.selectedIndex = selectedIndex
         if let nav = selectedViewController as? UINavigationController, let top = nav.topViewController {
             updateFloatingTabBarVisibility(for: nav, showing: top, animated: false)
         }
@@ -264,11 +317,25 @@ extension RootVC {
         tabBarController(self, didSelect: target)
     }
 
-    private func updateChildBottomInset() {
+    fileprivate func updateChildBottomInset() {
         guard let child = selectedViewController else { return }
         let covered = floatingTabBar.isHidden ? 0 : max(0, view.bounds.maxY - floatingTabBar.frame.minY) + FloatingTabBar.contentGap
         let systemBottom = child.view.safeAreaInsets.bottom - child.additionalSafeAreaInsets.bottom
         let wanted = max(0, covered - systemBottom)
+        // The native large title sits at max(16, safeArea.left), so the nav controller is inset by rail + 16
+        // and its screens are offset by -16 to keep their content aligned with the rail.
+        let titleGap = HYUMetrics.Space.large
+        let wantedLeft = isWideLayout ? DuoLayout.railWidth + (child is UINavigationController ? titleGap : 0) : 0
+        if child.additionalSafeAreaInsets.left != wantedLeft {
+            child.additionalSafeAreaInsets.left = wantedLeft
+        }
+        if let nav = child as? UINavigationController {
+            for screen in nav.viewControllers { applyDuoScreenInset(screen) }
+        }
+        let wantedRight = isWideLayout ? max(0, view.bounds.width - DuoLayout.railWidth - DuoLayout.primaryColumnWidth) : 0
+        if abs(child.additionalSafeAreaInsets.right - wantedRight) > 0.5 {
+            child.additionalSafeAreaInsets.right = wantedRight
+        }
         if abs(child.additionalSafeAreaInsets.bottom - wanted) > 0.5 {
             child.additionalSafeAreaInsets.bottom = wanted
         }
@@ -284,12 +351,12 @@ extension RootVC {
         let shown = stack.firstIndex { $0 === viewController }.map { Array(stack[...$0]) } ?? [viewController]
         let hidden = shown.contains { $0.hidesBottomBarWhenPushed }
         if !hidden {
-            floatingTabBar.isHidden = false
+            floatingTabBar.isHidden = isWideLayout
         }
         let apply = { self.floatingTabBar.alpha = hidden ? 0 : 1 }
         let finish = { [weak self] in
             guard let self else { return }
-            floatingTabBar.isHidden = hidden
+            floatingTabBar.isHidden = hidden || isWideLayout
             view.setNeedsLayout()
         }
         if animated, let coordinator = navigationController.transitionCoordinator {
@@ -303,6 +370,7 @@ extension RootVC {
 
 extension RootVC: UINavigationControllerDelegate {
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        applyDuoScreenInset(viewController)
         updateFloatingTabBarVisibility(for: navigationController, showing: viewController, animated: animated)
     }
 

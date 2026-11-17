@@ -19,7 +19,7 @@ class ShuttleNC: UINavigationController {
     }
 
     func moveToTimetableVC(stop: ShuttleStopEnum, section: Int) {
-        pushViewController(timetableOptions(stop: stop, section: section), animated: true)
+        pushOrShowDuoDetail(timetableOptions(stop: stop, section: section))
     }
 
     private func timetableOptions(stop: ShuttleStopEnum, section: Int) -> ShuttleTimetableVC {
