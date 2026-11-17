@@ -38,6 +38,49 @@ final class DuoDetailNC: UINavigationController, UINavigationControllerDelegate 
         navigationBar.tintColor = SettingsStyle.Color.link
     }
 
+    private lazy var fallbackButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = SettingsStyle.Color.tabGlass
+        config.baseForegroundColor = SettingsStyle.Color.link
+        config.cornerStyle = .capsule
+        let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in self?.fallbackAction() })
+        button.accessibilityIdentifier = "duo.detail.close"
+        return button
+    }()
+    private static let fallbackInset: CGFloat = 48
+
+    /// On the Duo inner display the embedded bar can collapse to zero height, which hides the close button;
+    /// show an explicit control in a reserved strip instead.
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let collapsed = !isNavigationBarHidden && navigationBar.frame.height < 1
+        let inset = collapsed ? Self.fallbackInset : 0
+        if additionalSafeAreaInsets.top != inset { additionalSafeAreaInsets.top = inset }
+        fallbackButton.isHidden = !collapsed
+        guard collapsed else { return }
+        let nested = viewControllers.count > 1
+        fallbackButton.configuration?.image = UIImage(systemName: nested ? "chevron.left" : "xmark")
+        if fallbackButton.superview == nil {
+            view.addSubview(fallbackButton)
+            fallbackButton.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                fallbackButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+                fallbackButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
+                fallbackButton.widthAnchor.constraint(equalToConstant: 36),
+                fallbackButton.heightAnchor.constraint(equalToConstant: 36)
+            ])
+        }
+        view.bringSubviewToFront(fallbackButton)
+    }
+
+    private func fallbackAction() {
+        if viewControllers.count > 1 {
+            popViewController(animated: true)
+        } else {
+            (parent as? RootVC)?.clearDuoDetail()
+        }
+    }
+
     // The pane is narrower than a phone screen and has its own heading; keep titles inline.
     func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         viewController.navigationItem.largeTitleDisplayMode = .never
