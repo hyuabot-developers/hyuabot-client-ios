@@ -100,12 +100,8 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
         case .donate:
             viewController = WebViewVC(url: URL(string: "https://qr.kakaopay.com/FWxVPo8iO")!)
         }
-        if let root = duoWideRoot {
-            // Unfolded Duo layout: the tool opens in the right-hand detail pane instead of pushing full width.
-            root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
-            return
-        }
-        navigationController?.pushViewController(viewController, animated: animated)
+        // Unfolded Duo layout opens the tool in the right-hand detail pane (with a close button); phones push as before.
+        navigationController?.pushOrShowDuoDetail(viewController, animated: animated)
     }
 
     private func configureView() {
