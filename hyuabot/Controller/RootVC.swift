@@ -247,7 +247,8 @@ extension RootVC {
             duoDetailHost.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(duoDetailHost)
             NSLayoutConstraint.activate([
-                duoDetailHost.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: DuoLayout.railWidth + DuoLayout.primaryColumnWidth),
+                // Pane starts at the fold (~width/2 ≈ 476) so no text or buttons sit on the hinge.
+                duoDetailHost.leadingAnchor.constraint(equalTo: view.centerXAnchor),
                 duoDetailHost.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 duoDetailHost.topAnchor.constraint(equalTo: view.topAnchor),
                 duoDetailHost.bottomAnchor.constraint(equalTo: view.bottomAnchor)
