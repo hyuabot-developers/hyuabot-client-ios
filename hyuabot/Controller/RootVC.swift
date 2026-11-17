@@ -244,9 +244,8 @@ extension RootVC {
             duoRail.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(duoRail)
             NSLayoutConstraint.activate([
-                duoRail.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                duoRail.topAnchor.constraint(equalTo: view.topAnchor),
-                duoRail.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                duoRail.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -DuoLayout.railTrailing),
+                duoRail.topAnchor.constraint(equalTo: view.topAnchor, constant: DuoLayout.railTop),
                 duoRail.widthAnchor.constraint(equalToConstant: DuoLayout.railWidth)
             ])
         }
@@ -330,10 +329,9 @@ extension RootVC {
         let covered = floatingTabBar.isHidden ? 0 : max(0, view.bounds.maxY - floatingTabBar.frame.minY) + FloatingTabBar.contentGap
         let systemBottom = child.view.safeAreaInsets.bottom - child.additionalSafeAreaInsets.bottom
         let wanted = max(0, covered - systemBottom)
-        // The native large title sits at max(16, safeArea.left), so the nav controller is inset by rail + 16
-        // and its screens are offset by -16 to keep their content aligned with the rail.
-        let titleGap = HYUMetrics.Space.large
-        let wantedLeft = isWideLayout ? DuoLayout.railWidth + (child is UINavigationController ? titleGap : 0) : 0
+        // The native large title sits at max(16, safeArea.left), so the nav controller is inset by 24
+        // and its screens are offset by -16 to keep their content on the 24pt column margin.
+        let wantedLeft: CGFloat = isWideLayout ? (child is UINavigationController ? DuoLayout.foldGutter : DuoLayout.foldGutter - HYUMetrics.Space.large) : 0
         if child.additionalSafeAreaInsets.left != wantedLeft {
             child.additionalSafeAreaInsets.left = wantedLeft
         }
@@ -343,7 +341,7 @@ extension RootVC {
         // Landscape on the real inner display carries its own horizontal system inset (status bar / corners); don't stack on it.
         let systemRight = max(0, child.view.safeAreaInsets.right - child.additionalSafeAreaInsets.right)
         let wantedRight = isWideLayout
-            ? max(0, view.bounds.width - DuoLayout.railWidth - DuoLayout.primaryColumnWidth - systemRight)
+            ? max(0, view.bounds.width - view.bounds.midX + DuoLayout.foldGutter - HYUMetrics.Space.large - systemRight)
             : 0
         if abs(child.additionalSafeAreaInsets.right - wantedRight) > 0.5 {
             child.additionalSafeAreaInsets.right = wantedRight

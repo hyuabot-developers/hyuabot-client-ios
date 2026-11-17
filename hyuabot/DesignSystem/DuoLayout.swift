@@ -13,7 +13,12 @@ enum DuoLayout {
     /// No phone screen has a short side this large; the unfolded Duo inner display does (669pt).
     static let innerDisplayMinSide: CGFloat = 600
     static let railWidth: CGFloat = 72
-    static let primaryColumnWidth: CGFloat = 380
+    /// Rail inset from the trailing edge; it lives inside the system strip that carries the clock and Wi-Fi.
+    static let railTrailing: CGFloat = 6
+    /// Estimated bottom of the system clock / Wi-Fi block on the inner display (measured from screenshots; no API reports it).
+    static let railTop: CGFloat = 108
+    /// Gutter between the left column's content and the fold.
+    static let foldGutter: CGFloat = 24
 
     /// DEBUG-only: `-DuoSimulate wide|cover` pins the root to the Duo point sizes on any simulator.
     static var simulatedSize: CGSize? {

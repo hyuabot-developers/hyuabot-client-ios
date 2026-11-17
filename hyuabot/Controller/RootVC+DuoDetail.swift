@@ -125,7 +125,7 @@ final class DuoDetailPaneView: UIView {
             divider.topAnchor.constraint(equalTo: topAnchor),
             divider.bottomAnchor.constraint(equalTo: bottomAnchor),
             divider.widthAnchor.constraint(equalToConstant: 1 / UIScreen.main.scale),
-            placeholder.centerXAnchor.constraint(equalTo: centerXAnchor),
+            placeholder.centerXAnchor.constraint(equalTo: safeAreaLayoutGuide.centerXAnchor),
             placeholder.centerYAnchor.constraint(equalTo: centerYAnchor),
             placeholder.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 24)
         ])
@@ -177,7 +177,7 @@ final class DuoDetailPaneView: UIView {
         vc.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             vc.view.leadingAnchor.constraint(equalTo: leadingAnchor),
-            vc.view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            vc.view.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
             vc.view.topAnchor.constraint(equalTo: topAnchor),
             vc.view.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
@@ -237,7 +237,7 @@ final class DuoSecondaryColumnView: UIView {
             scroll.bottomAnchor.constraint(equalTo: bottomAnchor),
             topConstraint,
             stack.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: scroll.frameLayoutGuide.trailingAnchor, constant: -24),
+            stack.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -24),
             stack.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -HYUMetrics.Layout.screenBottom)
         ])
     }
