@@ -10,6 +10,8 @@ import UIKit
 enum DuoLayout {
     /// Unfolded Duo inner display is ~951pt wide; the folded cover display (~466pt) keeps the phone rules.
     static let wideThreshold: CGFloat = 700
+    /// No phone screen has a short side this large; the unfolded Duo inner display does (669pt).
+    static let innerDisplayMinSide: CGFloat = 600
     static let railWidth: CGFloat = 72
     static let primaryColumnWidth: CGFloat = 380
 

@@ -28,6 +28,13 @@ class RootVC: UITabBarController {
         didSet { syncFloatingTabBar() }
     }
 
+    /// Phones stay portrait-only. The unfolded Duo inner display is landscape-shaped (~951x669pt), so it may rotate there.
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        guard traitCollection.userInterfaceIdiom == .phone else { return .portrait }
+        let size = view.window?.screen.bounds.size ?? UIScreen.main.bounds.size
+        return min(size.width, size.height) >= DuoLayout.innerDisplayMinSide ? .allButUpsideDown : .portrait
+    }
+
     override var preferredStatusBarStyle: UIStatusBarStyle {
         guard let navigationController = selectedViewController as? UINavigationController,
               let top = navigationController.topViewController,
@@ -333,7 +340,11 @@ extension RootVC {
         if let nav = child as? UINavigationController {
             for screen in nav.viewControllers { applyDuoScreenInset(screen) }
         }
-        let wantedRight = isWideLayout ? max(0, view.bounds.width - DuoLayout.railWidth - DuoLayout.primaryColumnWidth) : 0
+        // Landscape on the real inner display carries its own horizontal system inset (status bar / corners); don't stack on it.
+        let systemRight = max(0, child.view.safeAreaInsets.right - child.additionalSafeAreaInsets.right)
+        let wantedRight = isWideLayout
+            ? max(0, view.bounds.width - DuoLayout.railWidth - DuoLayout.primaryColumnWidth - systemRight)
+            : 0
         if abs(child.additionalSafeAreaInsets.right - wantedRight) > 0.5 {
             child.additionalSafeAreaInsets.right = wantedRight
         }
