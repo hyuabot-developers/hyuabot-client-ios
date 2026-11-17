@@ -26,12 +26,29 @@ final class DuoSimulationContainerVC: UIViewController {
         view.addSubview(root.view)
         root.view.translatesAutoresizingMaskIntoConstraints = false
         root.view.clipsToBounds = true
+        widthConstraint = root.view.widthAnchor.constraint(equalToConstant: size.width)
+        heightConstraint = root.view.heightAnchor.constraint(equalToConstant: size.height)
         NSLayoutConstraint.activate([
-            root.view.widthAnchor.constraint(equalToConstant: size.width),
-            root.view.heightAnchor.constraint(equalToConstant: size.height),
+            widthConstraint, heightConstraint,
             root.view.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             root.view.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
         root.didMove(toParent: self)
+        // `-DuoToggleEvery N` flips between unfolded and folded every N seconds to exercise fold/unfold.
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-DuoToggleEvery"), args.indices.contains(i + 1),
+           let seconds = TimeInterval(args[i + 1]), seconds > 0 {
+            Timer.scheduledTimer(withTimeInterval: seconds, repeats: true) { [weak self] _ in self?.toggleFold() }
+        }
+    }
+
+    private var widthConstraint = NSLayoutConstraint()
+    private var heightConstraint = NSLayoutConstraint()
+
+    private func toggleFold() {
+        let unfolded = widthConstraint.constant >= DuoLayout.wideThreshold
+        widthConstraint.constant = unfolded ? 466 : 951
+        heightConstraint.constant = unfolded ? 678 : 669
+        view.layoutIfNeeded()
     }
 }
