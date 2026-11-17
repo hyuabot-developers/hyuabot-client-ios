@@ -29,7 +29,11 @@ class ShuttleRealtimeTabVC: UIViewController {
     private let timetableDelegate: ShuttleRealtimeTimeTableDelegate
     private var headerExpandedStates: [Int: Bool] = [:]
     private var routeHeights: [Int: CGFloat] = [:]
-    private var hasAppliedTopInset = false
+    private weak var headerHost: UIView?
+    private(set) var isPinnedToTop = false
+    private var topPinToken = 0
+    /// Fires when the toggle swaps which table is visible so the parent can re-point the large title.
+    var onActiveTableChanged: (() -> Void)?
     private(set) var transferInfoView: ShuttleTransferInfoView?
     private var transferInfoViewsByIndexPath: [IndexPath: ShuttleTransferInfoView] = [:]
     private var transferInfoViewsByOrderSeq: [String: ShuttleTransferInfoView] = [:]
@@ -51,7 +55,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.backgroundColor = SettingsStyle.Color.background
         $0.separatorStyle = .none
         $0.sectionHeaderTopPadding = 0
-        $0.contentInsetAdjustmentBehavior = .never
+        $0.contentInsetAdjustmentBehavior = .automatic
         $0.delegate = self
         $0.dataSource = self
         $0.sectionHeaderTopPadding = 0
@@ -79,7 +83,7 @@ class ShuttleRealtimeTabVC: UIViewController {
         $0.backgroundColor = SettingsStyle.Color.background
         $0.separatorStyle = .none
         $0.sectionHeaderTopPadding = 0
-        $0.contentInsetAdjustmentBehavior = .never
+        $0.contentInsetAdjustmentBehavior = .automatic
         $0.delegate = self.timetableDelegate
         $0.dataSource = self.timetableDelegate
         $0.sectionHeaderTopPadding = 0
@@ -158,6 +162,12 @@ class ShuttleRealtimeTabVC: UIViewController {
         reloadActiveBoardingAlarmKeys()
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        layoutHeader()
+        repinToTopIfNeeded()
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -181,6 +191,8 @@ class ShuttleRealtimeTabVC: UIViewController {
         ShuttleRealtimeData.shared.showArrivalByTime.subscribe(onNext: { [weak self] showArrivalByTime in
             self?.shuttleRealtimeTableView.isHidden = showArrivalByTime
             self?.shuttleRealtimeTableTimeView.isHidden = !showArrivalByTime
+            self?.applyHeader()
+            self?.onActiveTableChanged?()
         }).disposed(by: disposeBag)
 
         ShuttleRealtimeData.shared.isLoading
@@ -530,6 +542,7 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     func scrollToFooter() {
+        cancelTopPin()
         shuttleRealtimeTableView.layoutIfNeeded()
         let table = shuttleRealtimeTableView
         let offset = max(
@@ -562,9 +575,40 @@ class ShuttleRealtimeTabVC: UIViewController {
         let table = visibleTableView
         table.setContentOffset(CGPoint(x: 0, y: -table.adjustedContentInset.top), animated: false)
         table.layoutIfNeeded()
+        // A freshly inserted table can still report a stale safe area, which would leave the large title folded.
+        // Keep re-pinning to the top for a moment while the insets settle.
+        topPinToken += 1
+        let token = topPinToken
+        isPinnedToTop = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+            guard let self, self.topPinToken == token else { return }
+            self.isPinnedToTop = false
+        }
+    }
+
+    /// Programmatic scrolls (deep links, coach marks) must not be undone by the pending top pin.
+    func cancelTopPin() {
+        topPinToken += 1
+        isPinnedToTop = false
+    }
+
+    private func repinToTopIfNeeded() {
+        guard isPinnedToTop else { return }
+        let table = visibleTableView
+        guard !table.isDragging, !table.isDecelerating else { isPinnedToTop = false; return }
+        let target = -table.adjustedContentInset.top
+        if abs(table.contentOffset.y - target) > 0.5 {
+            table.setContentOffset(CGPoint(x: 0, y: target), animated: false)
+        }
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        repinToTopIfNeeded()
     }
 
     func scrollToDestination(_ destinationID: String) {
+        cancelTopPin()
         let normalizedID = destinationID
             .lowercased()
             .replacingOccurrences(of: "-", with: "_")
@@ -867,18 +911,58 @@ private struct ShuttleAlarmRouteStop {
 }
 
 extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
-    /// Insets are managed by the parent: `top` is the gap below the pinned header, `bottom` clears the floating tab bar.
-    func setContentInsets(top: CGFloat, bottom: CGFloat) {
+    /// `extra` is added below the content on top of the automatic safe-area inset to clear the floating tab bar.
+    func setBottomInset(_ extra: CGFloat) {
         for table in [shuttleRealtimeTableView, shuttleRealtimeTableTimeView] {
-            let atTop = !hasAppliedTopInset || table.contentOffset.y + table.adjustedContentInset.top <= 12
-            table.contentInset.top = top
-            table.contentInset.bottom = bottom
-            table.verticalScrollIndicatorInsets = UIEdgeInsets(top: top, left: 0, bottom: bottom, right: 0)
-            if atTop {
-                table.contentOffset.y = -top
-            }
+            table.contentInset.bottom = extra
+            table.verticalScrollIndicatorInsets.bottom = extra
         }
-        hasAppliedTopInset = true
+    }
+
+    /// The parent's list header lives inside the visible table so it scrolls (and folds the large title) with the rows.
+    func attachHeader(_ host: UIView) {
+        headerHost = host
+        applyHeader()
+    }
+
+    func detachHeader() {
+        headerHost = nil
+        shuttleRealtimeTableView.tableHeaderView = nil
+        shuttleRealtimeTableTimeView.tableHeaderView = nil
+    }
+
+    private func applyHeader() {
+        guard let host = headerHost else { return }
+        let active = visibleTableView
+        let inactive = active === shuttleRealtimeTableView ? shuttleRealtimeTableTimeView : shuttleRealtimeTableView
+        if inactive.tableHeaderView != nil { inactive.tableHeaderView = nil }
+        // The host can only have one superview; claim it for the visible table whenever it is anywhere else.
+        if active.tableHeaderView !== host || host.superview !== active {
+            host.removeFromSuperview()
+            host.frame = CGRect(x: 0, y: 0, width: max(active.bounds.width, 1), height: max(host.frame.height, 1))
+            active.tableHeaderView = host
+        }
+        layoutHeader()
+    }
+
+    /// A table header is frame based, so measure the Auto Layout content and reassign it whenever the height changes.
+    func layoutHeader() {
+        guard let host = headerHost else { return }
+        let table = visibleTableView
+        if host.superview !== table || table.tableHeaderView !== host {
+            applyHeader()
+            return
+        }
+        let width = table.bounds.width
+        guard width > 0 else { return }
+        let size = host.systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+        guard abs(host.frame.height - size.height) > 0.5 || abs(host.frame.width - width) > 0.5 else { return }
+        host.frame = CGRect(x: 0, y: 0, width: width, height: size.height)
+        table.tableHeaderView = host
     }
 
     func numberOfSections(in tableView: UITableView) -> Int {

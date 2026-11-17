@@ -69,9 +69,11 @@ class ShuttleRealtimeVC: UIViewController {
         title: String(localized: "tabbar.setting")
     )
     private lazy var listHeader = ShuttleRealtimeListHeaderView(stopTitles: stopTitles)
-    private let pager = ContentView()
-    private let headerContainer = UIView()
-    private var appliedHeaderHeight: CGFloat = 0
+    private let containerView = UIView()
+    private let headerHost = UIView()
+    private var selectedIndex = 0
+    private var installedTab: ShuttleRealtimeTabVC?
+    private var appliedBottomInset: CGFloat = -1
     private static let tabBarClearance: CGFloat = 64
     private var tabVCs: [ShuttleRealtimeTabVC] {
         [dormitoryOutTabVC, shuttlecockOutTabVC, stationTabVC, terminalTabVC, jungangStationTabVC, shuttlecockInTabVC]
@@ -413,7 +415,8 @@ class ShuttleRealtimeVC: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        updateHeaderInset()
+        updateBottomInset()
+        installedTab?.layoutHeader()
     }
 
     override func viewDidLoad() {
@@ -575,10 +578,18 @@ class ShuttleRealtimeVC: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = SettingsStyle.Color.background
-        view.addSubview(listHeader)
-        view.addSubview(pager)
-        pager.pages = tabVCs.map(\.view)
-        pager.delegate = self
+        view.addSubview(containerView)
+        containerView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        headerHost.addSubview(listHeader)
+        listHeader.snp.makeConstraints { $0.edges.equalToSuperview() }
+        for tab in tabVCs {
+            // Load every stop up front so each keeps receiving data while it is off screen.
+            _ = tab.view
+            tab.onActiveTableChanged = { [weak self, weak tab] in
+                guard let self, tab === installedTab else { return }
+                resetScrollToTop()
+            }
+        }
         listHeader.setLocationSource(isManual: initialStopID != nil)
         settingsButton.accessibilityLabel = String(localized: "shuttle.quick_settings.title")
         settingsButton.accessibilityIdentifier = "shuttle.quick_settings"
@@ -587,29 +598,14 @@ class ShuttleRealtimeVC: UIViewController {
         if #available(iOS 26.0, *) { settingsItem.hidesSharedBackground = true }
         navigationItem.rightBarButtonItem = settingsItem
         listHeader.onSelectStop = { [weak self] index in
-            self?.handleUserStopSelection(index, fromSwipe: false)
+            self?.handleUserStopSelection(index)
         }
         listHeader.onReturnToNearestTap = { [weak self] in self?.returnToNearestStop() }
         listHeader.onStopInfoTap = { [weak self] in
-            guard let self, tabVCs.indices.contains(pager.currentIndex) else { return }
-            openShuttleStopVC(tabVCs[pager.currentIndex].stopID)
+            guard let self, tabVCs.indices.contains(selectedIndex) else { return }
+            openShuttleStopVC(tabVCs[selectedIndex].stopID)
         }
-        // Title bar and list header stay pinned above the pager; only the lists scroll.
-        view.sendSubviewToBack(pager)
-        view.addSubview(headerContainer)
-        headerContainer.addSubview(listHeader)
-        listHeader.snp.makeConstraints { make in
-            make.top.equalToSuperview()
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-        headerContainer.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
-        }
-        pager.snp.makeConstraints { make in
-            make.top.equalTo(headerContainer.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
+        showTab(at: 0)
         noticeView.onNoticeTapped = { [weak self] url in
             guard let url = URL(string: url) else { return }
             let vc = NoticeWebVC(url: url)
@@ -693,6 +689,7 @@ class ShuttleRealtimeVC: UIViewController {
                 self.listHeader.setNoticeHidden(false)
                 self.noticeView.setupUI(with: notices.map { Notice(title: $0.title, url: $0.url) })
             }
+            self.installedTab?.layoutHeader()
         }).disposed(by: disposeBag)
     }
 
@@ -1285,7 +1282,7 @@ extension ShuttleRealtimeVC {
         guard stopTitles.indices.contains(index) else { return }
         selectedPresenceIndex = index
         listHeader.setSelectedStop(index)
-        pager.moveToPage(index: index)
+        showTab(at: index)
         updatePresenceStatus(viewerCount: nil)
         reportPresence()
     }
@@ -1368,31 +1365,70 @@ extension ShuttleRealtimeVC: @preconcurrency CLLocationManagerDelegate {
 }
 
 extension ShuttleRealtimeVC {
-    func updateHeaderInset() {
-        // The header is pinned above the pager, so lists only need a small gap below it.
-        let top: CGFloat = 8
-        // The floating tab bar overlaps the bottom of the list, so keep the last rows clear of it.
-        let bottom = max(view.safeAreaInsets.bottom, 34) + Self.tabBarClearance
-        guard abs(bottom - appliedHeaderHeight) > 0.5 else { return }
-        appliedHeaderHeight = bottom
-        tabVCs.forEach { $0.setContentInsets(top: top, bottom: bottom) }
+    func updateBottomInset() {
+        // The floating tab bar overlaps the bottom of the list. The table adds the safe area itself, so only the rest goes here.
+        let safeBottom = view.safeAreaInsets.bottom
+        let extra = max(safeBottom, 34) - safeBottom + Self.tabBarClearance
+        guard abs(extra - appliedBottomInset) > 0.5 else { return }
+        appliedBottomInset = extra
+        tabVCs.forEach { $0.setBottomInset(extra) }
     }
-}
 
-extension ShuttleRealtimeVC: ContentViewDelegate {
-    func didMoveToPage(index: Int) {
-        handleUserStopSelection(index, fromSwipe: true)
+    func showTab(at index: Int) {
+        guard tabVCs.indices.contains(index) else { return }
+        let next = tabVCs[index]
+        guard next !== installedTab else {
+            selectedIndex = index
+            return
+        }
+        selectedIndex = index
+        do {
+            if let old = installedTab {
+                old.detachHeader()
+                old.willMove(toParent: nil)
+                old.view.removeFromSuperview()
+                old.removeFromParent()
+            }
+            addChild(next)
+            containerView.addSubview(next.view)
+            next.view.snp.makeConstraints { $0.edges.equalToSuperview() }
+            next.didMove(toParent: self)
+            installedTab = next
+            next.setBottomInset(max(appliedBottomInset, 0))
+            next.attachHeader(headerHost)
+            containerView.layoutIfNeeded()
+            next.layoutHeader()
+            resetScrollToTop()
+        }
+    }
+
+    /// Re-points the large title at the visible table and returns it to the top so the bar re-expands.
+    func resetScrollToTop() {
+        updateContentScrollView()
+        installedTab?.scrollToTop()
+        // The bar only re-expands once it sees the table move, so repeat after the pending layout pass.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, installedTab?.isPinnedToTop == true else { return }
+            installedTab?.scrollToTop()
+            navigationController?.navigationBar.sizeToFit()
+        }
+    }
+
+    /// Lets the large title follow the table that is actually on screen.
+    func updateContentScrollView() {
+        guard let table = installedTab?.visibleTableView else { return }
+        if contentScrollView(for: .top) !== table {
+            setContentScrollView(nil, for: .top)
+            setContentScrollView(table, for: .top)
+        }
     }
 }
 
 extension ShuttleRealtimeVC {
-    private func handleUserStopSelection(_ index: Int, fromSwipe: Bool) {
+    private func handleUserStopSelection(_ index: Int) {
         guard stopTitles.indices.contains(index) else { return }
-        if !fromSwipe {
-            pager.moveToPage(index: index)
-        } else {
-            listHeader.setSelectedStop(index)
-        }
+        listHeader.setSelectedStop(index)
+        showTab(at: index)
         hasManualStopSelection = true
         hasCompletedInitialLocationSelection = true
         pendingGPSTabIndex = nil
