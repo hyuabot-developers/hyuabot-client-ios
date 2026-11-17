@@ -40,6 +40,9 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
     private let mealSegment = CafeteriaMealSegmentView()
     private let skeletonList = CafeteriaSkeletonListView()
     private let cardsStack = UIStackView()
+    /// Unfolded Duo layout: the restaurant cards that don't fit the left column continue in the right-hand pane.
+    private let duoColumn = DuoSecondaryColumnView(spacing: 12)
+    private var splitWide = false
     private let emptyCard = CafeteriaEmptyCardView()
     private let footnote = UILabel()
     private let footnoteContainer = UIView()
@@ -72,12 +75,21 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if splitWide { render() }
         navigationController?.setNavigationBarHidden(false, animated: animated)
         SettingsNavigationStyle.screenWillAppear(self)
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if (duoWideRoot != nil) != splitWide { render() }
+        // Right column starts at the top of the content, not beside the left column's pickers.
+        duoColumn.setTopInset(scrollView.adjustedContentInset.top + 8)
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        releaseDuoSecondary(duoColumn)
         SettingsNavigationStyle.screenWillDisappear(self)
     }
 
@@ -230,12 +242,23 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         emptyCard.isHidden = isLoading || !cards.isEmpty
         footnoteContainer.isHidden = isLoading || cards.isEmpty
         cardsStack.arrangedSubviews.forEach { cardsStack.removeArrangedSubview($0); $0.removeFromSuperview() }
+        duoColumn.stack.arrangedSubviews.forEach { duoColumn.stack.removeArrangedSubview($0); $0.removeFromSuperview() }
+        splitWide = syncDuoSecondary(duoColumn)
         if !isLoading, !cards.isEmpty {
+            // Balance the two columns; the left one already holds the date and meal pickers (~2.2 cards of height).
+            var leftWeight = 2.2, rightWeight = 0.0
             for card in cards {
                 let view = CafeteriaMenuCardView()
                 view.configure(card)
                 view.onInfoTap = { [weak self] id in self?.openCafeteriaInfoVC(cafeteriaID: id) }
-                cardsStack.addArrangedSubview(view)
+                let weight = 0.6 + Double(max(1, card.rows.count))
+                if splitWide, leftWeight > rightWeight {
+                    duoColumn.stack.addArrangedSubview(view)
+                    rightWeight += weight
+                } else {
+                    cardsStack.addArrangedSubview(view)
+                    leftWeight += weight
+                }
             }
         } else if !isLoading {
             configureEmpty(date: selectedDate, isToday: isToday)

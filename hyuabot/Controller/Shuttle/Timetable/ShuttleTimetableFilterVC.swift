@@ -119,7 +119,7 @@ final class ShuttleTimetableFilterVC: UIViewController {
 
     @objc
     private func closeTapped() {
-        dismiss(animated: true)
+        dismissOrClearDuoDetail()
     }
 
     private func observeSubjects() {
@@ -215,6 +215,6 @@ final class ShuttleTimetableFilterVC: UIViewController {
                 period: selectedPeriod
             ))
         }
-        dismiss(animated: true)
+        dismissOrClearDuoDetail()
     }
 }

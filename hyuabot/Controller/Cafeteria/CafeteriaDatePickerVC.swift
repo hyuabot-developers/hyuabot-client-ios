@@ -58,6 +58,6 @@ final class CafeteriaDatePickerVC: UIViewController {
     @objc
     private func dateChanged(_ picker: UIDatePicker) {
         onSelect(picker.date)
-        dismiss(animated: true)
+        dismissOrClearDuoDetail()
     }
 }

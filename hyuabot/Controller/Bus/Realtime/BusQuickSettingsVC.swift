@@ -135,14 +135,14 @@ extension BusQuickSettingsVC {
 
     @objc
     private func onTapHelp() {
-        dismiss(animated: true) { [weak self] in
+        dismissOrClearDuoDetail { [weak self] in
             self?.openHelp?()
         }
     }
 
     @objc
     private func onTapInquiry() {
-        dismiss(animated: true) { [weak self] in
+        dismissOrClearDuoDetail { [weak self] in
             self?.openInquiry?()
         }
     }

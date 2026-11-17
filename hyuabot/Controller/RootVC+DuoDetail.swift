@@ -48,6 +48,7 @@ final class DuoDetailPaneView: UIView {
     private let placeholder = UILabel()
     private let divider = UIView()
     private(set) weak var current: UIViewController?
+    private weak var base: UIView?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -76,6 +77,32 @@ final class DuoDetailPaneView: UIView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    private func refreshPlaceholder() {
+        placeholder.isHidden = current != nil || base != nil
+    }
+
+    /// Content shown while no detail is open (e.g. the continued list of Subway / Cafeteria).
+    func setBase(_ view: UIView?) {
+        guard base !== view else { return }
+        base?.removeFromSuperview()
+        base = view
+        if let view {
+            insertSubview(view, at: 0)
+            view.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                view.leadingAnchor.constraint(equalTo: leadingAnchor),
+                view.trailingAnchor.constraint(equalTo: trailingAnchor),
+                view.topAnchor.constraint(equalTo: topAnchor),
+                view.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+        }
+        refreshPlaceholder()
+    }
+
+    func clearBase(_ view: UIView) {
+        if base === view { setBase(nil) }
+    }
+
     func show(_ vc: UIViewController?, in parent: UIViewController) {
         if let old = current {
             // The host is added after the parent has already appeared, so UIKit won't forward appearance callbacks.
@@ -86,7 +113,7 @@ final class DuoDetailPaneView: UIView {
             old.endAppearanceTransition()
         }
         current = vc
-        placeholder.isHidden = vc != nil
+        refreshPlaceholder()
         guard let vc else { return }
         parent.addChild(vc)
         vc.beginAppearanceTransition(true, animated: false)
@@ -125,5 +152,72 @@ extension UIViewController {
             systemItem: .close, primaryAction: UIAction { [weak root] _ in root?.clearDuoDetail() }
         )
         root.showDuoDetail(DuoDetailNC(rootViewController: viewController))
+    }
+}
+
+/// Scrolling column hosted in the detail pane's default state; holds the cards a screen continues on the right.
+final class DuoSecondaryColumnView: UIView {
+    let stack = UIStackView()
+    private let scroll = UIScrollView()
+    private var topConstraint = NSLayoutConstraint()
+
+    init(spacing: CGFloat) {
+        super.init(frame: .zero)
+        backgroundColor = SettingsStyle.Color.background
+        scroll.contentInsetAdjustmentBehavior = .never
+        scroll.alwaysBounceVertical = true
+        scroll.showsVerticalScrollIndicator = false
+        stack.axis = .vertical
+        stack.spacing = spacing
+        [scroll, stack].forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
+        addSubview(scroll)
+        scroll.addSubview(stack)
+        topConstraint = stack.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor, constant: 8)
+        NSLayoutConstraint.activate([
+            scroll.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scroll.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scroll.topAnchor.constraint(equalTo: topAnchor),
+            scroll.bottomAnchor.constraint(equalTo: bottomAnchor),
+            topConstraint,
+            stack.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(equalTo: scroll.frameLayoutGuide.trailingAnchor, constant: -24),
+            stack.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -HYUMetrics.Layout.screenBottom)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func setTopInset(_ value: CGFloat) {
+        if abs(topConstraint.constant - value) > 0.5 { topConstraint.constant = value }
+    }
+}
+
+extension UIViewController {
+    /// In the unfolded layout, puts `column` in the detail pane's default state (only while this screen's tab is selected).
+    /// Returns whether the layout is unfolded. Otherwise removes the column from the pane.
+    @discardableResult
+    func syncDuoSecondary(_ column: UIView) -> Bool {
+        guard let root = duoWideRoot else {
+            (tabBarController as? RootVC)?.duoDetailHost.clearBase(column)
+            return false
+        }
+        if root.selectedViewController === navigationController {
+            root.duoDetailHost.setBase(column)
+        }
+        return true
+    }
+
+    func releaseDuoSecondary(_ column: UIView) {
+        (tabBarController as? RootVC)?.duoDetailHost.clearBase(column)
+    }
+
+    /// Sheet-style screens call this instead of `dismiss` so they also close when shown in the detail pane.
+    func dismissOrClearDuoDetail(animated: Bool = true, completion: (() -> Void)? = nil) {
+        if navigationController is DuoDetailNC, let root = duoWideRoot {
+            root.clearDuoDetail()
+            completion?()
+        } else {
+            dismiss(animated: animated, completion: completion)
+        }
     }
 }

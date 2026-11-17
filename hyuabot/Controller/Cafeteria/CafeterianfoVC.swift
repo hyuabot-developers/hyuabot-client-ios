@@ -169,12 +169,12 @@ class CafeteriaInfoVC: UIViewController {
 
     @objc
     private func closeSheet() {
-        dismiss(animated: true)
+        dismissOrClearDuoDetail()
     }
 
     @objc
     private func openMap() {
-        dismiss(animated: true) { [weak self] in self?.onOpenMap?() }
+        dismissOrClearDuoDetail { [weak self] in self?.onOpenMap?() }
     }
 
     private func fetchCafeteriaInfo() {
