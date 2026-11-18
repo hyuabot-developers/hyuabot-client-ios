@@ -41,7 +41,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
     private let skeletonList = CafeteriaSkeletonListView()
     private let cardsStack = UIStackView()
     /// Unfolded Duo layout: the restaurant cards that don't fit the left column continue in the right-hand pane.
-    private let duoColumn = DuoSecondaryColumnView(spacing: 12)
+    private let duoColumn = DuoSecondaryColumnView(spacing: HYUMetrics.Layout.cardGap)
     private var splitWide = false
     private let emptyCard = CafeteriaEmptyCardView()
     private let footnote = UILabel()
@@ -118,7 +118,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         contentStack.axis = .vertical
         contentStack.alignment = .fill
         cardsStack.axis = .vertical
-        cardsStack.spacing = 12
+        cardsStack.spacing = HYUMetrics.Layout.cardGap
         skeletonList.isHidden = true
         emptyCard.isHidden = true
         footnote.numberOfLines = 0
@@ -130,11 +130,11 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         footnote.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)) }
         [headerBar, weekStrip, mealSegment, skeletonList, cardsStack, emptyCard, footnoteContainer].forEach(contentStack.addArrangedSubview)
         contentStack.setCustomSpacing(HYUMetrics.Layout.titleToControl, after: headerBar)
-        contentStack.setCustomSpacing(12, after: weekStrip)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: weekStrip)
         contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: mealSegment)
-        contentStack.setCustomSpacing(12, after: skeletonList)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: skeletonList)
         contentStack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: cardsStack)
-        contentStack.setCustomSpacing(12, after: emptyCard)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: emptyCard)
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
         view.addSubview(bottomFade)

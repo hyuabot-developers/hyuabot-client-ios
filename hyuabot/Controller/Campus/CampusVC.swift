@@ -142,11 +142,11 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
         addContent(makeInsetLabel(
             String(localized: "campus.tools.subtitle"), font: SettingsStyle.font(14), lineHeight: 20
         ), spacing: HYUMetrics.Layout.controlToContent)
-        addContent(makeSectionHeader(String(localized: "campus.tools.title")), spacing: 8)
-        addContent(makeFeatureCard(), spacing: 10)
-        addContent(makeToolRow(.map, .readingRoom), spacing: 10)
-        addContent(makeToolRow(.calendar, .contact), spacing: 16)
-        addContent(makeSectionHeader(String(localized: "campus.support.title")), spacing: 8)
+        addContent(makeSectionHeader(String(localized: "campus.tools.title")), spacing: HYUMetrics.Layout.controlToContent)
+        addContent(makeFeatureCard(), spacing: HYUMetrics.Layout.cardGap)
+        addContent(makeToolRow(.map, .readingRoom), spacing: HYUMetrics.Layout.cardGap)
+        addContent(makeToolRow(.calendar, .contact), spacing: HYUMetrics.Layout.cardGap)
+        addContent(makeSectionHeader(String(localized: "campus.support.title")), spacing: HYUMetrics.Layout.controlToContent)
         contentStack.addArrangedSubview(CampusSupportGroupView(rows: [
             makeSupportRow(.setting, title: String(localized: "campus.setting.title"), symbol: "gearshape.fill",
                            color: SettingsStyle.Color.supportIconGray),
@@ -203,7 +203,7 @@ final class CampusVC: UIViewController, SettingsStyledScreen {
         row.axis = .horizontal
         row.distribution = .fillEqually
         row.alignment = .fill
-        row.spacing = 10
+        row.spacing = HYUMetrics.Layout.cardGap
         return row
     }
 

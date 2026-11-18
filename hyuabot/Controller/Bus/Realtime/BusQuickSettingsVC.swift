@@ -59,7 +59,7 @@ extension BusQuickSettingsVC {
         }
 
         contentStack.axis = .vertical
-        contentStack.spacing = 12
+        contentStack.spacing = HYUMetrics.Layout.cardGap
         contentStack.layoutMargins = UIEdgeInsets(top: 6, left: 0, bottom: 34, right: 0)
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.insetsLayoutMarginsFromSafeArea = false

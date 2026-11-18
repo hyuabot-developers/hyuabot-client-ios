@@ -160,7 +160,7 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
 
         let stack = UIStackView(arrangedSubviews: [statusRow, alarmCard])
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = HYUMetrics.Layout.cardGap
         headerView.addSubview(stack)
         stack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(4)

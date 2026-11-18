@@ -136,10 +136,10 @@ final class HYUSheetView: UIView {
         label.accessibilityTraits = .header
         container.addSubview(label)
         label.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(isFirst ? 4 : 20)
+            make.top.equalToSuperview().offset(isFirst ? 4 : HYUMetrics.Layout.cardGap)
             make.leading.equalToSuperview().offset(4)
             make.trailing.equalToSuperview().inset(4)
-            make.bottom.equalToSuperview().inset(8)
+            make.bottom.equalToSuperview().inset(HYUMetrics.Layout.controlToContent)
         }
         return container
     }
@@ -214,11 +214,56 @@ final class HYUSheetView: UIView {
         )
         container.addSubview(label)
         label.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(8)
+            make.top.equalToSuperview().offset(HYUMetrics.Layout.contentToFootnote)
             make.leading.equalToSuperview().offset(4)
             make.trailing.equalToSuperview().inset(4)
             make.bottom.equalToSuperview()
         }
         return container
     }
+
+    /// Puts a title row (plus separator) at the top of a card, like the shuttle realtime section header.
+    static func insertTitle(_ title: String, into card: UIStackView) {
+        card.insertArrangedSubview(HYUCardTitleRow(title: title), at: 0)
+        card.insertArrangedSubview(separator(), at: 1)
+    }
+}
+
+/// 48pt in-card section title: bold 15pt title on the leading edge, optional secondary text on the trailing edge.
+final class HYUCardTitleRow: UIView {
+    static let height: CGFloat = 48
+
+    init(title: String, trailing: String? = nil) {
+        super.init(frame: .zero)
+        let label = UILabel()
+        label.numberOfLines = 1
+        label.attributedText = SettingsStyle.attributedText(
+            title, font: SettingsStyle.font(15, bold: true), color: SettingsStyle.Color.text, lineHeight: 20
+        )
+        label.accessibilityTraits = .header
+        addSubview(label)
+        snp.makeConstraints { $0.height.equalTo(Self.height) }
+        label.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+        }
+        if let trailing {
+            let side = UILabel()
+            side.font = SettingsStyle.font(13)
+            side.textColor = SettingsStyle.Color.secondaryText
+            side.text = trailing
+            addSubview(side)
+            side.snp.makeConstraints { make in
+                make.trailing.equalToSuperview().inset(16)
+                make.centerY.equalToSuperview()
+                make.leading.greaterThanOrEqualTo(label.snp.trailing).offset(8)
+            }
+            label.snp.makeConstraints { $0.trailing.lessThanOrEqualTo(side.snp.leading).offset(-8) }
+        } else {
+            label.snp.makeConstraints { $0.trailing.lessThanOrEqualToSuperview().inset(16) }
+        }
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }

@@ -76,7 +76,7 @@ class ShuttleAlarmVC: UIViewController {
         sheetView.snp.makeConstraints { $0.edges.equalToSuperview() }
         configurePermissionBanner()
         sheetView.contentStack.addArrangedSubview(permissionBanner)
-        sheetView.contentStack.setCustomSpacing(12, after: permissionBanner)
+        sheetView.contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: permissionBanner)
 
         let badge = BusRouteBadgeView(size: .shuttle)
         badge.configure(text: context.routeDisplayName, fill: BusRouteBadgeView.shuttleFill(for: shuttleChipKind))
@@ -110,7 +110,7 @@ class ShuttleAlarmVC: UIViewController {
 
         let destinations = context.destinationStops
         if !destinations.isEmpty {
-            sheetView.contentStack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.alarm.alighting.header")))
+            sheetView.contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: boardingCard)
             let radioCard = HYUSheetView.card()
             for (index, stop) in destinations.enumerated() {
                 if index > 0 {
@@ -122,6 +122,7 @@ class ShuttleAlarmVC: UIViewController {
                 radioRows.append(row)
                 radioCard.addArrangedSubview(row)
             }
+            HYUSheetView.insertTitle(String(localized: "shuttle.alarm.alighting.header"), into: radioCard)
             sheetView.contentStack.addArrangedSubview(radioCard)
             let footnote = HYUSheetView.footnote(String(localized: "shuttle.alarm.alighting.footnote"))
             sheetView.contentStack.addArrangedSubview(footnote)
@@ -187,7 +188,8 @@ class ShuttleAlarmVC: UIViewController {
             let denied = settings.authorizationStatus == .denied
             DispatchQueue.main.async {
                 self?.permissionBanner.isHidden = !denied
-                self?.sheetView.contentStack.setCustomSpacing(denied ? 12 : 0, after: self?.permissionBanner ?? UIView())
+                let gap = denied ? HYUMetrics.Layout.cardGap : 0
+                self?.sheetView.contentStack.setCustomSpacing(gap, after: self?.permissionBanner ?? UIView())
             }
         }
     }

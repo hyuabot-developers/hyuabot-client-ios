@@ -36,7 +36,7 @@ final class ShuttleRealtimeTableFooterView2: UIView {
         let noteSize = footnoteLabel.sizeThatFits(CGSize(width: max(0, width - 40), height: .greatestFiniteMagnitude))
         let buttonCount = Self.visibleButtonCount(for: stopID)
         let cardHeight = CGFloat(buttonCount * 44 + max(0, buttonCount - 1))
-        super.init(frame: CGRect(x: 0, y: 0, width: width, height: cardHeight + 12 + noteSize.height + 8))
+        super.init(frame: CGRect(x: 0, y: 0, width: width, height: cardHeight + HYUMetrics.Layout.contentToFootnote + noteSize.height + 8))
 
         let buttons = visibleButtons()
         for button in buttons {
@@ -72,7 +72,7 @@ final class ShuttleRealtimeTableFooterView2: UIView {
 
         addSubview(footnoteLabel)
         footnoteLabel.snp.makeConstraints { make in
-            make.top.equalTo(card.snp.bottom).offset(12)
+            make.top.equalTo(card.snp.bottom).offset(HYUMetrics.Layout.contentToFootnote)
             make.leading.equalTo(safeAreaLayoutGuide).offset(20); make.trailing.equalTo(safeAreaLayoutGuide).offset(-20)
             make.bottom.equalToSuperview().inset(8)
         }

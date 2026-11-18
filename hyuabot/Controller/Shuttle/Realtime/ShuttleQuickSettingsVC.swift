@@ -81,17 +81,15 @@ extension ShuttleQuickSettingsVC {
         sheetView.closeButton.addTarget(self, action: #selector(onTapClose), for: .touchUpInside)
         configureControls()
         let stack = sheetView.contentStack
-        stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.display"), isFirst: true))
+        stack.spacing = HYUMetrics.Layout.cardGap
         stack.addArrangedSubview(displaySettingsGroup())
-        stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.connections")))
         stack.addArrangedSubview(connectionSettingsGroup())
-        stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.quick_settings.section.alternative")))
         let alternative = alternativeGroup()
         stack.addArrangedSubview(alternative)
         let bottom = UIStackView(arrangedSubviews: [horizontalActionButtons()])
         bottom.axis = .vertical
         bottom.spacing = 8
-        stack.setCustomSpacing(16, after: alternative)
+        stack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: alternative)
         stack.addArrangedSubview(bottom)
     }
 
@@ -146,11 +144,13 @@ extension ShuttleQuickSettingsVC {
             }
             card.addArrangedSubview(row)
         }
+        HYUSheetView.insertTitle(String(localized: "shuttle.quick_settings.section.display"), into: card)
         return card
     }
 
     private func connectionSettingsGroup() -> UIView {
         settingsGroup(
+            title: String(localized: "shuttle.quick_settings.section.connections"),
             rows: [
                 switchSettingRow(
                     title: String(localized: "home.quick_settings.subway_transfer.title"),
@@ -175,6 +175,7 @@ extension ShuttleQuickSettingsVC {
 
     private func alternativeGroup() -> UIView {
         settingsGroup(
+            title: String(localized: "shuttle.quick_settings.section.alternative"),
             rows: [
                 switchSettingRow(
                     title: String(localized: "shuttle.quick_settings.alternative.title"),
@@ -265,7 +266,7 @@ extension ShuttleQuickSettingsVC {
         return row
     }
 
-    private func settingsGroup(rows: [UIView], footer: String? = nil) -> UIView {
+    private func settingsGroup(title: String, rows: [UIView], footer: String? = nil) -> UIView {
         let container = UIStackView()
         container.axis = .vertical
         container.spacing = 8
@@ -276,6 +277,7 @@ extension ShuttleQuickSettingsVC {
             }
             card.addArrangedSubview(row)
         }
+        HYUSheetView.insertTitle(title, into: card)
         container.addArrangedSubview(card)
         if let footer {
             container.addArrangedSubview(HYUSheetView.footnote(footer))
