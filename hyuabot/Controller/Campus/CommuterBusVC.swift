@@ -15,6 +15,8 @@ final class CommuterBusVC: UIViewController, SettingsStyledScreen {
     private let autoLoad: Bool
     private let locationManager = CLLocationManager()
     private let scrollView = UIScrollView()
+    private var scrollLeadingConstraint = NSLayoutConstraint()
+    private var scrollTrailingConstraint = NSLayoutConstraint()
     private let content = UIStackView()
     private let subtitleLabel = UILabel()
     private let directionView = CommuterDirectionSegmentView()
@@ -82,6 +84,16 @@ final class CommuterBusVC: UIViewController, SettingsStyledScreen {
         }
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Cover display: keep content clear of the system strip. Unfolded Duo keeps the full pane width.
+        let safe = duoHorizontalSafeInsets
+        if scrollLeadingConstraint.constant != safe.left || scrollTrailingConstraint.constant != -safe.right {
+            scrollLeadingConstraint.constant = safe.left
+            scrollTrailingConstraint.constant = -safe.right
+        }
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         SettingsNavigationStyle.screenWillAppear(self)
@@ -132,10 +144,12 @@ final class CommuterBusVC: UIViewController, SettingsStyledScreen {
         content.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
         scrollView.addSubview(content)
+        scrollLeadingConstraint = scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
+        scrollTrailingConstraint = scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollLeadingConstraint,
+            scrollTrailingConstraint,
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             content.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 2),
             content.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),

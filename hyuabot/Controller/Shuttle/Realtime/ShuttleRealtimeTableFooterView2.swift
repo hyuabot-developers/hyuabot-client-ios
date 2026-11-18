@@ -67,13 +67,13 @@ final class ShuttleRealtimeTableFooterView2: UIView {
         addSubview(card)
         card.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.leading.equalTo(safeAreaLayoutGuide).offset(16); make.trailing.equalTo(safeAreaLayoutGuide).offset(-16)
         }
 
         addSubview(footnoteLabel)
         footnoteLabel.snp.makeConstraints { make in
             make.top.equalTo(card.snp.bottom).offset(12)
-            make.leading.trailing.equalToSuperview().inset(20)
+            make.leading.equalTo(safeAreaLayoutGuide).offset(20); make.trailing.equalTo(safeAreaLayoutGuide).offset(-20)
             make.bottom.equalToSuperview().inset(8)
         }
     }

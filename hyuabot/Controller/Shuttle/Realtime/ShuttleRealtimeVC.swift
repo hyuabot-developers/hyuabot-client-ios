@@ -915,10 +915,6 @@ class ShuttleRealtimeVC: UIViewController {
             })]
             sheet.prefersGrabberVisible = true
         }
-        if let root = duoWideRoot {
-            root.showDuoDetail(vc)
-            return
-        }
         presentOrShowDuoDetail(vc)
     }
 
@@ -929,10 +925,6 @@ class ShuttleRealtimeVC: UIViewController {
                 min(vc.sheetHeight, context.maximumDetentValue)
             })]
             sheet.prefersGrabberVisible = true
-        }
-        if let root = duoWideRoot {
-            root.showDuoDetail(vc)
-            return
         }
         presentOrShowDuoDetail(vc)
     }
@@ -1282,6 +1274,11 @@ extension ShuttleRealtimeVC {
         hasManualStopSelection = false
         hasCompletedInitialLocationSelection = false
         pendingInitialStopLocation = nil
+        // Reuse a fresh (<60s) last fix right away; startUpdatingLocation alone may not emit again for an unchanged position.
+        if initialStopRules != nil, let lastFix = locationManager.location, -lastFix.timestamp.timeIntervalSinceNow < 60 {
+            applyInitialStop(for: lastFix)
+            if hasCompletedInitialLocationSelection { return }
+        }
         checkUserDeviceLocationServiceAuthorization()
     }
 

@@ -159,6 +159,20 @@ final class DuoDetailPaneView: UIView {
         if base === view { setBase(nil) }
     }
 
+    /// The detail view already stops before the system strip, but UIKit still hands it the strip's inset;
+    /// cancel it so sheet content reaches the pane's trailing edge instead of being inset a second time.
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let vc = current, vc.isViewLoaded else { return }
+        let unsafeStart = bounds.maxX - safeAreaInsets.right
+        let overlap = max(0, vc.view.frame.maxX - unsafeStart)
+        let base = vc.view.safeAreaInsets.right - vc.additionalSafeAreaInsets.right
+        let desired = overlap - base
+        if abs(vc.additionalSafeAreaInsets.right - desired) > 0.5 {
+            vc.additionalSafeAreaInsets.right = desired
+        }
+    }
+
     func show(_ vc: UIViewController?, in parent: UIViewController) {
         if let old = current {
             // The host is added after the parent has already appeared, so UIKit won't forward appearance callbacks.

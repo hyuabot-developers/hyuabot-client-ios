@@ -42,3 +42,13 @@ enum DuoLayout {
         return idiom == .phone || simulatedSize != nil
     }
 }
+
+extension UIViewController {
+    /// Horizontal safe-area insets to apply to full-width content. Zero on the unfolded Duo, where the rail is the only
+    /// trailing chrome; on the cover display it keeps content clear of the system clock/wifi strip.
+    var duoHorizontalSafeInsets: UIEdgeInsets {
+        let width = view.window?.bounds.width ?? view.bounds.width
+        guard !DuoLayout.isWide(width: width, idiom: traitCollection.userInterfaceIdiom) else { return .zero }
+        return UIEdgeInsets(top: 0, left: view.safeAreaInsets.left, bottom: 0, right: view.safeAreaInsets.right)
+    }
+}

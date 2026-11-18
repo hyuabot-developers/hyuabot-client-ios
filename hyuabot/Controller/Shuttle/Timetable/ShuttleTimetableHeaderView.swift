@@ -15,10 +15,21 @@ final class ShuttleTimetableHeaderView: UIView {
 
     private let stack = UIStackView()
     private let periodLabel = UILabel()
+    private var stackInsetConstraints: (leading: Constraint, trailing: Constraint)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // Cover display: keep the controls clear of the system strip. The unfolded pane already sits clear of it.
+        let width = window?.bounds.width ?? bounds.width
+        let wide = DuoLayout.isWide(width: width, idiom: traitCollection.userInterfaceIdiom)
+        let insets = wide ? UIEdgeInsets.zero : safeAreaInsets
+        stackInsetConstraints?.leading.update(inset: 20 + insets.left)
+        stackInsetConstraints?.trailing.update(inset: 20 + insets.right)
     }
 
     @available(*, unavailable)
@@ -32,7 +43,9 @@ final class ShuttleTimetableHeaderView: UIView {
         addSubview(stack)
         stack.snp.makeConstraints {
             $0.top.equalToSuperview().inset(8)
-            $0.leading.trailing.equalToSuperview().inset(20)
+            let leading = $0.leading.equalToSuperview().inset(20).constraint
+            let trailing = $0.trailing.equalToSuperview().inset(20).constraint
+            stackInsetConstraints = (leading, trailing)
             $0.bottom.equalToSuperview()
         }
 

@@ -11,6 +11,8 @@ final class HYUSheetView: UIView {
     let contentStack = UIStackView()
     let scrollView = UIScrollView()
     private let headerContainer = UIView()
+    private var headerLeading: Constraint?
+    private var headerTrailing: Constraint?
     private let titleLabel = UILabel()
     let closeButton = UIButton(type: .system)
 
@@ -20,6 +22,19 @@ final class HYUSheetView: UIView {
         buildLayout()
         setTitle(title)
         titleLabel.accessibilityIdentifier = titleIdentifier
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // Only the unfolded Duo layout drops the safe-area inset; the cover display keeps it clear of the system strip.
+        let width = window?.bounds.width ?? bounds.width
+        let wide = DuoLayout.isWide(width: width, idiom: traitCollection.userInterfaceIdiom)
+        if contentStack.insetsLayoutMarginsFromSafeArea == wide {
+            contentStack.insetsLayoutMarginsFromSafeArea = !wide
+        }
+        // The header is pinned to the edges, so on the cover display it must clear the system strip too (the close button sits there).
+        headerLeading?.update(inset: wide ? 0 : safeAreaInsets.left)
+        headerTrailing?.update(inset: wide ? 0 : safeAreaInsets.right)
     }
 
     @available(*, unavailable)
@@ -85,7 +100,8 @@ final class HYUSheetView: UIView {
         }
         header.snp.makeConstraints { make in
             make.top.equalTo(safeAreaLayoutGuide.snp.top).offset(6)
-            make.leading.trailing.equalToSuperview()
+            headerLeading = make.leading.equalToSuperview().constraint
+            headerTrailing = make.trailing.equalToSuperview().constraint
             make.height.equalTo(52)
         }
 

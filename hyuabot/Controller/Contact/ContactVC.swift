@@ -26,6 +26,8 @@ final class ContactVC: UIViewController, SettingsStyledScreen {
     let summaryView = ContactSummaryView()
     let footerView = ContactListFooterView()
     private let headerView = UIView()
+    private var headerLeadingConstraint: Constraint?
+    private var headerTrailingConstraint: Constraint?
 
     deinit { notificationToken?.invalidate() }
 
@@ -93,7 +95,8 @@ final class ContactVC: UIViewController, SettingsStyledScreen {
         headerView.addSubview(headerStack)
         headerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(4)
-            make.leading.trailing.equalToSuperview()
+            headerLeadingConstraint = make.leading.equalToSuperview().constraint
+            headerTrailingConstraint = make.trailing.equalToSuperview().constraint
             make.bottom.equalToSuperview()
         }
         tableView.dataSource = self
@@ -116,6 +119,10 @@ final class ContactVC: UIViewController, SettingsStyledScreen {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Cover display: the table header is not safe-area aware, so keep it clear of the system strip.
+        let safe = duoHorizontalSafeInsets
+        headerLeadingConstraint?.update(offset: safe.left)
+        headerTrailingConstraint?.update(offset: -safe.right)
         tableView.contactLayoutAccessoryViews()
     }
 

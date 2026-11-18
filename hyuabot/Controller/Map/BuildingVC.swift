@@ -19,6 +19,7 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
     private let errorView = UIView()
     private let retryButton = UIButton(type: .system)
     private var didLoadOnce = false
+    private var closeTrailing: Constraint?
     private var isLoading = false
     private var progressAnimationRunning = false
 
@@ -48,6 +49,8 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // On the cover display the close button must clear the system strip; wide has no strip over the sheet.
+        closeTrailing?.update(offset: -9 - duoHorizontalSafeInsets.right)
         startProgressAnimationIfNeeded()
     }
 
@@ -86,7 +89,7 @@ final class BuildingVC: UIViewController, WKNavigationDelegate {
         }
         closeButton.snp.makeConstraints { make in
             make.size.equalTo(44)
-            make.trailing.equalToSuperview().offset(-9)
+            closeTrailing = make.trailing.equalToSuperview().offset(-9).constraint
             make.centerY.equalTo(header.snp.centerY)
         }
     }

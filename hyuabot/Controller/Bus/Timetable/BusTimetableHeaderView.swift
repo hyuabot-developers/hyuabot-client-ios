@@ -51,6 +51,17 @@ final class BusTimetableHeaderView: UIView {
     private let filterStack = UIStackView()
     private let stateContainer = UIView()
     private var lastContent: BusTimetableHeaderContent?
+    private var stackInsetConstraints: (leading: Constraint, trailing: Constraint)?
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // Cover display: keep the controls clear of the system strip. The unfolded pane already sits clear of it.
+        let width = window?.bounds.width ?? bounds.width
+        let wide = DuoLayout.isWide(width: width, idiom: traitCollection.userInterfaceIdiom)
+        let insets = wide ? UIEdgeInsets.zero : safeAreaInsets
+        stackInsetConstraints?.leading.update(inset: 20 + insets.left)
+        stackInsetConstraints?.trailing.update(inset: 20 + insets.right)
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -58,7 +69,9 @@ final class BusTimetableHeaderView: UIView {
         addSubview(contentStack)
         contentStack.snp.makeConstraints {
             $0.top.equalToSuperview()
-            $0.leading.trailing.equalToSuperview().inset(20)
+            let leading = $0.leading.equalToSuperview().inset(20).constraint
+            let trailing = $0.trailing.equalToSuperview().inset(20).constraint
+            stackInsetConstraints = (leading, trailing)
             $0.bottom.equalToSuperview()
         }
         setupTitle()

@@ -212,6 +212,12 @@ final class BusTimetableVC: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Wide (Duo unfolded): the pane is already clear of the rail, so rows use the full width.
+        let wideWidth = view.window?.bounds.width ?? view.bounds.width
+        let isWide = DuoLayout.isWide(width: wideWidth, idiom: traitCollection.userInterfaceIdiom)
+        if tableView.insetsContentViewsToSafeArea == isWide {
+            tableView.insetsContentViewsToSafeArea = !isWide
+        }
         resizeSupplementaryViews()
     }
 

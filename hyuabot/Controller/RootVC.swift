@@ -225,7 +225,7 @@ extension RootVC: UITabBarControllerDelegate {
 extension RootVC {
     private func configureFloatingTabBar() {
         hideSystemTabBar()
-        floatingTabBar.setItems((viewControllers ?? []).map(\.tabBarItem))
+        floatingTabBar.setItems((viewControllers ?? []).filter { $0 is UINavigationController }.map(\.tabBarItem))
         floatingTabBar.onSelect = { [weak self] index in self?.selectTab(at: index) }
         floatingTabBar.selectedIndex = selectedIndex
         installFloatingTabBar()
@@ -239,7 +239,8 @@ extension RootVC {
         guard wide != isWideLayout else { return }
         isWideLayout = wide
         if duoRail.superview == nil {
-            duoRail.setItems((viewControllers ?? []).map(\.tabBarItem))
+            // The translation host is added as a child and shows up in viewControllers on newer iOS, so only real tabs get a rail button.
+            duoRail.setItems((viewControllers ?? []).filter { $0 is UINavigationController }.map(\.tabBarItem))
             duoRail.onSelect = { [weak self] index in self?.selectTab(at: index) }
             duoRail.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(duoRail)
@@ -262,6 +263,12 @@ extension RootVC {
         }
         duoDetailHost.isHidden = !wide
         if !wide { clearDuoDetail() }
+        if wide {
+            // Screens pushed on the cover display would stay full-width under the rail; wide mode opens them in the pane instead.
+            for case let navigationController as UINavigationController in viewControllers ?? [] where navigationController.viewControllers.count > 1 {
+                navigationController.popToRootViewController(animated: false)
+            }
+        }
         duoRail.selectedIndex = selectedIndex
         duoRail.isHidden = !wide
         view.bringSubviewToFront(duoDetailHost)

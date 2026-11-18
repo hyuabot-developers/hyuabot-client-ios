@@ -40,6 +40,8 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
         $0.register(MapPinAnnotationView.self, forAnnotationViewWithReuseIdentifier: MapPinAnnotationView.reuseIdentifier)
     }
     let searchBarView = MapSearchBarView()
+    var duoCloseButton: UIButton?
+    var searchTrailingConstraint: Constraint?
     let statusPill = MapStatusPillView()
     let recenterButton = MapRecenterButton()
     let buildingCard = MapBuildingCardView()
@@ -70,6 +72,7 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        updateDuoCloseButton()
         SettingsNavigationStyle.screenWillAppear(self)
         updateAccessibilityActions()
     }
@@ -134,9 +137,11 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
         mapView.snp.makeConstraints { $0.edges.equalToSuperview() }
         searchBarView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(8)
-            $0.leading.trailing.equalToSuperview().inset(16)
+            $0.leading.equalToSuperview().inset(16)
+            searchTrailingConstraint = $0.trailing.equalToSuperview().inset(16).constraint
             $0.height.equalTo(48)
         }
+        setupDuoCloseButton()
         statusPill.snp.makeConstraints {
             $0.top.equalTo(searchBarView.snp.bottom).offset(8)
             $0.leading.equalToSuperview().offset(16)
@@ -163,6 +168,35 @@ class MapVC: UIViewController, SettingsStyledScreen, UIGestureRecognizerDelegate
             recenterCardConstraint = $0.bottom.equalTo(buildingCard.snp.top).offset(-12).constraint
             recenterCardConstraint?.deactivate()
         }
+    }
+
+    /// The map hides the navigation bar, so the unfolded Duo detail pane gets a floating close button instead.
+    private func setupDuoCloseButton() {
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = SettingsStyle.Color.tabGlass
+        config.baseForegroundColor = SettingsStyle.Color.link
+        config.cornerStyle = .capsule
+        config.image = UIImage(systemName: "xmark")
+        let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in
+            (self?.navigationItem.leftBarButtonItem?.customView as? UIButton)?.sendActions(for: .primaryActionTriggered)
+        })
+        button.accessibilityIdentifier = "map.duo.close"
+        button.accessibilityLabel = String(localized: "close")
+        button.isHidden = true
+        view.addSubview(button)
+        button.snp.makeConstraints {
+            $0.centerY.equalTo(searchBarView)
+            $0.trailing.equalToSuperview().inset(16)
+            $0.size.equalTo(48)
+        }
+        duoCloseButton = button
+    }
+
+    private func updateDuoCloseButton() {
+        let shows = navigationItem.leftBarButtonItem?.customView is UIButton
+        guard duoCloseButton?.isHidden == shows else { return }
+        duoCloseButton?.isHidden = !shows
+        searchTrailingConstraint?.update(inset: shows ? 16 + 48 + 8 : 16)
     }
 
     func setupActions() {

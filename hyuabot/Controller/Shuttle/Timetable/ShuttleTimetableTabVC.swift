@@ -61,6 +61,14 @@ class ShuttleTimetableTabVC: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Wide (Duo unfolded): the rail is the only right-hand chrome, so cells use the full pane width.
+        // On the cover display the system strip needs the safe-area inset.
+        let width = view.window?.bounds.width ?? view.bounds.width
+        let wide = DuoLayout.isWide(width: width, idiom: traitCollection.userInterfaceIdiom)
+        if shuttleTimetableTableView.insetsContentViewsToSafeArea == wide {
+            shuttleTimetableTableView.insetsContentViewsToSafeArea = !wide
+            if projection.hiddenPastCount > 0 { updateFoldStrip() }
+        }
         if projection.hiddenPastCount > 0 {
             if shuttleTimetableTableView.tableHeaderView?.frame.width != shuttleTimetableTableView.bounds.width {
                 updateFoldStrip()
@@ -133,7 +141,8 @@ class ShuttleTimetableTabVC: UIViewController {
         container.addSubview(card)
         card.addSubview(button)
         card.addSubview(separator)
-        card.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)) }
+        let safe = shuttleTimetableTableView.insetsContentViewsToSafeArea ? shuttleTimetableTableView.safeAreaInsets : .zero
+        card.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 16 + safe.left, bottom: 0, right: 16 + safe.right)) }
         button.snp.makeConstraints { $0.edges.equalToSuperview() }
         separator.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(1 / UIScreen.main.scale) }
         shuttleTimetableTableView.tableHeaderView = container

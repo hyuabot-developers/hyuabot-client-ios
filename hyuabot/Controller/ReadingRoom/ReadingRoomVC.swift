@@ -6,6 +6,7 @@
 import Api
 import RxRelay
 import RxSwift
+import SnapKit
 import UIKit
 import UserNotifications
 
@@ -21,6 +22,8 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
     let alarmCard = ReadingRoomAlarmCardView()
     let footerView = ReadingRoomListFooterView()
     private let headerView = UIView()
+    private var headerLeadingConstraint: Constraint?
+    private var headerTrailingConstraint: Constraint?
     var isRefreshing = false
     var lastUpdatedAt: Foundation.Date?
     var toastContainer: UIView {
@@ -138,6 +141,10 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Cover display: the table header is not safe-area aware, so keep it clear of the system strip.
+        let safe = duoHorizontalSafeInsets
+        headerLeadingConstraint?.update(inset: SettingsStyle.Metric.cardInset + safe.left)
+        headerTrailingConstraint?.update(inset: SettingsStyle.Metric.cardInset + safe.right)
         readingRoomView.contactLayoutAccessoryViews()
     }
 
@@ -157,7 +164,8 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
         headerView.addSubview(stack)
         stack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(4)
-            make.leading.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset)
+            headerLeadingConstraint = make.leading.equalToSuperview().inset(SettingsStyle.Metric.cardInset).constraint
+            headerTrailingConstraint = make.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset).constraint
             make.bottom.equalToSuperview().inset(16)
         }
         readingRoomView.tableHeaderView = headerView
