@@ -26,8 +26,8 @@ enum DuoLayout {
     static var simulatedSize: CGSize? {
         #if DEBUG
         let args = ProcessInfo.processInfo.arguments
-        guard let i = args.firstIndex(of: "-DuoSimulate"), args.indices.contains(i + 1) else { return nil }
-        switch args[i + 1] {
+        guard let idx = args.firstIndex(of: "-DuoSimulate"), args.indices.contains(idx + 1) else { return nil }
+        switch args[idx + 1] {
         case "wide": return CGSize(width: 951, height: 669)
         case "cover": return CGSize(width: 466, height: 678)
         default: return nil

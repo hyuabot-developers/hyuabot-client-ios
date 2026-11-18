@@ -36,8 +36,8 @@ final class DuoSimulationContainerVC: UIViewController {
         root.didMove(toParent: self)
         // `-DuoToggleEvery N` flips between unfolded and folded every N seconds to exercise fold/unfold.
         let args = ProcessInfo.processInfo.arguments
-        if let i = args.firstIndex(of: "-DuoToggleEvery"), args.indices.contains(i + 1),
-           let seconds = TimeInterval(args[i + 1]), seconds > 0 {
+        if let idx = args.firstIndex(of: "-DuoToggleEvery"), args.indices.contains(idx + 1),
+           let seconds = TimeInterval(args[idx + 1]), seconds > 0 {
             Timer.scheduledTimer(withTimeInterval: seconds, repeats: true) { [weak self] _ in self?.toggleFold() }
         }
     }

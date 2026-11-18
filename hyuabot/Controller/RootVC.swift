@@ -265,7 +265,8 @@ extension RootVC {
         if !wide { clearDuoDetail() }
         if wide {
             // Screens pushed on the cover display would stay full-width under the rail; wide mode opens them in the pane instead.
-            for case let navigationController as UINavigationController in viewControllers ?? [] where navigationController.viewControllers.count > 1 {
+            for case let navigationController as UINavigationController in viewControllers ?? []
+            where navigationController.viewControllers.count > 1 {
                 navigationController.popToRootViewController(animated: false)
             }
         }
@@ -338,7 +339,8 @@ extension RootVC {
         let wanted = max(0, covered - systemBottom)
         // The native large title sits at max(16, safeArea.left), so the nav controller is inset by 24
         // and its screens are offset by -16 to keep their content on the 24pt column margin.
-        let wantedLeft: CGFloat = isWideLayout ? (child is UINavigationController ? DuoLayout.foldGutter : DuoLayout.foldGutter - HYUMetrics.Space.large) : 0
+        let narrowGutter = DuoLayout.foldGutter - HYUMetrics.Space.large
+        let wantedLeft: CGFloat = isWideLayout ? (child is UINavigationController ? DuoLayout.foldGutter : narrowGutter) : 0
         if child.additionalSafeAreaInsets.left != wantedLeft {
             child.additionalSafeAreaInsets.left = wantedLeft
         }

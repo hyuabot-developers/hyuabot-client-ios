@@ -26,6 +26,7 @@ enum SubwayPayloadSelection {
     }
 }
 
+// swiftlint:disable:next type_body_length
 class SubwayRealtimeVC: UIViewController {
     private var requestGeneration = 0
     private var lastAppliedGeneration = 0

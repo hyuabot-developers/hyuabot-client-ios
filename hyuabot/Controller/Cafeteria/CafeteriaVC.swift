@@ -199,6 +199,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         }).disposed(by: disposeBag)
     }
 
+    // swiftlint:disable:next function_body_length
     private func render() {
         let selectedDate = CafeteriaData.shared.feedDate.value
         let isToday = Calendar.current.isDate(selectedDate, inSameDayAs: today)

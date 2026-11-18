@@ -142,7 +142,8 @@ class ShuttleTimetableTabVC: UIViewController {
         card.addSubview(button)
         card.addSubview(separator)
         let safe = shuttleTimetableTableView.insetsContentViewsToSafeArea ? shuttleTimetableTableView.safeAreaInsets : .zero
-        card.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 16 + safe.left, bottom: 0, right: 16 + safe.right)) }
+        let cardInsets = UIEdgeInsets(top: 0, left: 16 + safe.left, bottom: 0, right: 16 + safe.right)
+        card.snp.makeConstraints { $0.edges.equalToSuperview().inset(cardInsets) }
         button.snp.makeConstraints { $0.edges.equalToSuperview() }
         separator.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(1 / UIScreen.main.scale) }
         shuttleTimetableTableView.tableHeaderView = container
