@@ -9,6 +9,8 @@ import UIKit
 final class CafeteriaDatePickerVC: UIViewController {
     private let selectedDate: Date
     private let onSelect: (Date) -> Void
+    private var titleInsets: Constraint?
+    private var cardInsets: Constraint?
 
     init(selectedDate: Date, onSelect: @escaping (Date) -> Void) {
         self.selectedDate = selectedDate
@@ -31,21 +33,25 @@ final class CafeteriaDatePickerVC: UIViewController {
         view.addSubview(title)
         title.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(HYUMetrics.Layout.sheetTitleTop)
-            $0.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+            titleInsets = $0.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset).constraint
         }
         let card = UIView()
         card.backgroundColor = SettingsStyle.Color.card
         card.layer.cornerRadius = HYUMetrics.Radius.card
+        // On the Duo cover display the card spans under the system strip's safe-area inset; inheriting it as layout
+        // margins makes the inline calendar's internal compositional layout oscillate and pin the main thread.
+        card.insetsLayoutMarginsFromSafeArea = false
         view.addSubview(card)
         card.snp.makeConstraints {
             $0.top.equalTo(title.snp.bottom).offset(8)
-            $0.leading.trailing.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+            cardInsets = $0.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset).constraint
         }
 
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .inline
         picker.tintColor = SettingsStyle.Color.accent
+        picker.insetsLayoutMarginsFromSafeArea = false
         picker.date = selectedDate
         picker.accessibilityIdentifier = "cafeteria.date_picker"
         picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
@@ -55,9 +61,19 @@ final class CafeteriaDatePickerVC: UIViewController {
         }
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Keep the title and card clear of the cover display's system strip (zero when unfolded).
+        let safe = duoHorizontalSafeInsets
+        let inset = HYUMetrics.Layout.sheetHorizontalInset
+        let edges = UIEdgeInsets(top: 0, left: inset + safe.left, bottom: 0, right: inset + safe.right)
+        titleInsets?.update(inset: edges)
+        cardInsets?.update(inset: edges)
+    }
+
     @objc
     private func dateChanged(_ picker: UIDatePicker) {
         onSelect(picker.date)
-        dismiss(animated: true)
+        dismissOrClearDuoDetail()
     }
 }

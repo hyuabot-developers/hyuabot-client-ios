@@ -40,6 +40,9 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
     private let mealSegment = CafeteriaMealSegmentView()
     private let skeletonList = CafeteriaSkeletonListView()
     private let cardsStack = UIStackView()
+    /// Unfolded Duo layout: the restaurant cards that don't fit the left column continue in the right-hand pane.
+    private let duoColumn = DuoSecondaryColumnView(spacing: 12)
+    private var splitWide = false
     private let emptyCard = CafeteriaEmptyCardView()
     private let footnote = UILabel()
     private let footnoteContainer = UIView()
@@ -72,12 +75,21 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if splitWide { render() }
         navigationController?.setNavigationBarHidden(false, animated: animated)
         SettingsNavigationStyle.screenWillAppear(self)
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if (duoWideRoot != nil) != splitWide { render() }
+        // Right column starts at the top of the content, not beside the left column's pickers.
+        duoColumn.setTopInset(scrollView.adjustedContentInset.top + 8)
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        releaseDuoSecondary(duoColumn)
         SettingsNavigationStyle.screenWillDisappear(self)
     }
 
@@ -126,14 +138,19 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
         view.addSubview(bottomFade)
-        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scrollView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            // Horizontal safe-area is 0 on phones; in the Duo wide layout it carries the rail / detail pane.
+            $0.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+        }
         contentStack.snp.makeConstraints { make in
             make.top.equalTo(scrollView.contentLayoutGuide).offset(8)
             make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-HYUMetrics.Layout.screenBottom)
             make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(16)
         }
         bottomFade.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide)
             make.height.equalTo(120)
         }
     }
@@ -182,6 +199,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         }).disposed(by: disposeBag)
     }
 
+    // swiftlint:disable:next function_body_length
     private func render() {
         let selectedDate = CafeteriaData.shared.feedDate.value
         let isToday = Calendar.current.isDate(selectedDate, inSameDayAs: today)
@@ -225,12 +243,26 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         emptyCard.isHidden = isLoading || !cards.isEmpty
         footnoteContainer.isHidden = isLoading || cards.isEmpty
         cardsStack.arrangedSubviews.forEach { cardsStack.removeArrangedSubview($0); $0.removeFromSuperview() }
+        duoColumn.stack.arrangedSubviews.forEach { duoColumn.stack.removeArrangedSubview($0); $0.removeFromSuperview() }
+        splitWide = syncDuoSecondary(duoColumn)
         if !isLoading, !cards.isEmpty {
-            for card in cards {
+            // Balance the two columns; the left one already holds the date and meal pickers (~2.2 cards of height).
+            // Order-preserving: fill the left column first, then the rest continue on the right.
+            let weights = cards.map { 0.6 + Double(max(1, $0.rows.count)) }
+            let half = (2.2 + weights.reduce(0, +)) / 2
+            var leftWeight = 2.2
+            var spilled = false
+            for (card, weight) in zip(cards, weights) {
                 let view = CafeteriaMenuCardView()
                 view.configure(card)
                 view.onInfoTap = { [weak self] id in self?.openCafeteriaInfoVC(cafeteriaID: id) }
-                cardsStack.addArrangedSubview(view)
+                if splitWide, !cardsStack.arrangedSubviews.isEmpty, spilled || leftWeight + weight / 2 > half {
+                    spilled = true
+                    duoColumn.stack.addArrangedSubview(view)
+                } else {
+                    cardsStack.addArrangedSubview(view)
+                    leftWeight += weight
+                }
             }
         } else if !isLoading {
             configureEmpty(date: selectedDate, isToday: isToday)
@@ -268,7 +300,7 @@ class CafeteriaVC: UIViewController, SettingsStyledScreen, UIScrollViewDelegate 
         vc.onOpenMap = { [weak self] in (self?.tabBarController as? RootVC)?.openCampus(.map, animated: true) }
         vc.configureSheetPresentation()
         dismissActiveCoachMarks()
-        present(vc, animated: true)
+        presentOrShowDuoDetail(vc)
     }
 
     #if DEBUG
@@ -338,7 +370,7 @@ extension CafeteriaVC {
             selectedMeal = CafeteriaMeal(rawValue: CafeteriaData.automaticMealSelection(at: now).mealIndex) ?? .breakfast
             CafeteriaData.shared.feedDate.accept(date)
         }
-        present(picker, animated: true)
+        presentOrShowDuoDetail(picker)
     }
 
     private func share() {

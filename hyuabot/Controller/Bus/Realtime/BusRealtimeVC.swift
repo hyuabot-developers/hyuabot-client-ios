@@ -167,7 +167,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
                 sheet.detents = [.large()]
                 sheet.prefersGrabberVisible = true
             }
-            self?.present(vc, animated: true)
+            self?.presentOrShowDuoDetail(vc)
         }
     }
 
@@ -545,7 +545,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func openBusStopVC(_ stopID: Int32, _ routes: [Int32]) {
@@ -554,7 +554,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     @objc
@@ -607,7 +607,7 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             }]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true)
+        presentOrShowDuoDetail(vc)
     }
 
     private func openHelpVC() {
@@ -617,13 +617,12 @@ class BusRealtimeVC: UIViewController, @preconcurrency CLLocationManagerDelegate
             sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
-        present(vc, animated: true, completion: nil)
+        presentOrShowDuoDetail(vc)
     }
 
     private func openInquiry() {
-        navigationController?.pushViewController(
-            InquiryChatVC(entryScreen: "bus", entryScreenName: "버스"),
-            animated: true
+        navigationController?.pushOrShowDuoDetail(
+            InquiryChatVC(entryScreen: "bus", entryScreenName: "버스")
         )
     }
 

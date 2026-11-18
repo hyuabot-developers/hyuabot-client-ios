@@ -7,11 +7,14 @@ import Api
 import MapKit
 import RxRelay
 import RxSwift
+import SnapKit
 import UIKit
 
 class BusStopInfoVC: UIViewController {
     private let input: [BusRouteStopInput]
     private let disposeBag = DisposeBag()
+    private var titleInsets: Constraint?
+    private var tableInsets: Constraint?
     private let routeStops = BehaviorRelay<[BusStopDialogQuery.Data.Bus]>(value: [])
     private let stopMapView = MKMapView().then {
         $0.isScrollEnabled = false
@@ -71,12 +74,12 @@ class BusStopInfoVC: UIViewController {
         view.addSubview(firstLastTableView)
         title.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(11)
-            make.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
             make.height.equalTo(52)
+            titleInsets = make.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset).constraint
         }
         firstLastTableView.snp.makeConstraints { make in
             make.top.equalTo(title.snp.bottom).offset(3)
-            make.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset)
+            tableInsets = make.horizontalEdges.equalToSuperview().inset(HYUMetrics.Layout.sheetHorizontalInset).constraint
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         configureMapHeader()
@@ -110,6 +113,12 @@ class BusStopInfoVC: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Keep the title, map and table clear of the Duo cover display's system strip (zero when unfolded).
+        let safe = duoHorizontalSafeInsets
+        let inset = HYUMetrics.Layout.sheetHorizontalInset
+        let edges = UIEdgeInsets(top: 0, left: inset + safe.left, bottom: 0, right: inset + safe.right)
+        titleInsets?.update(inset: edges)
+        tableInsets?.update(inset: edges)
         guard let header = firstLastTableView.tableHeaderView else { return }
         let width = firstLastTableView.bounds.width
         guard width > 0 else { return }

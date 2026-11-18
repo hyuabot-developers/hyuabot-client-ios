@@ -26685,6 +26685,35 @@
           }
         }
       }
+    },
+    "duo.detail.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왼쪽에서 항목을 선택하면\n상세 정보가 여기에 표시돼요"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an item on the left\nto see its details here"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "左で項目を選ぶと\n詳細がここに表示されます"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在左侧选择一项\n即可在此查看详情"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

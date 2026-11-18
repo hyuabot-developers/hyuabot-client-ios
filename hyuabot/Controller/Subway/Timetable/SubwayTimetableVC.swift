@@ -71,6 +71,14 @@ class SubwayTimetableVC: UIViewController, UITableViewDataSource, UITableViewDel
             // Center the title on the back button: the button occupies the top 44pt of the navigation bar.
             compactBar.setTitleCenterFromBottom(view.safeAreaInsets.top - (navBar.frame.minY + 22))
         }
+
+        // Wide (Duo unfolded): the pane is already clear of the rail, so rows use the full width.
+        let wideWidth = view.window?.bounds.width ?? view.bounds.width
+        let isWide = DuoLayout.isWide(width: wideWidth, idiom: traitCollection.userInterfaceIdiom)
+        if tableView.insetsContentViewsToSafeArea == isWide {
+            tableView.insetsContentViewsToSafeArea = !isWide
+            lastTableWidth = 0
+        }
         guard tableView.bounds.width > 0, tableView.bounds.width != lastTableWidth else { return }
         resizeTableSupplementaryViews()
     }

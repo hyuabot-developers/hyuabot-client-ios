@@ -287,7 +287,7 @@ class ShuttleAlarmVC: UIViewController {
         if isBoardingAlarmActive {
             ShuttleAlarmNotificationService.shared.cancelBoardingAlarm(for: context.key)
             finishAlarmRequest()
-            dismiss(animated: true)
+            dismissOrClearDuoDetail()
             return
         }
         requestNotificationAndLocationAuthorization { [weak self] granted in
@@ -296,7 +296,7 @@ class ShuttleAlarmVC: UIViewController {
                 ShuttleAlarmNotificationService.shared.scheduleBoardingAlarm(context: context)
                 NotificationCenter.default.post(name: .shuttleBoardingAlarmStateDidChange, object: nil)
                 finishAlarmRequest()
-                dismiss(animated: true)
+                dismissOrClearDuoDetail()
             } else {
                 finishAlarmRequest()
                 presentPermissionAlert()
@@ -312,7 +312,7 @@ class ShuttleAlarmVC: UIViewController {
         if isAlightingAlarmActive {
             ShuttleAlarmNotificationService.shared.cancelAlightingAlarm(for: context.key)
             finishAlarmRequest()
-            dismiss(animated: true)
+            dismissOrClearDuoDetail()
             return
         }
         guard context.destinationStops.indices.contains(selectedDestinationIndex) else { finishAlarmRequest(); return }
@@ -322,7 +322,7 @@ class ShuttleAlarmVC: UIViewController {
             if granted {
                 ShuttleAlarmNotificationService.shared.scheduleAlightingAlarm(context: context, destination: destination)
                 finishAlarmRequest()
-                dismiss(animated: true)
+                dismissOrClearDuoDetail()
             } else {
                 finishAlarmRequest()
                 presentPermissionAlert()

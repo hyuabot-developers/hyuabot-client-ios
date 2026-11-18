@@ -76,6 +76,8 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
 
     // MARK: - UI
 
+    private var scrollLeadingConstraint: Constraint?
+    private var scrollTrailingConstraint: Constraint?
     private lazy var scrollView = UIScrollView().then {
         $0.showsVerticalScrollIndicator = false
         $0.alwaysBounceVertical = true
@@ -179,6 +181,10 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Cover display: keep the month grid clear of the system strip. Unfolded Duo keeps the full pane width.
+        let safe = duoHorizontalSafeInsets
+        scrollLeadingConstraint?.update(offset: safe.left)
+        scrollTrailingConstraint?.update(offset: -safe.right)
         syncEventViewHeight()
         let width = calendarCollectionView.bounds.width
         if width > 0, abs(width - lastRenderedWidth) > 0.5 {
@@ -221,7 +227,11 @@ class CalendarVC: UIViewController, SettingsStyledScreen {
         scrollView.addSubview(scrollContent)
         [categoryFilterView, calendarCardView, panelHeaderView, eventListCard, emptyStateView, skeletonView, hintLabel]
             .forEach { scrollContent.addSubview($0) }
-        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scrollView.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            scrollLeadingConstraint = make.leading.equalToSuperview().constraint
+            scrollTrailingConstraint = make.trailing.equalToSuperview().constraint
+        }
         scrollContent.snp.makeConstraints { make in
             make.edges.equalTo(scrollView.contentLayoutGuide)
             make.width.equalTo(scrollView.frameLayoutGuide)

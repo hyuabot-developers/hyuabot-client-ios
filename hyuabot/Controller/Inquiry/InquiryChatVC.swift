@@ -86,18 +86,43 @@ final class InquiryChatVC: UIViewController, SettingsStyledScreen {
         streamTask = nil
     }
 
+    private var conversationLeading: Constraint?
+    private var conversationTrailing: Constraint?
+    private var composerLeading: Constraint?
+    private var composerTrailing: Constraint?
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // Cover display: keep bubbles and the composer clear of the system strip. Zero when unfolded.
+        let safe = duoHorizontalSafeInsets
+        conversationLeading?.update(offset: safe.left)
+        conversationTrailing?.update(offset: -safe.right)
+        composerLeading?.update(offset: safe.left)
+        composerTrailing?.update(offset: -safe.right)
+    }
+
     private func configureLayout() {
         view.addSubview(conversationView)
         view.addSubview(bottomFill)
+        // Full-width backing so the composer's card color also fills the gutter beside the system strip on the cover display.
+        let composerBacking = UIView()
+        composerBacking.backgroundColor = SettingsStyle.Color.card
+        view.addSubview(composerBacking)
         view.addSubview(composerView)
+        composerBacking.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.bottom.equalTo(composerView)
+        }
 
         conversationView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
-            make.leading.trailing.equalToSuperview()
+            conversationLeading = make.leading.equalToSuperview().constraint
+            conversationTrailing = make.trailing.equalToSuperview().constraint
             make.bottom.equalTo(composerView.snp.top)
         }
         composerView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
+            composerLeading = make.leading.equalToSuperview().constraint
+            composerTrailing = make.trailing.equalToSuperview().constraint
             make.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
         }
         bottomFill.snp.makeConstraints { make in

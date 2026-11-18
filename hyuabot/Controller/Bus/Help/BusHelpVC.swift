@@ -43,7 +43,12 @@ class BusHelpVC: UIViewController {
         view.addSubview(titleLabel)
         view.addSubview(helpTableView)
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
+            // In the Duo detail pane the nav bar (with the close button) occupies the top safe area; phones keep the original anchor.
+            if navigationController is DuoDetailNC {
+                make.top.equalTo(view.safeAreaLayoutGuide).offset(10)
+            } else {
+                make.top.equalToSuperview().offset(10)
+            }
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(50)
         }

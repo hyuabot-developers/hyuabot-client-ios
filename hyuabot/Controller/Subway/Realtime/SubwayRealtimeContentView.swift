@@ -18,6 +18,9 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
     private let footnoteContainer = UIView()
     private let footnoteLabel = UILabel()
     private let refreshControl = UIRefreshControl()
+    /// Unfolded Duo layout: the second direction's card continues in the right-hand pane.
+    let duoColumn = DuoSecondaryColumnView(spacing: 16)
+    private let secondCard = SubwaySectionCardView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -31,17 +34,21 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func render(tab: SubwayTabType, isLoading: Bool, sections: [SubwaySectionContent]) {
+    func render(tab: SubwayTabType, isLoading: Bool, sections: [SubwaySectionContent], splitSecond: Bool = false) {
         let selected = tab == .line4 ? 0 : tab == .lineSuin ? 1 : 2
         segmentView.configure(items: segmentItems, selected: selected)
         skeletonList.isHidden = !isLoading
         skeletonList.setAnimating(isLoading)
         cardsStack.isHidden = isLoading
         footnoteContainer.isHidden = isLoading
+        secondCard.isHidden = isLoading || !splitSecond || sections.count < 2
+        if !secondCard.isHidden { secondCard.configure(sections[1]) }
         if !isLoading {
             for (index, card) in cardsStack.arrangedSubviews.enumerated() {
                 guard let card = card as? SubwaySectionCardView else { continue }
-                if sections.indices.contains(index) {
+                if splitSecond, index == 1 {
+                    card.isHidden = true
+                } else if sections.indices.contains(index) {
                     card.isHidden = false; card.configure(sections[index])
                 } else {
                     card.isHidden = true
@@ -50,6 +57,14 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
             footnoteLabel.numberOfLines = tab == .transfer ? 1 : 0
             footnoteLabel.text = String(localized: tab == .transfer ? "subway.realtime.footnote.transfer" : "subway.realtime.footnote")
         }
+    }
+
+    /// Aligns the right-hand card with the first card on the left.
+    func updateDuoTopInset() {
+        guard !cardsStack.isHidden else { return }
+        // Derived from the segment (always first) rather than cardsStack.frame, which is stale while the skeleton collapses.
+        let firstCardY = segmentView.frame.maxY + HYUMetrics.Layout.controlToContent
+        duoColumn.setTopInset(scrollView.adjustedContentInset.top + 8 + firstCardY)
     }
 
     func endRefreshing() {
@@ -77,7 +92,11 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
         addSubview(scrollView)
-        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scrollView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            // Horizontal safe-area is 0 on phones; in the Duo wide layout it carries the rail / detail pane.
+            $0.leading.trailing.equalTo(safeAreaLayoutGuide)
+        }
         contentStack.axis = .vertical
         scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints {
@@ -97,6 +116,9 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
             cardsStack.addArrangedSubview(card)
         }
         contentStack.addArrangedSubview(cardsStack)
+        secondCard.onTimetableTap = { [weak self] in self?.onTimetableTap?($0) }
+        secondCard.isHidden = true
+        duoColumn.stack.addArrangedSubview(secondCard)
         contentStack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: cardsStack)
         footnoteLabel.font = SettingsStyle.font(12)
         footnoteLabel.textColor = SettingsStyle.Color.commuterFaint
@@ -106,7 +128,7 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         contentStack.addArrangedSubview(footnoteContainer)
         let fade = CafeteriaBottomFadeView()
         addSubview(fade)
-        fade.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(120) }
+        fade.snp.makeConstraints { $0.bottom.equalToSuperview(); $0.leading.trailing.equalTo(safeAreaLayoutGuide); $0.height.equalTo(120) }
         segmentView.configure(items: segmentItems, selected: 0)
         segmentView.onSelect = { [weak self] index in
             guard let self else { return }

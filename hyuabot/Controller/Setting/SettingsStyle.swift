@@ -266,6 +266,8 @@ enum SettingsNavigationStyle {
         viewController.navigationItem.standardAppearance = appearance.copy()
         viewController.navigationItem.compactAppearance = appearance.copy()
         viewController.navigationItem.scrollEdgeAppearance = makeScrollEdgeAppearance()
+        // The Duo detail pane keeps inline titles; the large-title collapse does not suit its narrow, nested bar.
+        let largeTitle = largeTitle && !(viewController.navigationController is DuoDetailNC)
         viewController.navigationItem.largeTitleDisplayMode = largeTitle ? .always : .never
         if largeTitle, let bar = viewController.navigationController?.navigationBar {
             bar.prefersLargeTitles = true
@@ -276,7 +278,7 @@ enum SettingsNavigationStyle {
     static func screenWillAppear(_ viewController: UIViewController) {
         guard let bar = viewController.navigationController?.navigationBar else { return }
         bar.tintColor = SettingsStyle.Color.link
-        if !bar.prefersLargeTitles {
+        if !bar.prefersLargeTitles, !(viewController.navigationController is DuoDetailNC) {
             bar.prefersLargeTitles = true
         }
         viewController.tabBarController?.setNeedsStatusBarAppearanceUpdate()
@@ -287,12 +289,13 @@ enum SettingsNavigationStyle {
         if let top = navigationController.topViewController, top !== viewController, top is SettingsStyledScreen {
             return
         }
-        if navigationController is CampusNC {
+        let keepsLinkTint = navigationController is CampusNC || navigationController is DuoDetailNC
+        if keepsLinkTint {
             navigationController.navigationBar.tintColor = SettingsStyle.Color.link
         } else {
             navigationController.navigationBar.tintColor = .white
         }
-        if !(navigationController is CampusNC) {
+        if !keepsLinkTint {
             navigationController.navigationBar.prefersLargeTitles = false
         }
         let tabBarController = viewController.tabBarController

@@ -10,6 +10,8 @@ import WidgetKit
 
 final class SettingVC: UIViewController, SettingsStyledScreen {
     private let scrollView = UIScrollView()
+    private var scrollLeadingConstraint: Constraint?
+    private var scrollTrailingConstraint: Constraint?
     private let contentStack = UIStackView()
     private let campusCard = SettingsCampusCardView()
     private let themePicker = SettingsThemePickerView()
@@ -46,6 +48,13 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
         }
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let safe = duoHorizontalSafeInsets
+        scrollLeadingConstraint?.update(offset: safe.left)
+        scrollTrailingConstraint?.update(offset: -safe.right)
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         SettingsNavigationStyle.screenWillAppear(self)
@@ -63,7 +72,11 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
         scrollView.accessibilityIdentifier = "setting.scroll"
         scrollView.contentInsetAdjustmentBehavior = .automatic
         view.addSubview(scrollView)
-        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scrollView.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            scrollLeadingConstraint = make.leading.equalToSuperview().constraint
+            scrollTrailingConstraint = make.trailing.equalToSuperview().constraint
+        }
         contentStack.axis = .vertical
         contentStack.spacing = 0
         scrollView.addSubview(contentStack)

@@ -307,7 +307,7 @@ extension ShuttleQuickSettingsVC {
 
     @objc
     private func onTapHelp() {
-        dismiss(animated: true) { [weak self] in self?.openHelp?() }
+        dismissOrClearDuoDetail { [weak self] in self?.openHelp?() }
     }
 
     private func settingTitleRow(_ title: String, identifier: String) -> UIStackView {
@@ -362,12 +362,12 @@ extension ShuttleQuickSettingsVC {
 
     @objc
     private func onTapClose() {
-        dismiss(animated: true)
+        dismissOrClearDuoDetail()
     }
 
     @objc
     private func onTapInquiry() {
-        dismiss(animated: true) { [weak self] in
+        dismissOrClearDuoDetail { [weak self] in
             self?.openInquiry?()
         }
     }

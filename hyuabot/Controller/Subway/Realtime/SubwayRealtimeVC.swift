@@ -26,6 +26,7 @@ enum SubwayPayloadSelection {
     }
 }
 
+// swiftlint:disable:next type_body_length
 class SubwayRealtimeVC: UIViewController {
     private var requestGeneration = 0
     private var lastAppliedGeneration = 0
@@ -79,6 +80,7 @@ class SubwayRealtimeVC: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        render()
         startPolling()
         navigationController?.setNavigationBarHidden(false, animated: animated)
         SettingsNavigationStyle.screenWillAppear(self)
@@ -102,7 +104,16 @@ class SubwayRealtimeVC: UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         stopPolling()
+        releaseDuoSecondary(contentView.duoColumn)
         SettingsNavigationStyle.screenWillDisappear(self)
+    }
+
+    private var splitWide = false
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if (duoWideRoot != nil) != splitWide { render() }
+        contentView.updateDuoTopInset()
     }
 
     private func setupUI() {
@@ -175,7 +186,8 @@ class SubwayRealtimeVC: UIViewController {
             #endif
             sections = SubwayDisplayLogic.transferSections(toIncheon: toIncheon, toHanyang: toHanyang, now: now)
         }
-        contentView.render(tab: selectedTab, isLoading: isLoading, sections: sections)
+        splitWide = syncDuoSecondary(contentView.duoColumn)
+        contentView.render(tab: selectedTab, isLoading: isLoading, sections: sections, splitSecond: splitWide)
     }
 
     private func arrivals(_ line: SubwayLine, _ heading: SubwayHeadingEnum) -> [SubwayArrivalInfo] {

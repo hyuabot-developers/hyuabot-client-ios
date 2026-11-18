@@ -92,7 +92,9 @@ final class SettingsToastView: UIView {
         if toast.superview == nil {
             container.addSubview(toast)
             toast.snp.makeConstraints { make in
-                make.leading.trailing.equalToSuperview().inset(16)
+                // Safe-area edges keep the toast clear of the Duo cover display's system strip.
+                make.leading.equalTo(container.safeAreaLayoutGuide.snp.leading).inset(16)
+                make.trailing.equalTo(container.safeAreaLayoutGuide.snp.trailing).inset(16)
                 make.bottom.equalTo(container.safeAreaLayoutGuide.snp.bottom).inset(16)
             }
         }
