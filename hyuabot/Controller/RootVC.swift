@@ -19,6 +19,7 @@ class RootVC: UITabBarController {
     private let duoRail = DuoRailView()
     let duoDetailHost = DuoDetailPaneView()
     private(set) var isWideLayout = false
+    private var lastSupportedOrientations: UIInterfaceOrientationMask?
 
     override var selectedIndex: Int {
         didSet { syncFloatingTabBar() }
@@ -235,6 +236,11 @@ extension RootVC {
     }
 
     private func updateWideLayoutIfNeeded() {
+        // UIKit caches the orientation mask, so ask again when unfolding or folding changes the screen size without a rotation.
+        if lastSupportedOrientations != supportedInterfaceOrientations {
+            lastSupportedOrientations = supportedInterfaceOrientations
+            setNeedsUpdateOfSupportedInterfaceOrientations()
+        }
         let wide = DuoLayout.isWide(width: view.bounds.width, idiom: traitCollection.userInterfaceIdiom)
         guard wide != isWideLayout else { return }
         isWideLayout = wide
