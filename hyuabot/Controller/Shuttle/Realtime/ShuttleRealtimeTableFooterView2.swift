@@ -56,9 +56,12 @@ final class ShuttleRealtimeTableFooterView2: UIView {
             row.snp.makeConstraints { $0.height.equalTo(44) }
             if index < buttons.count - 1 {
                 let separator = UIView().then { $0.backgroundColor = SettingsStyle.Color.separator }
-                card.addArrangedSubview(separator)
+                let separatorContainer = UIView()
+                separatorContainer.addSubview(separator)
+                card.addArrangedSubview(separatorContainer)
+                separatorContainer.snp.makeConstraints { $0.height.equalTo(1) }
                 separator.snp.makeConstraints { make in
-                    make.height.equalTo(1)
+                    make.top.bottom.equalToSuperview()
                     make.leading.trailing.equalToSuperview().inset(16)
                 }
             }
