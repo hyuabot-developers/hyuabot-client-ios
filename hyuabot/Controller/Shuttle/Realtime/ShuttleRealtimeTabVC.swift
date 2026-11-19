@@ -206,16 +206,16 @@ class ShuttleRealtimeTabVC: UIViewController {
                 showsInitialSkeleton = isLoading
                 timetableDelegate.showsInitialSkeleton = isLoading
                 UIView.performWithoutAnimation {
-                    self.shuttleRealtimeTableView.reloadData()
-                    self.shuttleRealtimeTableTimeView.reloadData()
+                    self.shuttleRealtimeTableView.reloadDataPreservingScrollPosition()
+                    self.shuttleRealtimeTableTimeView.reloadDataPreservingScrollPosition()
                 }
             }).disposed(by: disposeBag)
 
         ShuttleRealtimeData.shared.nextDayTimetable.skip(1).subscribe(onNext: { [weak self] _ in
             guard let self else { return }
             UIView.performWithoutAnimation {
-                self.shuttleRealtimeTableView.reloadData()
-                self.shuttleRealtimeTableTimeView.reloadData()
+                self.shuttleRealtimeTableView.reloadDataPreservingScrollPosition()
+                self.shuttleRealtimeTableTimeView.reloadDataPreservingScrollPosition()
             }
         }).disposed(by: disposeBag)
 
@@ -234,9 +234,9 @@ class ShuttleRealtimeTabVC: UIViewController {
                 for transferView in transferInfoViewsByOrderSeq.values {
                     transferView.setup(data: data)
                 }
-                shuttleRealtimeTableTimeView.reloadData()
+                shuttleRealtimeTableTimeView.reloadDataPreservingScrollPosition()
                 UIView.performWithoutAnimation {
-                    shuttleRealtimeTableView.reloadData()
+                    shuttleRealtimeTableView.reloadDataPreservingScrollPosition()
                 }
             }).disposed(by: disposeBag)
     }
@@ -261,8 +261,8 @@ class ShuttleRealtimeTabVC: UIViewController {
             activeBoardingAlarmKeys = keys
             timetableDelegate.activeBoardingAlarmKeys = keys
             UIView.performWithoutAnimation {
-                self.shuttleRealtimeTableView.reloadData()
-                self.shuttleRealtimeTableTimeView.reloadData()
+                self.shuttleRealtimeTableView.reloadDataPreservingScrollPosition()
+                self.shuttleRealtimeTableTimeView.reloadDataPreservingScrollPosition()
             }
         }
     }
@@ -279,7 +279,9 @@ class ShuttleRealtimeTabVC: UIViewController {
         } else {
             UIView.performWithoutAnimation {
                 let sections = IndexSet(integersIn: 0 ..< self.shuttleRealtimeSection.count)
-                self.shuttleRealtimeTableView.reloadSections(sections, with: .none)
+                self.shuttleRealtimeTableView.reloadPreservingScrollPosition {
+                    self.shuttleRealtimeTableView.reloadSections(sections, with: .none)
+                }
             }
         }
     }
@@ -527,8 +529,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     }
 
     func reload() {
-        shuttleRealtimeTableView.reloadData()
-        shuttleRealtimeTableTimeView.reloadData()
+        shuttleRealtimeTableView.reloadDataPreservingScrollPosition()
+        shuttleRealtimeTableTimeView.reloadDataPreservingScrollPosition()
         destinationRefreshControl.endRefreshing()
         timetableRefreshControl.endRefreshing()
     }
@@ -536,8 +538,8 @@ class ShuttleRealtimeTabVC: UIViewController {
     func reloadTransferDisplaySettings() {
         transferInfoViewsByIndexPath.values.forEach { $0.reloadDisplaySettings() }
         UIView.performWithoutAnimation {
-            shuttleRealtimeTableView.reloadData()
-            shuttleRealtimeTableTimeView.reloadData()
+            shuttleRealtimeTableView.reloadDataPreservingScrollPosition()
+            shuttleRealtimeTableTimeView.reloadDataPreservingScrollPosition()
         }
     }
 
@@ -567,7 +569,9 @@ class ShuttleRealtimeTabVC: UIViewController {
 
     func reloadSection0() {
         UIView.performWithoutAnimation {
-            visibleTableView.reloadSections(IndexSet(integer: 0), with: .none)
+            visibleTableView.reloadPreservingScrollPosition {
+                visibleTableView.reloadSections(IndexSet(integer: 0), with: .none)
+            }
         }
     }
 
@@ -961,8 +965,11 @@ extension ShuttleRealtimeTabVC: UITableViewDelegate, UITableViewDataSource {
             verticalFittingPriority: .fittingSizeLevel
         )
         guard abs(host.frame.height - size.height) > 0.5 || abs(host.frame.width - width) > 0.5 else { return }
-        host.frame = CGRect(x: 0, y: 0, width: width, height: size.height)
-        table.tableHeaderView = host
+        // A header that grows or shrinks while the user is scrolled (e.g. a notice appearing) must not move the rows.
+        table.reloadPreservingScrollPosition {
+            host.frame = CGRect(x: 0, y: 0, width: width, height: size.height)
+            table.tableHeaderView = host
+        }
     }
 
     func numberOfSections(in tableView: UITableView) -> Int {
