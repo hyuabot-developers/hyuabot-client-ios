@@ -164,19 +164,19 @@ final class CommuterBusVC: UIViewController, SettingsStyledScreen {
         subtitleLabel.numberOfLines = 0
         subtitleLabel.accessibilityIdentifier = "commuter.subtitle"
         content.addArrangedSubview(subtitleLabel)
-        content.setCustomSpacing(20, after: subtitleLabel)
+        content.setCustomSpacing(HYUMetrics.Layout.cardGap, after: subtitleLabel)
         content.addArrangedSubview(directionView)
-        content.setCustomSpacing(20, after: directionView)
+        content.setCustomSpacing(HYUMetrics.Layout.cardGap, after: directionView)
         content.addArrangedSubview(routeHeader)
-        content.setCustomSpacing(8, after: routeHeader)
+        content.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: routeHeader)
         content.addArrangedSubview(routeGrid)
-        content.setCustomSpacing(16, after: routeGrid)
+        content.setCustomSpacing(HYUMetrics.Layout.cardGap, after: routeGrid)
         content.addArrangedSubview(skeleton)
-        content.setCustomSpacing(12, after: skeleton)
+        content.setCustomSpacing(HYUMetrics.Layout.cardGap, after: skeleton)
         content.addArrangedSubview(timeline)
-        content.setCustomSpacing(12, after: timeline)
+        content.setCustomSpacing(HYUMetrics.Layout.cardGap, after: timeline)
         content.addArrangedSubview(errorCard)
-        content.setCustomSpacing(12, after: errorCard)
+        content.setCustomSpacing(HYUMetrics.Layout.cardGap, after: errorCard)
         content.addArrangedSubview(disclaimerContainer)
     }
 

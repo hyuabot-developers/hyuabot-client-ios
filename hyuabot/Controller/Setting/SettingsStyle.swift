@@ -165,7 +165,7 @@ enum SettingsStyle {
     enum Metric {
         static let cardRadius: CGFloat = HYUMetrics.Radius.card
         static let cardInset: CGFloat = 16
-        static let sectionHeaderTop: CGFloat = 28
+        static let sectionHeaderTop: CGFloat = HYUMetrics.Layout.cardGap
         static let sectionHeaderInsetX: CGFloat = 8
         static let rowMinHeight: CGFloat = 52
         static let iconTileSize: CGFloat = 30

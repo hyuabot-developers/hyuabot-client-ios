@@ -28,9 +28,11 @@ enum HYUMetrics {
     }
 
     enum Layout {
-        static let titleToControl: CGFloat = 16
-        static let controlToContent: CGFloat = 16
-        static let contentToFootnote: CGFloat = 12
+        static let titleToControl: CGFloat = 6
+        static let controlToContent: CGFloat = 6
+        static let rowToCard: CGFloat = 4
+        static let cardGap: CGFloat = 16
+        static let contentToFootnote: CGFloat = 6
         static let screenBottom: CGFloat = 24
         static let tabBarContentGap: CGFloat = 12
         static let headerButtonHeight: CGFloat = 36

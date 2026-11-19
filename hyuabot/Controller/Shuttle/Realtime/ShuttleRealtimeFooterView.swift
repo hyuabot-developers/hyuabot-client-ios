@@ -21,7 +21,7 @@ private final class ExtendedHitAreaButton: UIButton {
 class ShuttleRealtimeFooterView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "ShuttleRealtimeFooterView"
     static let timetableButtonHeight: CGFloat = 44
-    static let cardGap: CGFloat = 16
+    static let cardGap: CGFloat = HYUMetrics.Layout.cardGap
     static let connectorSpacing: CGFloat = 8
     private var showEntireTimetable: ((_ stop: ShuttleStopEnum, _ section: Int) -> Void)?
     private var showBusAlternativeStop: ((_ alternative: ShuttleBusAlternativeDisplayData) -> Void)?

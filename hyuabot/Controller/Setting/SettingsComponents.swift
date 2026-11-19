@@ -54,6 +54,17 @@ final class SettingsCardView: UIView {
         stack.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
+    func insertTitle(_ title: String, trailing: String? = nil) {
+        let line = UIView()
+        line.backgroundColor = SettingsStyle.Color.separator
+        let container = UIView()
+        container.addSubview(line)
+        container.snp.makeConstraints { $0.height.equalTo(1 / UIScreen.main.scale) }
+        line.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)) }
+        stack.insertArrangedSubview(HYUCardTitleRow(title: title, trailing: trailing), at: 0)
+        stack.insertArrangedSubview(container, at: 1)
+    }
+
     func addRow(_ row: UIView, separatorInset: CGFloat = SettingsStyle.Metric.separatorInset) {
         if !stack.arrangedSubviews.isEmpty {
             let container = UIView()
@@ -80,8 +91,17 @@ final class SettingsSectionView: UIView {
         super.init(frame: .zero)
         let stack = UIStackView()
         stack.axis = .vertical
+        var header = header
+        var trailingHeader = trailingHeader
+        var topInset: CGFloat = 0
+        if let title = header, let card = content as? SettingsCardView {
+            card.insertTitle(title, trailing: trailingHeader)
+            header = nil
+            trailingHeader = nil
+            topInset = HYUMetrics.Layout.cardGap
+        }
         addSubview(stack)
-        stack.snp.makeConstraints { $0.edges.equalToSuperview() }
+        stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(UIEdgeInsets(top: topInset, left: 0, bottom: 0, right: 0)) }
         if let header {
             let row = UIStackView()
             row.alignment = .firstBaseline
@@ -98,7 +118,7 @@ final class SettingsSectionView: UIView {
                 make.bottom.equalToSuperview()
             }
             stack.addArrangedSubview(headerContainer)
-            stack.setCustomSpacing(8, after: headerContainer)
+            stack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: headerContainer)
         }
         stack.addArrangedSubview(content)
         content.snp.makeConstraints { $0.leading.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset) }

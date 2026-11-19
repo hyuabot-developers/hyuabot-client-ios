@@ -19,7 +19,7 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
     private let footnoteLabel = UILabel()
     private let refreshControl = UIRefreshControl()
     /// Unfolded Duo layout: the second direction's card continues in the right-hand pane.
-    let duoColumn = DuoSecondaryColumnView(spacing: 16)
+    let duoColumn = DuoSecondaryColumnView(spacing: HYUMetrics.Layout.cardGap)
     private let secondCard = SubwaySectionCardView()
 
     override init(frame: CGRect) {
@@ -107,9 +107,9 @@ final class SubwayRealtimeContentView: UIView, UIScrollViewDelegate {
         contentStack.addArrangedSubview(segmentView)
         contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: segmentView)
         contentStack.addArrangedSubview(skeletonList)
-        contentStack.setCustomSpacing(16, after: skeletonList)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: skeletonList)
         cardsStack.axis = .vertical
-        cardsStack.spacing = 16
+        cardsStack.spacing = HYUMetrics.Layout.cardGap
         for _ in 0 ..< 2 {
             let card = SubwaySectionCardView()
             card.onTimetableTap = { [weak self] in self?.onTimetableTap?($0) }

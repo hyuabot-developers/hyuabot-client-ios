@@ -114,9 +114,9 @@ final class BusRealtimeContentView: UIView, UIScrollViewDelegate {
         contentStack.addArrangedSubview(segmentView)
         contentStack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: segmentView)
         contentStack.addArrangedSubview(noticeBar)
-        contentStack.setCustomSpacing(16, after: noticeBar)
+        contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: noticeBar)
         cardsStack.axis = .vertical
-        cardsStack.spacing = 16
+        cardsStack.spacing = HYUMetrics.Layout.cardGap
         contentStack.addArrangedSubview(cardsStack)
         contentStack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: cardsStack)
         footnoteLabel.attributedText = SettingsStyle.attributedText(

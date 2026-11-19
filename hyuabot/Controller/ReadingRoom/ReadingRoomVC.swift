@@ -160,7 +160,7 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
 
         let stack = UIStackView(arrangedSubviews: [statusRow, alarmCard])
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = HYUMetrics.Layout.cardGap
         headerView.addSubview(stack)
         stack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(4)
@@ -222,17 +222,17 @@ class ReadingRoomVC: UIViewController, SettingsStyledScreen {
             #endif
             self.showsSkeleton = isLoading
             self.updateStatusRow()
-            self.readingRoomView.reloadData()
+            self.readingRoomView.reloadDataPreservingScrollPosition()
             self.footerView.isHidden = isLoading || self.roomSubject.value.isEmpty
         }).disposed(by: disposeBag)
         roomSubject.subscribe(onNext: { [weak self] _ in
-            self?.readingRoomView.reloadData()
+            self?.readingRoomView.reloadDataPreservingScrollPosition()
             self?.footerView.isHidden = self?.showsSkeleton == true || self?.roomSubject.value.isEmpty == true
         }).disposed(by: disposeBag)
         observeUserDefaultsStringArray(forKey: "readingRoomNotificationArray")
             .subscribe(onNext: { [weak self] _ in
                 guard let self else { return }
-                self.readingRoomView.reloadData()
+                self.readingRoomView.reloadDataPreservingScrollPosition()
                 self.footerView.isHidden = self.showsSkeleton || self.roomSubject.value.isEmpty
             })
             .disposed(by: disposeBag)

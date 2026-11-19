@@ -72,7 +72,6 @@ final class ShuttleTimetableFilterVC: UIViewController {
         sheetView.showsCloseButton(true, identifier: "shuttle.timetable.filter.close")
         sheetView.closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
         let stack = sheetView.contentStack
-        stack.spacing = 12
         stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.timetable.filter.start"), isFirst: true))
         stack.addArrangedSubview(startSegment)
         stack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.timetable.filter.end")))
@@ -100,7 +99,8 @@ final class ShuttleTimetableFilterVC: UIViewController {
         apply.addTarget(self, action: #selector(okButtonTapped), for: .touchUpInside)
         applyButton = apply
         stack.addArrangedSubview(apply)
-        stack.setCustomSpacing(20, after: dateRow)
+        stack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: periodSegment)
+        stack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: dateRow)
         startSegment.configure(items: segmentItems(availableStartStop), selected: 0)
         configureEndStops(for: availableStartStop[0], selectingDefault: true)
         periodSegment.configure(items: segmentItems(availablePeriods), selected: 0)

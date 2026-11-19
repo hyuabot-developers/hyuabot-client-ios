@@ -115,7 +115,7 @@ class ShuttleStopInfoVC: UIViewController {
         sheetView.setTitle(String(format: String(localized: "shuttle.stop.info.title.%@"), stopTitle))
         sheetView.contentStack.addArrangedSubview(stopMapView)
         stopMapView.snp.makeConstraints { $0.height.equalTo(184) }
-        sheetView.contentStack.addArrangedSubview(HYUSheetView.sectionHeader(String(localized: "shuttle.stop.info.section")))
+        sheetView.contentStack.setCustomSpacing(HYUMetrics.Layout.cardGap, after: stopMapView)
         sheetView.contentStack.addArrangedSubview(rowsCard)
         renderRows([])
         sheetView.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -222,6 +222,7 @@ class ShuttleStopInfoVC: UIViewController {
                 weekend: spanText(entries.filter { !$0.weekday })
             ))
         }
+        HYUSheetView.insertTitle(String(localized: "shuttle.stop.info.section"), into: rowsCard)
     }
 
     private func spanText(_ entries: [StopTimetableEntry]) -> String {
