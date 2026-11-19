@@ -120,8 +120,13 @@ final class SettingsSectionView: UIView {
             stack.addArrangedSubview(headerContainer)
             stack.setCustomSpacing(HYUMetrics.Layout.controlToContent, after: headerContainer)
         }
-        stack.addArrangedSubview(content)
-        content.snp.makeConstraints { $0.leading.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset) }
+        let contentContainer = UIView()
+        contentContainer.addSubview(content)
+        content.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(SettingsStyle.Metric.cardInset)
+        }
+        stack.addArrangedSubview(contentContainer)
         if let footer {
             let label = UILabel()
             label.font = SettingsStyle.font(12.5)
@@ -136,7 +141,7 @@ final class SettingsSectionView: UIView {
                 make.top.bottom.equalToSuperview()
             }
             stack.addArrangedSubview(footerContainer)
-            stack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: content)
+            stack.setCustomSpacing(HYUMetrics.Layout.contentToFootnote, after: contentContainer)
         }
     }
 
@@ -216,6 +221,8 @@ final class SettingsRowView: UIButton {
         }
         content.addArrangedSubview(labels)
         labels.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        labels.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         appendAccessory(to: content)
         isAccessibilityElement = true
         accessibilityLabel = [title, subtitle, accessoryText].compactMap { $0 }.joined(separator: ", ")
