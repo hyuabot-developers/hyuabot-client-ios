@@ -397,8 +397,9 @@ final class BusTimetableCardFooterView: UIView {
         stack.axis = .vertical
         stack.alignment = .fill
         stack.spacing = 0
-        stack.layoutMargins = UIEdgeInsets(top: 8, left: 0, bottom: 0, right: 0)
+        stack.layoutMargins = UIEdgeInsets(top: 8, left: 20, bottom: 0, right: 20)
         stack.isLayoutMarginsRelativeArrangement = true
+        stack.insetsLayoutMarginsFromSafeArea = false
         addSubview(stack)
         stack.snp.makeConstraints { $0.top.leading.trailing.equalToSuperview(); $0.bottom.equalToSuperview().inset(40) }
         footnote.numberOfLines = 1
@@ -411,7 +412,6 @@ final class BusTimetableCardFooterView: UIView {
         )
         footnote.lineBreakMode = .byTruncatingTail
         stack.addArrangedSubview(footnote)
-        footnote.snp.makeConstraints { $0.leading.trailing.equalToSuperview().inset(20) }
     }
 
     @available(*, unavailable)

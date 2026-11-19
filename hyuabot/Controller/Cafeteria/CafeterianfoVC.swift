@@ -220,6 +220,7 @@ class CafeteriaInfoVC: UIViewController {
                 label.snp.remakeConstraints { make in
                     make.centerY.equalTo(self.hourTitleLabels[index])
                     make.trailing.lessThanOrEqualTo(self.openStatusChip.snp.leading).offset(-8)
+                    make.leading.greaterThanOrEqualTo(self.hourTitleLabels[index].snp.trailing).offset(8)
                 }
                 break
             }

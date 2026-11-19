@@ -69,6 +69,10 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
     private func buildLayout() {
         view.backgroundColor = SettingsStyle.Color.background
         scrollView.alwaysBounceVertical = true
+        scrollView.alwaysBounceHorizontal = false
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.isDirectionalLockEnabled = true
+        scrollView.clipsToBounds = true
         scrollView.accessibilityIdentifier = "setting.scroll"
         scrollView.contentInsetAdjustmentBehavior = .automatic
         view.addSubview(scrollView)
@@ -143,8 +147,7 @@ final class SettingVC: UIViewController, SettingsStyledScreen {
         card.addRow(row)
         contentStack.addArrangedSubview(SettingsSectionView(
             header: String(localized: "setting.section.display"),
-            content: card,
-            footer: String(localized: "setting.language.footer")
+            content: card
         ))
     }
 

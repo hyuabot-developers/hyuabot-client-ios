@@ -155,7 +155,6 @@ final class MapBuildingCardView: UIView {
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom).inset(16)
         }
-        header.snp.makeConstraints { $0.trailing.equalToSuperview().offset(12) }
     }
 
     private func configureButtonActions() {
