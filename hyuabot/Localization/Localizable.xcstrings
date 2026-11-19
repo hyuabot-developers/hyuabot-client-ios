@@ -13453,34 +13453,6 @@
         }
       }
     },
-    "setting.language.footer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can change the language in iOS Settings › HYUabot."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "言語はiOSの設定 › HYUabotで変更できます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "언어는 iOS 설정 › 휴아봇에서 바꿀 수 있어요."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可在 iOS 设置 › HYUabot 中更改语言。"
-          }
-        }
-      }
-    },
     "setting.language.open_settings" : {
       "localizations" : {
         "en" : {
